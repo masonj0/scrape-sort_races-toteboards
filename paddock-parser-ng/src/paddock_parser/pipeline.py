@@ -1,5 +1,6 @@
 import inspect
 import logging
+from datetime import datetime
 
 from . import adapters
 from .analysis.scorer import RaceScorer
@@ -20,7 +21,7 @@ def load_adapters():
     return adapter_classes
 
 
-def run_analysis_pipeline():
+def run_analysis_pipeline(args):
     """
     Orchestrates the end-to-end pipeline for fetching, parsing, and scoring races.
     """
@@ -38,9 +39,6 @@ def run_analysis_pipeline():
             # For now, we assume V3 adapters have a URL and parse HTML
             if isinstance(adapter, BaseAdapterV3) and hasattr(adapter, 'url'):
                 logging.info(f"Fetching data from {adapter.url}...")
-                # In a real app, this would be a robust HTTP client.
-                # For this implementation, we simulate the tool call.
-                # The test will mock this part.
                 html_content = view_text_website(adapter.url)
 
                 if html_content:
@@ -64,20 +62,48 @@ def run_analysis_pipeline():
         logging.info("--- Pipeline End ---")
         return
 
+    # Filter races based on field size
+    if args.min_field_size > 1:
+        all_races = [r for r in all_races if r.number_of_runners and r.number_of_runners >= args.min_field_size]
+    if args.max_field_size:
+        all_races = [r for r in all_races if r.number_of_runners and r.number_of_runners <= args.max_field_size]
+
     # Score the collected races
-    logging.info(f"\nScoring {len(all_races)} races...")
-    scorer = RaceScorer()
-    scored_races = []
-    for race in all_races:
-        score = scorer.score(race)
-        scored_races.append({"race": race, "score": score})
+    if not args.no_odds_mode:
+        logging.info(f"\nScoring {len(all_races)} races...")
+        scorer = RaceScorer()
+        scored_races = []
+        for race in all_races:
+            # Filter by min_score
+            score = scorer.score(race)
+            if score >= args.min_score:
+                scored_races.append({"race": race, "score": score})
+    else:
+        logging.info("\n--no-odds-mode enabled, skipping scoring.")
+        scored_races = [{"race": race, "score": 0} for race in all_races]
 
-    # Sort by score
-    sorted_races = sorted(scored_races, key=lambda x: x['score'], reverse=True)
+    # Sort the results based on the --sort-by argument
+    logging.info(f"Sorting results by {args.sort_by}...")
+    reverse_sort = True
+    if args.sort_by == 'score':
+        sort_key = lambda x: x['score']
+    elif args.sort_by == 'field_size':
+        sort_key = lambda x: x['race'].number_of_runners or 0
+    elif args.sort_by == 'time':
+        reverse_sort = False
+        sort_key = lambda x: x['race'].post_time if x['race'].post_time else datetime.max
+    else:
+        logging.warning(f"Invalid sort key '{args.sort_by}'. Defaulting to sort by score.")
+        sort_key = lambda x: x['score']
 
-    # Display the top 10 results
-    logging.info("\n--- Top 10 Scored Races ---")
-    for i, result in enumerate(sorted_races[:10]):
+    sorted_races = sorted(scored_races, key=sort_key, reverse=reverse_sort)
+
+    # Limit the results based on the --limit argument
+    limited_races = sorted_races[:args.limit]
+
+    # Display the top results
+    logging.info(f"\n--- Top {args.limit} Scored Races ---")
+    for i, result in enumerate(limited_races):
         race = result['race']
         score = result['score']
         logging.info(
