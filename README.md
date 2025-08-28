@@ -1,2 +1,1 @@
-# scrape-sort_races-toteboards
-scraping and sorting races and toteboards
+visit the README in the subfolder
