@@ -1,4 +1,5 @@
 import unittest
+import argparse
 from unittest.mock import patch, MagicMock
 
 import unittest
@@ -47,7 +48,12 @@ class TestPipeline(unittest.TestCase):
 
         # --- Run Pipeline ---
         try:
-            run_analysis_pipeline()
+            # Create a mock args object for the pipeline
+            mock_args = argparse.Namespace(
+                config=None, output=None, min_score=0.0, no_odds_mode=False,
+                min_field_size=1, max_field_size=None, sort_by='score', limit=10
+            )
+            run_analysis_pipeline(mock_args)
         except Exception as e:
             self.fail(f"Pipeline crashed with an unexpected exception: {e}")
 
@@ -86,7 +92,12 @@ class TestPipeline(unittest.TestCase):
         mock_view_text_website.return_value = "<html></html>"
 
         # --- Run Pipeline ---
-        run_analysis_pipeline()
+        # Create a mock args object for the pipeline
+        mock_args = argparse.Namespace(
+            config=None, output=None, min_score=0.0, no_odds_mode=False,
+            min_field_size=1, max_field_size=None, sort_by='score', limit=10
+        )
+        run_analysis_pipeline(mock_args)
 
         # --- Assertions ---
         mock_load_adapters.assert_called_once()
