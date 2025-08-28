@@ -2,8 +2,7 @@ import json
 from datetime import datetime
 from typing import List, Dict, Any
 
-from .base import BaseAdapter
-from .models import NormalizedRace, NormalizedRunner
+from .base import BaseAdapter, NormalizedRace, NormalizedRunner
 
 
 def parse_from_json(schedule_data: str, detail_data: str) -> List[NormalizedRace]:

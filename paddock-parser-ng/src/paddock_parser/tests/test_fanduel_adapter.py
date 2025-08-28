@@ -3,7 +3,7 @@ import pathlib
 from datetime import datetime
 
 from paddock_parser.adapters.fanduel_graphql_adapter import parse_from_json
-from paddock_parser.adapters.models import NormalizedRace, NormalizedRunner
+from paddock_parser.adapters.base import NormalizedRace, NormalizedRunner
 
 def test_parse_from_json():
     """
