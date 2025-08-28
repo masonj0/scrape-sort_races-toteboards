@@ -26,10 +26,11 @@ class TestPipeline(unittest.TestCase):
             NormalizedRace(race_id="test-1", track_name="Test Track", race_number=1, number_of_runners=5)
         ]
 
-        # Create a mock instance for the FanDuel adapter
+        # Create a mock instance for the FanDuel adapter, which is skipped by the pipeline
         mock_fanduel_instance = MagicMock(spec=BaseAdapter)
         mock_fanduel_instance.SOURCE_ID = "fanduel"
-        mock_fanduel_instance.fetch.side_effect = Exception("API request failed")
+        # Note: We don't need to mock fetch_data/parse_data because the pipeline
+        # explicitly skips any adapter with SOURCE_ID == "fanduel".
 
         # Create mock *classes* that will be returned by load_adapters
         MockSkyClass = MagicMock(name="MockSkyClass")
@@ -51,10 +52,12 @@ class TestPipeline(unittest.TestCase):
             self.fail(f"Pipeline crashed with an unexpected exception: {e}")
 
         # --- Assertions ---
+        # The pipeline should run the SkySports adapter successfully
         mock_view_text_website.assert_called_once_with("http://sky.com")
         mock_sky_instance.parse_races.assert_called_once()
-        # The fanduel adapter uses the V1 'parse' method, which should not be called.
-        mock_fanduel_instance.parse.assert_not_called()
+        # The pipeline should not call any data methods on the skipped FanDuel adapter
+        mock_fanduel_instance.fetch_data.assert_not_called()
+        mock_fanduel_instance.parse_data.assert_not_called()
 
     @patch('paddock_parser.pipeline.view_text_website')
     @patch('paddock_parser.pipeline.load_adapters')
