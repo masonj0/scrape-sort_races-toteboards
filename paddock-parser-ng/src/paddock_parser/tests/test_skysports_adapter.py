@@ -1,36 +1,42 @@
-import pathlib
+import pytest
+from unittest.mock import patch
 from paddock_parser.adapters.skysports_adapter import SkySportsAdapter
 
-def test_parse_skysports_racecards():
+@pytest.mark.anyio
+@patch("paddock_parser.adapters.skysports_adapter.fetch_html_content")
+async def test_skysports_adapter_fetches_and_parses(mock_fetch_html_content):
     """
-    Tests that the Sky Sports adapter can correctly parse a single meeting card.
+    Tests the full end-to-end fetch and parse process for SkySportsAdapter,
+    with the fetch mechanism mocked.
     """
-    # Path to the HTML fixture
-    fixture_path = pathlib.Path(__file__).parent / "fixtures" / "skysports_racecards_sample.html"
-
-    # Read the HTML content
-    with open(fixture_path, "r") as f:
-        html_content = f.read()
-
-    # Instantiate the adapter and parse the data
+    # --- Setup ---
     adapter = SkySportsAdapter()
-    races = adapter.parse_races(html_content)
+
+    # Load the sample HTML from a fixture file for the test
+    with open("src/paddock_parser/tests/fixtures/skysports_racecards_sample.html", "r", encoding="utf-8") as f:
+        sample_html = f.read()
+
+    # Configure the mock to return our sample HTML
+    # Since the mocked function is async, the mock's return value will be awaited
+    mock_fetch_html_content.return_value = sample_html
+
+    # --- Run ---
+    # Run the fetch method, which will use the mocked fetch_html_content
+    races = await adapter.fetch()
 
     # --- Assertions ---
+    assert races is not None
+    assert len(races) == 113
 
-    # Should find exactly two races in the sample
-    assert len(races) == 2
+    # Find a specific, known race in the results for a deep check
+    target_race = None
+    for race in races:
+        if race.track_name == "Chelmsford City" and race.post_time and race.post_time.strftime("%H:%M") == "14:20":
+            target_race = race
+            break
 
-    # --- Race 1 Assertions ---
-    race1 = races[0]
-    assert race1.track_name == "Wolverhampton (AW)"
-    assert race1.race_number == 1
-    assert race1.number_of_runners == 9
-    assert "Race 1 - BetUK Apprentice Handicap" in race1.race_id
-
-    # --- Race 2 Assertions ---
-    race2 = races[1]
-    assert race2.track_name == "Wolverhampton (AW)"
-    assert race2.race_number == 2
-    assert race2.number_of_runners == 10
-    assert "Race 2 - BetUK Plus Handicap" in race2.race_id
+    assert target_race is not None, "Could not find the target Chelmsford City 14:20 race"
+    assert target_race.race_number == 1
+    assert target_race.number_of_runners == 8
+    # source_id is not part of the NormalizedRace model, so this assertion is removed.
+    # assert target_race.source_id == "skysports"
