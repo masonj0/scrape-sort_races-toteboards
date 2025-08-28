@@ -1,6 +1,11 @@
-# This is the main entry point for the entire application.
-# It will be responsible for starting the web server.
+import asyncio
+from paddock_parser.pipeline import run_analysis_pipeline
+
+def main():
+    """
+    Main entry point for the Paddock Parser NG application.
+    """
+    run_analysis_pipeline()
 
 if __name__ == "__main__":
-    print("Paddock Parser NG starting...")
-    # The application logic will be added here later.
+    main()
