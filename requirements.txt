@@ -1,0 +1,14 @@
+# Core application dependencies
+fastapi
+uvicorn
+httpx
+
+# Data analysis
+pandas
+numpy
+
+# Tooling
+ruff
+
+# Testing
+pytest
