@@ -1,0 +1,36 @@
+{
+    "data": {
+        "races": [
+            {
+                "id": "HOO-6",
+                "tvgRaceId": 3859276,
+                "bettingInterests": [
+                    {
+                        "biNumber": 1,
+                        "runners": [
+                            {
+                                "scratched": false,
+                                "horseName": "Pay Me No Mind",
+                                "jockey": "Finn, J D",
+                                "trainer": "Finn, Jared"
+                            }
+                        ],
+                        "currentOdds": { "numerator": 12, "denominator": null }
+                    },
+                    {
+                        "biNumber": 2,
+                        "runners": [
+                            {
+                                "scratched": false,
+                                "horseName": "Don't Tell Ur Mom",
+                                "jockey": "Bender, Atlee",
+                                "trainer": "Putnam, Joe"
+                            }
+                        ],
+                        "currentOdds": { "numerator": 5, "denominator": null }
+                    }
+                ]
+            }
+        ]
+    }
+}
