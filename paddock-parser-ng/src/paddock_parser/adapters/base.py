@@ -1,67 +1,71 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from datetime import datetime
-from typing import List, Optional, Dict, Any
-
-
-# --- Normalized Data Models ---
+from typing import List, Optional
 
 @dataclass
 class NormalizedRunner:
     """
-    A standardized representation of a single runner in a race.
+    A normalized representation of a single runner in a race.
     """
     name: str
-    program_number: int
-    scratched: bool = False
-    jockey: Optional[str] = None
-    trainer: Optional[str] = None
     odds: Optional[str] = None
+    runner_number: Optional[int] = None
+    cloth_number: Optional[int] = None
 
 
 @dataclass
 class NormalizedRace:
     """
-    A standardized representation of a single race.
+    A normalized representation of a single race.
+    This structure is what all adapters should output.
     """
     race_id: str
     track_name: str
     race_number: int
-    post_time: Optional[datetime] = None
-    race_type: Optional[str] = None
-    minutes_to_post: Optional[int] = None
-    number_of_runners: Optional[int] = None
+    number_of_runners: int
     runners: List[NormalizedRunner] = field(default_factory=list)
+    race_url: Optional[str] = None
+    timestamp: Optional[int] = None
 
-
-# --- Base Adapters ---
 
 class BaseAdapter(ABC):
     """
-    Abstract base class for data source adapters (V1 & V2 style).
+    Abstract base class for all data adapters.
     """
-    def __init__(self, config: Optional[Dict[str, Any]] = None):
-        self.config = config or {}
+    SOURCE_ID = "base"
 
     @abstractmethod
-    def fetch_data(self):
+    def fetch(self):
+        """
+        Fetches the raw data from the source.
+        """
         pass
 
     @abstractmethod
-    def parse_data(self, raw_data):
+    def parse(self, data):
+        """
+        Parses the raw data into a list of NormalizedRace objects.
+        """
         pass
+
+    def get_races(self):
+        """
+        Orchestrates the fetching and parsing of data.
+        """
+        raw_data = self.fetch()
+        return self.parse(raw_data)
 
 
 class BaseAdapterV3(ABC):
     """
-    V3 of the Base Adapter for parsing complex, multi-race pages.
+    Abstract base class for V3 adapters that work with HTML content.
     """
-    def __init__(self, config: Optional[Dict[str, Any]] = None):
-        self.config = config or {}
+    SOURCE_ID = "base_v3"
+    url = ""
 
     @abstractmethod
     def parse_races(self, html_content: str) -> List[NormalizedRace]:
         """
-        Parses the full HTML content of a race day page.
+        Parses HTML content to extract race data.
         """
         pass
