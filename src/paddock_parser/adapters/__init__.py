@@ -1,1 +1,0 @@
-# This file marks the `adapters` directory as a Python package.

@@ -4,11 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "paddock-parser-ng"
-version = "1.0.0"
-authors = [
-  { name="Jules", email="jules@example.com" },
-]
-description = "A monolithic Python application for parsing and analyzing racecard data."
+version = "0.1.0"
+description = "A toolkit to identify the best racecards for betting."
 readme = "README.md"
 requires-python = ">=3.10"
 classifiers = [
@@ -16,6 +13,3 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
 ]
-
-[project.urls]
-"Homepage" = "https://github.com/example/next-gen"
