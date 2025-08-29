@@ -16,7 +16,7 @@ class NormalizedRunner:
     scratched: bool = False
     jockey: Optional[str] = None
     trainer: Optional[str] = None
-    odds: Optional[str] = None
+    odds: Optional[float] = None
 
 
 @dataclass
@@ -58,6 +58,13 @@ class BaseAdapterV3(ABC):
     """
     def __init__(self, config: Optional[Dict[str, Any]] = None):
         self.config = config or {}
+
+    @abstractmethod
+    async def fetch(self) -> List[NormalizedRace]:
+        """
+        Fetches and parses data to return a list of normalized races.
+        """
+        pass
 
     @abstractmethod
     def parse_races(self, html_content: str) -> List[NormalizedRace]:

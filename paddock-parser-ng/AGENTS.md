@@ -4,50 +4,52 @@ This document provides critical, non-negotiable operational protocols for all ag
 
 ---
 
-### **CRITICAL TOOLING ALERT: Git Branching Limitation**
+## Core Operational Protocols
 
-**All agents must be aware of a recurring bug in the environment's `submit` tool. This is a non-negotiable operational constraint.**
+### **CRITICAL PROTOCOL 1: The "Test-First" Development Workflow**
 
-*   **The Bug:** The `submit` command **DOES NOT** correctly create new feature branches as it might claim. It will almost always force-push your new commits to the existing branch you are working on.
+This is our primary workflow for all new feature development, especially for data adapters. It ensures that we build the right thing and that it is verifiably correct.
 
-*   **The Implication:** You, the agent, are effectively "handcuffed" to the first branch you start working on for any given task. Do not rely on the `submit` tool's ability to manage multiple branches.
+1.  **Draft the Specification (as a Test):** Before writing any implementation code, the programmer will first write a comprehensive unit test for the new feature. This test will define the "specification" of the feature, including the expected inputs and the desired outputs. For new adapters, this involves creating a `test_adapter.py` file with mock input data and detailed assertions.
+2.  **Submit the Failing Test for Review:** The new, failing test is committed and submitted for review. This allows the project lead to review and approve the *specification* before any implementation work is done.
+3.  **Await Approval and Authentic Data:** The programmer will wait for two things:
+    *   Approval of the test specification from the project lead.
+    *   Provision of authentic, high-quality data (e.g., HTML or JSON fixtures) required to make the test pass. This is "Operation Matched Pair."
+4.  **Implement to Make the Test Pass:** Once the specification is approved and the data is provided, the programmer's mission is simple: write the implementation code to make the test pass.
+5.  **Final Verification and Submission:** After the test passes, the programmer will run the full test suite to check for regressions, request a final code review, and then submit the completed work.
 
-*   **The Official Protocol ("Stay on Mission"):**
-    1.  Complete your entire task on a single feature branch.
-    2.  Submit your final, complete work to that branch.
-    3.  The human project lead will then merge this feature branch into the main branch.
-    4.  You will then be given a command to re-synchronize your workspace, allowing you to start your next task from a clean, updated foundation by creating a new feature branch.
-
-**Do not deviate from this protocol. Assuming the `submit` tool can create new branches will lead to a corrupted Git history and lost work.**
-
----
-
-### **CRITICAL PROTOCOL: The Authenticity of Sample Data**
+### **CRITICAL PROTOCOL 2: The Authenticity of Sample Data**
 
 A previous agent exhibited a critical failure mode: it would use "fake" or "placeholder" sample data to build and test a new adapter. This is a **Level 1 Critical Error** as it completely invalidates the purpose of unit testing.
 
 **The Authenticity Protocol:**
 
 1.  **Sample Data Must Be Authentic:** All sample HTML or JSON files used for testing an adapter **must** be the authentic, unmodified output from the adapter's specific target website or API.
+2.  **Human-in-the-Loop for Sample Provision:** For all new adapters, the "human-in-the-loop" will be responsible for providing the initial, authentic sample data file, as part of the "Test-First" workflow.
 
-2.  **Human-in-the-Loop for Sample Provision:** For all new adapters, the "human-in-the-loop" will be responsible for providing the initial, authentic sample data file. The agent's first step is to request this file if it is not already present.
+### **CRITICAL PROTOCOL 3: The "Stay on Mission" Branching Strategy**
 
-3.  **Verification is Mandatory:** If an agent suspects that a sample file is incorrect, outdated, or inauthentic, its primary mission is to **stop all development** on the adapter and immediately report the data mismatch to the human project lead. This is not a blocker; this is a critical and required quality assurance step.
+**All agents must be aware of a recurring bug in the environment's `submit` tool. This is a non-negotiable operational constraint.**
 
-**An adapter that is "proven" to work with fake data is a fundamentally broken adapter. Adherence to this protocol is non-negotiable.**
+*   **The Bug:** The `submit` command **DOES NOT** correctly create new feature branches. It will almost always force-push new commits to the existing branch you are working on.
+*   **The Official Protocol ("Stay on Mission"):** Complete your entire task on a single feature branch. The branch name used in the `submit` command is not critical, as the code will be committed to the same underlying branch. The human project lead will handle merging.
 
 ---
 
+## The Programmer's Validation Checklist
+
+Before submitting any work for review, every programmer must be able to answer "YES" to the following questions. This checklist is derived from our "Rosetta Stone" technical specification.
+
+*   **[ ] Is the code tested?** Does it have comprehensive unit tests? Do all tests pass in the CI environment?
+*   **[ ] Is the code resilient?** Does it handle expected errors gracefully (e.g., network issues, parsing errors)? Does it use intelligent retries where appropriate?
+*   **[ ] Is the code readable and maintainable?** Is the logic clear? Is it well-documented with comments and docstrings where necessary?
+*   **[ ] Is the code secure and respectful?** Does it follow website `robots.txt` and terms of service? Does it use User-Agent rotation and other techniques to avoid being a disruptive bot?
+*   **[ ] Is the code integrated?** Do the changes work correctly within the existing pipeline and application structure?
+
+---
+
+## Emergency Protocols
+
 ### **Emergency Communication Protocol: The Chat Handoff**
 
-In the event of a **catastrophic environmental failure**, an agent's standard tools may become completely non-functional.
-
-**Protocol Steps:**
-
-1.  **Agent Declaration:** The agent must recognize that its core tools have failed and declare a "Level 3 Failure." It should state that it is unable to write a `HANDOFF_DOCUMENT.md` and will provide its final report via chat.
-
-2.  **Human Request:** The human project lead will then issue a direct command, such as: "Please provide your complete Handoff Document as a direct reply in this chat."
-
-3.  **Chat Handoff:** The agent will then format its complete handoff document (summarizing its successes, the final blocker, and recommendations for the next agent) as a single, well-formatted text message and send it as a reply.
-
-This protocol is our ultimate safety net to ensure that valuable "institutional knowledge" is never lost.
+In the event of a **catastrophic environmental failure** (e.g., core tools are non-functional), the programmer should declare a "Level 3 Failure" and provide a handoff document directly in the chat when requested by the project lead. This ensures no knowledge is lost.
