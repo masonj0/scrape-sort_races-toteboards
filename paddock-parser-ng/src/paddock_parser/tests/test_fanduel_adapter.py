@@ -99,7 +99,7 @@ class TestFanDuelAdapter(unittest.TestCase):
         self.assertFalse(runner1.scratched)
         self.assertEqual(runner1.jockey, "Buggs, B")
         self.assertEqual(runner1.trainer, "Jones, W. E.")
-        self.assertEqual(runner1.odds, "8-1")
+        self.assertEqual(runner1.odds, 8.0)
 
         runner2 = race.runners[1]
         self.assertIsInstance(runner2, NormalizedRunner)
@@ -108,7 +108,7 @@ class TestFanDuelAdapter(unittest.TestCase):
         self.assertFalse(runner2.scratched)
         self.assertEqual(runner2.jockey, "Coyote, W")
         self.assertEqual(runner2.trainer, "Acme, Corp")
-        self.assertEqual(runner2.odds, "3-1")
+        self.assertEqual(runner2.odds, 3.0)
 
     @patch('paddock_parser.adapters.fanduel_graphql_adapter.httpx.Client')
     def test_fetch_data_logic(self, MockClient):

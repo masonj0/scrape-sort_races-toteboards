@@ -16,7 +16,7 @@ class NormalizedRunner:
     scratched: bool = False
     jockey: Optional[str] = None
     trainer: Optional[str] = None
-    odds: Optional[str] = None
+    odds: Optional[float] = None
 
 
 @dataclass
