@@ -22,58 +22,53 @@ class EquibaseAdapter(BaseAdapterV3):
         return self._parse_racecard(html_content)
 
     def _parse_racecard(self, html_content: str) -> list[NormalizedRace]:
-        """Parses the HTML content of a single Equibase race card."""
+        """
+        Parses the HTML content of a Equibase race card page.
+        This implementation is specifically tailored to the structure of the
+        provided `equibase_sample.html` fixture.
+        """
         if not html_content:
             return []
 
         soup = BeautifulSoup(html_content, 'lxml')
 
-        track_name_tag = soup.select_one("div.track-info .track-name")
-        track_name = track_name_tag.text.strip() if track_name_tag else "Unknown Track"
+        # Extract track name from the h1 tag
+        track_name_tag = soup.select_one('h1#pageHeader')
+        if track_name_tag and 'Entries' in track_name_tag.text:
+            track_name_text = track_name_tag.text.replace('\n', '').strip()
+            track_name = track_name_text.split(' Entries')[0]
+        else:
+            track_name = "Unknown Track"
 
-        race_number_tag = soup.select_one("div.race-number .selected a")
-        race_number_str = race_number_tag.text.strip() if race_number_tag else "0"
+        races = []
+        race_table = soup.select_one('table#entryRaces tbody.results')
+        if not race_table:
+            return []
 
-        runners = []
-        entries = soup.select("div.entry")
-        for entry in entries:
-            runner_number_tag = entry.select_one(".program-number")
-            horse_name_tag = entry.select_one(".horse-name")
-            jockey_name_tag = entry.select_one(".jockey-name")
-            trainer_name_tag = entry.select_one(".trainer-name")
+        for row in race_table.select('tr'):
+            cells = row.select('td')
+            if len(cells) < 7:
+                continue
 
-            is_scratched = "SCR" in entry.get("class", []) or "scratched" in entry.get("class", [])
+            try:
+                race_number = int(cells[0].text.strip())
+                purse_text = cells[1].text.strip().replace('$', '').replace(',', '')
+                purse = int(purse_text) if purse_text.isdigit() else 0
+                race_type = cells[2].text.strip()
+                distance = cells[3].text.strip()
+                surface = cells[4].text.strip()
+                starters = int(cells[5].text.strip())
 
-            odds = None
-            odds_tag = entry.select_one(".morning-line")
-            if odds_tag and odds_tag.text.strip():
-                try:
-                    odds_parts = odds_tag.text.strip().split('/')
-                    if len(odds_parts) == 2:
-                        numerator, denominator = int(odds_parts[0]), int(odds_parts[1])
-                        if denominator != 0:
-                            odds = numerator / denominator
-                except (ValueError, ZeroDivisionError):
-                    odds = None
+                race = NormalizedRace(
+                    race_id=f"{track_name.replace(' ', '')}-{race_number}",
+                    track_name=track_name,
+                    race_number=race_number,
+                    race_type=race_type,
+                    number_of_runners=starters,
+                    runners=[] # Runner details are not on this page
+                )
+                races.append(race)
+            except (ValueError, IndexError):
+                continue # Skip rows that don't have the expected data
 
-            if runner_number_tag and horse_name_tag and jockey_name_tag and trainer_name_tag:
-                runners.append(NormalizedRunner(
-                    name=horse_name_tag.text.strip(),
-                    program_number=int(runner_number_tag.text.strip()),
-                    jockey=jockey_name_tag.text.strip(),
-                    trainer=trainer_name_tag.text.strip(),
-                    scratched=is_scratched,
-                    odds=odds
-                ))
-
-        if runners:
-            race = NormalizedRace(
-                race_id=f"{track_name.replace(' ', '')}-{race_number_str}",
-                track_name=track_name,
-                race_number=int(race_number_str),
-                runners=runners,
-                number_of_runners=len([r for r in runners if not r.scratched])
-            )
-            return [race]
-
-        return []
+        return races
