@@ -66,6 +66,7 @@ class FanDuelGraphQLAdapter(BaseAdapter):
     """
     Adapter for fetching and parsing data from the FanDuel GraphQL API.
     """
+    SOURCE_ID = "fanduel"
 
     def fetch_data(self) -> Dict[str, Any]:
         """
