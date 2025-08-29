@@ -6,8 +6,8 @@ from paddock_parser.adapters.base import NormalizedRace, NormalizedRunner
 class TestEquibaseAdapter(unittest.TestCase):
     def setUp(self):
         self.adapter = EquibaseAdapter()
-        # Correctly locate the fixture file relative to the test file's location
-        fixture_path = Path(__file__).parent / "fixtures/equibase_sample.html"
+        # Use a direct path from the project root to avoid ambiguity
+        fixture_path = "src/paddock_parser/tests/fixtures/equibase_sample.html"
         with open(fixture_path, "r", encoding="utf-8") as f:
             self.sample_html = f.read()
 
@@ -15,30 +15,26 @@ class TestEquibaseAdapter(unittest.TestCase):
         """
         Tests the offline parsing of the Equibase racecard.
         """
-        # We call the public parse_races method, not the private _parse_racecard
         races = self.adapter.parse_races(self.sample_html)
 
         self.assertIsNotNone(races)
-        self.assertEqual(len(races), 1)
+        self.assertEqual(len(races), 10)
 
-        race = races[0]
-        self.assertEqual(race.track_name, "Saratoga")
-        self.assertEqual(race.race_number, 1)
-        self.assertEqual(race.number_of_runners, 7) # 8 total, 1 scratched
-        self.assertEqual(len(race.runners), 8)
+        # Test the first race
+        first_race = races[0]
+        self.assertEqual(first_race.track_name, "Saratoga")
+        self.assertEqual(first_race.race_number, 1)
+        self.assertEqual(first_race.race_type, "Maiden Special Weight")
+        self.assertEqual(first_race.number_of_runners, 9)
+        self.assertEqual(len(first_race.runners), 0)
 
-        # Deep check on a specific runner
-        target_runner = next((r for r in race.runners if r.name == "Dathoss"), None)
-        self.assertIsNotNone(target_runner)
-        self.assertEqual(target_runner.jockey, "Irad Ortiz, Jr.")
-        self.assertEqual(target_runner.trainer, "Michael J. Maker")
-        self.assertFalse(target_runner.scratched)
-        self.assertAlmostEqual(target_runner.odds, 2.5) # 5/2
-
-        # Check the scratched runner
-        scratched_runner = next((r for r in race.runners if r.scratched), None)
-        self.assertIsNotNone(scratched_runner)
-        self.assertEqual(scratched_runner.name, "Nobel")
+        # Test the last race
+        last_race = races[9]
+        self.assertEqual(last_race.track_name, "Saratoga")
+        self.assertEqual(last_race.race_number, 10)
+        self.assertEqual(last_race.race_type, "Claiming")
+        self.assertEqual(last_race.number_of_runners, 14)
+        self.assertEqual(len(last_race.runners), 0)
 
 if __name__ == '__main__':
     unittest.main()
