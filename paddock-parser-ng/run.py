@@ -29,7 +29,7 @@ def main():
     Main entry point for the Paddock Parser NG application.
     """
     args = parse_arguments()
-    run_analysis_pipeline(args)
+    asyncio.run(run_analysis_pipeline(args))
 
 if __name__ == "__main__":
     main()

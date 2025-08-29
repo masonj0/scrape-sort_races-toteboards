@@ -1,5 +1,6 @@
 import json
 import unittest
+from unittest.mock import patch
 from datetime import datetime
 from paddock_parser.adapters.fanduel_graphql_adapter import FanDuelGraphQLAdapter
 from paddock_parser.adapters.base import NormalizedRace, NormalizedRunner
@@ -15,8 +16,6 @@ class TestFanDuelAdapter(unittest.TestCase):
         adapter = FanDuelGraphQLAdapter()
 
         # --- Input Data (The Specification) ---
-        # This is placeholder data. The real data will be provided later.
-        # For now, we define the structure we expect to receive.
         mock_schedule_data = {
             "data": {
                 "scheduleRaces": [
@@ -67,7 +66,6 @@ class TestFanDuelAdapter(unittest.TestCase):
             }
         }
 
-        # The raw_data passed to parse_data will be a dict of JSON strings
         raw_data = {
             "schedule": json.dumps(mock_schedule_data),
             "detail": json.dumps(mock_detail_data)
@@ -83,20 +81,17 @@ class TestFanDuelAdapter(unittest.TestCase):
         race = result[0]
         self.assertIsInstance(race, NormalizedRace)
 
-        # Assertions for the NormalizedRace object
         self.assertEqual(race.race_id, "SA-5")
         self.assertEqual(race.track_name, "Santa Anita")
         self.assertEqual(race.race_number, 5)
         self.assertEqual(race.post_time, datetime.fromisoformat("2025-09-01T15:30:00+00:00"))
         self.assertEqual(race.race_type, "T")
         self.assertEqual(race.minutes_to_post, 10)
-        self.assertEqual(race.number_of_runners, 2) # Only non-scratched runners
+        self.assertEqual(race.number_of_runners, 2)
 
-        # Assertions for the runners
         self.assertIsInstance(race.runners, list)
         self.assertEqual(len(race.runners), 2)
 
-        # Runner 1
         runner1 = race.runners[0]
         self.assertIsInstance(runner1, NormalizedRunner)
         self.assertEqual(runner1.name, "Speedy Gonzales")
@@ -106,7 +101,6 @@ class TestFanDuelAdapter(unittest.TestCase):
         self.assertEqual(runner1.trainer, "Jones, W. E.")
         self.assertEqual(runner1.odds, "8-1")
 
-        # Runner 2
         runner2 = race.runners[1]
         self.assertIsInstance(runner2, NormalizedRunner)
         self.assertEqual(runner2.name, "Road Runner")
@@ -115,6 +109,45 @@ class TestFanDuelAdapter(unittest.TestCase):
         self.assertEqual(runner2.jockey, "Coyote, W")
         self.assertEqual(runner2.trainer, "Acme, Corp")
         self.assertEqual(runner2.odds, "3-1")
+
+    @patch('paddock_parser.adapters.fanduel_graphql_adapter.httpx.Client')
+    def test_fetch_data_logic(self, MockClient):
+        """
+        Tests the two-stage fetching logic of the fetch_data method, ensuring
+        it makes the correct sequence of API calls.
+        """
+        # --- Mock Setup ---
+        mock_client = MockClient.return_value.__enter__.return_value
+
+        mock_schedule_response = unittest.mock.Mock()
+        mock_schedule_response.text = '{"data": {"scheduleRaces": [{"races": [{"tvgRaceId": 999}]}]}}'
+        mock_schedule_response.json.return_value = json.loads(mock_schedule_response.text)
+
+        mock_detail_response = unittest.mock.Mock()
+        mock_detail_response.text = '{"data": {"races": []}}'
+
+        mock_client.post.side_effect = [mock_schedule_response, mock_detail_response]
+
+        adapter = FanDuelGraphQLAdapter()
+
+        # --- Run ---
+        result = adapter.fetch_data()
+
+        # --- Assertions ---
+        self.assertEqual(mock_client.post.call_count, 2)
+
+        schedule_call = mock_client.post.call_args_list[0]
+        self.assertEqual(schedule_call.args[0], adapter.API_ENDPOINT)
+        self.assertEqual(schedule_call.kwargs['json']['operationName'], 'getLhnInfo')
+
+        detail_call = mock_client.post.call_args_list[1]
+        self.assertEqual(detail_call.args[0], adapter.API_ENDPOINT)
+        self.assertEqual(detail_call.kwargs['json']['operationName'], 'getGraphRaceBettingInterest')
+        self.assertEqual(detail_call.kwargs['json']['variables']['tvgRaceIds'], [999])
+
+        self.assertEqual(result['schedule'], mock_schedule_response.text)
+        self.assertEqual(result['detail'], mock_detail_response.text)
+
 
 if __name__ == '__main__':
     unittest.main()

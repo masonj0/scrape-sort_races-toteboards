@@ -1,108 +1,77 @@
-import unittest
+import pytest
 import argparse
-from unittest.mock import patch, MagicMock
-
-import unittest
-from unittest.mock import patch, MagicMock
-
-# Corrected import paths
+from unittest.mock import patch, MagicMock, AsyncMock
 from paddock_parser.pipeline import run_analysis_pipeline
 from paddock_parser.adapters.base import NormalizedRace, BaseAdapter, BaseAdapterV3
 
-class TestPipeline(unittest.TestCase):
+@pytest.mark.anyio
+class TestPipeline:
 
-    @patch('paddock_parser.pipeline.view_text_website')
     @patch('paddock_parser.pipeline.load_adapters')
-    def test_pipeline_resilience_to_failing_adapter(self, mock_load_adapters, mock_view_text_website):
+    async def test_pipeline_resilience(self, mock_load_adapters):
         """
-        Tests that the pipeline can gracefully handle an adapter that fails during fetch.
+        Tests that the pipeline can gracefully handle an adapter that fails.
         """
-        # --- Setup Mocks ---
-
-        # Create a mock instance for the SkySportsAdapter
-        mock_sky_instance = MagicMock(spec=BaseAdapterV3)
+        # --- Mocks ---
+        mock_sky_instance = AsyncMock(spec=BaseAdapterV3)
         mock_sky_instance.SOURCE_ID = "skysports"
-        mock_sky_instance.url = "http://sky.com"
-        mock_sky_instance.parse_races.return_value = [
-            NormalizedRace(race_id="test-1", track_name="Test Track", race_number=1, number_of_runners=5)
-        ]
+        mock_sky_instance.fetch.side_effect = Exception("API request failed")
 
-        # Create a mock instance for the FanDuel adapter, which is skipped by the pipeline
         mock_fanduel_instance = MagicMock(spec=BaseAdapter)
         mock_fanduel_instance.SOURCE_ID = "fanduel"
-        # Note: We don't need to mock fetch_data/parse_data because the pipeline
-        # explicitly skips any adapter with SOURCE_ID == "fanduel".
-
-        # Create mock *classes* that will be returned by load_adapters
-        MockSkyClass = MagicMock(name="MockSkyClass")
-        MockFanDuelClass = MagicMock(name="MockFanDuelClass")
-
-        # Configure the mock classes to return our prepared instances when they are instantiated
-        MockSkyClass.return_value = mock_sky_instance
-        MockFanDuelClass.return_value = mock_fanduel_instance
-
-        # load_adapters returns a list of CLASSES
-        mock_load_adapters.return_value = [MockSkyClass, MockFanDuelClass]
-
-        mock_view_text_website.return_value = "<html></html>"
-
-        # --- Run Pipeline ---
-        try:
-            # Create a mock args object for the pipeline
-            mock_args = argparse.Namespace(
-                config=None, output=None, min_score=0.0, no_odds_mode=False,
-                min_field_size=1, max_field_size=None, sort_by='score', limit=10
-            )
-            run_analysis_pipeline(mock_args)
-        except Exception as e:
-            self.fail(f"Pipeline crashed with an unexpected exception: {e}")
-
-        # --- Assertions ---
-        # The pipeline should run the SkySports adapter successfully
-        mock_view_text_website.assert_called_once_with("http://sky.com")
-        mock_sky_instance.parse_races.assert_called_once()
-        # The pipeline should not call any data methods on the skipped FanDuel adapter
-        mock_fanduel_instance.fetch_data.assert_not_called()
-        mock_fanduel_instance.parse_data.assert_not_called()
-
-    @patch('paddock_parser.pipeline.view_text_website')
-    @patch('paddock_parser.pipeline.load_adapters')
-    def test_pipeline_end_to_end_flow(self, mock_load_adapters, mock_view_text_website):
-        """
-        Tests the full end-to-end flow of the pipeline with a successful adapter.
-        """
-        # --- Setup Mocks ---
-
-        # Create a mock instance for the SkySportsAdapter
-        mock_sky_instance = MagicMock(spec=BaseAdapterV3)
-        mock_sky_instance.SOURCE_ID = "skysports"
-        mock_sky_instance.url = "http://sky.com"
-        mock_sky_instance.parse_races.return_value = [
-            NormalizedRace(race_id="test-1", track_name="Test Track", race_number=1, number_of_runners=5),
-            NormalizedRace(race_id="test-2", track_name="Test Track", race_number=2, number_of_runners=10),
+        mock_fanduel_instance.fetch_data.return_value = {"schedule": "{}", "detail": "{}"}
+        mock_fanduel_instance.parse_data.return_value = [
+            NormalizedRace(race_id="fd-1", track_name="FanDuel Track", race_number=1, number_of_runners=5, post_time=None)
         ]
 
-        # Create a mock class
-        MockSkyClass = MagicMock(name="MockSkyClass")
-        # Configure it to return our instance when instantiated
-        MockSkyClass.return_value = mock_sky_instance
+        MockSkyClass = MagicMock(return_value=mock_sky_instance)
+        MockFanDuelClass = MagicMock(return_value=mock_fanduel_instance)
+        mock_load_adapters.return_value = [MockSkyClass, MockFanDuelClass]
 
-        # load_adapters returns a list of CLASSES
-        mock_load_adapters.return_value = [MockSkyClass]
-        mock_view_text_website.return_value = "<html></html>"
-
-        # --- Run Pipeline ---
-        # Create a mock args object for the pipeline
         mock_args = argparse.Namespace(
             config=None, output=None, min_score=0.0, no_odds_mode=False,
             min_field_size=1, max_field_size=None, sort_by='score', limit=10
         )
-        run_analysis_pipeline(mock_args)
+
+        # --- Run ---
+        await run_analysis_pipeline(mock_args)
 
         # --- Assertions ---
-        mock_load_adapters.assert_called_once()
-        mock_view_text_website.assert_called_once_with("http://sky.com")
-        mock_sky_instance.parse_races.assert_called_once()
+        mock_sky_instance.fetch.assert_awaited_once()
+        mock_fanduel_instance.fetch_data.assert_called_once()
 
-if __name__ == '__main__':
-    unittest.main()
+    @patch('paddock_parser.pipeline.load_adapters')
+    async def test_pipeline_end_to_end(self, mock_load_adapters):
+        """
+        Tests the full end-to-end flow of the pipeline with successful adapters.
+        """
+        # --- Mocks ---
+        mock_sky_instance = AsyncMock(spec=BaseAdapterV3)
+        mock_sky_instance.SOURCE_ID = "skysports"
+        mock_sky_instance.fetch.return_value = [
+            NormalizedRace(race_id="sky-1", track_name="Sky Track", race_number=1, number_of_runners=8, post_time=None)
+        ]
+
+        mock_fanduel_instance = MagicMock(spec=BaseAdapter)
+        mock_fanduel_instance.SOURCE_ID = "fanduel"
+        mock_fanduel_instance.fetch_data.return_value = {"schedule": "{}", "detail": "{}"}
+        mock_fanduel_instance.parse_data.return_value = [
+            NormalizedRace(race_id="fd-1", track_name="FanDuel Track", race_number=1, number_of_runners=5, post_time=None)
+        ]
+
+        MockSkyClass = MagicMock(return_value=mock_sky_instance)
+        MockFanDuelClass = MagicMock(return_value=mock_fanduel_instance)
+        mock_load_adapters.return_value = [MockSkyClass, MockFanDuelClass]
+
+        mock_args = argparse.Namespace(
+            config=None, output=None, min_score=0.0, no_odds_mode=False,
+            min_field_size=1, max_field_size=None, sort_by='score', limit=10
+        )
+
+        # --- Run ---
+        await run_analysis_pipeline(mock_args)
+
+        # --- Assertions ---
+        mock_sky_instance.fetch.assert_awaited_once()
+        mock_fanduel_instance.fetch_data.assert_called_once()
+        mock_fanduel_instance.parse_data.assert_called_once()

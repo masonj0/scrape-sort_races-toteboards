@@ -60,6 +60,13 @@ class BaseAdapterV3(ABC):
         self.config = config or {}
 
     @abstractmethod
+    async def fetch(self) -> List[NormalizedRace]:
+        """
+        Fetches and parses data to return a list of normalized races.
+        """
+        pass
+
+    @abstractmethod
     def parse_races(self, html_content: str) -> List[NormalizedRace]:
         """
         Parses the full HTML content of a race day page.
