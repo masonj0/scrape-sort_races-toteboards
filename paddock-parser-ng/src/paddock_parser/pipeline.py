@@ -1,11 +1,11 @@
 import inspect
 import logging
+import asyncio
 from datetime import datetime
 
 from . import adapters
 from .analysis.scorer import RaceScorer
 from .adapters.base import BaseAdapter, BaseAdapterV3
-from .utils.browser import view_text_website  # This will be a mockable function for tests
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
@@ -21,7 +21,7 @@ def load_adapters():
     return adapter_classes
 
 
-def run_analysis_pipeline(args):
+async def run_analysis_pipeline(args):
     """
     Orchestrates the end-to-end pipeline for fetching, parsing, and scoring races.
     """
@@ -36,22 +36,21 @@ def run_analysis_pipeline(args):
         logging.info(f"\nRunning adapter: {adapter.SOURCE_ID}...")
 
         try:
-            # For now, we assume V3 adapters have a URL and parse HTML
-            if isinstance(adapter, BaseAdapterV3) and hasattr(adapter, 'url'):
-                logging.info(f"Fetching data from {adapter.url}...")
-                html_content = view_text_website(adapter.url)
+            normalized_races = []
+            if isinstance(adapter, BaseAdapterV3):
+                # V3 adapters have an async fetch method
+                races = await adapter.fetch()
+                normalized_races.extend(races)
+            elif isinstance(adapter, BaseAdapter):
+                # V1/V2 adapters have sync fetch_data/parse_data methods
+                raw_data = adapter.fetch_data()
+                normalized_races = adapter.parse_data(raw_data)
 
-                if html_content:
-                    normalized_races = adapter.parse_races(html_content)
-                    logging.info(f"Parsed {len(normalized_races)} races from {adapter.SOURCE_ID}.")
-                    all_races.extend(normalized_races)
-                else:
-                    logging.warning(f"No content fetched for {adapter.SOURCE_ID}.")
-
-            # Handle the placeholder FanDuel adapter gracefully
-            elif adapter.SOURCE_ID == "fanduel":
-                 logging.info("Skipping placeholder FanDuel adapter.")
-                 continue
+            if normalized_races:
+                logging.info(f"Parsed {len(normalized_races)} races from {adapter.SOURCE_ID}.")
+                all_races.extend(normalized_races)
+            else:
+                logging.warning(f"No races parsed for {adapter.SOURCE_ID}.")
 
         except Exception as e:
             logging.error(f"Adapter {adapter.SOURCE_ID} failed: {e}", exc_info=True)
@@ -74,7 +73,6 @@ def run_analysis_pipeline(args):
         scorer = RaceScorer()
         scored_races = []
         for race in all_races:
-            # Filter by min_score
             score = scorer.score(race)
             if score >= args.min_score:
                 scored_races.append({"race": race, "score": score})
@@ -82,7 +80,7 @@ def run_analysis_pipeline(args):
         logging.info("\n--no-odds-mode enabled, skipping scoring.")
         scored_races = [{"race": race, "score": 0} for race in all_races]
 
-    # Sort the results based on the --sort-by argument
+    # Sort the results
     logging.info(f"Sorting results by {args.sort_by}...")
     reverse_sort = True
     if args.sort_by == 'score':
@@ -98,10 +96,10 @@ def run_analysis_pipeline(args):
 
     sorted_races = sorted(scored_races, key=sort_key, reverse=reverse_sort)
 
-    # Limit the results based on the --limit argument
+    # Limit the results
     limited_races = sorted_races[:args.limit]
 
-    # Display the top results
+    # Display the results
     logging.info(f"\n--- Top {args.limit} Scored Races ---")
     for i, result in enumerate(limited_races):
         race = result['race']
