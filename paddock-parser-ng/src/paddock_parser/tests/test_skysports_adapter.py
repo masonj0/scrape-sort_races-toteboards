@@ -1,4 +1,5 @@
 import pytest
+from pathlib import Path
 from unittest.mock import patch
 from paddock_parser.adapters.skysports_adapter import SkySportsAdapter
 
@@ -13,8 +14,8 @@ async def test_skysports_adapter_fetches_and_parses(mock_fetch_html_content):
     adapter = SkySportsAdapter()
 
     # Load the sample HTML from a fixture file for the test
-    with open("src/paddock_parser/tests/fixtures/skysports_racecards_sample.html", "r", encoding="utf-8") as f:
-        sample_html = f.read()
+    fixture_path = Path(__file__).parent / "fixtures" / "skysports_racecards_sample.html"
+    sample_html = fixture_path.read_text(encoding="utf-8")
 
     # Configure the mock to return our sample HTML
     # Since the mocked function is async, the mock's return value will be awaited
