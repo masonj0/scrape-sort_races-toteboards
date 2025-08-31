@@ -39,8 +39,8 @@ This phase focused on unifying the project structure, stabilizing the core compo
 ### Phase 2: The Professional Fetching Engine
 This phase focuses on making our data gathering dramatically more resilient and intelligent.
 
--   **User-Agent & Fingerprint Rotation:** Implement rotation of User-Agents and other browser fingerprints to avoid blocking.
--   **Intelligent Retries & Backoff:** Implement a resilient `get` method with exponential backoff for 429/5xx errors.
+-   **User-Agent & Fingerprint Rotation (Complete):** Implement rotation of User-Agents and other browser fingerprints to avoid blocking.
+-   **Intelligent Retries & Backoff (Complete):** Implement a resilient `get` method with exponential backoff for 429/5xx errors.
 -   **Advanced Caching:** Implement a crash-safe caching mechanism with support for ETag and Last-Modified headers.
 -   **Firewall & Interference Detection:** Add a "Situational Awareness" module to detect corporate proxy interference and route around it.
 -   **Proxy Support:** Add optional support for using proxies for requests.
@@ -60,6 +60,42 @@ This phase focuses on enriching the data, improving the scoring model, and deliv
 -   **Machine-Readable Outputs:** Add support for versioned JSON and CSV outputs.
 -   **Web Frontend:** Develop a simple web frontend using the `FastAPI` module to display results and control the application.
 -   **Advanced CLI Controls:** Add more granular CLI flags for filtering, grouping, and output formatting.
+
+---
+
+## 3. Archived Adapter Blueprints
+
+The following list is a supplement to the roadmap, recovered from legacy project archives. It will be used to inform the selection of future missions.
+
+**Core Racecards (UK/US):**
+*   `attheraces`
+*   `drf` (Daily Racing Form)
+*   `sportinglife`
+*   `timeform`
+*   `racingtv`
+*   `tvg` (US Horse Racing)
+*   `twinspires`
+
+**Betting & Tote Exchanges:**
+*   `betfair`
+*   `bovada`
+*   `oddsportal` (Note: A specialized repository exists for this adapter)
+*   `paddypower`
+*   `totesport`
+*   `williamhill`
+
+**International Racecards:**
+*   `atg` (Sweden)
+*   `entain` (UK/International)
+*   `francegalop` (France)
+*   `turfcom` (Turkey)
+
+**Data Providers:**
+*   `sis` (Sports Information Services)
+
+**Results & Historical Data:**
+*   `skysports_results`
+*   `attheraces_results`
 
 ---
 
