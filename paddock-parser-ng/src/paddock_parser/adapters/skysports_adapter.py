@@ -5,7 +5,7 @@ from typing import List, Optional
 from bs4 import BeautifulSoup
 
 from paddock_parser.adapters.base import BaseAdapterV3, NormalizedRace, NormalizedRunner
-from paddock_parser.utils.scraper import fetch_html_content
+from paddock_parser.forager.http_client import ForagerClient
 
 
 class SkySportsAdapter(BaseAdapterV3):
@@ -19,10 +19,11 @@ class SkySportsAdapter(BaseAdapterV3):
     def __init__(self, config=None):
         super().__init__(config)
         self.base_url = "https://www.skysports.com/racing/racecards"
+        self.forager = ForagerClient()
 
     async def fetch(self) -> List[NormalizedRace]:
         """Fetches the main racecards page and parses the summary data."""
-        html_content = await fetch_html_content(self.base_url)
+        html_content = await self.forager.fetch(self.base_url)
         if not html_content:
             return []
         return self._parse_race_summaries(html_content)
