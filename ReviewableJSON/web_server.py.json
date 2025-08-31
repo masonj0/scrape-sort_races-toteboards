@@ -1,0 +1,4 @@
+{
+    "filepath": "./paddock-parser-ng/src/paddock_parser/frontend/web_server.py",
+    "content": "class WebServer:\n    \"\"\"\n    A placeholder for the web server that will expose the API.\n    \"\"\"\n\n    def run(self):\n        \"\"\"\n        Runs the web server.\n        \"\"\"\n        print(\"Web server running...\")\n"
+}
