@@ -1,0 +1,4 @@
+{
+    "filepath": "./paddock-parser-ng/src/paddock_parser/analysis/scorer.py",
+    "content": "from typing import Optional\n\nfrom ..adapters.base import NormalizedRace\n\n\nclass RaceScorer:\n    \"\"\"\n    Analyzes a NormalizedRace to produce a score based on specific criteria.\n    \"\"\"\n\n    def score(self, race: NormalizedRace) -> float:\n        \"\"\"\n        Calculates a score for a single normalized race based on the number of runners.\n        The logic is adapted from the legacy V2Scorer's field size scoring.\n        \"\"\"\n        if not race.number_of_runners:\n            return 0.0\n\n        field_size = race.number_of_runners\n\n        if 5 <= field_size <= 7:\n            return 100.0\n        if 8 <= field_size <= 10:\n            return 80.0\n        if 3 <= field_size <= 4:\n            return 60.0\n        if 11 <= field_size <= 12:\n            return 40.0\n\n        return 20.0\n"
+}

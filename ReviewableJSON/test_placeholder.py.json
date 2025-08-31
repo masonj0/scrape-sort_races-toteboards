@@ -1,0 +1,4 @@
+{
+    "filepath": "./paddock-parser-ng/src/paddock_parser/tests/test_placeholder.py",
+    "content": "def test_placeholder():\n    \"\"\"\n    A placeholder test to ensure the test suite can be run.\n    \"\"\"\n    assert True\n"
+}

@@ -1,0 +1,4 @@
+{
+    "filepath": "./src/paddock_parser/tests/test_racingpost_adapter.py",
+    "content": "import unittest\n\nclass TestRacingPostAdapter(unittest.TestCase):\n\n    def test_parse_specification(self):\n        \"\"\"\n        This test will serve as the specification for the RacingPostAdapter.\n        It will be implemented once the sample data is available.\n        \"\"\"\n        self.fail(\"Test not yet implemented. Awaiting sample data from user.\")\n\nif __name__ == '__main__':\n    unittest.main()\n"
+}
