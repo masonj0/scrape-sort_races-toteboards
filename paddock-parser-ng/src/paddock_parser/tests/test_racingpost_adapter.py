@@ -40,13 +40,15 @@ class TestRacingPostAdapter(unittest.TestCase):
         self.assertEqual(first_race.number_of_runners, 15)
         self.assertEqual(len(first_race.runners), 15)
 
+        self.assertEqual(first_race.race_id, "902106")
+
         # Test a specific runner (Pete's Dream, runner #5)
         petes_dream = next((r for r in first_race.runners if r.program_number == 5), None)
         self.assertIsNotNone(petes_dream)
         self.assertEqual(petes_dream.name, "Pete's Dream")
         self.assertEqual(petes_dream.jockey, "Andrew Slattery")
         self.assertEqual(petes_dream.trainer, "Andrew Slattery")
-        self.assertIsNone(petes_dream.odds)
+        self.assertEqual(petes_dream.odds, 11.0)
 
         # Test another runner to be sure (Arrumba, runner #1)
         arrumba = next((r for r in first_race.runners if r.program_number == 1), None)
@@ -54,6 +56,7 @@ class TestRacingPostAdapter(unittest.TestCase):
         self.assertEqual(arrumba.name, "Arrumba")
         self.assertEqual(arrumba.jockey, "Sam Coen")
         self.assertEqual(arrumba.trainer, "Mrs Denise Foster")
+        self.assertEqual(arrumba.odds, 23.0)
 
 if __name__ == '__main__':
     unittest.main()
