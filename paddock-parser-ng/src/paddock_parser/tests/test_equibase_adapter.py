@@ -6,10 +6,8 @@ from paddock_parser.adapters.base import NormalizedRace, NormalizedRunner
 class TestEquibaseAdapter(unittest.TestCase):
     def setUp(self):
         self.adapter = EquibaseAdapter()
-        # Use a direct path from the project root to avoid ambiguity
-        fixture_path = "src/paddock_parser/tests/fixtures/equibase_sample.html"
-        with open(fixture_path, "r", encoding="utf-8") as f:
-            self.sample_html = f.read()
+        fixture_path = Path(__file__).parent / "fixtures" / "equibase_sample.html"
+        self.sample_html = fixture_path.read_text(encoding="utf-8")
 
     def test_parse_racecard(self):
         """
@@ -35,6 +33,3 @@ class TestEquibaseAdapter(unittest.TestCase):
         self.assertEqual(last_race.race_type, "Claiming")
         self.assertEqual(last_race.number_of_runners, 14)
         self.assertEqual(len(last_race.runners), 0)
-
-if __name__ == '__main__':
-    unittest.main()
