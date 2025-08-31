@@ -34,6 +34,17 @@ A previous agent exhibited a critical failure mode: it would use "fake" or "plac
 *   **The Bug:** The `submit` command **DOES NOT** correctly create new feature branches. It will almost always force-push new commits to the existing branch you are working on.
 *   **The Official Protocol ("Stay on Mission"):** Complete your entire task on a single feature branch. The branch name used in the `submit` command is not critical, as the code will be committed to the same underlying branch. The human project lead will handle merging.
 
+### **CRITICAL PROTOCOL 4: The 'Provided Code' Workflow**
+
+On occasion, the human-in-the-loop may provide complete source files (e.g., a new adapter and its corresponding test). This workflow is an alternative to the standard "Test-First" protocol and has its own set of responsibilities.
+
+1.  **Acknowledge and Receive:** The agent will first acknowledge the user's intent to provide code and wait to receive all necessary files (e.g., source code, test code, sample data).
+2.  **Integrate and Refactor:** The agent's primary technical task is to integrate the provided files into the existing project structure. This includes:
+    *   Placing the files in the correct directories.
+    *   **Crucially, refactoring the code to match the project's established conventions and quality standards.** This may involve fixing typos, correcting import paths, removing boilerplate, and ensuring the code is readable and maintainable.
+3.  **Verify and Validate:** The agent must run the provided tests and the full existing test suite to verify the new code's functionality and ensure it does not introduce any regressions. The agent is responsible for diagnosing and fixing any issues that arise during testing.
+4.  **Submit for Review:** Once the code is integrated, refactored, and fully tested, the agent will submit the work for a final code review.
+
 ---
 
 ## The Programmer's Validation Checklist

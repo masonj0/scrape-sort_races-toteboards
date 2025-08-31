@@ -1,0 +1,168 @@
+================================================================================
+FILE: paddock-parser-ng/README.md
+================================================================================
+
+# Paddock Parser Next Generation
+
+This project is a modern, robust, and scalable data analysis toolkit for global horse and greyhound racing. It is built on an API-First, 'Monolith Reimagined' architecture, designed for long-term stability and performance.
+
+## Key Features
+- **API-First Data Acquisition:** Prioritizes stable, structured data from modern GraphQL and REST APIs.
+- **Multi-Discipline:** Natively supports Thoroughbred, Harness, and Greyhound racing.
+- **Automated Code Quality:** Enforced via Ruff for linting and formatting.
+- **Comprehensive Test Suite:** Ensures reliability and maintainability.
+
+This project is currently under active development.
+
+
+================================================================================
+FILE: paddock-parser-ng/AGENTS.md
+================================================================================
+
+# AGENTS.md: Instructions for AI Assistants
+
+This document provides critical, non-negotiable operational protocols for all agents working on this project.
+
+---
+
+## Core Operational Protocols
+
+### **CRITICAL PROTOCOL 1: The "Test-First" Development Workflow**
+
+This is our primary workflow for all new feature development, especially for data adapters. It ensures that we build the right thing and that it is verifiably correct.
+
+1.  **Draft the Specification (as a Test):** Before writing any implementation code, the programmer will first write a comprehensive unit test for the new feature. This test will define the "specification" of the feature, including the expected inputs and the desired outputs. For new adapters, this involves creating a `test_adapter.py` file with mock input data and detailed assertions.
+2.  **Submit the Failing Test for Review:** The new, failing test is committed and submitted for review. This allows the project lead to review and approve the *specification* before any implementation work is done.
+3.  **Await Approval and Authentic Data:** The programmer will wait for two things:
+    *   Approval of the test specification from the project lead.
+    *   Provision of authentic, high-quality data (e.g., HTML or JSON fixtures) required to make the test pass. This is "Operation Matched Pair."
+4.  **Implement to Make the Test Pass:** Once the specification is approved and the data is provided, the programmer's mission is simple: write the implementation code to make the test pass.
+5.  **Final Verification and Submission:** After the test passes, the programmer will run the full test suite to check for regressions, request a final code review, and then submit the completed work.
+
+### **CRITICAL PROTOCOL 2: The Authenticity of Sample Data**
+
+A previous agent exhibited a critical failure mode: it would use "fake" or "placeholder" sample data to build and test a new adapter. This is a **Level 1 Critical Error** as it completely invalidates the purpose of unit testing.
+
+**The Authenticity Protocol:**
+
+1.  **Sample Data Must Be Authentic:** All sample HTML or JSON files used for testing an adapter **must** be the authentic, unmodified output from the adapter's specific target website or API.
+2.  **Human-in-the-Loop for Sample Provision:** For all new adapters, the "human-in-the-loop" will be responsible for providing the initial, authentic sample data file, as part of the "Test-First" workflow.
+
+### **CRITICAL PROTOCOL 3: The "Stay on Mission" Branching Strategy**
+
+**All agents must be aware of a recurring bug in the environment's `submit` tool. This is a non-negotiable operational constraint.**
+
+*   **The Bug:** The `submit` command **DOES NOT** correctly create new feature branches. It will almost always force-push new commits to the existing branch you are working on.
+*   **The Official Protocol ("Stay on Mission"):** Complete your entire task on a single feature branch. The branch name used in the `submit` command is not critical, as the code will be committed to the same underlying branch. The human project lead will handle merging.
+
+---
+
+## The Programmer's Validation Checklist
+
+Before submitting any work for review, every programmer must be able to answer "YES" to the following questions. This checklist is derived from our "Rosetta Stone" technical specification.
+
+*   **[ ] Is the code tested?** Does it have comprehensive unit tests? Do all tests pass in the CI environment?
+*   **[ ] Is the code resilient?** Does it handle expected errors gracefully (e.g., network issues, parsing errors)? Does it use intelligent retries where appropriate?
+*   **[ ] Is the code readable and maintainable?** Is the logic clear? Is it well-documented with comments and docstrings where necessary?
+*   **[ ] Is the code secure and respectful?** Does it follow website `robots.txt` and terms of service? Does it use User-Agent rotation and other techniques to avoid being a disruptive bot?
+*   **[ ] Is the code integrated?** Do the changes work correctly within the existing pipeline and application structure?
+
+---
+
+## Emergency Protocols
+
+### **Emergency Communication Protocol: The Chat Handoff**
+
+In the event of a **catastrophic environmental failure** (e.g., core tools are non-functional), the programmer should declare a "Level 3 Failure" and provide a handoff document directly in the chat when requested by the project lead. This ensures no knowledge is lost.
+
+
+================================================================================
+FILE: paddock-parser-ng/ROADMAP.md
+================================================================================
+
+# Paddock Parser NG: Development Roadmap
+
+This document outlines the strategic vision and multi-phase implementation plan for the Paddock Parser NG project. Our goal is to evolve this toolkit into a professional-grade, resilient, and intelligent data analysis engine.
+
+---
+
+## 1. Strategic Pillars
+
+Our development is guided by four core principles that define our architecture and operational philosophy.
+
+*   **On Resilience: The "Professional Fetching Engine"**
+    *   **Core Insight:** Our greatest vulnerability is appearing as a predictable, automated scraper.
+    *   **Strategic Response:** We will build a "Professional Fetching Engine" that mimics human behavior and is resilient to network interference. This includes User-Agent rotation, random delays, intelligent retries with exponential backoff, proxy support, and the ability to detect and bypass corporate firewalls by using alternative URLs.
+
+*   **On Intelligence: The "Smart Merge" & Analysis Engine**
+    *   **Core Insight:** The true value of our application comes from intelligently synthesizing data from multiple sources into a single, unified view.
+    *   **Strategic Response:** We will implement a "Smart Merge" engine for data deduplication and provenance tracking. This allows us to combine partial data from different adapters into a complete and accurate picture. Our analysis engine will focus on a configurable "value score" to rank opportunities.
+
+*   **On Architecture: The "Persistent Engine" & API-First Design**
+    *   **Core Insight:** The application must be able to operate in both a batch-processing mode and an "always-on" persistent mode for continuous monitoring.
+    *   **Strategic Response:** We will build a "Persistent Engine" that can run continuously, manage a crash-safe cache, and provide real-time analysis. Our architecture will be "API-First", with a primary focus on GraphQL-powered sources.
+
+*   **On Ethics: The "Dedicated Human Researcher" Test**
+    *   **Core Insight:** If a single, dedicated human using browser developer tools could not plausibly achieve the same data collection footprint, our methods are too aggressive.
+    *   **Strategic Response:** We will formally adopt this principle, reframing our approach as **"resilient data access"** for a sustainable and ethical long-term strategy. We will always respect `robots.txt` and website terms of service.
+
+---
+
+## 2. Implementation Roadmap
+
+### Phase 1: Foundation & Professional CLI (Complete)
+This phase focused on unifying the project structure, stabilizing the core components, and building a flexible command-line interface.
+
+-   **Project Unification:** Migrated to a standard `src` layout.
+-   **Core Adapters:** Restored and tested the `SkySportsAdapter` and `FanDuelAdapter`.
+-   **Professional CLI:** Implemented a powerful CLI using `argparse`, allowing for configurable pipeline execution.
+-   **Async Pipeline:** Refactored the core pipeline to be asynchronous, supporting both sync and async adapters.
+
+### Phase 2: The Professional Fetching Engine
+This phase focuses on making our data gathering dramatically more resilient and intelligent.
+
+-   **User-Agent & Fingerprint Rotation:** Implement rotation of User-Agents and other browser fingerprints to avoid blocking.
+-   **Intelligent Retries & Backoff:** Implement a resilient `get` method with exponential backoff for 429/5xx errors.
+-   **Advanced Caching:** Implement a crash-safe caching mechanism with support for ETag and Last-Modified headers.
+-   **Firewall & Interference Detection:** Add a "Situational Awareness" module to detect corporate proxy interference and route around it.
+-   **Proxy Support:** Add optional support for using proxies for requests.
+
+### Phase 3: Advanced Data & Persistent Engine
+This phase transitions the toolkit from a batch-processing scraper to a real-time, always-on analysis engine.
+
+-   **Smart Merging & Provenance:** Implement logic to merge race data from multiple sources and track the provenance of each data field.
+-   **Persistent Engine:** Implement the "always-on" engine mode (`--persistent` flag) for continuous monitoring and analysis.
+-   **Real-Time Data via WebSockets:** Add support for WebSocket adapters to receive real-time odds data.
+-   **Hybrid Browser/HTTP Scraping:** Implement a "Playwright Bootstrap" mechanism to solve CAPTCHAs or handle complex logins, then pass the session to the faster `httpx` client.
+
+### Phase 4: Intelligence & User Interface
+This phase focuses on enriching the data, improving the scoring model, and delivering the results to the user.
+
+-   **Advanced Timezone Handling:** Implement a robust system for UTC normalization and DST-safe timezone conversions.
+-   **Machine-Readable Outputs:** Add support for versioned JSON and CSV outputs.
+-   **Web Frontend:** Develop a simple web frontend using the `FastAPI` module to display results and control the application.
+-   **Advanced CLI Controls:** Add more granular CLI flags for filtering, grouping, and output formatting.
+
+---
+
+## The "Monolith Reimagined" Architecture
+
+The project uses a "Monolith Reimagined" architecture, building a single, unified Python application while structuring the internal code to mirror a microservices design. This facilitates easy development now and a potential migration to a true microservices architecture in the future.
+
+-   **Python Orchestrator:** The core application for orchestration and analysis.
+-   **Forager Module (`src/paddock_parser/forager/`):** A dedicated placeholder for high-performance data fetching logic.
+-   **Frontend Module (`src/paddock_parser/frontend/`):** A dedicated placeholder for the web server and API logic.
+
+
+================================================================================
+FILE: paddock-parser-ng/.pytest_cache/README.md
+================================================================================
+
+# pytest cache directory #
+
+This directory contains data from the pytest's cache plugin,
+which provides the `--lf` and `--ff` options, as well as the `cache` fixture.
+
+**Do not** commit this to version control.
+
+See [the docs](https://docs.pytest.org/en/stable/how-to/cache.html) for more information.
