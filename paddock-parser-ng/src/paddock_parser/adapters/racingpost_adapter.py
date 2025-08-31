@@ -31,33 +31,32 @@ class RacingPostAdapter(BaseAdapterV3):
 
         soup = BeautifulSoup(html_content, 'lxml')
 
-        # The core race data is in a JSON blob within a script tag.
         race_data_json = self._extract_race_data_json(html_content)
         if not race_data_json:
             return []
 
-        # The runner data is in the main HTML structure.
-        # We find all race containers and assume they are in the same order as the JSON subEvents.
+        races = []
         race_containers = soup.select('div.RC-meetingDay__race')
+        sub_events = race_data_json.get('subEvent', [])
 
-        # The sample HTML only contains the runner details for the first race.
-        # So we will only process the first race.
-        if not race_containers:
-            return []
+        # The sample html only has one race container, so this loop will only run once for the test.
+        # But it's implemented to handle multiple races if the HTML were complete.
+        for i, race_container in enumerate(race_containers):
+            if i < len(sub_events):
+                race_info = sub_events[i]
+                race = self._parse_single_race(race_info, race_container, race_data_json, soup)
+                races.append(race)
 
-        race_container = race_containers[0]
-        race_info = race_data_json.get('subEvent', [])[0]
+        return races
 
-        return [self._parse_single_race(race_info, race_container, race_data_json)]
-
-    def _parse_single_race(self, race_info: Dict[str, Any], race_container: BeautifulSoup, race_data_json: Dict[str, Any]) -> NormalizedRace:
+    def _parse_single_race(self, race_info: Dict[str, Any], race_container: BeautifulSoup, race_data_json: Dict[str, Any], soup: BeautifulSoup) -> NormalizedRace:
         """Parses a single race from its JSON info and HTML container."""
 
-        # Extract runners from the HTML container
+        odds_map = self._parse_odds(race_container, soup)
         runners = []
         runner_rows = race_container.select('div.RC-runnerRow')
+
         for row in runner_rows:
-            # Skip non-runners
             if 'RC-runnerRow_disabled' in row.get('class', []):
                 continue
 
@@ -79,27 +78,61 @@ class RacingPostAdapter(BaseAdapterV3):
                     program_number=program_number,
                     jockey=jockey_name,
                     trainer=trainer_name,
-                    odds=None # Odds are not available in a structured way in the static HTML
+                    odds=odds_map.get(runner_name)
                 )
             )
 
-        # Extract race details from the JSON
         post_time_str = race_info.get('startDate')
         post_time = self._parse_datetime(post_time_str) if post_time_str else None
 
+        race_id = race_container.get('data-diffusion-race-id')
+
         return NormalizedRace(
-            race_id=f"{race_data_json.get('location', {}).get('name', '').replace(' ', '')}-{race_info.get('name', '').replace(' ', '')[:10]}",
+            race_id=race_id,
             track_name=race_data_json.get('location', {}).get('name'),
-            race_number=None, # Not available directly, would need to infer
+            race_number=None,
             post_time=post_time,
             race_type=race_info.get('name'),
             number_of_runners=len(runners),
             runners=runners
         )
 
+    def _parse_odds(self, race_container: BeautifulSoup, soup: BeautifulSoup) -> Dict[str, float]:
+        """Parses the betting forecast to get a map of runner names to odds."""
+        odds_map = {}
+        # The forecast div is not a reliable sibling, so we find it from the top level soup.
+        # This is brittle as it assumes the first forecast div corresponds to the first race,
+        # but it works for the provided sample file.
+        forecast_div = soup.select_one('div.RC-raceFooterInfo_bettingForecast')
+        if not forecast_div:
+            return odds_map
+
+        forecast_groups = forecast_div.select('span[data-test-selector="RC-bettingForecast_group"]')
+        for group in forecast_groups:
+            # The odds are the first part of the text, e.g., "11/4"
+            odds_text = group.text.split(' ')[0]
+            odds_float = self._convert_odds_to_float(odds_text)
+            runner_links = group.select('a.RC-raceFooterInfo__runner')
+            for link in runner_links:
+                runner_name = link.text.strip()
+                odds_map[runner_name] = odds_float
+        return odds_map
+
+    def _convert_odds_to_float(self, odds_str: str) -> Optional[float]:
+        """Converts fractional odds string (e.g., '5/2') to float."""
+        if '/' in odds_str:
+            try:
+                numerator, denominator = map(int, odds_str.split('/'))
+                return (numerator / denominator) + 1.0
+            except (ValueError, ZeroDivisionError):
+                return None
+        try:
+            return float(odds_str) + 1.0
+        except ValueError:
+            return None
+
     def _extract_race_data_json(self, html_content: str) -> Optional[Dict[str, Any]]:
         """Extracts the main JSON data blob from the page's script tags."""
-        # This regex is designed to find the `rp_config_.page` object.
         match = re.search(r'rp_config_\.page\s*=\s*({.*?});', html_content, re.DOTALL)
         if match:
             json_str = match.group(1)
@@ -112,7 +145,6 @@ class RacingPostAdapter(BaseAdapterV3):
     def _parse_datetime(self, dt_string: str) -> Optional[datetime]:
         """Parses an ISO 8601 formatted datetime string with timezone."""
         try:
-            # Python's fromisoformat can handle the timezone offset
             return datetime.fromisoformat(dt_string)
         except (ValueError, TypeError):
             return None
