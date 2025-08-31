@@ -1,5 +1,6 @@
 import unittest
 import json
+from pathlib import Path
 from datetime import datetime, timezone, timedelta
 from paddock_parser.adapters.racingpost_adapter import RacingPostAdapter
 from paddock_parser.adapters.base import NormalizedRace, NormalizedRunner
@@ -10,9 +11,8 @@ class TestRacingPostAdapter(unittest.TestCase):
         Load the sample HTML data from the fixture file.
         """
         self.adapter = RacingPostAdapter()
-        fixture_path = "src/paddock_parser/tests/fixtures/racingpost_sample.html"
-        with open(fixture_path, "r", encoding="utf-8") as f:
-            self.sample_html = f.read()
+        fixture_path = Path(__file__).parent / "fixtures" / "racingpost_sample.html"
+        self.sample_html = fixture_path.read_text(encoding="utf-8")
 
     def test_parse_racecard_specification(self):
         """
@@ -57,6 +57,3 @@ class TestRacingPostAdapter(unittest.TestCase):
         self.assertEqual(arrumba.jockey, "Sam Coen")
         self.assertEqual(arrumba.trainer, "Mrs Denise Foster")
         self.assertEqual(arrumba.odds, 23.0)
-
-if __name__ == '__main__':
-    unittest.main()
