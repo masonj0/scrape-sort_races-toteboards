@@ -1,3 +1,4 @@
+import logging
 from typing import List
 from rich.console import Console
 from rich.table import Table
@@ -71,4 +72,4 @@ class TerminalUI:
         Creates a RichHandler and sets it up.
         The calling code is responsible for adding it to a logger.
         """
-        self.log_handler = RichHandler(console=self.console, show_path=False, show_level=False, show_time=False)
+        self.log_handler = RichHandler(console=self.console, show_path=False)
