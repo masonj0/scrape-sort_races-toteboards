@@ -28,7 +28,7 @@ Our development is guided by four core principles that define our architecture a
 
 ## 2. Implementation Roadmap
 
-### Phase 1: Foundation & Professional CLI (Complete)
+### Phase 1: The Foundation (Complete)
 This phase focused on unifying the project structure, stabilizing the core components, and building a flexible command-line interface.
 
 -   **Project Unification:** Migrated to a standard `src` layout.
@@ -37,38 +37,69 @@ This phase focused on unifying the project structure, stabilizing the core compo
 -   **Async Pipeline:** Refactored the core pipeline to be asynchronous, supporting both sync and async adapters.
 -   **Architectural Restoration:** Completed "Operation Sanctuary" to restore the Golden Branch from a critical corruption event, solidifying the project's foundation.
 
-### Phase 2: The Professional Fetching Engine
+### Phase 2: The Brain (Professional Fetching Engine)
 This phase focuses on making our data gathering dramatically more resilient and intelligent.
 
+Key Future Features:
 -   **User-Agent & Fingerprint Rotation:** Implement rotation of User-Agents and other browser fingerprints to avoid blocking.
 -   **Intelligent Retries & Backoff:** Implement a resilient `get` method with exponential backoff for 429/5xx errors.
 -   **Advanced Caching:** Implement a crash-safe caching mechanism with support for ETag and Last-Modified headers.
 -   **Firewall & Interference Detection:** Add a "Situational Awareness" module to detect corporate proxy interference and route around it.
 -   **Proxy Support:** Add optional support for using proxies for requests.
+-   **Results & Historical Data Adapters:** Restore or build adapters specifically for fetching race results, enabling the `Backtesting Engine` to function.
 
-### Phase 3: Advanced Data & Persistent Engine
-This phase transitions the toolkit from a batch-processing scraper to a real-time, always-on analysis engine.
+### Phase 3: The Megaphone (Advanced Data & UI)
+This phase transitions the toolkit from a batch-processing scraper to a real-time, always-on analysis engine and provides a user-friendly interface.
 
--   **Rich Terminal User Interface (TUI):** Evolve the current command-line output into a dynamic, human-friendly terminal dashboard using a library like `rich` or `textual`. This will serve as the primary user interface.
--   **Smart Merging & Provenance:** Implement logic to merge race data from multiple sources and track the provenance of each data field.
--   **Persistent Engine:** Implement the "always-on" engine mode (`--persistent` flag) for continuous monitoring and analysis.
--   **Real-Time Data via WebSockets:** Add support for WebSocket adapters to receive real-time odds data.
--   **Hybrid Browser/HTTP Scraping:** Implement a "Playwright Bootstrap" mechanism to solve CAPTCHAs or handle complex logins, then pass the session to the faster `httpx` client.
+Key Future Features:
+- **Rich Terminal User Interface (TUI):** Evolve the current command-line output into a dynamic, human-friendly terminal dashboard using a library like `rich` or `textual`. (IN PROGRESS)
+- **Interactive Web Frontend:** Implement the frontend module with a simple API and web-based dashboard.
+- **"Always-On" Assistant Mode:** Implement the "Persistent Engine" to run the application in the background and provide real-time notifications for high-scoring race opportunities.
+- **Flexible Data Exports:** Add a feature to export results to common formats like CSV and JSON to empower user-led analysis.
+- **Powerful CLI:** Enhance run.py with more filters and features.
+- **Machine-Readable Outputs:** Implement JSON and CSV exporters.
+- **HTML Reports:** Generate clean, user-friendly HTML summaries.
 
-### Phase 4: Intelligence & User Interface
+### Phase 4: Intelligence & Analysis
 This phase focuses on enriching the data, improving the scoring model, and delivering the results to the user.
 
 -   **Advanced Timezone Handling:** Implement a robust system for UTC normalization and DST-safe timezone conversions.
--   **Machine-Readable Outputs:** Add support for versioned JSON and CSV outputs.
--   **Web Frontend:** Develop a simple web frontend using the `FastAPI` module to display results and control the application.
--   **Advanced CLI Controls:** Add more granular CLI flags for filtering, grouping, and output formatting.
+-   **Smart Merging & Provenance:** Implement logic to merge race data from multiple sources and track the provenance of each data field.
+-   **Hybrid Browser/HTTP Scraping:** Implement a "Playwright Bootstrap" mechanism to solve CAPTCHAs or handle complex logins, then pass the session to the faster `httpx` client.
 
 ---
 
-## The "Monolith Reimagined" Architecture
+### **Appendix A: The Master List of Archived Blueprints**
 
-The project uses a "Monolith Reimagined" architecture, building a single, unified Python application while structuring the internal code to mirror a microservices design. This facilitates easy development now and a potential migration to a true microservices architecture in the future.
+This is the definitive, comprehensive master list of all known, non-active adapter blueprints for this project, compiled from our legacy archives. This list serves as a strategic backlog for future data acquisition missions.
 
--   **Python Orchestrator:** The core application for orchestration and analysis.
--   **Forager Module (`src/paddock_parser/forager/`):** A dedicated placeholder for high-performance data fetching logic.
--   **Frontend Module (`src/paddock_parser/frontend/`):** A dedicated placeholder for the web server and API logic.
+**Core Racecards (UK/US):**
+*   `attheraces` (Restoration in Progress)
+*   `drf` (Daily Racing Form - Concept Only)
+*   `sportinglife`
+*   `timeform`
+*   `racingtv`
+*   `tvg` (US Horse Racing)
+*   `twinspires`
+
+**Betting & Tote Exchanges:**
+*   `betfair`
+*   `bovada`
+*   `oddsportal` (Note: A specialized repository exists for this adapter)
+*   `paddypower`
+*   `totesport`
+*   `williamhill`
+
+**International Racecards:**
+*   `atg` (Sweden)
+*   `entain` (UK/International)
+*   `francegalop` (France)
+*   `hkjc` (Hong Kong)
+*   `turfcom` (Turkey)
+
+**Data Providers:**
+*   `sis` (Sports Information Services)
+
+**Results & Historical Data:**
+*   `skysports_results`
+*   `attheraces_results`
