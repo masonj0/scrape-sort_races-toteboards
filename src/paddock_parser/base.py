@@ -31,6 +31,7 @@ class NormalizedRace:
     race_type: Optional[str] = None
     minutes_to_post: Optional[int] = None
     number_of_runners: Optional[int] = None
+    score: Optional[float] = None
     runners: List[NormalizedRunner] = field(default_factory=list)
 
 
