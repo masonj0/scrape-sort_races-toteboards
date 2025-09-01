@@ -1,6 +1,5 @@
-from ..base import BaseAdapterV3, NormalizedRace, NormalizedRunner
+from ..base import BaseAdapterV3, NormalizedRace
 from bs4 import BeautifulSoup
-import re
 from typing import List
 
 class EquibaseAdapter(BaseAdapterV3):
@@ -52,11 +51,12 @@ class EquibaseAdapter(BaseAdapterV3):
 
             try:
                 race_number = int(cells[0].text.strip())
-                purse_text = cells[1].text.strip().replace('$', '').replace(',', '')
-                purse = int(purse_text) if purse_text.isdigit() else 0
+                # Unused variables have been removed to pass linting.
+                # purse_text = cells[1].text.strip().replace('$', '').replace(',', '')
+                # purse = int(purse_text) if purse_text.isdigit() else 0
                 race_type = cells[2].text.strip()
-                distance = cells[3].text.strip()
-                surface = cells[4].text.strip()
+                # distance = cells[3].text.strip()
+                # surface = cells[4].text.strip()
                 starters = int(cells[5].text.strip())
 
                 race = NormalizedRace(

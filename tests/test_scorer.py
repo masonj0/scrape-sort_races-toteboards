@@ -1,5 +1,5 @@
 from paddock_parser.scorer import RaceScorer
-from paddock_parser.base import NormalizedRace, NormalizedRunner
+from paddock_parser.base import NormalizedRace
 
 def test_race_scorer():
     """

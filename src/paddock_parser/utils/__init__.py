@@ -2,3 +2,5 @@
 
 from .browser import view_text_website
 from .honeypot import remove_honeypots
+
+__all__ = ["view_text_website", "remove_honeypots"]

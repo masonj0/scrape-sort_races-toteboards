@@ -1,7 +1,6 @@
 import unittest
 from pathlib import Path
 from paddock_parser.adapters.equibase_adapter import EquibaseAdapter
-from paddock_parser.base import NormalizedRace, NormalizedRunner
 
 class TestEquibaseAdapter(unittest.TestCase):
     def setUp(self):

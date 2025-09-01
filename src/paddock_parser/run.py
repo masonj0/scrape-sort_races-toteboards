@@ -2,15 +2,18 @@
 
 import argparse
 import logging
+import asyncio
 
 # Correct, relative imports from within the package
 from .pipeline import run_pipeline
-from . import __version__ # Example of another top-level import
+from . import __version__
 
 def main():
     """
     The main entry point for the Paddock Parser application.
     """
+    # NOTE: The TerminalUI setup in the pipeline will take over logging.
+    # This basicConfig is a fallback.
     logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
     parser = argparse.ArgumentParser(
@@ -20,7 +23,7 @@ def main():
     parser.add_argument(
         '--source',
         type=str,
-        help='Specify a single adapter to run (e.g., "equibase").'
+        help='Specify a single adapter to run (e.g., "skysports").'
     )
 
     parser.add_argument(
@@ -32,15 +35,11 @@ def main():
 
     args = parser.parse_args()
 
-    logging.info("Starting Paddock Parser NG...")
-
-    # Note the correct way to call the pipeline function
-    run_pipeline(
+    # Run the async pipeline using asyncio.run()
+    asyncio.run(run_pipeline(
         min_runners=args.min_runners,
         specific_source=args.source
-    )
-
-    logging.info("Paddock Parser NG finished.")
+    ))
 
 if __name__ == "__main__":
     main()

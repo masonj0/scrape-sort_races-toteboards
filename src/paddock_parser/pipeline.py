@@ -1,13 +1,13 @@
 import inspect
 import logging
-import asyncio
-from datetime import datetime
+from typing import List
 
 from . import adapters
 from .scorer import RaceScorer
 from .base import BaseAdapter, BaseAdapterV3
+from .ui.terminal_ui import TerminalUI
 
-def load_adapters(specific_source: str = None):
+def load_adapters(specific_source: str = None) -> List[type]:
     """
     Dynamically loads adapter classes from the adapters module.
     If a specific_source is provided, only that adapter is loaded.
@@ -15,7 +15,7 @@ def load_adapters(specific_source: str = None):
     adapter_classes = []
     for name, obj in inspect.getmembers(adapters, inspect.isclass):
         if issubclass(obj, (BaseAdapter, BaseAdapterV3)) and obj not in (BaseAdapter, BaseAdapterV3):
-            if specific_source and obj.SOURCE_ID != specific_source:
+            if specific_source and hasattr(obj, 'SOURCE_ID') and obj.SOURCE_ID != specific_source:
                 continue
             adapter_classes.append(obj)
     return adapter_classes
@@ -25,20 +25,23 @@ async def run_pipeline(min_runners: int, specific_source: str = None):
     """
     Orchestrates the end-to-end pipeline for fetching, parsing, and scoring races.
     """
+    ui = TerminalUI()
+    ui.setup_logging()
+
     logging.info("--- Paddock Parser NG Pipeline Start ---")
 
     all_races = []
     adapter_classes = load_adapters(specific_source)
 
     if not adapter_classes:
-        logging.warning(f"No adapters found for source: {specific_source}" if specific_source else "No adapters found at all.")
+        logging.warning(f"No adapters found for source: '{specific_source}'" if specific_source else "No adapters found at all.")
         return
 
-    logging.info(f"Found {len(adapter_classes)} adapters to run.")
+    ui.start_fetching_progress(len(adapter_classes))
 
     for adapter_class in adapter_classes:
         adapter = adapter_class()
-        logging.info(f"\nRunning adapter: {adapter.SOURCE_ID}...")
+        logging.info(f"Running adapter: {getattr(adapter, 'SOURCE_ID', 'Unknown')}...")
 
         try:
             normalized_races = []
@@ -50,20 +53,22 @@ async def run_pipeline(min_runners: int, specific_source: str = None):
                 normalized_races = adapter.parse_data(raw_data)
 
             if normalized_races:
-                logging.info(f"Parsed {len(normalized_races)} races from {adapter.SOURCE_ID}.")
+                logging.info(f"Parsed {len(normalized_races)} races from {getattr(adapter, 'SOURCE_ID', 'Unknown')}.")
                 all_races.extend(normalized_races)
             else:
-                logging.warning(f"No races parsed for {adapter.SOURCE_ID}.")
+                logging.warning(f"No races parsed for {getattr(adapter, 'SOURCE_ID', 'Unknown')}.")
 
         except NotImplementedError:
-            logging.warning(f"Adapter {adapter.SOURCE_ID} does not support live fetching and was skipped.")
-            continue
+            logging.warning(f"Adapter {getattr(adapter, 'SOURCE_ID', 'Unknown')} does not support live fetching and was skipped.")
         except Exception as e:
-            logging.error(f"Adapter {adapter.SOURCE_ID} failed: {e}", exc_info=True)
-            continue
+            logging.error(f"Adapter {getattr(adapter, 'SOURCE_ID', 'Unknown')} failed: {e}", exc_info=True)
+        finally:
+            ui.update_fetching_progress()
+
+    ui.stop_fetching_progress()
 
     if not all_races:
-        logging.info("\nNo races were successfully parsed from any source.")
+        logging.info("No races were successfully parsed from any source.")
         logging.info("--- Pipeline End ---")
         return
 
@@ -71,15 +76,15 @@ async def run_pipeline(min_runners: int, specific_source: str = None):
     if min_runners > 1:
         all_races = [r for r in all_races if r.number_of_runners and r.number_of_runners >= min_runners]
 
-    # For now, we will just print the races, as scoring and sorting are not part of the new design.
-    # This can be added back later.
-    logging.info(f"\n--- Found {len(all_races)} Races Matching Criteria ---")
-    for i, race in enumerate(all_races):
-        logging.info(
-            f"{i+1}. "
-            f"Track: {race.track_name}, "
-            f"Race: {race.race_number}, "
-            f"Runners: {race.number_of_runners}"
-        )
+    # Score the races
+    scorer = RaceScorer()
+    for race in all_races:
+        race.score = scorer.score(race)
 
-    logging.info("\n--- Pipeline End ---")
+    # Sort races by score (descending)
+    all_races.sort(key=lambda r: r.score or 0, reverse=True)
+
+    # Display the results using the new TerminalUI
+    ui.display_races(all_races)
+
+    logging.info("--- Pipeline End ---")
