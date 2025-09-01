@@ -1,10 +1,9 @@
-import asyncio
 import re
 from typing import List, Optional
 
 from bs4 import BeautifulSoup
 
-from ..base import BaseAdapterV3, NormalizedRace, NormalizedRunner
+from ..base import BaseAdapterV3, NormalizedRace
 from ..http_client import ForagerClient
 
 

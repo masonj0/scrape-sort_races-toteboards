@@ -1,4 +1,1 @@
-{
-    "filepath": "./paddock-parser-ng/src/paddock_parser/adapters/__init__.py",
-    "content": "# Adapters module\n\nfrom .skysports_adapter import SkySportsAdapter\nfrom .fanduel_graphql_adapter import FanDuelGraphQLAdapter\nfrom .equibase_adapter import EquibaseAdapter\n"
-}
+{"content": "\n"}

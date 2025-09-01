@@ -3,15 +3,12 @@ Test-as-Spec for Terminal UI Module
 Path: tests/ui/test_terminal_ui.py
 """
 
-import pytest
-from unittest.mock import Mock, patch, MagicMock, call
+from unittest.mock import Mock, patch, call
 from datetime import datetime
-from dataclasses import dataclass, field
-from typing import List, Optional
 import logging
 
 # Assume these data structures will be imported from the project
-from paddock_parser.base import NormalizedRace, NormalizedRunner
+from paddock_parser.base import NormalizedRace
 
 
 class TestTerminalUIInitialization:
