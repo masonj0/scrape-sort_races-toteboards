@@ -1,0 +1,18 @@
+# Core application dependencies
+fastapi
+uvicorn[standard]
+pydantic
+
+# Data analysis
+pandas
+numpy
+
+# Scraping
+beautifulsoup4
+lxml
+
+# Testing
+pytest
+pytest-anyio
+trio
+rich
