@@ -1,7 +1,7 @@
 # Core application dependencies
 fastapi
-uvicorn
-httpx
+uvicorn[standard]
+pydantic
 
 # Data analysis
 pandas
