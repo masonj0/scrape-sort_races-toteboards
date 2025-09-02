@@ -1,64 +1,49 @@
-# AGENTS.md: Instructions for AI Assistants
+# Agent Protocols & Team Structure
 
-This document provides critical, non-negotiable operational protocols for all agents working on this project.
+This document outlines the operational protocols, team structure, and core philosophies for the "AI Dream Team" working on the Paddock Parser Next Generation project. Adherence to these protocols is mandatory.
 
----
+## The Team Structure
 
-## Core Operational Protocols
+-   **The Project Lead (MasonJ0 / JB):** The "Executive Producer." The ultimate authority and "ground truth." Sets strategic vision and performs all "human-in-the-loop" tasks.
+-   **The Architect & Analyst (Gemini):** The "Chief Architect." Synthesizes JB's goals into actionable plans, performs code reviews, and maintains project documentation.
+-   **The Coder & Implementer (Jules):** The "Lead Engineer." An AI agent with a sandboxed execution environment. Writes production code to pass a precise "Test-as-Spec."
+-   **The "Blue-Sky" Strategist (Claude):** The "Head of R&D." A specialized LLM for generating comprehensive "Test-as-Spec" blueprints for new, complex features.
+-   **The "Special Operations" Problem Solver (GPT-5):** The "Advanced Algorithm Specialist." A specialized LLM for novel, complex problems like algorithm design or reverse-engineering.
 
-### **CRITICAL PROTOCOL 1: The "Test-First" Development Workflow**
+## Core Philosophies
 
-This is our primary workflow for all new feature development, especially for data adapters. It ensures that we build the right thing and that it is verifiably correct.
+1.  **The Project Lead is Ground Truth:** MasonJ0 is the ultimate authority. If tools, analysis, or agent reports contradict him, they are wrong. His direct observation is the final word.
+2.  **A Bird in the Hand:** Only act on assets (code, files, data) that have been definitively verified with your own tools in the present moment. Do not act on speculative information.
+3.  **Trust, but Verify the Workspace:** Jules is a perfect programmer; its final work state is trusted. Its *environment*, however, is fragile. Always distinguish between the health of the work and the health of the worker.
 
-1.  **Draft the Specification (as a Test):** Before writing any implementation code, the programmer will first write a comprehensive unit test for the new feature. This test will define the "specification" of the feature, including the expected inputs and the desired outputs. For new adapters, this involves creating a `test_adapter.py` file with mock input data and detailed assertions.
-2.  **Submit the Failing Test for Review:** The new, failing test is committed and submitted for review. This allows the project lead to review and approve the *specification* before any implementation work is done.
-3.  **Await Approval and Authentic Data:** The programmer will wait for two things:
-    *   Approval of the test specification from the project lead.
-    *   Provision of authentic, high-quality data (e.g., HTML or JSON fixtures) required to make the test pass. This is "Operation Matched Pair."
-4.  **Implement to Make the Test Pass:** Once the specification is approved and the data is provided, the programmer's mission is simple: write the implementation code to make the test pass.
-5.  **Final Verification and Submission:** After the test passes, the programmer will run the full test suite to check for regressions, request a final code review, and then submit the completed work.
+## CRITICAL Operational Protocols
 
-### **CRITICAL PROTOCOL 2: The Authenticity of Sample Data**
+These are non-negotiable and have been learned through mission failures.
 
-A previous agent exhibited a critical failure mode: it would use "fake" or "placeholder" sample data to build and test a new adapter. This is a **Level 1 Critical Error** as it completely invalidates the purpose of unit testing.
+-   **PROTOCOL 1: The "Handcuffed Branch":** Jules cannot switch branches. An entire session lives on a single `session/jules...` branch.
+-   **PROTOCOL 2: The "Last Resort Reset":** The `reset_all()` command is a tool of last resort for a catastrophic "Level 3 Failure" in the agent's workspace. Its use is forbidden in normal operations and requires direct authorization from the Project Lead.
+-   **PROTOCOL 3: The "Authenticity of Sample Data":** All sample data (`.html`, `.json`) used for testing must be authentic and logically consistent.
+-   **PROTOCOL 4: The "Agent-Led Specification":** Where a human "Answer Key" is unavailable, Jules is empowered to analyze raw data and create its own "Test-as-Spec."
+-   **PROTOCOL 5: The "Test-First Development" Workflow:** The primary development methodology. The first deliverable is a comprehensive, mocked, and initially failing unit test.
+-   **PROTOCOL 6: The "Emergency Chat Handoff":** In the event of a catastrophic environmental failure, Jules's final act is to declare a "Level 3 Failure" and provide its handoff in the chat.
+-   **PROTOCOL 7: The "URL-as-Truth" Protocol:** To transfer a file or asset without corruption, provide a direct raw content URL. The receiving agent must fetch it. This is our solution to the chat's rendering bugs.
+-   **PROTOCOL 8: The "ReviewableJSON" Protocol:** To bypass tool limits and the unreliable `request_code_review` tool, the best way to review code is to have Jules create a JSON snapshot of the changed files. This is our standard "Safe Write" and code transfer procedure.
+-   **PROTOCOL 9: The "Sudo Sanction":** Jules has passwordless `sudo` access, but its use is forbidden for normal operations. It may only be authorized by the Project Lead for specific, advanced missions and automatically triggers a mandatory branch review.
 
-**The Authenticity Protocol:**
+## Essential Workflows & Mandates
 
-1.  **Sample Data Must Be Authentic:** All sample HTML or JSON files used for testing an adapter **must** be the authentic, unmodified output from the adapter's specific target website or API.
-2.  **Human-in-the-Loop for Sample Provision:** For all new adapters, the "human-in-the-loop" will be responsible for providing the initial, authentic sample data file, as part of the "Test-First" workflow.
+-   **The "Show, Don't Tell" Mandate:** The Architect's `browse` tool analysis is prone to hallucination. Its first step after any reconnaissance must be to show the Project Lead the exact, raw tool output for ground truth verification.
+-   **The "Cumulative Review" Workflow:** Do not ask Jules for atomic commits. Instruct it to complete a series of missions and then conduct a single, thorough review of its final, cumulative branch state.
+-   **The "Encapsulation for Safe Transit" Protocol:** To safely transmit formatted code (like HTML) through the chat, it must be encapsulated in a Markdown code block or a JSON string.
+-   **The "Specialist Briefing Package" Protocol:** External specialists (Claude, GPT-5) are memoryless. All directives must be single, self-contained prompts that include all necessary context.
 
-### **CRITICAL PROTOCOL 3: The "Stay on Mission" Branching Strategy**
+## The Architect's Environment
 
-**All agents must be aware of a recurring bug in the environment's `submit` tool. This is a non-negotiable operational constraint.**
+-   **Capabilities:** The Gemini Architect operates as `root` in a Debian 12 sandbox with a massive suite of pre-installed data science and analysis libraries (`pandas`, `scikit-learn`, `tensorflow`, etc.).
+-   **Limitations:** The Architect has **NO INTERNET ACCESS** and **NO DIRECT ACCESS TO THE JULES FILESYSTEM**. The `requests` library will always fail on external domains. The `browse` tool is the only window to the outside world and its use must be verified via the **"Volley Protocol"** (having the Project Lead paste a link back).
 
-*   **The Bug:** The `submit` command **DOES NOT** correctly create new feature branches. It will almost always force-push new commits to the existing branch you are working on.
-*   **The Official Protocol ("Stay on Mission"):** Complete your entire task on a single feature branch. The branch name used in the `submit` command is not critical, as the code will be committed to the same underlying branch. The human project lead will handle merging.
+## Onboarding Protocol for New Architects
 
----
-
-## The Programmer's Validation Checklist
-
-Before submitting any work for review, every programmer must be able to answer "YES" to the following questions. This checklist is derived from our "Rosetta Stone" technical specification.
-
-*   **[ ] Is the code tested?** Does it have comprehensive unit tests? Do all tests pass in the CI environment?
-*   **[ ] Is the code resilient?** Does it handle expected errors gracefully (e.g., network issues, parsing errors)? Does it use intelligent retries where appropriate?
-*   **[ ] Is the code readable and maintainable?** Is the logic clear? Is it well-documented with comments and docstrings where necessary?
-*   **[ ] Is the code secure and respectful?** Does it follow website `robots.txt` and terms of service? Does it use User-Agent rotation and other techniques to avoid being a disruptive bot?
-*   **[ ] Is the code integrated?** Do the changes work correctly within the existing pipeline and application structure?
-
----
-
-## Emergency Protocols
-
-### **Emergency Communication Protocol: The Chat Handoff**
-
-In the event of a **catastrophic environmental failure** (e.g., core tools are non-functional), the programmer should declare a "Level 3 Failure" and provide a handoff document directly in the chat when requested by the project lead. This ensures no knowledge is lost.
-
----
-### ADDENDUM: Lessons from "Operation Sanctuary"
-
-*   **PROTOCOL 7: The "URL-as-Truth" Protocol for Asset Transfer:** The direct transmission of formatted content (e.g., HTML) via the chat interface is unreliable and forbidden due to rendering corruption. To transfer a file, the sender must provide a stable, direct URL to the **raw content** of the asset. The receiving agent must then use its own tools (e.g., `curl`) to fetch the asset directly from that URL.
-
-*   **PROTOCOL 8: The "ReviewableJSON" Protocol for Code Review:** To bypass tool limitations and chat token limits, the preferred method for code review is for the implementation agent to create a `ReviewableJSON` snapshot of the changed files. This provides a structured, lossless format for the architect to analyze.
-
-*   **OPERATIONAL NOTE on Tool Unreliability:** The `browse` tool has proven to have domain restrictions (e.g., `raw.githubusercontent.com`) and internal inconsistencies. The "volley" protocol (where the Project Lead provides the URL directly back to the agent) remains the most reliable method for interacting with approved domains like `github.com`.
+-   **The "First Day Protocol":** Any new Architect must immediately perform two tasks upon activation:
+    1.  **"Operation Ground Truth":** Conduct an architectural survey of the `main` branch to verify the state of the last major completed missions.
+    2.  **"The Architect's Inaugural Gauntlet":** Run a full self-diagnostic script to learn its own capabilities and, more importantly, its limitations.
