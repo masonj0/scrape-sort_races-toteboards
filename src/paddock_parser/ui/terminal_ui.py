@@ -3,9 +3,14 @@ from typing import List
 from rich.console import Console
 from rich.table import Table
 from rich.progress import Progress
+import asyncio
+from datetime import datetime
 from rich.logging import RichHandler
+from rich.panel import Panel
 
 from ..base import NormalizedRace
+from ..pipeline import run_pipeline
+from ..scorer import get_high_roller_races_for_normalized_data
 
 class TerminalUI:
     """
@@ -73,3 +78,47 @@ class TerminalUI:
         The calling code is responsible for adding it to a logger.
         """
         self.log_handler = RichHandler(console=self.console, show_path=False)
+
+    def _display_main_menu(self):
+        """Displays the main menu options."""
+        self.console.print("\n[bold magenta]Paddock Parser NG - Main Menu[/bold magenta]")
+        self.console.print("1. Get High Roller Report")
+        self.console.print("2. Quit")
+
+    async def start_interactive_mode(self):
+        """Starts the main interactive loop for the UI."""
+        while True:
+            self._display_main_menu()
+            choice = self.console.input("[bold]Select an option: [/bold]")
+
+            if choice == '1':
+                await self._run_high_roller_report()
+            elif choice == '2':
+                self.console.print("[yellow]Goodbye![/yellow]")
+                break
+            else:
+                self.console.print("[bold red]Invalid option, please try again.[/bold red]")
+
+    async def _run_high_roller_report(self):
+        """Runs the full pipeline and displays the high roller report."""
+        self.console.print(Panel("[bold green]Generating High Roller Report...[/bold green]", expand=False))
+
+        # For this specific report, we want to bypass the pipeline's min_runners filter
+        # as the high roller logic has its own runner count criteria.
+        all_races = await run_pipeline(min_runners=0, specific_source=None)
+
+        if not all_races:
+            self.console.print("[yellow]No races were found by the pipeline.[/yellow]")
+            return
+
+        now = datetime.now()
+        high_roller_races = get_high_roller_races_for_normalized_data(all_races, now)
+
+        if not high_roller_races:
+            self.console.print(Panel("[bold yellow]No races met the High Roller criteria.[/bold yellow]", expand=False))
+        else:
+            self.console.print(Panel("[bold blue]High Roller Report[/bold blue]", expand=False))
+            # The display_races function needs a 'score' attribute, which our new function provides.
+            # It also needs a 'track_name', 'race_number', 'post_time', and 'number_of_runners',
+            # all of which are present in NormalizedRace.
+            self.display_races(high_roller_races)
