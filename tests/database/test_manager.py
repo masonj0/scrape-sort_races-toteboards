@@ -4,11 +4,11 @@ from dataclasses import dataclass, field
 from typing import List
 
 # Import the data models from their new, dedicated file
-from src.paddock_parser.models import Race, Runner
+from paddock_parser.models import Race, Runner
 
 # This is the class Jules will need to implement in src/paddock_parser/database/manager.py
 # The test is written as if this class already exists.
-from src.paddock_parser.database.manager import DatabaseManager
+from paddock_parser.database.manager import DatabaseManager
 
 @pytest.fixture
 def db_manager():
@@ -55,14 +55,15 @@ def test_save_race_inserts_new_data(db_manager, sample_race):
     cursor.execute("SELECT venue, race_time, is_handicap FROM races WHERE race_id=?", (sample_race.race_id,))
     race_data = cursor.fetchone()
     assert race_data is not None
-    assert race_data == ("Aintree", "14:30", 1)
+    assert tuple(race_data) == ("Aintree", "14:30", 1)
 
     # Verify the runners were inserted
     cursor.execute("SELECT name, odds FROM runners WHERE race_id=?", (sample_race.race_id,))
     runners_data = cursor.fetchall()
-    assert len(runners_data) == 2
-    assert ("Horse A", "10/1") in runners_data
-    assert ("Horse B", "5/2") in runners_data
+    runners_as_tuples = [tuple(row) for row in runners_data]
+    assert len(runners_as_tuples) == 2
+    assert ("Horse A", "10/1") in runners_as_tuples
+    assert ("Horse B", "5/2") in runners_as_tuples
 
 def test_save_race_is_idempotent_and_updates(db_manager, sample_race):
     """
@@ -97,12 +98,13 @@ def test_save_race_is_idempotent_and_updates(db_manager, sample_race):
     # Verify the race details were UPDATED
     cursor.execute("SELECT race_time, is_handicap FROM races WHERE race_id=?", (sample_race.race_id,))
     race_data = cursor.fetchone()
-    assert race_data == ("14:35", 0)
+    assert tuple(race_data) == ("14:35", 0)
 
     # Verify the runners were UPDATED (old ones removed, new ones added)
     cursor.execute("SELECT name, odds FROM runners WHERE race_id=?", (sample_race.race_id,))
     runners_data = cursor.fetchall()
-    assert len(runners_data) == 2
-    assert ("Horse A", "12/1") in runners_data
-    assert ("Horse C", "8/1") in runners_data
-    assert ("Horse B", "5/2") not in runners_data
+    runners_as_tuples = [tuple(row) for row in runners_data]
+    assert len(runners_as_tuples) == 2
+    assert ("Horse A", "12/1") in runners_as_tuples
+    assert ("Horse C", "8/1") in runners_as_tuples
+    assert ("Horse B", "5/2") not in runners_as_tuples

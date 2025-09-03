@@ -9,6 +9,7 @@ from typing import List
 class Runner:
     name: str
     odds: str
+    is_winner: bool = False
 
 @dataclass
 class Race:
