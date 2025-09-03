@@ -1,19 +1,15 @@
-# src/paddock_parser/run.py
-
 import argparse
 import logging
 import asyncio
 
-# Correct, relative imports from within the package
 from .pipeline import run_pipeline
+from .ui.terminal_ui import TerminalUI
 from . import __version__
 
 def main():
     """
     The main entry point for the Paddock Parser application.
     """
-    # NOTE: The TerminalUI setup in the pipeline will take over logging.
-    # This basicConfig is a fallback.
     logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
     parser = argparse.ArgumentParser(
@@ -35,11 +31,18 @@ def main():
 
     args = parser.parse_args()
 
-    # Run the async pipeline using asyncio.run()
-    asyncio.run(run_pipeline(
+    # The pipeline now returns the data, so we need to handle the display here.
+    ui = TerminalUI()
+    ui.setup_logging() # The UI can still manage the logging format.
+
+    races = asyncio.run(run_pipeline(
         min_runners=args.min_runners,
-        specific_source=args.source
+        specific_source=args.source,
+        ui=ui # Pass the UI for progress updates
     ))
+
+    if races:
+        ui.display_races(races)
 
 if __name__ == "__main__":
     main()

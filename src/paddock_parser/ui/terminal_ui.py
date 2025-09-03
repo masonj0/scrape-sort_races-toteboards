@@ -35,7 +35,7 @@ class TerminalUI:
 
         for race in races:
             post_time_str = race.post_time.strftime("%H:%M") if race.post_time else "N/A"
-            score_str = f"{race.score:.2f}" if race.score is not None else "N/A"
+            score_str = f"{race.score:.0f}" if race.score is not None else "N/A"
             table.add_row(
                 race.track_name,
                 str(race.race_number),
@@ -45,22 +45,28 @@ class TerminalUI:
             )
         self.console.print(table)
 
-    def _display_high_roller_report(self, races: List[ScorerRace]):
+    def display_high_roller_report(self, races: List[ScorerRace]):
         """
-        Displays the high roller report in a specific format.
+        Displays the high roller report in a rich, formatted table.
         """
         table = Table(title="High Roller Report")
-        table.add_column("Venue", justify="left")
-        table.add_column("Race Time", justify="left")
-        table.add_column("High Roller Score (Fav's Odds)", justify="left")
+
+        table.add_column("Time", style="cyan")
+        table.add_column("Venue", style="magenta")
+        table.add_column("Favorite", style="green")
+        table.add_column("Odds", style="yellow")
 
         for race in races:
-            score_str = f"{race.high_roller_score:.2f}/1"
-            table.add_row(
-                race.venue,
-                race.race_time,
-                score_str
-            )
+            # The high roller report logic implies one favorite runner per race.
+            if race.runners:
+                favorite = race.runners[0]
+                table.add_row(
+                    race.race_time,
+                    race.venue,
+                    favorite.name,
+                    favorite.odds
+                )
+
         self.console.print(table)
 
     def start_fetching_progress(self, num_tasks: int):
@@ -106,34 +112,33 @@ class TerminalUI:
 
     async def _run_high_roller_report(self):
         """Runs the full pipeline and displays the high roller report."""
-        self.console.print(Panel("[bold green]Generating High Roller Report...[/bold green]", expand=False))
+        high_roller_races = None
+        with self.console.status("Fetching data from providers...", spinner="dots"):
+            normalized_races = await run_pipeline(min_runners=0, specific_source=None) # No longer pass UI
 
-        normalized_races = await run_pipeline(min_runners=0, specific_source=None)
+            if not normalized_races:
+                self.console.print("[yellow]No races were found by the pipeline.[/yellow]")
+                return
 
-        if not normalized_races:
-            self.console.print("[yellow]No races were found by the pipeline.[/yellow]")
-            return
-
-        # Adapt from NormalizedRace to the ScorerRace model
-        scorer_races = []
-        for norm_race in normalized_races:
-            if norm_race.post_time:
-                # The scorer function now uses the models.py Race/Runner
-                scorer_runners = [ScorerRunner(name=r.name, odds=str(r.odds) if r.odds else "SP") for r in norm_race.runners]
-                scorer_races.append(
-                    ScorerRace(
-                        race_id=norm_race.race_id,
-                        venue=norm_race.track_name,
-                        race_time=norm_race.post_time.strftime("%H:%M"),
-                        is_handicap=False,  # This info is not in NormalizedRace, default to False
-                        runners=scorer_runners
+            # Adapt from NormalizedRace to the ScorerRace model
+            scorer_races = []
+            for norm_race in normalized_races:
+                if norm_race.post_time:
+                    scorer_runners = [ScorerRunner(name=r.name, odds=str(r.odds) if r.odds else "SP") for r in norm_race.runners]
+                    scorer_races.append(
+                        ScorerRace(
+                            race_id=norm_race.race_id,
+                            venue=norm_race.track_name,
+                            race_time=norm_race.post_time.strftime("%H:%M"),
+                            is_handicap=False,
+                            runners=scorer_runners
+                        )
                     )
-                )
 
-        now = datetime.now()
-        high_roller_races = get_high_roller_races(scorer_races, now)
+            now = datetime.now()
+            high_roller_races = get_high_roller_races(scorer_races, now)
 
         if not high_roller_races:
             self.console.print(Panel("[bold yellow]No races met the High Roller criteria.[/bold yellow]", expand=False))
         else:
-            self._display_high_roller_report(high_roller_races)
+            self.display_high_roller_report(high_roller_races)
