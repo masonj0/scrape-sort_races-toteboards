@@ -1,0 +1,4 @@
+{
+    "filepath": "src/paddock_parser/models.py",
+    "content": "\"\"\"\nCore data models for the Paddock Parser application.\n\"\"\"\n\nfrom dataclasses import dataclass, field\nfrom typing import List\n\n@dataclass\nclass Runner:\n    name: str\n    odds: str\n\n@dataclass\nclass Race:\n    race_id: str\n    venue: str\n    race_time: str\n    is_handicap: bool\n    runners: List[Runner] = field(default_factory=list)\n"
+}

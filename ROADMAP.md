@@ -24,12 +24,12 @@ This document outlines the strategic, phased implementation plan for the project
 
 ### Key Completed Work:
 -   **Simple Scoring Model:** `RaceScorer` is implemented and tested, based on runner count.
+-   **Data Persistence (`Operation Chronicle`):** A `DatabaseManager` using SQLite provides the project with long-term memory and data persistence.
 
 ### Immediate Next Steps:
--   **Data Persistence:** Implement a `DatabaseManager` for creating a historical data archive.
 -   **Data Deduplication:** Implement `SmartMerge` logic for combining data from multiple sources and tracking provenance.
 -   **Advanced Timezone Handling:** Build a robust system for international race times.
--   **Advanced Scoring Models:** Evolve the `RaceScorer` with more sophisticated, weighted signals.
+-   **Advanced Scoring Models:** Evolve the `RaceScorer` with more sophisticated, weighted signals beyond the "High Roller" criteria.
 -   **Backtesting Engine:** Create a module to validate scoring algorithms against the historical data archive.
 
 ---
@@ -41,11 +41,11 @@ This document outlines the strategic, phased implementation plan for the project
 
 ### Key Completed Work:
 -   **Professional CLI:** `run.py` provides a functional `argparse` control panel for core operations.
--   **Web Service API (`Operation Web Weaver`):** A FastAPI-based web service is available at `/api/v1/races` to serve pipeline results over the network.
--   **Terminal User Interface (TUI):** A `terminal_ui.py` module provides a clean, interactive display of race data.
+-   **Web Service API (`Operation Web Weaver`):** A FastAPI-based web service is available at `/api/v1/races` with JSON and CSV export capabilities.
+-   **Rich Terminal User Interface (TUI):** An enhanced, `rich`-powered interactive display (`launch_paddock_parser.py`) for running the pipeline and viewing reports in a professional, color-coded table format.
+-   **High Roller Report:** An advanced, one-click report in the TUI that automatically filters and sorts races based on user-defined value criteria (imminent start, small field, favorable odds).
 
 ### Future Features:
--   **Machine-Readable Outputs:** Implement JSON and CSV exporters.
 -   **HTML Reports:** Generate clean, user-friendly HTML summaries.
 -   **Web Frontend:** Implement a simple web-based dashboard that consumes the FastAPI service.
 

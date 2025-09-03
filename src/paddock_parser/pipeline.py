@@ -1,11 +1,15 @@
 import inspect
 import logging
-from typing import List
+from typing import List, Optional
 
 from . import adapters
 from .scorer import RaceScorer
-from .base import BaseAdapter, BaseAdapterV3
-from .ui.terminal_ui import TerminalUI
+from .base import BaseAdapter, BaseAdapterV3, NormalizedRace
+
+# The TerminalUI class is forward-declared using a string to avoid circular import.
+# It's only used for type hinting.
+if False:
+    from .ui.terminal_ui import TerminalUI
 
 def load_adapters(specific_source: str = None) -> List[type]:
     """
@@ -21,13 +25,15 @@ def load_adapters(specific_source: str = None) -> List[type]:
     return adapter_classes
 
 
-async def run_pipeline(min_runners: int, specific_source: str = None):
+async def run_pipeline(
+    min_runners: int,
+    specific_source: str = None,
+    ui: Optional['TerminalUI'] = None
+) -> List[NormalizedRace]:
     """
     Orchestrates the end-to-end pipeline for fetching, parsing, and scoring races.
+    This function no longer handles display, it returns the processed data.
     """
-    ui = TerminalUI()
-    ui.setup_logging()
-
     logging.info("--- Paddock Parser NG Pipeline Start ---")
 
     all_races = []
@@ -35,9 +41,10 @@ async def run_pipeline(min_runners: int, specific_source: str = None):
 
     if not adapter_classes:
         logging.warning(f"No adapters found for source: '{specific_source}'" if specific_source else "No adapters found at all.")
-        return
+        return []
 
-    ui.start_fetching_progress(len(adapter_classes))
+    if ui:
+        ui.start_fetching_progress(len(adapter_classes))
 
     for adapter_class in adapter_classes:
         adapter = adapter_class()
@@ -63,28 +70,25 @@ async def run_pipeline(min_runners: int, specific_source: str = None):
         except Exception as e:
             logging.error(f"Adapter {getattr(adapter, 'SOURCE_ID', 'Unknown')} failed: {e}", exc_info=True)
         finally:
-            ui.update_fetching_progress()
+            if ui:
+                ui.update_fetching_progress()
 
-    ui.stop_fetching_progress()
+    if ui:
+        ui.stop_fetching_progress()
 
     if not all_races:
         logging.info("No races were successfully parsed from any source.")
         logging.info("--- Pipeline End ---")
-        return
+        return []
 
-    # Filter races based on field size
     if min_runners > 1:
         all_races = [r for r in all_races if r.number_of_runners and r.number_of_runners >= min_runners]
 
-    # Score the races
     scorer = RaceScorer()
     for race in all_races:
         race.score = scorer.score(race)
 
-    # Sort races by score (descending)
     all_races.sort(key=lambda r: r.score or 0, reverse=True)
 
-    # Display the results using the new TerminalUI
-    ui.display_races(all_races)
-
     logging.info("--- Pipeline End ---")
+    return all_races
