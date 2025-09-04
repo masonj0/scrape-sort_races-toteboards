@@ -10,8 +10,6 @@ def main():
     """
     The main entry point for the Paddock Parser application.
     """
-    logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
-
     parser = argparse.ArgumentParser(
         description=f"Paddock Parser NG (Version {__version__}) - A toolkit for analyzing racecards."
     )
@@ -29,7 +27,16 @@ def main():
         help='The minimum number of runners for a race to be considered interesting.'
     )
 
+    parser.add_argument(
+        '-v', '--verbose',
+        action='store_true',
+        help='Enable verbose logging output.'
+    )
+
     args = parser.parse_args()
+
+    log_level = logging.INFO if args.verbose else logging.WARNING
+    logging.basicConfig(level=log_level, format='%(asctime)s - %(levelname)s - %(message)s')
 
     # The pipeline now returns the data, so we need to handle the display here.
     ui = TerminalUI()
