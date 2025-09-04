@@ -95,3 +95,21 @@ class TestLoggingIntegration:
 
         mock_rich_handler_class.assert_called_once()
         assert terminal_ui.log_handler is not None
+
+
+from unittest.mock import patch
+
+@patch('src.paddock_parser.ui.terminal_ui.Console')
+def test_display_high_roller_report_shows_info_when_empty(MockConsole):
+    # Arrange
+    from src.paddock_parser.ui.terminal_ui import TerminalUI
+    mock_console_instance = MockConsole.return_value
+    ui = TerminalUI()
+    # Act
+    ui.display_high_roller_report([])
+    # Assert
+    mock_console_instance.print.assert_called_once()
+    actual_output = mock_console_instance.print.call_args[0][0]
+    assert "No races met the High Roller criteria." in actual_output
+    assert "next 25 minutes" in actual_output
+    assert "Fewer than 7" in actual_output
