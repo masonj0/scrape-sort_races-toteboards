@@ -25,7 +25,7 @@ def main():
     parser.add_argument(
         '--min-runners',
         type=int,
-        default=8,
+        default=0,
         help='The minimum number of runners for a race to be considered interesting.'
     )
 
