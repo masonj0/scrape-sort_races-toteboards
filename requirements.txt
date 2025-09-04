@@ -10,7 +10,6 @@ numpy
 # Scraping
 beautifulsoup4
 lxml
-httpx
 
 # Testing
 pytest

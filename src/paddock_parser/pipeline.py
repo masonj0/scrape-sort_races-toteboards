@@ -28,7 +28,6 @@ def _convert_to_model_race(norm_race: NormalizedRace, source: str) -> Race:
         race_id=norm_race.race_id,
         venue=norm_race.track_name,
         race_time=norm_race.post_time.strftime("%H:%M") if norm_race.post_time else "",
-        race_number=norm_race.race_number,
         is_handicap=norm_race.race_type == "Handicap", # Assumption
         source=source,
         runners=[Runner(name=r.name, odds=str(r.odds) if r.odds else "SP") for r in norm_race.runners]
@@ -45,7 +44,7 @@ def _convert_to_normalized_race(model_race: Race) -> NormalizedRace:
     return NormalizedRace(
         race_id=model_race.race_id,
         track_name=model_race.venue,
-        race_number=model_race.race_number,
+        race_number=0, # This data is lost in the conversion
         post_time=post_time,
         number_of_runners=len(model_race.runners),
         race_type="Handicap" if model_race.is_handicap else "Unknown",
