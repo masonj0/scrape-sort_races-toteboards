@@ -79,3 +79,29 @@ class RaceScorer:
         if 11 <= field_size <= 12:
             return 40.0
         return 20.0
+
+
+def calculate_weighted_score(race: Race, weights: dict) -> float:
+    """
+    Calculates a weighted score for a race based on various factors.
+    """
+    if not race.runners:
+        return 0.0
+
+    # Find the favorite (lowest odds)
+    favorite_odds = float('inf')
+    for runner in race.runners:
+        odds = _convert_odds_to_float(runner.odds)
+        if odds < favorite_odds:
+            favorite_odds = odds
+
+    if favorite_odds == float('inf'):
+        favorite_odds = 0 # Or handle as an error/default case
+
+    # Calculate score components
+    field_size_component = (1 / len(race.runners)) * weights.get("FIELD_SIZE_WEIGHT", 0)
+    favorite_odds_component = favorite_odds * weights.get("FAVORITE_ODDS_WEIGHT", 0)
+
+    # Calculate final score
+    score = field_size_component + favorite_odds_component
+    return score
