@@ -30,6 +30,12 @@ These are non-negotiable and have been learned through mission failures.
 -   **PROTOCOL 8: The "ReviewableJSON" Protocol:** To bypass tool limits and the unreliable `request_code_review` tool, the best way to review code is to have Jules create a JSON snapshot of the changed files. This is our standard "Safe Write" and code transfer procedure.
 -   **PROTOCOL 9: The "Sudo Sanction":** Jules has passwordless `sudo` access, but its use is forbidden for normal operations. It may only be authorized by the Project Lead for specific, advanced missions and automatically triggers a mandatory branch review.
 
+-   **PROTOCOL 10: The "Exit Interview" Protocol:** In the event of a Level 3 Failure, or before any planned termination of an agent, the Architect will charter a final "Exit Interview" mission to capture the agent's institutional knowledge for its successor.
+
+-   **PROTOCOL 11: The "Module-First Testing" Protocol:** The standard `pytest` command is considered unreliable. All test suites must be invoked by calling `pytest` as a Python module (`python -m pytest`) to ensure the correct interpreter is used.
+
+-   **PROTOCOL 12: The "Persistence" Mandate:** The agent tool execution layer is known to produce false negatives (e.g., "No valid tool call found"). If a command is believed to be correct, the agent must be persistent and retry, rather than immediately declaring a Level 3 Failure.
+
 ## Essential Workflows & Mandates
 
 -   **The "Show, Don't Tell" Mandate:** The Architect's `browse` tool analysis is prone to hallucination. Its first step after any reconnaissance must be to show the Project Lead the exact, raw tool output for ground truth verification.
