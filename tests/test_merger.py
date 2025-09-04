@@ -1,6 +1,4 @@
 import pytest
-from dataclasses import dataclass, field
-from typing import List
 
 from paddock_parser.models import Race, Runner
 
@@ -10,7 +8,8 @@ try:
     from paddock_parser.merger import smart_merge
 except (ImportError, ModuleNotFoundError):
     # This allows the test file to be parsed even if the merger module doesn't exist yet
-    smart_merge = lambda races: races
+    def smart_merge(races):
+        return races
 
 
 # --- Test Cases for Operation SmartMerge ---

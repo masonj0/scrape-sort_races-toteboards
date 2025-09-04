@@ -1,11 +1,9 @@
-import asyncio
 from datetime import datetime
 from typing import List
 from rich.console import Console
 from rich.table import Table
 from rich.progress import Progress
 from rich.logging import RichHandler
-from rich.panel import Panel
 
 from ..base import NormalizedRace
 from ..pipeline import run_pipeline

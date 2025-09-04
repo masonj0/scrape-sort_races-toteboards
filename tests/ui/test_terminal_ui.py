@@ -3,13 +3,11 @@ Test-as-Spec for Terminal UI Module
 Path: tests/ui/test_terminal_ui.py
 """
 
-import pytest
-from unittest.mock import Mock, patch, MagicMock, call
+from unittest.mock import Mock, patch, call
 from datetime import datetime
-import logging
 
 # Assume these data structures will be imported from the project
-from paddock_parser.base import NormalizedRace, NormalizedRunner
+from paddock_parser.base import NormalizedRace
 
 
 class TestTerminalUIInitialization:
@@ -96,8 +94,6 @@ class TestLoggingIntegration:
         mock_rich_handler_class.assert_called_once()
         assert terminal_ui.log_handler is not None
 
-
-from unittest.mock import patch
 
 @patch('src.paddock_parser.ui.terminal_ui.Console')
 def test_display_high_roller_report_shows_info_when_empty(MockConsole):

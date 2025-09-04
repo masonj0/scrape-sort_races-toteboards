@@ -1,7 +1,5 @@
 import sqlite3
 import pytest
-from dataclasses import dataclass, field
-from typing import List
 
 # Import the data models from their new, dedicated file
 from paddock_parser.models import Race, Runner

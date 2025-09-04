@@ -1,7 +1,8 @@
 from datetime import datetime, timedelta
 from typing import List
 
-from .models import Race, Runner
+from .base import NormalizedRace
+from .models import Race
 
 def _convert_odds_to_float(odds_str: str) -> float:
     """Converts odds string to a float. Handles 'EVS' and fractions."""
@@ -60,8 +61,6 @@ def get_high_roller_races(races: List[Race], now: datetime) -> List[Race]:
 
     return valid_races
 
-
-from .base import NormalizedRace
 
 class RaceScorer:
     """Analyzes a NormalizedRace to produce a score based on specific criteria."""

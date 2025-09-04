@@ -1,7 +1,7 @@
 # src/paddock_parser/adapters/timeform_adapter.py
 
 from bs4 import BeautifulSoup
-from src.paddock_parser.base import NormalizedRace, NormalizedRunner
+from src.paddock_parser.base import NormalizedRace
 from datetime import datetime
 
 class TimeformAdapter:

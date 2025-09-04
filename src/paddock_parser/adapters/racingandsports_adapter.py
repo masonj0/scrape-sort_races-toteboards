@@ -2,7 +2,7 @@ import json
 from typing import Dict, List, Any
 
 from ..http_client import ForagerClient
-from ..base import BaseAdapter, BaseAdapterV3, NormalizedRace, NormalizedRunner
+from ..base import BaseAdapterV3, NormalizedRace
 
 class RacingAndSportsAdapter(BaseAdapterV3):
     """

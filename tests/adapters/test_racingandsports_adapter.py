@@ -1,9 +1,6 @@
 import pytest
-import json
 from pathlib import Path
-from unittest.mock import patch, MagicMock
 
-from paddock_parser.base import NormalizedRace
 from paddock_parser.adapters.racingandsports_adapter import RacingAndSportsAdapter
 
 @pytest.fixture
