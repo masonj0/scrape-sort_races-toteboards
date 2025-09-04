@@ -145,6 +145,7 @@ class TerminalUI:
                     )
 
             now = datetime.now()
+            print(f"DEBUG: scorer_races being passed to get_high_roller_races: {scorer_races}")
             high_roller_races = get_high_roller_races(scorer_races, now)
 
         self.display_high_roller_report(high_roller_races)
