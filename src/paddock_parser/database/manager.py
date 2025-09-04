@@ -18,6 +18,7 @@ class DatabaseManager:
                 race_id TEXT PRIMARY KEY,
                 venue TEXT NOT NULL,
                 race_time TEXT NOT NULL,
+                race_number INTEGER NOT NULL,
                 is_handicap INTEGER NOT NULL,
                 source TEXT,
                 sources TEXT
@@ -41,9 +42,9 @@ class DatabaseManager:
         try:
             sources_json = ",".join(race.sources) if race.sources else ""
             cursor.execute("""
-                INSERT OR REPLACE INTO races (race_id, venue, race_time, is_handicap, source, sources)
-                VALUES (?, ?, ?, ?, ?, ?)
-            """, (race.race_id, race.venue, race.race_time, race.is_handicap, race.source, sources_json))
+                INSERT OR REPLACE INTO races (race_id, venue, race_time, race_number, is_handicap, source, sources)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+            """, (race.race_id, race.venue, race.race_time, race.race_number, race.is_handicap, race.source, sources_json))
 
             cursor.execute("DELETE FROM runners WHERE race_id = ?", (race.race_id,))
 
@@ -83,6 +84,7 @@ class DatabaseManager:
                 race_id=race_id,
                 venue=row['venue'],
                 race_time=row['race_time'],
+                race_number=row['race_number'],
                 is_handicap=bool(row['is_handicap']),
                 source=row['source'],
                 sources=row['sources'].split(',') if row['sources'] else [],
