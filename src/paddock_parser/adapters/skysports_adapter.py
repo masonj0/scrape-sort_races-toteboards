@@ -1,102 +1,120 @@
+import asyncio
+import logging
 import re
+from datetime import date, datetime
 from typing import List, Optional
 
 from bs4 import BeautifulSoup
 
-from ..base import BaseAdapterV3, NormalizedRace
+from ..base import BaseAdapterV3, NormalizedRace, NormalizedRunner
 from ..http_client import ForagerClient
 
 
 class SkySportsAdapter(BaseAdapterV3):
     """
-    Adapter for skysports.com, using a 'Minimalist Scraper' approach.
-    Fetches only the summary racecard page to quickly identify races with small fields.
+    Adapter for skysports.com.
+    Fetches the main racecards page to find individual race URLs,
+    then fetches each race detail page to extract full runner information.
     """
 
     SOURCE_ID = "skysports"
 
     def __init__(self, config=None):
         super().__init__(config)
-        self.base_url = "https://www.skysports.com/racing/racecards"
+        self.base_url = "https://www.skysports.com"
         self.forager = ForagerClient()
 
     async def fetch(self) -> List[NormalizedRace]:
-        """Fetches the main racecards page and parses the summary data."""
-        html_content = await self.forager.fetch(self.base_url)
-        if not html_content:
+        """
+        Fetches all race data by first getting the summary page to find
+        race links, then fetching each of those pages concurrently.
+        """
+        index_page_url = f"{self.base_url}/racing/racecards"
+        index_html = await self.forager.fetch(index_page_url)
+        if not index_html:
+            logging.warning("Failed to fetch the racecards index page.")
             return []
-        return self._parse_race_summaries(html_content)
 
-    def parse_races(self, html_content: str) -> List[NormalizedRace]:
-        """
-        Parses the HTML content to extract race summaries.
-        """
-        return self._parse_race_summaries(html_content)
-
-    def _parse_race_summaries(self, html_content: str) -> List[NormalizedRace]:
-        """Parses the summary page to extract track names, times, and runner counts."""
-        from datetime import datetime, date
-
-        soup = BeautifulSoup(html_content, "lxml")
-        races = []
-
+        soup = BeautifulSoup(index_html, "lxml")
         meeting_blocks = soup.select("div.sdc-site-concertina-block")
 
-        for block in meeting_blocks:
-            track_name_tag = block.select_one("h3.sdc-site-concertina-block__title > span.sdc-site-concertina-block__title")
-            if not track_name_tag:
+        all_races = []
+        for meeting_block in meeting_blocks:
+            track_name_tag = meeting_block.select_one("h3.sdc-site-concertina-block__title > span.sdc-site-concertina-block__title")
+            track_name = track_name_tag.text.strip() if track_name_tag else "Unknown Track"
+
+            race_events = meeting_block.select("div.sdc-site-racing-meetings__event")
+
+            race_urls = []
+            for event in race_events:
+                link_tag = event.select_one("a.sdc-site-racing-meetings__event-link")
+                if link_tag and link_tag.get("href"):
+                    race_urls.append(f"{self.base_url}{link_tag['href']}")
+
+            if not race_urls:
                 continue
-            track_name = track_name_tag.text.strip()
 
-            race_events = block.select("div.sdc-site-racing-meetings__event")
-            for i, event in enumerate(race_events):
-                time_tag = event.select_one("span.sdc-site-racing-meetings__event-time")
-                race_name_tag = event.select_one("span.sdc-site-racing-meetings__event-name")
-                details_tag = event.select_one("span.sdc-site-racing-meetings__event-details")
+            tasks = [self.forager.fetch(url) for url in race_urls]
+            race_html_pages = await asyncio.gather(*tasks)
 
-                if time_tag and race_name_tag and details_tag:
-                    race_time_str = time_tag.text.strip()
-                    race_name = race_name_tag.text.strip()
-                    details_text = details_tag.text.strip()
+            for i, (html, url) in enumerate(zip(race_html_pages, race_urls)):
+                if html:
+                    race = self._parse_race_details(html, url, track_name, i + 1)
+                    if race:
+                        all_races.append(race)
 
-                    race_number_from_name = self._parse_race_number_from_name(race_name)
-                    race_number = int(race_number_from_name) if race_number_from_name else i + 1
+        return all_races
 
-                    runner_count = self._parse_runner_count(details_text)
+    def _parse_race_details(
+        self, html_content: str, url: str, track_name: str, race_number: int
+    ) -> Optional[NormalizedRace]:
+        """Parses the race detail page to extract all available data."""
+        logging.info(f"Parsing race details for track: {track_name}, race number: {race_number}")
+        soup = BeautifulSoup(html_content, "lxml")
 
+        try:
+            header_tag = soup.select_one("h2.sdc-site-racing-header__name")
+            header_text = header_tag.text.strip() if header_tag else ""
+
+            race_time_match = re.search(r"(\d{2}:\d{2})", header_text)
+            race_time_str = race_time_match.group(1) if race_time_match else "00:00"
+
+            post_time_dt = datetime.combine(
+                date.today(), datetime.strptime(race_time_str, "%H:%M").time()
+            )
+
+            runners_list = []
+            runner_items = soup.select("div.sdc-site-racing-card__item")
+            for i, item in enumerate(runner_items):
+                name_tag = item.select_one("h4.sdc-site-racing-card__name a")
+                program_number_tag = item.select_one("div.sdc-site-racing-card__number strong")
+
+                name = name_tag.text.strip() if name_tag else None
+                program_number_str = program_number_tag.text.strip() if program_number_tag else str(i + 1)
+
+                if name:
                     try:
-                        post_time_dt = datetime.combine(date.today(), datetime.strptime(race_time_str, "%H:%M").time())
-                    except ValueError:
-                        post_time_dt = None
+                        program_number = int(re.search(r'\d+', program_number_str).group())
+                    except (ValueError, AttributeError):
+                        program_number = i + 1
 
-                    races.append(
-                        NormalizedRace(
-                            race_id=f"{track_name.replace(' ', '')}-{race_time_str}",
-                            track_name=track_name,
-                            race_number=race_number,
-                            post_time=post_time_dt,
-                            number_of_runners=runner_count,
-                            race_type="T"
-                        )
+                    runners_list.append(
+                        NormalizedRunner(name=name, program_number=program_number)
                     )
-        return races
 
-    def _parse_runner_count(self, text: str) -> Optional[int]:
-        """Extracts the number of runners from a string like '9 Runners'."""
-        match = re.search(r"(\d+)\s+Runners", text, re.IGNORECASE)
-        if match:
-            try:
-                return int(match.group(1))
-            except (ValueError, IndexError):
-                return None
-        return None
+            return NormalizedRace(
+                race_id=url.split("/")[-1],
+                track_name=track_name,
+                post_time=post_time_dt,
+                race_number=race_number,
+                runners=runners_list,
+                number_of_runners=len(runners_list),
+            )
 
-    def _parse_race_number_from_name(self, text: str) -> Optional[str]:
-        """Extracts the race number from a string like 'Race 1 - BetUK...'"""
-        match = re.search(r"Race\s+(\d+)", text, re.IGNORECASE)
-        if match:
-            try:
-                return match.group(1)
-            except IndexError:
-                return None
-        return None
+        except Exception as e:
+            logging.error(f"Error parsing race details from {url}: {e}")
+            return None
+
+    def parse_races(self, html_content: str) -> List[NormalizedRace]:
+        """This method is not used in the new V3 flow but is required by the base class."""
+        return []
