@@ -16,11 +16,18 @@ class RacingAndSportsAdapter(BaseAdapterV3):
         self.client = client or ForagerClient()
         self.base_url = "https://www.racingandsports.com.au/todays-racing-json-v2"
 
-    async def fetch(self) -> str:
+    async def fetch(self) -> List[NormalizedRace]:
         """
         Fetches the raw JSON data from the Racing & Sports API.
+
+        NOTE: This is a partial implementation. It currently only fetches the
+        list of meetings and does not yet parse the individual race details.
         """
-        return await self.client.fetch(self.base_url)
+        # json_data = await self.client.fetch(self.base_url)
+        # meetings = self.parse_meetings(json_data)
+        # For now, return an empty list to prevent crashes in the pipeline.
+        # The full implementation will involve a second stage of fetching and parsing.
+        return []
 
     def parse_meetings(self, json_data: str) -> List[Dict[str, Any]]:
         """
