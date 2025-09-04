@@ -35,31 +35,41 @@ class SkySportsAdapter(BaseAdapterV3):
             logging.warning("Failed to fetch the racecards index page.")
             return []
 
-        race_urls = self._get_race_detail_urls(index_html)
-        if not race_urls:
-            logging.warning("No race detail URLs found on the index page.")
-            return []
+        soup = BeautifulSoup(index_html, "lxml")
+        meeting_blocks = soup.select("div.sdc-site-concertina-block")
 
-        tasks = [self.forager.fetch(url) for url in race_urls]
-        race_html_pages = await asyncio.gather(*tasks)
+        all_races = []
+        for meeting_block in meeting_blocks:
+            track_name_tag = meeting_block.select_one("h3.sdc-site-concertina-block__title > span.sdc-site-concertina-block__title")
+            track_name = track_name_tag.text.strip() if track_name_tag else "Unknown Track"
 
-        races = [
-            self._parse_race_details(html, url)
-            for html, url in zip(race_html_pages, race_urls)
-            if html
-        ]
-        return [race for race in races if race]
+            race_events = meeting_block.select("div.sdc-site-racing-meetings__event")
 
-    def _get_race_detail_urls(self, html_content: str) -> List[str]:
-        """Parses the index page to find links to individual race pages."""
-        soup = BeautifulSoup(html_content, "lxml")
-        links = soup.select("a.sdc-site-racing-meetings__event-link")
-        return [f"{self.base_url}{link['href']}" for link in links if link.get("href")]
+            race_urls = []
+            for event in race_events:
+                link_tag = event.select_one("a.sdc-site-racing-meetings__event-link")
+                if link_tag and link_tag.get("href"):
+                    race_urls.append(f"{self.base_url}{link_tag['href']}")
+
+            if not race_urls:
+                continue
+
+            tasks = [self.forager.fetch(url) for url in race_urls]
+            race_html_pages = await asyncio.gather(*tasks)
+
+            for i, (html, url) in enumerate(zip(race_html_pages, race_urls)):
+                if html:
+                    race = self._parse_race_details(html, url, track_name, i + 1)
+                    if race:
+                        all_races.append(race)
+
+        return all_races
 
     def _parse_race_details(
-        self, html_content: str, url: str
+        self, html_content: str, url: str, track_name: str, race_number: int
     ) -> Optional[NormalizedRace]:
         """Parses the race detail page to extract all available data."""
+        logging.info(f"Parsing race details for track: {track_name}, race number: {race_number}")
         soup = BeautifulSoup(html_content, "lxml")
 
         try:
@@ -68,8 +78,6 @@ class SkySportsAdapter(BaseAdapterV3):
 
             race_time_match = re.search(r"(\d{2}:\d{2})", header_text)
             race_time_str = race_time_match.group(1) if race_time_match else "00:00"
-
-            track_name = header_text.replace(race_time_str, "").strip()
 
             post_time_dt = datetime.combine(
                 date.today(), datetime.strptime(race_time_str, "%H:%M").time()
@@ -93,9 +101,6 @@ class SkySportsAdapter(BaseAdapterV3):
                     runners_list.append(
                         NormalizedRunner(name=name, program_number=program_number)
                     )
-
-            race_number_match = re.search(r"race-(\d+)", url, re.IGNORECASE)
-            race_number = int(race_number_match.group(1)) if race_number_match else 1
 
             return NormalizedRace(
                 race_id=url.split("/")[-1],

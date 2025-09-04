@@ -16,6 +16,7 @@ class Race:
     race_id: str
     venue: str
     race_time: str
+    race_number: int
     is_handicap: bool
     source: str = "" # The new field for the original source
     runners: List[Runner] = field(default_factory=list)

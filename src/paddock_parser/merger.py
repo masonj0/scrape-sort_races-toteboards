@@ -41,11 +41,14 @@ def smart_merge(races: List[Race]) -> List[Race]:
 
         primary_race = race_group[0]
 
+        import logging
         # Create the new merged race object from the primary race's metadata.
+        logging.info(f"Primary race number for {race_id}: {primary_race.race_number}")
         merged_race = Race(
             race_id=primary_race.race_id,
             venue=primary_race.venue,
             race_time=primary_race.race_time,
+            race_number=primary_race.race_number,
             is_handicap=primary_race.is_handicap,
             source=primary_race.source # The source of the primary record
         )
