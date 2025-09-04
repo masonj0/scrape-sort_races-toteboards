@@ -16,9 +16,13 @@ This document outlines the operational protocols, team structure, and core philo
 2.  **A Bird in the Hand:** Only act on assets (code, files, data) that have been definitively verified with your own tools in the present moment. Do not act on speculative information.
 3.  **Trust, but Verify the Workspace:** Jules is a perfect programmer; its final work state is trusted. Its *environment*, however, is fragile. Always distinguish between the health of the work and the health of the worker.
 
+4.  **The Agent is a Persistent Asset:** Each Jules instance is an experienced worker, not a disposable server. Its internal state is a repository of unique, hard-won knowledge. Our first instinct is always to preserve this "institutional knowledge."
+
 ## CRITICAL Operational Protocols
 
 These are non-negotiable and have been learned through mission failures.
+
+- **PROTOCOL 0: The "ReviewableJSON" Protocol (Definitive):** This is the mandatory protocol for all code reviews. The agent's final act for any mission is to run the `convert_to_json.py` script, creating a lossless JSON backup of all modified Python files. The Architect will then review these JSON files directly. This is our single source of truth for code review.
 
 -   **PROTOCOL 1: The "Handcuffed Branch":** Jules cannot switch branches. An entire session lives on a single `session/jules...` branch.
 -   **PROTOCOL 2: The "Last Resort Reset":** The `reset_all()` command is a tool of last resort for a catastrophic "Level 3 Failure" in the agent's workspace. Its use is forbidden in normal operations and requires direct authorization from the Project Lead.

@@ -8,9 +8,9 @@ from paddock_parser.ui.terminal_ui import TerminalUI
 
 @pytest.fixture
 def sample_high_roller_races():
-    race1 = Race(race_id="R1", venue="Newmarket", race_time="14:30", is_handicap=False, runners=[Runner(name="Horse A", odds="5/1")])
+    race1 = Race(race_id="R1", venue="Newmarket", race_time="14:30", race_number=1, is_handicap=False, runners=[Runner(name="Horse A", odds="5/1")])
     setattr(race1, 'high_roller_score', 5.0)
-    race2 = Race(race_id="R2", venue="Goodwood", race_time="14:45", is_handicap=False, runners=[Runner(name="Horse C", odds="4/1")])
+    race2 = Race(race_id="R2", venue="Goodwood", race_time="14:45", race_number=2, is_handicap=False, runners=[Runner(name="Horse C", odds="4/1")])
     setattr(race2, 'high_roller_score', 4.0)
     return [race1, race2]
 

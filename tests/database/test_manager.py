@@ -24,6 +24,7 @@ def sample_race():
         race_id="2025-09-03_Aintree_1",
         venue="Aintree",
         race_time="14:30",
+        race_number=1,
         is_handicap=True,
         runners=[
             Runner(name="Horse A", odds="10/1"),
@@ -80,6 +81,7 @@ def test_save_race_is_idempotent_and_updates(db_manager, sample_race):
         race_id="2025-09-03_Aintree_1", # Same ID
         venue="Aintree",
         race_time="14:35", # Updated time
+        race_number=1, # Same race number
         is_handicap=False, # Updated handicap status
         runners=[
             Runner(name="Horse A", odds="12/1"), # Updated odds

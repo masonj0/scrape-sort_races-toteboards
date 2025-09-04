@@ -139,6 +139,7 @@ class TerminalUI:
                         ScorerRace(
                             race_id=norm_race.race_id,
                             venue=norm_race.track_name,
+                            race_number=norm_race.race_number,
                             race_time=norm_race.post_time.strftime("%H:%M"),
                             is_handicap=False,
                             runners=scorer_runners

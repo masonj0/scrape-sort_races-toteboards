@@ -16,11 +16,11 @@ def test_convert_odds_to_float(odds_str, expected_float):
 def sample_races():
     now = datetime.now()
     return [
-        Race(race_id="RACE_PERFECT", venue="Goodwood", race_time=(now + timedelta(minutes=10)).strftime("%H:%M"), is_handicap=False, runners=[Runner(name="Horse A", odds="4/1")]),
-        Race(race_id="RACE_TOO_LATE", venue="Ascot", race_time=(now + timedelta(minutes=30)).strftime("%H:%M"), is_handicap=True, runners=[Runner(name="Horse C", odds="2/1")]),
-        Race(race_id="RACE_TOO_MANY_RUNNERS", venue="York", race_time=(now + timedelta(minutes=15)).strftime("%H:%M"), is_handicap=False, runners=[Runner(name=f"Runner {i}", odds="10/1") for i in range(7)]), # Test edge case of 7 runners
-        Race(race_id="RACE_HIGH_ODDS_FAV", venue="Newmarket", race_time=(now + timedelta(minutes=5)).strftime("%H:%M"), is_handicap=True, runners=[Runner(name="Horse E", odds="5/1")]),
-        Race(race_id="RACE_LOW_ODDS_FAV", venue="Cheltenham", race_time=(now + timedelta(minutes=12)).strftime("%H:%M"), is_handicap=False, runners=[Runner(name="Horse G", odds="1/2")]),
+        Race(race_id="RACE_PERFECT", venue="Goodwood", race_time=(now + timedelta(minutes=10)).strftime("%H:%M"), race_number=1, is_handicap=False, runners=[Runner(name="Horse A", odds="4/1")]),
+        Race(race_id="RACE_TOO_LATE", venue="Ascot", race_time=(now + timedelta(minutes=30)).strftime("%H:%M"), race_number=2, is_handicap=True, runners=[Runner(name="Horse C", odds="2/1")]),
+        Race(race_id="RACE_TOO_MANY_RUNNERS", venue="York", race_time=(now + timedelta(minutes=15)).strftime("%H:%M"), race_number=3, is_handicap=False, runners=[Runner(name=f"Runner {i}", odds="10/1") for i in range(7)]), # Test edge case of 7 runners
+        Race(race_id="RACE_HIGH_ODDS_FAV", venue="Newmarket", race_time=(now + timedelta(minutes=5)).strftime("%H:%M"), race_number=4, is_handicap=True, runners=[Runner(name="Horse E", odds="5/1")]),
+        Race(race_id="RACE_LOW_ODDS_FAV", venue="Cheltenham", race_time=(now + timedelta(minutes=12)).strftime("%H:%M"), race_number=5, is_handicap=False, runners=[Runner(name="Horse G", odds="1/2")]),
     ]
 
 def test_filters_races_correctly(sample_races):

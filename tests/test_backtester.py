@@ -21,15 +21,15 @@ def historical_db_manager():
 
     # Create historical races with clear winners
     races_to_save = [
-        Race(race_id="R1", venue="VenueA", race_time="14:00", source="Test", is_handicap=False, runners=[
+        Race(race_id="R1", venue="VenueA", race_time="14:00", race_number=1, source="Test", is_handicap=False, runners=[
             Runner(name="Horse A (Fav)", odds="2/1", is_winner=False),
             Runner(name="Horse B (Winner)", odds="5/1", is_winner=True)
         ]),
-        Race(race_id="R2", venue="VenueB", race_time="15:00", source="Test", is_handicap=False, runners=[
+        Race(race_id="R2", venue="VenueB", race_time="15:00", race_number=2, source="Test", is_handicap=False, runners=[
             Runner(name="Horse C (Winner, Fav)", odds="1/1", is_winner=True),
             Runner(name="Horse D", odds="8/1", is_winner=False)
         ]),
-        Race(race_id="R3", venue="VenueC", race_time="16:00", source="Test", is_handicap=False, runners=[
+        Race(race_id="R3", venue="VenueC", race_time="16:00", race_number=3, source="Test", is_handicap=False, runners=[
             Runner(name="Horse E (Fav)", odds="3/1", is_winner=False),
             Runner(name="Horse F", odds="10/1", is_winner=False) # Race with no winner in data
         ]),
