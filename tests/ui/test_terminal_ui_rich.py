@@ -1,6 +1,5 @@
 import pytest
-from unittest.mock import MagicMock, patch, call
-import asyncio
+from unittest.mock import patch, call
 from datetime import datetime
 from paddock_parser.models import Race, Runner
 from paddock_parser.base import NormalizedRace, NormalizedRunner

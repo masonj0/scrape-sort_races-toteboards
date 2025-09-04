@@ -1,7 +1,7 @@
 import pytest
 from datetime import datetime, timedelta
-from src.paddock_parser.models import Race, Runner # Models are now imported
-from src.paddock_parser.scorer import get_high_roller_races, _convert_odds_to_float
+from src.paddock_parser.models import Race, Runner
+from src.paddock_parser.scorer import get_high_roller_races, _convert_odds_to_float, calculate_weighted_score
 
 # --- Test for the Odds Conversion Utility ---
 @pytest.mark.parametrize("odds_str, expected_float", [
@@ -41,10 +41,6 @@ def test_sorts_races_by_high_roller_score(sample_races):
     assert sorted_races[2].race_id == "RACE_LOW_ODDS_FAV"
 
 
-import pytest
-from src.paddock_parser.models import Race, Runner
-from src.paddock_parser.scorer import calculate_weighted_score # This is the new function you will create
-
 def test_calculate_weighted_score():
     """
     SPEC: The weighted score must correctly apply weights to different race factors.
@@ -64,12 +60,7 @@ def test_calculate_weighted_score():
         "FIELD_SIZE_WEIGHT": 0.6,
         "FAVORITE_ODDS_WEIGHT": 0.4
     }
-    # Arrange: Expected score calculation
-    # This formula is for testing purposes. A lower runner count is better (so we use 1/runners).
-    # Higher favorite odds are better.
-    expected_score = ( (1 / len(race.runners)) * weights["FIELD_SIZE_WEIGHT"] ) + \
-                     ( 2.5 * weights["FAVORITE_ODDS_WEIGHT"] )
-    # expected_score = ( (1/2) * 0.6 ) + ( 2.5 * 0.4 ) = 0.3 + 1.0 = 1.3
+    # Act
 
     # Act
     actual_score = calculate_weighted_score(race, weights)

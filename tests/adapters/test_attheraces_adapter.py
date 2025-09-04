@@ -9,11 +9,8 @@ Path: tests/adapters/test_attheraces_adapter.py
 """
 
 import pytest
-from unittest.mock import Mock, patch, mock_open, MagicMock
-from datetime import datetime, date
-from dataclasses import dataclass, field
-from typing import List, Optional
-import os
+from unittest.mock import patch
+from datetime import datetime
 
 # Import the modern data structures
 from paddock_parser.base import NormalizedRace, NormalizedRunner

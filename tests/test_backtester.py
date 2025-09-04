@@ -1,5 +1,5 @@
 import pytest
-from typing import List, Callable
+from typing import List
 
 # These updated models reflect the changes you will make in src/paddock_parser/models.py
 from paddock_parser.models import Race, Runner

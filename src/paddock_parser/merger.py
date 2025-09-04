@@ -1,6 +1,6 @@
 from typing import List
 from collections import defaultdict
-from .models import Race, Runner
+from .models import Race
 
 # Define the priority of the sources. Lower index = higher priority.
 SOURCE_PRIORITY = ["FanDuel", "SkySports", "AtTheRaces"]
