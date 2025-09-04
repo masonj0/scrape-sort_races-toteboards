@@ -1,4 +1,4 @@
 {
     "filepath": "src/paddock_parser/adapters/__init__.py",
-    "content": "# Adapters module\n\nfrom .skysports_adapter import SkySportsAdapter\nfrom .fanduel_graphql_adapter import FanDuelGraphQLAdapter\nfrom .equibase_adapter import EquibaseAdapter\nfrom .greyhound_recorder import GreyhoundRecorderAdapter\nfrom .racingpost_adapter import RacingPostAdapter\n\n__all__ = [\n    \"SkySportsAdapter\",\n    \"FanDuelGraphQLAdapter\",\n    \"EquibaseAdapter\",\n    \"GreyhoundRecorderAdapter\",\n    \"RacingPostAdapter\"\n]\n"
+    "content": "# Adapters module\n\nfrom .skysports_adapter import SkySportsAdapter\nfrom .fanduel_graphql_adapter import FanDuelGraphQLAdapter\nfrom .equibase_adapter import EquibaseAdapter\nfrom .greyhound_recorder import GreyhoundRecorderAdapter\nfrom .racingpost_adapter import RacingPostAdapter\nfrom .racingandsports_adapter import RacingAndSportsAdapter\n\n__all__ = [\n    \"SkySportsAdapter\",\n    \"FanDuelGraphQLAdapter\",\n    \"EquibaseAdapter\",\n    \"GreyhoundRecorderAdapter\",\n    \"RacingPostAdapter\",\n    \"RacingAndSportsAdapter\"\n]\n"
 }

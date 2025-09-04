@@ -1,7 +1,8 @@
 from datetime import datetime, timedelta
 from typing import List
 
-from .models import Race, Runner
+from .base import NormalizedRace
+from .models import Race
 
 def _convert_odds_to_float(odds_str: str) -> float:
     """Converts odds string to a float. Handles 'EVS' and fractions."""
@@ -61,8 +62,6 @@ def get_high_roller_races(races: List[Race], now: datetime) -> List[Race]:
     return valid_races
 
 
-from .base import NormalizedRace
-
 class RaceScorer:
     """Analyzes a NormalizedRace to produce a score based on specific criteria."""
     def score(self, race: NormalizedRace) -> float:
@@ -79,3 +78,29 @@ class RaceScorer:
         if 11 <= field_size <= 12:
             return 40.0
         return 20.0
+
+
+def calculate_weighted_score(race: Race, weights: dict) -> float:
+    """
+    Calculates a weighted score for a race based on various factors.
+    """
+    if not race.runners:
+        return 0.0
+
+    # Find the favorite (lowest odds)
+    favorite_odds = float('inf')
+    for runner in race.runners:
+        odds = _convert_odds_to_float(runner.odds)
+        if odds < favorite_odds:
+            favorite_odds = odds
+
+    if favorite_odds == float('inf'):
+        favorite_odds = 0 # Or handle as an error/default case
+
+    # Calculate score components
+    field_size_component = (1 / len(race.runners)) * weights.get("FIELD_SIZE_WEIGHT", 0)
+    favorite_odds_component = favorite_odds * weights.get("FAVORITE_ODDS_WEIGHT", 0)
+
+    # Calculate final score
+    score = field_size_component + favorite_odds_component
+    return score
