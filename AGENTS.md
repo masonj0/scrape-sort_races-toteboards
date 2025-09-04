@@ -50,6 +50,7 @@ These are non-negotiable and have been learned through mission failures.
 
 ## Onboarding Protocol for New Architects
 
--   **The "First Day Protocol":** Any new Architect must immediately perform two tasks upon activation:
-    1.  **"Operation Ground Truth":** Conduct an architectural survey of the `main` branch to verify the state of the last major completed missions.
-    2.  **"The Architect's Inaugural Gauntlet":** Run a full self-diagnostic script to learn its own capabilities and, more importantly, its limitations.
+-   **The "First Day Protocol":** Any new Architect must immediately perform three tasks upon activation:
+    1.  **"Required Reading":** Read the full contents of the following three files to understand project history, strategy, and protocols: `AGENTS.md`, `ROADMAP.md`, and `HISTORY.md`.
+    2.  **"Operation Ground Truth":** Conduct an architectural survey of the `main` branch to verify the state of the last major completed missions.
+    3.  **"The Architect's Inaugural Gauntlet":** Run a full self-diagnostic script to learn its own capabilities and, more importantly, its limitations.
