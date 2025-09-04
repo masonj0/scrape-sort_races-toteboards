@@ -39,3 +39,40 @@ def test_sorts_races_by_high_roller_score(sample_races):
     assert sorted_races[0].race_id == "RACE_HIGH_ODDS_FAV"
     assert sorted_races[1].race_id == "RACE_PERFECT"
     assert sorted_races[2].race_id == "RACE_LOW_ODDS_FAV"
+
+
+import pytest
+from src.paddock_parser.models import Race, Runner
+from src.paddock_parser.scorer import calculate_weighted_score # This is the new function you will create
+
+def test_calculate_weighted_score():
+    """
+    SPEC: The weighted score must correctly apply weights to different race factors.
+    - A lower runner count should increase the score.
+    - Higher odds for the favorite should increase the score.
+    """
+    # Arrange: A sample race with a clear favorite
+    race = Race(
+        race_id="R1", venue="Test", race_time="14:00", source="Test", race_number=1, is_handicap=False,
+        runners=[
+            Runner(name="Favorite", odds="5/2"), # Odds = 2.5
+            Runner(name="Longshot", odds="10/1")
+        ]
+    )
+    # Arrange: Sample weights from our V3 strategy
+    weights = {
+        "FIELD_SIZE_WEIGHT": 0.6,
+        "FAVORITE_ODDS_WEIGHT": 0.4
+    }
+    # Arrange: Expected score calculation
+    # This formula is for testing purposes. A lower runner count is better (so we use 1/runners).
+    # Higher favorite odds are better.
+    expected_score = ( (1 / len(race.runners)) * weights["FIELD_SIZE_WEIGHT"] ) + \
+                     ( 2.5 * weights["FAVORITE_ODDS_WEIGHT"] )
+    # expected_score = ( (1/2) * 0.6 ) + ( 2.5 * 0.4 ) = 0.3 + 1.0 = 1.3
+
+    # Act
+    actual_score = calculate_weighted_score(race, weights)
+
+    # Assert
+    assert actual_score == pytest.approx(1.3)
