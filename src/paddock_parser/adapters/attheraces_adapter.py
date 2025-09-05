@@ -1,10 +1,11 @@
 import re
 from datetime import datetime
-from typing import List, Optional
+from typing import List
 
 from bs4 import BeautifulSoup
 
 from ..base import BaseAdapterV3, NormalizedRace, NormalizedRunner
+from .utils import _convert_odds_to_float
 
 
 class AtTheRacesAdapter(BaseAdapterV3):
@@ -72,7 +73,7 @@ class AtTheRacesAdapter(BaseAdapterV3):
                     program_number=number,
                     jockey=jockey,
                     trainer=trainer,
-                    odds=odds
+                    odds=_convert_odds_to_float(odds)
                 )
             )
 

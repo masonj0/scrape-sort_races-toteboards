@@ -3,13 +3,11 @@ Test-as-Spec for Terminal UI Module
 Path: tests/ui/test_terminal_ui.py
 """
 
-import pytest
-from unittest.mock import Mock, patch, MagicMock, call
+from unittest.mock import Mock, patch, call
 from datetime import datetime
-import logging
 
 # Assume these data structures will be imported from the project
-from paddock_parser.base import NormalizedRace, NormalizedRunner
+from paddock_parser.base import NormalizedRace
 
 
 class TestTerminalUIInitialization:
@@ -95,3 +93,19 @@ class TestLoggingIntegration:
 
         mock_rich_handler_class.assert_called_once()
         assert terminal_ui.log_handler is not None
+
+
+@patch('src.paddock_parser.ui.terminal_ui.Console')
+def test_display_high_roller_report_shows_info_when_empty(MockConsole):
+    # Arrange
+    from src.paddock_parser.ui.terminal_ui import TerminalUI
+    mock_console_instance = MockConsole.return_value
+    ui = TerminalUI()
+    # Act
+    ui.display_high_roller_report([])
+    # Assert
+    mock_console_instance.print.assert_called_once()
+    actual_output = mock_console_instance.print.call_args[0][0]
+    assert "No races met the High Roller criteria." in actual_output
+    assert "next 25 minutes" in actual_output
+    assert "Fewer than 7" in actual_output

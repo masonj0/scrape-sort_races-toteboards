@@ -1,22 +1,6 @@
 import pytest
-from dataclasses import dataclass, field
-from typing import List
 
-# These updated models reflect the changes you will make in src/paddock_parser/models.py
-@dataclass
-class Runner:
-    name: str
-    odds: str
-
-@dataclass
-class Race:
-    race_id: str
-    venue: str
-    race_time: str
-    source: str
-    is_handicap: bool # Field added to match models.py
-    runners: List[Runner] = field(default_factory=list)
-    sources: List[str] = field(default_factory=list)
+from paddock_parser.models import Race, Runner
 
 # This is the function you will implement in src/paddock_parser/merger.py
 # The test uses a local reference to the function, so we need to handle the import carefully
@@ -24,7 +8,8 @@ try:
     from paddock_parser.merger import smart_merge
 except (ImportError, ModuleNotFoundError):
     # This allows the test file to be parsed even if the merger module doesn't exist yet
-    smart_merge = lambda races: races
+    def smart_merge(races):
+        return races
 
 
 # --- Test Cases for Operation SmartMerge ---
@@ -32,12 +17,12 @@ except (ImportError, ModuleNotFoundError):
 @pytest.fixture
 def race_data():
     """ Provides a realistic list of races with duplicates to be merged. """
-    race_1_sky = Race(race_id="Aintree_14:30", venue="Aintree", race_time="14:30", source="SkySports", is_handicap=False,
-                      runners=[Runner("Horse A", "5/1"), Runner("Horse B", "10/1")])
-    race_1_atr = Race(race_id="Aintree_14:30", venue="Aintree Racecourse", race_time="14:30", source="AtTheRaces", is_handicap=False,
-                      runners=[Runner("Horse B", "12/1"), Runner("Horse C", "8/1")])
-    race_2_unique = Race(race_id="Newmarket_15:00", venue="Newmarket", race_time="15:00", source="FanDuel", is_handicap=False,
-                         runners=[Runner("Horse D", "2/1")])
+    race_1_sky = Race(race_id="Aintree_14:30", venue="Aintree", race_time="14:30", race_number=1, source="SkySports", is_handicap=False,
+                      runners=[Runner(name="Horse A", odds="5/1"), Runner(name="Horse B", odds="10/1")])
+    race_1_atr = Race(race_id="Aintree_14:30", venue="Aintree Racecourse", race_time="14:30", race_number=1, source="AtTheRaces", is_handicap=False,
+                      runners=[Runner(name="Horse B", odds="12/1"), Runner(name="Horse C", odds="8/1")])
+    race_2_unique = Race(race_id="Newmarket_15:00", venue="Newmarket", race_time="15:00", race_number=2, source="FanDuel", is_handicap=False,
+                         runners=[Runner(name="Horse D", odds="2/1")])
     return [race_1_sky, race_1_atr, race_2_unique]
 
 def test_deduplicates_races(race_data):
@@ -88,8 +73,8 @@ def test_prioritizes_metadata_from_best_source(race_data):
 def test_handles_no_duplicates():
     """ SPEC: If no duplicates are present, the output should be logically identical to the input. """
     races = [
-        Race(race_id="R1", venue="V1", race_time="T1", source="S1", is_handicap=False, runners=[]),
-        Race(race_id="R2", venue="V2", race_time="T2", source="S2", is_handicap=False, runners=[]),
+        Race(race_id="R1", venue="V1", race_time="T1", race_number=1, source="S1", is_handicap=False, runners=[]),
+        Race(race_id="R2", venue="V2", race_time="T2", race_number=2, source="S2", is_handicap=False, runners=[]),
     ]
     merged_races = smart_merge(races)
     assert len(merged_races) == 2

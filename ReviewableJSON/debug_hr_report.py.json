@@ -1,0 +1,4 @@
+{
+    "filepath": "debug_hr_report.py",
+    "content": "import asyncio\nfrom src.paddock_parser.ui.terminal_ui import TerminalUI\n\ndef run_report():\n    ui = TerminalUI()\n    asyncio.run(ui._run_high_roller_report())\n\nif __name__ == \"__main__\":\n    run_report()\n"
+}

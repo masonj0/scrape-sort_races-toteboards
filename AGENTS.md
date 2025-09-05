@@ -16,9 +16,13 @@ This document outlines the operational protocols, team structure, and core philo
 2.  **A Bird in the Hand:** Only act on assets (code, files, data) that have been definitively verified with your own tools in the present moment. Do not act on speculative information.
 3.  **Trust, but Verify the Workspace:** Jules is a perfect programmer; its final work state is trusted. Its *environment*, however, is fragile. Always distinguish between the health of the work and the health of the worker.
 
+4.  **The Agent is a Persistent Asset:** Each Jules instance is an experienced worker, not a disposable server. Its internal state is a repository of unique, hard-won knowledge. Our first instinct is always to preserve this "institutional knowledge."
+
 ## CRITICAL Operational Protocols
 
 These are non-negotiable and have been learned through mission failures.
+
+- **PROTOCOL 0: The "ReviewableJSON" Protocol (Definitive):** This is the mandatory protocol for all code reviews. The agent's final act for any mission is to run the `convert_to_json.py` script, creating a lossless JSON backup of all modified Python files. The Architect will then review these JSON files directly. This is our single source of truth for code review.
 
 -   **PROTOCOL 1: The "Handcuffed Branch":** Jules cannot switch branches. An entire session lives on a single `session/jules...` branch.
 -   **PROTOCOL 2: The "Last Resort Reset":** The `reset_all()` command is a tool of last resort for a catastrophic "Level 3 Failure" in the agent's workspace. Its use is forbidden in normal operations and requires direct authorization from the Project Lead.
@@ -29,6 +33,12 @@ These are non-negotiable and have been learned through mission failures.
 -   **PROTOCOL 7: The "URL-as-Truth" Protocol:** To transfer a file or asset without corruption, provide a direct raw content URL. The receiving agent must fetch it. This is our solution to the chat's rendering bugs.
 -   **PROTOCOL 8: The "ReviewableJSON" Protocol:** To bypass tool limits and the unreliable `request_code_review` tool, the best way to review code is to have Jules create a JSON snapshot of the changed files. This is our standard "Safe Write" and code transfer procedure.
 -   **PROTOCOL 9: The "Sudo Sanction":** Jules has passwordless `sudo` access, but its use is forbidden for normal operations. It may only be authorized by the Project Lead for specific, advanced missions and automatically triggers a mandatory branch review.
+
+-   **PROTOCOL 10: The "Exit Interview" Protocol:** In the event of a Level 3 Failure, or before any planned termination of an agent, the Architect will charter a final "Exit Interview" mission to capture the agent's institutional knowledge for its successor.
+
+-   **PROTOCOL 11: The "Module-First Testing" Protocol:** The standard `pytest` command is considered unreliable. All test suites must be invoked by calling `pytest` as a Python module (`python -m pytest`) to ensure the correct interpreter is used.
+
+-   **PROTOCOL 12: The "Persistence" Mandate:** The agent tool execution layer is known to produce false negatives (e.g., "No valid tool call found"). If a command is believed to be correct, the agent must be persistent and retry, rather than immediately declaring a Level 3 Failure.
 
 ## Essential Workflows & Mandates
 
@@ -44,6 +54,7 @@ These are non-negotiable and have been learned through mission failures.
 
 ## Onboarding Protocol for New Architects
 
--   **The "First Day Protocol":** Any new Architect must immediately perform two tasks upon activation:
-    1.  **"Operation Ground Truth":** Conduct an architectural survey of the `main` branch to verify the state of the last major completed missions.
-    2.  **"The Architect's Inaugural Gauntlet":** Run a full self-diagnostic script to learn its own capabilities and, more importantly, its limitations.
+-   **The "First Day Protocol":** Any new Architect must immediately perform three tasks upon activation:
+    1.  **"Required Reading":** Read the full contents of the following three files to understand project history, strategy, and protocols: `AGENTS.md`, `ROADMAP.md`, and `HISTORY.md`.
+    2.  **"Operation Ground Truth":** Conduct an architectural survey of the `main` branch to verify the state of the last major completed missions.
+    3.  **"The Architect's Inaugural Gauntlet":** Run a full self-diagnostic script to learn its own capabilities and, more importantly, its limitations.

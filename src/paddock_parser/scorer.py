@@ -1,21 +1,8 @@
 from datetime import datetime, timedelta
 from typing import List
 
+from .base import NormalizedRace
 from .models import Race, Runner
-
-def _convert_odds_to_float(odds_str: str) -> float:
-    """Converts odds string to a float. Handles 'EVS' and fractions."""
-    if isinstance(odds_str, str):
-        odds_str = odds_str.strip().upper()
-        if odds_str == 'EVS':
-            return 1.0
-        if '/' in odds_str:
-            try:
-                num, den = map(int, odds_str.split('/'))
-                return num / den
-            except (ValueError, ZeroDivisionError):
-                return float('inf')
-    return float('inf')
 
 def get_high_roller_races(races: List[Race], now: datetime) -> List[Race]:
     """
@@ -45,7 +32,7 @@ def get_high_roller_races(races: List[Race], now: datetime) -> List[Race]:
         # 3. Scoring based on favorite's odds
         min_odds = float('inf')
         for runner in race.runners:
-            odds = _convert_odds_to_float(runner.odds)
+            odds = runner.odds or float('inf')
             if odds < min_odds:
                 min_odds = odds
 
@@ -60,8 +47,6 @@ def get_high_roller_races(races: List[Race], now: datetime) -> List[Race]:
 
     return valid_races
 
-
-from .base import NormalizedRace
 
 class RaceScorer:
     """Analyzes a NormalizedRace to produce a score based on specific criteria."""
@@ -79,3 +64,29 @@ class RaceScorer:
         if 11 <= field_size <= 12:
             return 40.0
         return 20.0
+
+
+def calculate_weighted_score(race: Race, weights: dict) -> float:
+    """
+    Calculates a weighted score for a race based on various factors.
+    """
+    if not race.runners:
+        return 0.0
+
+    # Find the favorite (lowest odds)
+    favorite_odds = float('inf')
+    for runner in race.runners:
+        odds = runner.odds or float('inf')
+        if odds < favorite_odds:
+            favorite_odds = odds
+
+    if favorite_odds == float('inf'):
+        favorite_odds = 0 # Or handle as an error/default case
+
+    # Calculate score components
+    field_size_component = (1 / len(race.runners)) * weights.get("FIELD_SIZE_WEIGHT", 0)
+    favorite_odds_component = favorite_odds * weights.get("FAVORITE_ODDS_WEIGHT", 0)
+
+    # Calculate final score
+    score = field_size_component + favorite_odds_component
+    return score
