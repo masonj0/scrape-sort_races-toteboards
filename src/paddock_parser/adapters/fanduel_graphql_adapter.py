@@ -35,7 +35,8 @@ def parse_from_json(schedule_data: str, detail_data: str) -> List[NormalizedRace
             if not runner_info.get("scratched"):
                 odds_info = interest.get("currentOdds", {})
                 odds_num = odds_info.get('numerator')
-                odds = float(odds_num) if odds_num is not None else None
+                odds_den = odds_info.get('denominator')
+                odds = float(odds_num / odds_den) if odds_num is not None and odds_den is not None else None
 
                 runner = NormalizedRunner(
                     name=runner_info.get("horseName"),

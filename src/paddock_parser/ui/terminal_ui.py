@@ -49,11 +49,9 @@ class TerminalUI:
         """
         if not races:
             info_message = (
-
                 "[bold yellow]No races met the High Roller criteria.[/bold yellow]\n\n"
                 "The report is filtered based on the following rules:\n"
                 " - [bold]Time:[/bold] Only includes races starting in the next 25 minutes.\n"
-
                 " - [bold]Runners:[/bold] Only includes races with Fewer than 7 runners."
             )
             self.console.print(info_message)
@@ -70,11 +68,12 @@ class TerminalUI:
             # The high roller report logic implies one favorite runner per race.
             if race.runners:
                 favorite = race.runners[0]
+                odds_str = f"{favorite.odds:.2f}" if favorite.odds is not None else "N/A"
                 table.add_row(
                     race.race_time,
                     race.venue,
                     favorite.name,
-                    favorite.odds
+                    odds_str
                 )
 
         self.console.print(table)
@@ -134,20 +133,19 @@ class TerminalUI:
             scorer_races = []
             for norm_race in normalized_races:
                 if norm_race.post_time:
-                    scorer_runners = [ScorerRunner(name=r.name, odds=str(r.odds) if r.odds else "SP") for r in norm_race.runners]
+                    scorer_runners = [ScorerRunner(name=r.name, odds=r.odds) for r in norm_race.runners]
                     scorer_races.append(
                         ScorerRace(
                             race_id=norm_race.race_id,
                             venue=norm_race.track_name,
                             race_number=norm_race.race_number,
                             race_time=norm_race.post_time.strftime("%H:%M"),
-                            is_handicap=False,
+                            is_handicap=norm_race.race_type == "Handicap",
                             runners=scorer_runners
                         )
                     )
 
             now = datetime.now()
-            print(f"DEBUG: scorer_races being passed to get_high_roller_races: {scorer_races}")
             high_roller_races = get_high_roller_races(scorer_races, now)
 
         self.display_high_roller_report(high_roller_races)
