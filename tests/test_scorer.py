@@ -7,13 +7,17 @@ from src.paddock_parser.scorer import get_high_roller_races, calculate_weighted_
 @pytest.fixture
 def sample_races():
     now = datetime.now()
-    return [
+    races = [
         Race(race_id="RACE_PERFECT", venue="Goodwood", race_time=(now + timedelta(minutes=10)).strftime("%H:%M"), race_number=1, is_handicap=False, runners=[Runner(name="Horse A", odds=4.0)]),
         Race(race_id="RACE_TOO_LATE", venue="Ascot", race_time=(now + timedelta(minutes=30)).strftime("%H:%M"), race_number=2, is_handicap=True, runners=[Runner(name="Horse C", odds=2.0)]),
-        Race(race_id="RACE_TOO_MANY_RUNNERS", venue="York", race_time=(now + timedelta(minutes=15)).strftime("%H:%M"), race_number=3, is_handicap=False, runners=[Runner(name=f"Runner {i}", odds=10.0) for i in range(7)]), # Test edge case of 7 runners
+        Race(race_id="RACE_TOO_MANY_RUNNERS", venue="York", race_time=(now + timedelta(minutes=15)).strftime("%H:%M"), race_number=3, is_handicap=False, runners=[Runner(name=f"Runner {i}", odds=10.0) for i in range(7)]),
         Race(race_id="RACE_HIGH_ODDS_FAV", venue="Newmarket", race_time=(now + timedelta(minutes=5)).strftime("%H:%M"), race_number=4, is_handicap=True, runners=[Runner(name="Horse E", odds=5.0)]),
         Race(race_id="RACE_LOW_ODDS_FAV", venue="Cheltenham", race_time=(now + timedelta(minutes=12)).strftime("%H:%M"), race_number=5, is_handicap=False, runners=[Runner(name="Horse G", odds=0.5)]),
     ]
+    # Add number_of_runners to each race
+    for race in races:
+        race.number_of_runners = len(race.runners)
+    return races
 
 def test_filters_races_correctly(sample_races):
     now = datetime.now()
@@ -41,7 +45,7 @@ def test_calculate_weighted_score():
     """
     # Arrange: A sample race with a clear favorite
     race = Race(
-        race_id="R1", venue="Test", race_time="14:00", source="Test", race_number=1, is_handicap=False,
+        race_id="R1", venue="Test", race_time="14:00", source="Test", race_number=1, is_handicap=False, number_of_runners=2,
         runners=[
             Runner(name="Favorite", odds=2.5),
             Runner(name="Longshot", odds=10.0)
@@ -52,10 +56,10 @@ def test_calculate_weighted_score():
         "FIELD_SIZE_WEIGHT": 0.6,
         "FAVORITE_ODDS_WEIGHT": 0.4
     }
-    # Act
 
     # Act
     actual_score = calculate_weighted_score(race, weights)
 
     # Assert
+    # Expected: (1/2 * 0.6) + (2.5 * 0.4) = 0.3 + 1.0 = 1.3
     assert actual_score == pytest.approx(1.3)

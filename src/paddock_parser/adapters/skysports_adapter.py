@@ -10,6 +10,31 @@ from ..base import BaseAdapterV3, NormalizedRace, NormalizedRunner
 from ..http_client import ForagerClient
 
 
+def _convert_odds_to_float(odds_str: Optional[str]) -> Optional[float]:
+    """Converts fractional odds string to a float."""
+    if not odds_str or not isinstance(odds_str, str):
+        return None
+
+    odds_str = odds_str.strip().upper()
+    if odds_str == 'SP':
+        return None
+    if odds_str == 'EVENS':
+        return 1.0
+
+    if '/' in odds_str:
+        try:
+            numerator, denominator = map(int, odds_str.split('/'))
+            if denominator == 0:
+                return None
+            return numerator / denominator
+        except (ValueError, ZeroDivisionError):
+            return None
+    try:
+        return float(odds_str)
+    except (ValueError, TypeError):
+        return None
+
+
 class SkySportsAdapter(BaseAdapterV3):
     """
     Adapter for skysports.com.
@@ -73,8 +98,12 @@ class SkySportsAdapter(BaseAdapterV3):
         soup = BeautifulSoup(html_content, "lxml")
 
         try:
+            # --- Race Info Extraction ---
             header_tag = soup.select_one("h2.sdc-site-racing-header__name")
             header_text = header_tag.text.strip() if header_tag else ""
+
+            race_name_tag = soup.select_one("h1.sdc-site-racing-header__title")
+            race_name = race_name_tag.text.strip() if race_name_tag else "Unknown Race"
 
             race_time_match = re.search(r"(\d{2}:\d{2})", header_text)
             race_time_str = race_time_match.group(1) if race_time_match else "00:00"
@@ -83,36 +112,51 @@ class SkySportsAdapter(BaseAdapterV3):
                 date.today(), datetime.strptime(race_time_str, "%H:%M").time()
             )
 
+            race_type = "Handicap" if "handicap" in race_name.lower() else "Unknown"
+
+            # --- Runner Extraction ---
             runners_list = []
             runner_items = soup.select("div.sdc-site-racing-card__item")
             for i, item in enumerate(runner_items):
                 name_tag = item.select_one("h4.sdc-site-racing-card__name a")
                 program_number_tag = item.select_one("div.sdc-site-racing-card__number strong")
+                odds_tag = item.select_one(".sdc-site-racing-card__odds-sp")
 
                 name = name_tag.text.strip() if name_tag else None
-                program_number_str = program_number_tag.text.strip() if program_number_tag else str(i + 1)
+                program_number_str = (
+                    program_number_tag.text.strip() if program_number_tag else str(i + 1)
+                )
+                odds_str = odds_tag.text.strip() if odds_tag else None
+                odds_float = _convert_odds_to_float(odds_str)
 
                 if name:
                     try:
-                        program_number = int(re.search(r'\d+', program_number_str).group())
+                        program_number = int(re.search(r"\d+", program_number_str).group())
                     except (ValueError, AttributeError):
                         program_number = i + 1
 
                     runners_list.append(
-                        NormalizedRunner(name=name, program_number=program_number)
+                        NormalizedRunner(
+                            name=name, program_number=program_number, odds=odds_float
+                        )
                     )
 
+            # The race ID in the URL is the second to last path segment
+            path_parts = [part for part in url.split("/") if part]
+            race_id = path_parts[-2] if len(path_parts) >= 2 else url
+
             return NormalizedRace(
-                race_id=url.split("/")[-1],
+                race_id=race_id,
                 track_name=track_name,
                 post_time=post_time_dt,
                 race_number=race_number,
+                race_type=race_type,
                 runners=runners_list,
                 number_of_runners=len(runners_list),
             )
 
         except Exception as e:
-            logging.error(f"Error parsing race details from {url}: {e}")
+            logging.error(f"Error parsing race details from {url}: {e}", exc_info=True)
             return None
 
     def parse_races(self, html_content: str) -> List[NormalizedRace]:

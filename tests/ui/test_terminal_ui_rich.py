@@ -7,9 +7,10 @@ from paddock_parser.ui.terminal_ui import TerminalUI
 
 @pytest.fixture
 def sample_high_roller_races():
-    race1 = Race(race_id="R1", venue="Newmarket", race_time="14:30", race_number=1, is_handicap=False, runners=[Runner(name="Horse A", odds=5.0)])
+    # This fixture simulates the output of the get_high_roller_races function
+    race1 = Race(race_id="R1", venue="Newmarket", race_time="14:30", race_number=1, is_handicap=False, number_of_runners=1, runners=[Runner(name="Horse A", odds=5.0)])
     setattr(race1, 'high_roller_score', 5.0)
-    race2 = Race(race_id="R2", venue="Goodwood", race_time="14:45", race_number=2, is_handicap=False, runners=[Runner(name="Horse C", odds=4.0)])
+    race2 = Race(race_id="R2", venue="Goodwood", race_time="14:45", race_number=2, is_handicap=False, number_of_runners=1, runners=[Runner(name="Horse C", odds=4.0)])
     setattr(race2, 'high_roller_score', 4.0)
     return [race1, race2]
 
@@ -22,7 +23,7 @@ def test_display_high_roller_report_uses_rich_table(MockConsole, MockTable, samp
     ui = TerminalUI(console=mock_console_instance)
     ui.display_high_roller_report(sample_high_roller_races)
 
-    MockTable.assert_called_once_with(title="High Roller Report")
+    MockTable.assert_called_once_with(title="[bold green]High Roller Report[/bold green]")
 
     expected_calls = [
         call("Time", style="cyan"),
@@ -39,7 +40,7 @@ def test_display_high_roller_report_uses_rich_table(MockConsole, MockTable, samp
 
     mock_console_instance.print.assert_called_once_with(mock_table_instance)
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 @patch('paddock_parser.ui.terminal_ui.get_high_roller_races')
 @patch('paddock_parser.ui.terminal_ui.run_pipeline')
 @patch('paddock_parser.ui.terminal_ui.TerminalUI.display_high_roller_report')
