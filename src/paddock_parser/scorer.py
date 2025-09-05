@@ -1,8 +1,8 @@
 from datetime import datetime, timedelta
 from typing import List
 
+from .base import NormalizedRace
 from .models import Race, Runner
-
 
 def get_high_roller_races(races: List[Race], now: datetime) -> List[Race]:
     """

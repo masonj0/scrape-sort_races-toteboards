@@ -1,7 +1,7 @@
 import pytest
 from pathlib import Path
 from src.paddock_parser.adapters.timeform_adapter import TimeformAdapter
-from src.paddock_parser.base import NormalizedRace, NormalizedRunner
+from src.paddock_parser.base import NormalizedRunner
 
 @pytest.fixture
 def mock_html():
