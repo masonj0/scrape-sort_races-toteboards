@@ -35,14 +35,24 @@ This section outlines the next generation of features, building upon our stable 
 
 ## Part 3: The V2 "Golden Branch" (Our Foundation)
 
-This section documents the verified, completed features that form the stable foundation for our V3 evolution.
+This section documents the verified, completed features that form the stable foundation for our V3 evolution, categorized by our four architectural pillars.
 
-*   **Core Architecture:** Stable `src` layout, `pytest` harness, and a resilient, functional pipeline.
-*   **Professional Fetching Engine:** `ForagerClient` with User-Agent rotation and retries.
-*   **Data Persistence & Fusion:** `DatabaseManager` (SQLite) and `SmartMerge` logic are in place.
-*   **Backtesting Engine:** A `Backtester` module for validating scoring models.
-*   **Rich TUI & API:** A `rich`-powered interactive UI and a FastAPI service with JSON/CSV exports.
-*   **Initial Adapter Suite:** A functional set of adapters providing our baseline data coverage.
+### The Brain (Scoring & Analysis)
+*   **Advanced Weighted Scoring:** A flexible, weighted scoring engine (`scorer.py`) forms the foundation for future analytical models.
+*   **Backtesting Engine:** A `Backtester` module for scientifically validating scoring models against historical data.
+
+### The Guardian (Data Integrity & Persistence)
+*   **Data Persistence:** A `DatabaseManager` using SQLite provides the project with long-term memory.
+*   **Data Deduplication:** `SmartMerge` logic fuses data from multiple sources into a single, authoritative record.
+
+### The Template (Data Acquisition & Resilience)
+*   **Professional Fetching Engine:** A resilient `ForagerClient` with User-Agent rotation and intelligent retries.
+*   **Initial Adapter Suite:** A functional set of adapters providing our baseline data coverage (`SkySports`, `AtTheRaces`, `RacingAndSports`, etc.).
+
+### The Face (User Experience & Delivery)
+*   **Rich Terminal User Interface (TUI):** An enhanced, `rich`-powered interactive display for running reports.
+*   **High Roller Report:** A one-click, user-defined value report in the TUI.
+*   **Web Service API:** A FastAPI service with JSON and CSV exports.
 
 ---
 

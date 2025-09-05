@@ -1,5 +1,6 @@
 from datetime import datetime
-from typing import List
+from typing import List, Optional
+
 from rich.console import Console
 from rich.table import Table
 from rich.progress import Progress
@@ -9,6 +10,28 @@ from ..base import NormalizedRace
 from ..pipeline import run_pipeline
 from ..scorer import get_high_roller_races
 from ..models import Race as ScorerRace, Runner as ScorerRunner
+
+
+def _convert_normalized_to_scorer_race(norm_race: NormalizedRace) -> Optional[ScorerRace]:
+    """Converts a NormalizedRace to the ScorerRace model for use with scorer functions."""
+    if not norm_race.post_time:
+        return None
+
+    # The odds in NormalizedRunner and ScorerRunner are both Optional[float], so no conversion is needed.
+    # This conversion also loses program_number, but it's not needed for the high roller report.
+    scorer_runners = [ScorerRunner(name=r.name, odds=r.odds) for r in norm_race.runners]
+    is_handicap = norm_race.race_type and "handicap" in norm_race.race_type.lower()
+
+    return ScorerRace(
+        race_id=norm_race.race_id,
+        venue=norm_race.track_name,
+        race_number=norm_race.race_number,
+        race_time=norm_race.post_time.strftime("%H:%M"),
+        number_of_runners=norm_race.number_of_runners,
+        is_handicap=is_handicap,
+        runners=scorer_runners,
+    )
+
 
 class TerminalUI:
     """
@@ -57,22 +80,31 @@ class TerminalUI:
             self.console.print(info_message)
             return
 
-        table = Table(title="High Roller Report")
-
+        table = Table(title="[bold green]High Roller Report[/bold green]")
         table.add_column("Time", style="cyan")
         table.add_column("Venue", style="magenta")
         table.add_column("Favorite", style="green")
         table.add_column("Odds", style="yellow")
 
         for race in races:
-            # The high roller report logic implies one favorite runner per race.
-            if race.runners:
-                favorite = race.runners[0]
-                odds_str = f"{favorite.odds:.2f}" if favorite.odds is not None else "N/A"
+            if not race.runners:
+                continue
+
+            # Find the favorite runner (lowest odds)
+            favorite_runner = None
+            min_odds = float('inf')
+            for runner in race.runners:
+                if runner.odds is not None and runner.odds < min_odds:
+                    min_odds = runner.odds
+                    favorite_runner = runner
+
+            if favorite_runner:
+                # Convert float odds back to a string for display
+                odds_str = f"{favorite_runner.odds:.2f}" if favorite_runner.odds is not None else "N/A"
                 table.add_row(
                     race.race_time,
                     race.venue,
-                    favorite.name,
+                    favorite_runner.name,
                     odds_str
                 )
 
@@ -123,27 +155,20 @@ class TerminalUI:
         """Runs the full pipeline and displays the high roller report."""
         high_roller_races = None
         with self.console.status("Fetching data from providers...", spinner="dots"):
-            normalized_races = await run_pipeline(min_runners=0, specific_source=None) # No longer pass UI
+            # The pipeline returns the final normalized model. For the high roller report,
+            # we need to convert it to the scorer's model.
+            normalized_races = await run_pipeline(min_runners=0, specific_source=None)
 
             if not normalized_races:
                 self.console.print("[yellow]No races were found by the pipeline.[/yellow]")
                 return
 
-            # Adapt from NormalizedRace to the ScorerRace model
-            scorer_races = []
-            for norm_race in normalized_races:
-                if norm_race.post_time:
-                    scorer_runners = [ScorerRunner(name=r.name, odds=r.odds) for r in norm_race.runners]
-                    scorer_races.append(
-                        ScorerRace(
-                            race_id=norm_race.race_id,
-                            venue=norm_race.track_name,
-                            race_number=norm_race.race_number,
-                            race_time=norm_race.post_time.strftime("%H:%M"),
-                            is_handicap=norm_race.race_type == "Handicap",
-                            runners=scorer_runners
-                        )
-                    )
+            # Convert to the ScorerRace model for the high roller function
+            scorer_races = [
+                race for race in
+                (_convert_normalized_to_scorer_race(nr) for nr in normalized_races)
+                if race is not None
+            ]
 
             now = datetime.now()
             high_roller_races = get_high_roller_races(scorer_races, now)

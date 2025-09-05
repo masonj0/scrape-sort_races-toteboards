@@ -1,10 +1,10 @@
 import inspect
 import logging
-from typing import List, Optional
+from typing import List, Optional, Dict, Tuple
 
 from . import adapters
 from .scorer import RaceScorer
-from .base import BaseAdapter, BaseAdapterV3, NormalizedRace
+from .base import BaseAdapter, BaseAdapterV3, NormalizedRace, NormalizedRunner
 from .merger import smart_merge
 from .models import Race, Runner
 
@@ -23,19 +23,24 @@ def load_adapters(specific_source: str = None) -> List[type]:
     return adapter_classes
 
 def _convert_to_model_race(norm_race: NormalizedRace, source: str) -> Race:
-    """Converts a NormalizedRace from the base model to a Race from the app model."""
+    """
+    Converts a NormalizedRace from the base model to a Race from the app model.
+    NOTE: This conversion is lossy for program_number, which is handled by a
+    workaround in the main pipeline logic.
+    """
+    is_handicap = norm_race.race_type and "handicap" in norm_race.race_type.lower()
     return Race(
         race_id=norm_race.race_id,
         venue=norm_race.track_name,
         race_time=norm_race.post_time.strftime("%H:%M") if norm_race.post_time else "",
         race_number=norm_race.race_number,
         number_of_runners=norm_race.number_of_runners,
-        is_handicap="handicap" in norm_race.race_type.lower() if norm_race.race_type else False,
+        is_handicap=is_handicap,
         source=source,
         runners=[Runner(name=r.name, odds=r.odds) for r in norm_race.runners]
     )
 
-def _convert_to_normalized_race(model_race: Race) -> NormalizedRace:
+def _convert_to_normalized_race(model_race: Race, prog_num_map: Dict[Tuple[str, str], int]) -> NormalizedRace:
     """Converts a Race from the app model back to a NormalizedRace for pipeline output."""
     from datetime import datetime, date
     try:
@@ -43,14 +48,27 @@ def _convert_to_normalized_race(model_race: Race) -> NormalizedRace:
     except (ValueError, TypeError):
         post_time = None
 
+    # Reconstruct NormalizedRunner with program_number from the map
+    runners = [
+        NormalizedRunner(
+            name=r.name,
+            odds=r.odds,
+            program_number=prog_num_map.get((model_race.race_id, r.name), i + 1) # Fallback to index
+        ) for i, r in enumerate(model_race.runners)
+    ]
+
+    # Fix for the number_of_runners data loss bug (handles case where value is 0)
+    num_runners = model_race.number_of_runners if model_race.number_of_runners is not None else len(runners)
+    race_type = "Handicap" if model_race.is_handicap else "Unknown"
+
     return NormalizedRace(
         race_id=model_race.race_id,
         track_name=model_race.venue,
         race_number=model_race.race_number,
         post_time=post_time,
-        number_of_runners=model_race.number_of_runners or len(model_race.runners),
-        race_type="Handicap" if model_race.is_handicap else "Unknown",
-        # The 'sources' field from the merged race is not stored in NormalizedRace
+        number_of_runners=num_runners,
+        race_type=race_type,
+        runners=runners,
     )
 
 async def run_pipeline(
@@ -61,7 +79,8 @@ async def run_pipeline(
     """Orchestrates the end-to-end pipeline."""
     logging.info("--- Paddock Parser NG Pipeline Start ---")
 
-    unmerged_races = []
+    unmerged_races: List[Race] = []
+    prog_num_map: Dict[Tuple[str, str], int] = {}  # Map to preserve program numbers across lossy conversion
     adapter_classes = load_adapters(specific_source)
 
     if not adapter_classes:
@@ -77,7 +96,7 @@ async def run_pipeline(
         logging.info(f"Running adapter: {source_id}...")
 
         try:
-            normalized_races = []
+            normalized_races: List[NormalizedRace] = []
             if isinstance(adapter, BaseAdapterV3):
                 races = await adapter.fetch()
                 normalized_races.extend(races)
@@ -89,14 +108,18 @@ async def run_pipeline(
                 logging.info(f"Parsed {len(normalized_races)} races from {source_id}.")
                 # Convert to the application's Race model for merging
                 for norm_race in normalized_races:
+                    # Stash program numbers before they are lost in conversion
+                    for runner in norm_race.runners:
+                        if runner.program_number:
+                            prog_num_map[(norm_race.race_id, runner.name)] = runner.program_number
                     unmerged_races.append(_convert_to_model_race(norm_race, source_id))
             else:
                 logging.warning(f"No races parsed for {source_id}.")
 
         except NotImplementedError:
             logging.info(f"Adapter {source_id} skipped: Not implemented for live fetching.")
-        except Exception as e:
-            logging.error(f"Adapter {source_id} failed: {e}", exc_info=True)
+        except Exception:
+            logging.error(f"An error occurred in the '{source_id}' adapter. See details below.", exc_info=True)
         finally:
             if ui:
                 ui.update_fetching_progress()
@@ -113,16 +136,23 @@ async def run_pipeline(
     merged_model_races = smart_merge(unmerged_races)
     logging.info(f"Merged down to {len(merged_model_races)} unique races.")
 
-    # Convert back to NormalizedRace for scoring and final output
-    final_normalized_races = [_convert_to_normalized_race(r) for r in merged_model_races]
-
-    if min_runners > 1:
-        final_normalized_races = [r for r in final_normalized_races if r.number_of_runners and r.number_of_runners >= min_runners]
-
+    # Score the merged races (which are Race models)
     scorer = RaceScorer()
-    for race in final_normalized_races:
-        race.score = scorer.score(race)
+    for race in merged_model_races:
+        setattr(race, 'score', scorer.score(race))
 
+    # Filter based on min_runners
+    if min_runners > 1:
+        merged_model_races = [r for r in merged_model_races if r.number_of_runners >= min_runners]
+
+    # Convert back to NormalizedRace for final output, preserving the score
+    final_normalized_races = []
+    for race_model in merged_model_races:
+        norm_race = _convert_to_normalized_race(race_model, prog_num_map)
+        norm_race.score = getattr(race_model, 'score', 0.0)
+        final_normalized_races.append(norm_race)
+
+    # Sort the final list by score
     final_normalized_races.sort(key=lambda r: r.score or 0, reverse=True)
 
     logging.info("--- Pipeline End ---")
