@@ -29,9 +29,10 @@ def _convert_to_model_race(norm_race: NormalizedRace, source: str) -> Race:
         venue=norm_race.track_name,
         race_time=norm_race.post_time.strftime("%H:%M") if norm_race.post_time else "",
         race_number=norm_race.race_number,
-        is_handicap=norm_race.race_type == "Handicap", # Assumption
+        number_of_runners=norm_race.number_of_runners,
+        is_handicap="handicap" in norm_race.race_type.lower() if norm_race.race_type else False,
         source=source,
-        runners=[Runner(name=r.name, odds=str(r.odds) if r.odds else "SP") for r in norm_race.runners]
+        runners=[Runner(name=r.name, odds=r.odds) for r in norm_race.runners]
     )
 
 def _convert_to_normalized_race(model_race: Race) -> NormalizedRace:
@@ -47,7 +48,7 @@ def _convert_to_normalized_race(model_race: Race) -> NormalizedRace:
         track_name=model_race.venue,
         race_number=model_race.race_number,
         post_time=post_time,
-        number_of_runners=len(model_race.runners),
+        number_of_runners=model_race.number_of_runners or len(model_race.runners),
         race_type="Handicap" if model_race.is_handicap else "Unknown",
         # The 'sources' field from the merged race is not stored in NormalizedRace
     )
@@ -92,6 +93,8 @@ async def run_pipeline(
             else:
                 logging.warning(f"No races parsed for {source_id}.")
 
+        except NotImplementedError:
+            logging.info(f"Adapter {source_id} skipped: Not implemented for live fetching.")
         except Exception as e:
             logging.error(f"Adapter {source_id} failed: {e}", exc_info=True)
         finally:

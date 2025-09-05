@@ -6,6 +6,7 @@ from typing import List, Optional, Dict, Any
 from bs4 import BeautifulSoup
 
 from ..base import BaseAdapterV3, NormalizedRace, NormalizedRunner
+from .utils import _convert_odds_to_float
 
 
 class RacingPostAdapter(BaseAdapterV3):
@@ -111,25 +112,12 @@ class RacingPostAdapter(BaseAdapterV3):
         for group in forecast_groups:
             # The odds are the first part of the text, e.g., "11/4"
             odds_text = group.text.split(' ')[0]
-            odds_float = self._convert_odds_to_float(odds_text)
+            odds_float = _convert_odds_to_float(odds_text)
             runner_links = group.select('a.RC-raceFooterInfo__runner')
             for link in runner_links:
                 runner_name = link.text.strip()
                 odds_map[runner_name] = odds_float
         return odds_map
-
-    def _convert_odds_to_float(self, odds_str: str) -> Optional[float]:
-        """Converts fractional odds string (e.g., '5/2') to float."""
-        if '/' in odds_str:
-            try:
-                numerator, denominator = map(int, odds_str.split('/'))
-                return (numerator / denominator) + 1.0
-            except (ValueError, ZeroDivisionError):
-                return None
-        try:
-            return float(odds_str) + 1.0
-        except ValueError:
-            return None
 
     def _extract_race_data_json(self, html_content: str) -> Optional[Dict[str, Any]]:
         """Extracts the main JSON data blob from the page's script tags."""

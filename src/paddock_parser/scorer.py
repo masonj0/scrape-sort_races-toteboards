@@ -2,21 +2,7 @@ from datetime import datetime, timedelta
 from typing import List
 
 from .base import NormalizedRace
-from .models import Race
-
-def _convert_odds_to_float(odds_str: str) -> float:
-    """Converts odds string to a float. Handles 'EVS' and fractions."""
-    if isinstance(odds_str, str):
-        odds_str = odds_str.strip().upper()
-        if odds_str == 'EVS':
-            return 1.0
-        if '/' in odds_str:
-            try:
-                num, den = map(int, odds_str.split('/'))
-                return num / den
-            except (ValueError, ZeroDivisionError):
-                return float('inf')
-    return float('inf')
+from .models import Race, Runner
 
 def get_high_roller_races(races: List[Race], now: datetime) -> List[Race]:
     """
@@ -46,7 +32,7 @@ def get_high_roller_races(races: List[Race], now: datetime) -> List[Race]:
         # 3. Scoring based on favorite's odds
         min_odds = float('inf')
         for runner in race.runners:
-            odds = _convert_odds_to_float(runner.odds)
+            odds = runner.odds or float('inf')
             if odds < min_odds:
                 min_odds = odds
 
@@ -90,7 +76,7 @@ def calculate_weighted_score(race: Race, weights: dict) -> float:
     # Find the favorite (lowest odds)
     favorite_odds = float('inf')
     for runner in race.runners:
-        odds = _convert_odds_to_float(runner.odds)
+        odds = runner.odds or float('inf')
         if odds < favorite_odds:
             favorite_odds = odds
 

@@ -46,7 +46,7 @@ class TestRacingPostAdapter(unittest.TestCase):
         self.assertEqual(petes_dream.name, "Pete's Dream")
         self.assertEqual(petes_dream.jockey, "Andrew Slattery")
         self.assertEqual(petes_dream.trainer, "Andrew Slattery")
-        self.assertEqual(petes_dream.odds, 11.0)
+        self.assertEqual(petes_dream.odds, 10.0)
 
         # Test another runner to be sure (Arrumba, runner #1)
         arrumba = next((r for r in first_race.runners if r.program_number == 1), None)
@@ -54,4 +54,4 @@ class TestRacingPostAdapter(unittest.TestCase):
         self.assertEqual(arrumba.name, "Arrumba")
         self.assertEqual(arrumba.jockey, "Sam Coen")
         self.assertEqual(arrumba.trainer, "Mrs Denise Foster")
-        self.assertEqual(arrumba.odds, 23.0)
+        self.assertEqual(arrumba.odds, 22.0)

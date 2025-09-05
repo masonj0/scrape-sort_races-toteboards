@@ -68,11 +68,12 @@ class TerminalUI:
             # The high roller report logic implies one favorite runner per race.
             if race.runners:
                 favorite = race.runners[0]
+                odds_str = f"{favorite.odds:.2f}" if favorite.odds is not None else "N/A"
                 table.add_row(
                     race.race_time,
                     race.venue,
                     favorite.name,
-                    favorite.odds
+                    odds_str
                 )
 
         self.console.print(table)
@@ -132,7 +133,7 @@ class TerminalUI:
             scorer_races = []
             for norm_race in normalized_races:
                 if norm_race.post_time:
-                    scorer_runners = [ScorerRunner(name=r.name, odds=str(r.odds) if r.odds else "SP") for r in norm_race.runners]
+                    scorer_runners = [ScorerRunner(name=r.name, odds=r.odds) for r in norm_race.runners]
                     scorer_races.append(
                         ScorerRace(
                             race_id=norm_race.race_id,

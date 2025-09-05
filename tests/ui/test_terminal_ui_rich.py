@@ -7,9 +7,9 @@ from paddock_parser.ui.terminal_ui import TerminalUI
 
 @pytest.fixture
 def sample_high_roller_races():
-    race1 = Race(race_id="R1", venue="Newmarket", race_time="14:30", race_number=1, is_handicap=False, runners=[Runner(name="Horse A", odds="5/1")])
+    race1 = Race(race_id="R1", venue="Newmarket", race_time="14:30", race_number=1, is_handicap=False, runners=[Runner(name="Horse A", odds=5.0)])
     setattr(race1, 'high_roller_score', 5.0)
-    race2 = Race(race_id="R2", venue="Goodwood", race_time="14:45", race_number=2, is_handicap=False, runners=[Runner(name="Horse C", odds="4/1")])
+    race2 = Race(race_id="R2", venue="Goodwood", race_time="14:45", race_number=2, is_handicap=False, runners=[Runner(name="Horse C", odds=4.0)])
     setattr(race2, 'high_roller_score', 4.0)
     return [race1, race2]
 
@@ -34,8 +34,8 @@ def test_display_high_roller_report_uses_rich_table(MockConsole, MockTable, samp
     assert mock_table_instance.add_column.call_count == len(expected_calls)
 
     assert mock_table_instance.add_row.call_count == len(sample_high_roller_races)
-    mock_table_instance.add_row.assert_any_call("14:30", "Newmarket", "Horse A", "5/1")
-    mock_table_instance.add_row.assert_any_call("14:45", "Goodwood", "Horse C", "4/1")
+    mock_table_instance.add_row.assert_any_call("14:30", "Newmarket", "Horse A", "5.00")
+    mock_table_instance.add_row.assert_any_call("14:45", "Goodwood", "Horse C", "4.00")
 
     mock_console_instance.print.assert_called_once_with(mock_table_instance)
 
