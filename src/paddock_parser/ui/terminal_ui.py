@@ -49,9 +49,11 @@ class TerminalUI:
         """
         if not races:
             info_message = (
+
                 "[bold yellow]No races met the High Roller criteria.[/bold yellow]\n\n"
                 "The report is filtered based on the following rules:\n"
                 " - [bold]Time:[/bold] Only includes races starting in the next 25 minutes.\n"
+
                 " - [bold]Runners:[/bold] Only includes races with Fewer than 7 runners."
             )
             self.console.print(info_message)
@@ -145,6 +147,7 @@ class TerminalUI:
                     )
 
             now = datetime.now()
+            print(f"DEBUG: scorer_races being passed to get_high_roller_races: {scorer_races}")
             high_roller_races = get_high_roller_races(scorer_races, now)
 
         self.display_high_roller_report(high_roller_races)
