@@ -5,6 +5,7 @@ import asyncio
 from .pipeline import run_pipeline
 from .ui.terminal_ui import TerminalUI
 from . import __version__
+from . import config
 
 def main():
     """
@@ -23,8 +24,15 @@ def main():
     parser.add_argument(
         '--min-runners',
         type=int,
-        default=0,
+        default=config.MIN_RUNNERS,
         help='The minimum number of runners for a race to be considered interesting.'
+    )
+
+    parser.add_argument(
+        '--time-window',
+        type=int,
+        default=config.TIME_WINDOW_MINUTES,
+        help='The time window in minutes from now to include races.'
     )
 
     parser.add_argument(
@@ -44,6 +52,7 @@ def main():
 
     races = asyncio.run(run_pipeline(
         min_runners=args.min_runners,
+        time_window_minutes=args.time_window,
         specific_source=args.source,
         ui=ui # Pass the UI for progress updates
     ))

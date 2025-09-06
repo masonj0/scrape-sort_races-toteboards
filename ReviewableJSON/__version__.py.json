@@ -1,4 +1,4 @@
 {
-    "filepath": "src/paddock_parser/__version__.py",
+    "filepath": "./src/paddock_parser/__version__.py",
     "content": "__version__ = \"1.0.0-alpha\"\n"
 }
