@@ -12,7 +12,7 @@ class AtTheRacesAdapter(BaseAdapterV3):
     """
     Adapter for attheraces.com.
     """
-    source_id = 'attheraces'
+    SOURCE_ID = 'attheraces'
 
     async def fetch(self) -> List[NormalizedRace]:
         """Fetches data from attheraces.com."""

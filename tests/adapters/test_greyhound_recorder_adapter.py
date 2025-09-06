@@ -7,7 +7,7 @@ from paddock_parser.adapters.greyhound_recorder import GreyhoundRecorderAdapter
 class TestGreyhoundRecorderAdapter(unittest.TestCase):
     def setUp(self):
         self.adapter = GreyhoundRecorderAdapter()
-        fixture_path = Path(__file__).parent / "greyhound_recorder_sample.html"
+        fixture_path = Path(__file__).parent / "mock_data" / "greyhound_recorder_sample.html"
         self.html_content = fixture_path.read_text(encoding="utf-8")
 
     def test_parse_races_from_sample(self):
