@@ -14,6 +14,15 @@ This project is a modern, robust, and scalable data analysis toolkit for global 
 
 This project is currently under active development.
 
+## Supported Data Sources
+This project leverages a sophisticated, multi-source approach. The current V3-compliant adapter fleet includes (but is not limited to):
+*   **Racing Post** (Hybrid JSON/HTML)
+*   **FanDuel** (GraphQL API)
+*   **SkySports**
+*   **Timeform**
+*   **Equibase**
+*   **AtTheRaces**
+
 
 ================================================================================
 FILE: paddock-parser-ng/AGENTS.md
@@ -54,6 +63,8 @@ A previous agent exhibited a critical failure mode: it would use "fake" or "plac
 
 *   **The Bug:** The `submit` command **DOES NOT** correctly create new feature branches. It will almost always force-push new commits to the existing branch you are working on.
 *   **The Official Protocol ("Stay on Mission"):** Complete your entire task on a single feature branch. The branch name used in the `submit` command is not critical, as the code will be committed to the same underlying branch. The human project lead will handle merging.
+
+- **PROTOCOL 13: The "Code Fence" Protocol for Asset Transit:** To prevent the chat interface from corrupting raw code assets (especially HTML), all literal code must be encapsulated within a triple-backtick Markdown code fence. The language specifier (e.g., `python`, `json`) must be set to a non-HTML format to ensure the interface treats it as pre-formatted text and does not render it.
 
 ---
 
@@ -114,7 +125,7 @@ Our development is guided by four core principles that define our architecture a
 This phase focused on unifying the project structure, stabilizing the core components, and building a flexible command-line interface.
 
 -   **Project Unification:** Migrated to a standard `src` layout.
--   **Core Adapters:** Restored and tested the `SkySportsAdapter` and `FanDuelAdapter`.
+-   **Expanded Adapter Fleet:** A vast suite of resurrected and V3-modernized adapters, including premier API-driven sources (**Racing Post, FanDuel**) and comprehensive HTML scrapers (**Timeform, Equibase**), providing extensive data coverage.
 -   **Professional CLI:** Implemented a powerful CLI using `argparse`, allowing for configurable pipeline execution.
 -   **Async Pipeline:** Refactored the core pipeline to be asynchronous, supporting both sync and async adapters.
 
