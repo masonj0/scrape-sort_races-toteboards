@@ -19,18 +19,18 @@ def _convert_odds_to_float(odds_str: Optional[str]) -> Optional[float]:
     if odds_str == 'SP':
         return None
     if odds_str == 'EVENS':
-        return 1.0
+        return 2.0
 
     if '/' in odds_str:
         try:
             numerator, denominator = map(int, odds_str.split('/'))
             if denominator == 0:
                 return None
-            return numerator / denominator
+            return (numerator / denominator) + 1.0
         except (ValueError, ZeroDivisionError):
             return None
     try:
-        return float(odds_str)
+        return float(odds_str) + 1.0
     except (ValueError, TypeError):
         return None
 

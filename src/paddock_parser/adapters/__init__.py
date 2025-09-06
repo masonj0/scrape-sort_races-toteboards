@@ -6,6 +6,8 @@ from .equibase_adapter import EquibaseAdapter
 from .greyhound_recorder import GreyhoundRecorderAdapter
 from .racingpost_adapter import RacingPostAdapter
 from .racingandsports_adapter import RacingAndSportsAdapter
+from .timeform_adapter import TimeformAdapter
+from .attheraces_adapter import AtTheRacesAdapter
 
 __all__ = [
     "SkySportsAdapter",
@@ -13,5 +15,7 @@ __all__ = [
     "EquibaseAdapter",
     "GreyhoundRecorderAdapter",
     "RacingPostAdapter",
-    "RacingAndSportsAdapter"
+    "RacingAndSportsAdapter",
+    "TimeformAdapter",
+    "AtTheRacesAdapter"
 ]

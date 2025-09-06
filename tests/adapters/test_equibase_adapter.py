@@ -5,7 +5,7 @@ from paddock_parser.adapters.equibase_adapter import EquibaseAdapter
 class TestEquibaseAdapter(unittest.TestCase):
     def setUp(self):
         self.adapter = EquibaseAdapter()
-        fixture_path = Path(__file__).parent / "equibase_sample.html"
+        fixture_path = Path(__file__).parent / "mock_data" / "equibase_sample.html"
         self.sample_html = fixture_path.read_text(encoding="utf-8")
 
     def test_parse_racecard(self):
