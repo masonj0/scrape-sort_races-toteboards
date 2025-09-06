@@ -170,10 +170,12 @@ async def run_pipeline(
         from datetime import datetime, timedelta
         now = datetime.now()
         time_limit = now + timedelta(minutes=time_window_minutes)
+        races_before_time_filter = len(final_normalized_races)
         final_normalized_races = [
             r for r in final_normalized_races if r.post_time and r.post_time > now and r.post_time <= time_limit
         ]
-        logging.info(f"Filtered to {len(final_normalized_races)} races in the next {time_window_minutes} minutes.")
+        races_after_time_filter = len(final_normalized_races)
+        logging.info(f"Filtered {races_before_time_filter} races down to {races_after_time_filter} races in the next {time_window_minutes} minutes.")
 
     # Sort the final list by score
     final_normalized_races.sort(key=lambda r: r.score or 0, reverse=True)
