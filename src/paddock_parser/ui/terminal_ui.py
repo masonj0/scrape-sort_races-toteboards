@@ -17,8 +17,6 @@ def _convert_normalized_to_scorer_race(norm_race: NormalizedRace) -> Optional[Sc
     if not norm_race.post_time:
         return None
 
-    # The odds in NormalizedRunner and ScorerRunner are both Optional[float], so no conversion is needed.
-    # This conversion also loses program_number, but it's not needed for the high roller report.
     scorer_runners = [ScorerRunner(name=r.name, odds=r.odds) for r in norm_race.runners]
     is_handicap = norm_race.race_type and "handicap" in norm_race.race_type.lower()
 
@@ -34,9 +32,6 @@ def _convert_normalized_to_scorer_race(norm_race: NormalizedRace) -> Optional[Sc
 
 
 class TerminalUI:
-    """
-    A class to handle all terminal output using the rich library.
-    """
     def __init__(self, console: Console = None):
         self.console = console or Console()
         self.progress = None
@@ -44,9 +39,6 @@ class TerminalUI:
         self.log_handler = None
 
     def display_races(self, races: List[NormalizedRace]):
-        """
-        Displays a list of races in a formatted table.
-        """
         table = Table(title="Race Information")
         table.add_column("Track", justify="left")
         table.add_column("Race #", justify="left")
@@ -67,9 +59,6 @@ class TerminalUI:
         self.console.print(table)
 
     def display_high_roller_report(self, races: List[ScorerRace]):
-        """
-        Displays the high roller report in a rich, formatted table.
-        """
         if not races:
             info_message = (
                 "[bold yellow]No races met the High Roller criteria.[/bold yellow]\n\n"
@@ -90,7 +79,6 @@ class TerminalUI:
             if not race.runners:
                 continue
 
-            # Find the favorite runner (lowest odds)
             favorite_runner = None
             min_odds = float('inf')
             for runner in race.runners:
@@ -99,7 +87,6 @@ class TerminalUI:
                     favorite_runner = runner
 
             if favorite_runner:
-                # Convert float odds back to a string for display
                 odds_str = f"{favorite_runner.odds:.2f}" if favorite_runner.odds is not None else "N/A"
                 table.add_row(
                     race.race_time,
@@ -110,36 +97,15 @@ class TerminalUI:
 
         self.console.print(table)
 
-    def start_fetching_progress(self, num_tasks: int):
-        """Initializes and starts a progress bar for fetching races."""
-        self.progress = Progress(console=self.console)
-        self.progress.start()
-        self.progress_task = self.progress.add_task("Fetching races...", total=num_tasks)
-
-    def update_fetching_progress(self):
-        """Advances the fetching progress bar by one step."""
-        if self.progress and self.progress_task is not None:
-            self.progress.update(self.progress_task, advance=1)
-
-    def stop_fetching_progress(self):
-        """Stops the progress bar and cleans up."""
-        if self.progress:
-            self.progress.stop()
-            self.progress = None
-            self.progress_task = None
-
     def setup_logging(self):
-        """Creates a RichHandler and sets it up."""
         self.log_handler = RichHandler(console=self.console, show_path=False)
 
     def _display_main_menu(self):
-        """Displays the main menu options."""
         self.console.print("\n[bold magenta]Paddock Parser NG - Main Menu[/bold magenta]")
         self.console.print("1. Get High Roller Report")
         self.console.print("2. Quit")
 
     async def start_interactive_mode(self):
-        """Starts the main interactive loop for the UI."""
         while True:
             self._display_main_menu()
             choice = self.console.input("[bold]Select an option: [/bold]")
@@ -152,18 +118,13 @@ class TerminalUI:
                 self.console.print("[bold red]Invalid option, please try again.[/bold red]")
 
     async def _run_high_roller_report(self):
-        """Runs the full pipeline and displays the high roller report."""
-        high_roller_races = None
         with self.console.status("Fetching data from providers...", spinner="dots"):
-            # The pipeline returns the final normalized model. For the high roller report,
-            # we need to convert it to the scorer's model.
-            normalized_races = await run_pipeline(min_runners=0, specific_source=None)
+            normalized_races, adapter_count = await run_pipeline(min_runners=0, specific_source=None)
 
             if not normalized_races:
-                self.console.print("[yellow]No races were found by the pipeline.[/yellow]")
+                self.console.print(f"[yellow]No races were found for {adapter_count} enabled adapters.[/yellow]")
                 return
 
-            # Convert to the ScorerRace model for the high roller function
             scorer_races = [
                 race for race in
                 (_convert_normalized_to_scorer_race(nr) for nr in normalized_races)
