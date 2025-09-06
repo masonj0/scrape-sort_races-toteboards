@@ -73,6 +73,7 @@ def _convert_to_normalized_race(model_race: Race, prog_num_map: Dict[Tuple[str, 
 
 async def run_pipeline(
     min_runners: int,
+    time_window_minutes: int,
     specific_source: str = None,
     ui: Optional['TerminalUI'] = None
 ) -> List[NormalizedRace]:
@@ -82,6 +83,7 @@ async def run_pipeline(
     unmerged_races: List[Race] = []
     prog_num_map: Dict[Tuple[str, str], int] = {}  # Map to preserve program numbers across lossy conversion
     adapter_classes = load_adapters(specific_source)
+    races_per_adapter: Dict[str, int] = {}
 
     if not adapter_classes:
         logging.warning("No adapters found.")
@@ -103,6 +105,8 @@ async def run_pipeline(
             elif isinstance(adapter, BaseAdapter):
                 raw_data = adapter.fetch_data()
                 normalized_races = adapter.parse_data(raw_data)
+
+            races_per_adapter[source_id] = len(normalized_races)
 
             if normalized_races:
                 logging.info(f"Parsed {len(normalized_races)} races from {source_id}.")
@@ -126,6 +130,15 @@ async def run_pipeline(
 
     if ui:
         ui.stop_fetching_progress()
+
+    logging.info("\n--- Data Ingestion Summary ---")
+    for source, count in races_per_adapter.items():
+        logging.info(f"  - {source}: {count} races")
+    logging.info(f"Total races ingested: {len(unmerged_races)}")
+
+    races_with_few_runners = [r for r in unmerged_races if r.number_of_runners and r.number_of_runners < 7]
+    logging.info(f"Found {len(races_with_few_runners)} races with fewer than 7 runners.")
+    logging.info("----------------------------\n")
 
     if not unmerged_races:
         logging.info("No races were successfully parsed from any source.")
@@ -151,6 +164,18 @@ async def run_pipeline(
         norm_race = _convert_to_normalized_race(race_model, prog_num_map)
         norm_race.score = getattr(race_model, 'score', 0.0)
         final_normalized_races.append(norm_race)
+
+    # Filter by time window
+    if time_window_minutes > 0:
+        from datetime import datetime, timedelta
+        now = datetime.now()
+        time_limit = now + timedelta(minutes=time_window_minutes)
+        races_before_time_filter = len(final_normalized_races)
+        final_normalized_races = [
+            r for r in final_normalized_races if r.post_time and r.post_time > now and r.post_time <= time_limit
+        ]
+        races_after_time_filter = len(final_normalized_races)
+        logging.info(f"Filtered {races_before_time_filter} races down to {races_after_time_filter} races in the next {time_window_minutes} minutes.")
 
     # Sort the final list by score
     final_normalized_races.sort(key=lambda r: r.score or 0, reverse=True)

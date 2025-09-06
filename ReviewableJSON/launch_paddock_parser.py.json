@@ -1,0 +1,4 @@
+{
+    "filepath": "./launch_paddock_parser.py",
+    "content": "#!/usr/bin/env python3\n\nimport asyncio\nfrom src.paddock_parser.ui.terminal_ui import TerminalUI\n\ndef launch():\n    \"\"\"\n    Initializes and runs the Paddock Parser Terminal UI.\n    \"\"\"\n    ui = TerminalUI()\n    asyncio.run(ui.start_interactive_mode())\n\nif __name__ == \"__main__\":\n    launch()\n"
+}

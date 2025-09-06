@@ -31,6 +31,8 @@ This story is our "why."
 *   **Repository:** `scrape-sort_races-toteboards`
 *   **Narrative:** This is the current, active repository, representing the clean, focused implementation of the grand vision developed through the previous eras.
 
+This new era began with a monumental achievement: **"Operation Legacy Harvest."** In a single, massive mission, the engineering team resurrected the "lost fleet" of a dozen dormant data adapters from the project's "Utopian" era, officially kicking off the "Modern Renaissance."
+
 ---
 
 ## Architectural Synthesis: The Grand Design

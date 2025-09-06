@@ -1,0 +1,4 @@
+{
+    "filepath": "./src/paddock_parser/config.py",
+    "content": "# src/paddock_parser/config.py\n\n# --- Filtering Criteria ---\n\n# The minimum number of runners a race must have to be included in the report.\nMIN_RUNNERS = 7\n\n# The time window in minutes from now to include races.\n# For example, 25 means only show races starting in the next 25 minutes.\nTIME_WINDOW_MINUTES = 25\n\n# --- Adapter Configuration ---\n\n# You can disable specific adapters by adding their SOURCE_ID to this list.\n# e.g., DISABLED_ADAPTERS = [\"skysports\", \"attheraces\"]\nDISABLED_ADAPTERS = []\n\n# --- Logging Configuration ---\n\n# Set the log level for the application.\n# Options: \"DEBUG\", \"INFO\", \"WARNING\", \"ERROR\", \"CRITICAL\"\nLOG_LEVEL = \"INFO\"\n"
+}

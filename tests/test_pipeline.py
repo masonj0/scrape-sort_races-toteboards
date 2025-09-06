@@ -28,7 +28,7 @@ class TestPipeline:
         mock_load_adapters.return_value = [MockSkyClass, MockFanDuelClass]
 
         # --- Run ---
-        await run_pipeline(min_runners=1, specific_source=None)
+        await run_pipeline(min_runners=1, time_window_minutes=0, specific_source=None)
 
         # --- Assertions ---
         mock_sky_instance.fetch.assert_awaited_once()
@@ -58,7 +58,7 @@ class TestPipeline:
         mock_load_adapters.return_value = [MockSkyClass, MockFanDuelClass]
 
         # --- Run ---
-        await run_pipeline(min_runners=1, specific_source=None)
+        await run_pipeline(min_runners=1, time_window_minutes=0, specific_source=None)
 
         # --- Assertions ---
         mock_sky_instance.fetch.assert_awaited_once()
