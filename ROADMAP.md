@@ -47,7 +47,7 @@ This section documents the verified, completed features that form the stable fou
 
 ### The Template (Data Acquisition & Resilience)
 *   **Professional Fetching Engine:** A resilient `ForagerClient` with User-Agent rotation and intelligent retries.
-*   **Initial Adapter Suite:** A functional set of adapters providing our baseline data coverage (`SkySports`, `AtTheRaces`, `RacingAndSports`, etc.).
+*   **Expanded Adapter Fleet:** A vast suite of resurrected and V3-modernized adapters, including premier API-driven sources (**Racing Post, FanDuel**) and comprehensive HTML scrapers (**Timeform, Equibase**), providing extensive data coverage.
 
 ### The Face (User Experience & Delivery)
 *   **Rich Terminal User Interface (TUI):** An enhanced, `rich`-powered interactive display for running reports.

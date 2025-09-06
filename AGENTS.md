@@ -40,6 +40,8 @@ These are non-negotiable and have been learned through mission failures.
 
 -   **PROTOCOL 12: The "Persistence" Mandate:** The agent tool execution layer is known to produce false negatives (e.g., "No valid tool call found"). If a command is believed to be correct, the agent must be persistent and retry, rather than immediately declaring a Level 3 Failure.
 
+- **PROTOCOL 13: The "Code Fence" Protocol for Asset Transit:** To prevent the chat interface from corrupting raw code assets (especially HTML), all literal code must be encapsulated within a triple-backtick Markdown code fence. The language specifier (e.g., `python`, `json`) must be set to a non-HTML format to ensure the interface treats it as pre-formatted text and does not render it.
+
 ## Essential Workflows & Mandates
 
 -   **The "Show, Don't Tell" Mandate:** The Architect's `browse` tool analysis is prone to hallucination. Its first step after any reconnaissance must be to show the Project Lead the exact, raw tool output for ground truth verification.

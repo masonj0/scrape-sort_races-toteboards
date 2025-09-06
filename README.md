@@ -10,3 +10,12 @@ The development of Paddock Parser V3 is guided by a clear architectural philosop
 *   **The Guardian (`merger.py`, `pipeline.py`):** The systems that ensure the integrity, persistence, and quality of our data.
 *   **The Template (The `adapters/` module):** The patterns and tools for resiliently acquiring data from the outside world.
 *   **The Face (`terminal_ui.py`, the API):** The interfaces that deliver value and insight to the end-user.
+
+## Supported Data Sources
+This project leverages a sophisticated, multi-source approach. The current V3-compliant adapter fleet includes (but is not limited to):
+*   **Racing Post** (Hybrid JSON/HTML)
+*   **FanDuel** (GraphQL API)
+*   **SkySports**
+*   **Timeform**
+*   **Equibase**
+*   **AtTheRaces**
