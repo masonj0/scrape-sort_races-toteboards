@@ -99,13 +99,21 @@ class TerminalUI:
 
         self.console.print(table)
 
-    def display_tiered_dashboard(self, tiered_data: dict):
+    def display_tiered_dashboard(self, tiered_data: dict, total_races: int, successful_adapter_count: int):
         """Displays the tiered race data in a series of tables."""
         tier_titles = {
             "tier_1": "[bold green]== Tier 1: The Perfect Match ==[/bold green]",
             "tier_2": "[bold yellow]== Tier 2: The Strong Contenders ==[/bold yellow]",
             "tier_3": "[bold cyan]== Tier 3: The Singular Signals ==[/bold cyan]",
         }
+
+        # Check if all tiers are empty and display the new message
+        if not any(tiered_data.values()):
+            self.console.print(
+                f"Found {total_races} races from {successful_adapter_count} adapters, "
+                f"but [bold yellow]none met the criteria for the Tiered Dashboard.[/bold yellow]"
+            )
+            return
 
         for tier_name, races in tiered_data.items():
             if races:
@@ -135,7 +143,6 @@ class TerminalUI:
         self.console.print("2. Run Full Pipeline (Unfiltered)")
         self.console.print("3. View & Edit Settings")
         self.console.print("4. Quit")
-
 
     async def start_interactive_mode(self):
         while True:
@@ -175,9 +182,9 @@ class TerminalUI:
             ]
 
             tiered_data = score_trifecta_factors(scorer_races)
+            total_races = len(scorer_races)
 
-        self.display_tiered_dashboard(tiered_data)
-
+        self.display_tiered_dashboard(tiered_data, total_races, successful_adapter_count)
 
     async def _run_full_pipeline_report(self):
         with self.console.status("Running full unfiltered pipeline...", spinner="dots"):
@@ -237,7 +244,6 @@ class TerminalUI:
                     self.console.print(f"[bold red]Error: Invalid value. Could not convert '{new_value_str}' to the required type. {e}[/bold red]")
             else:
                 self.console.print(f"[bold red]Error: Setting '{setting_to_change}' not found.[/bold red]")
-
 
     async def _run_high_roller_report(self):
         with self.console.status("Fetching data from providers...", spinner="dots"):
