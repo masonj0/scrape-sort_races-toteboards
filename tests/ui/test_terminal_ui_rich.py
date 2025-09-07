@@ -7,6 +7,7 @@ from paddock_parser.ui.terminal_ui import TerminalUI
 
 @pytest.fixture
 def sample_high_roller_races():
+    # This fixture simulates the output of the get_high_roller_races function
     race1 = Race(race_id="R1", venue="Newmarket", race_time="14:30", race_number=1, is_handicap=False, number_of_runners=1, runners=[Runner(name="Horse A", odds=5.0)])
     setattr(race1, 'high_roller_score', 5.0)
     race2 = Race(race_id="R2", venue="Goodwood", race_time="14:45", race_number=2, is_handicap=False, number_of_runners=1, runners=[Runner(name="Horse C", odds=4.0)])
@@ -47,28 +48,23 @@ def test_display_high_roller_report_uses_rich_table(MockConsole, MockTable, samp
 async def test_run_high_roller_report_uses_rich_status(
     MockConsole, MockDisplay, MockRunPipeline, MockGetHighRoller, sample_high_roller_races
 ):
+    # Setup mocks
     mock_console_instance = MockConsole()
+
+    # Configure run_pipeline mock to return a value to prevent early exit
     async def mock_pipeline(*args, **kwargs):
-        races = [NormalizedRace(race_id="D1", track_name="Dummy", race_number=1, post_time=datetime.now(), runners=[NormalizedRunner(name="DummyHorse", program_number=1, odds=10.0)])]
-        return races, 1, 1
+        return [NormalizedRace(race_id="D1", track_name="Dummy", race_number=1, post_time=datetime.now(), runners=[NormalizedRunner(name="DummyHorse", program_number=1, odds=10.0)])]
     MockRunPipeline.side_effect = mock_pipeline
+
     MockGetHighRoller.return_value = sample_high_roller_races
+
     ui = TerminalUI(console=mock_console_instance)
+
+    # Run the async method
     await ui._run_high_roller_report()
+
+    # Assertions
     mock_console_instance.status.assert_called_once_with("Fetching data from providers...", spinner="dots")
     MockRunPipeline.assert_called_once()
     MockGetHighRoller.assert_called_once()
     MockDisplay.assert_called_once_with(sample_high_roller_races)
-
-@pytest.mark.anyio
-@patch('paddock_parser.ui.terminal_ui.run_pipeline')
-@patch('paddock_parser.ui.terminal_ui.Console')
-async def test_run_high_roller_report_no_races(MockConsole, MockRunPipeline):
-    mock_console_instance = MockConsole.return_value
-    MockRunPipeline.return_value = ([], 5, 0)
-    ui = TerminalUI(console=mock_console_instance)
-    await ui._run_high_roller_report()
-    mock_console_instance.print.assert_called_once_with(
-        "[yellow]No races found from 5 enabled adapters "
-        "(0 successfully returned data).[/yellow]"
-    )

@@ -1,4 +1,3 @@
-import inspect
 from datetime import datetime
 from typing import List, Optional
 
@@ -7,10 +6,9 @@ from rich.table import Table
 from rich.progress import Progress
 from rich.logging import RichHandler
 
-from .. import config
 from ..base import NormalizedRace
 from ..pipeline import run_pipeline
-from ..scorer import get_high_roller_races, score_trifecta_factors
+from ..scorer import get_high_roller_races
 from ..models import Race as ScorerRace, Runner as ScorerRunner
 
 
@@ -19,6 +17,8 @@ def _convert_normalized_to_scorer_race(norm_race: NormalizedRace) -> Optional[Sc
     if not norm_race.post_time:
         return None
 
+    # The odds in NormalizedRunner and ScorerRunner are both Optional[float], so no conversion is needed.
+    # This conversion also loses program_number, but it's not needed for the high roller report.
     scorer_runners = [ScorerRunner(name=r.name, odds=r.odds) for r in norm_race.runners]
     is_handicap = norm_race.race_type and "handicap" in norm_race.race_type.lower()
 
@@ -34,6 +34,9 @@ def _convert_normalized_to_scorer_race(norm_race: NormalizedRace) -> Optional[Sc
 
 
 class TerminalUI:
+    """
+    A class to handle all terminal output using the rich library.
+    """
     def __init__(self, console: Console = None):
         self.console = console or Console()
         self.progress = None
@@ -41,6 +44,9 @@ class TerminalUI:
         self.log_handler = None
 
     def display_races(self, races: List[NormalizedRace]):
+        """
+        Displays a list of races in a formatted table.
+        """
         table = Table(title="Race Information")
         table.add_column("Track", justify="left")
         table.add_column("Race #", justify="left")
@@ -61,6 +67,9 @@ class TerminalUI:
         self.console.print(table)
 
     def display_high_roller_report(self, races: List[ScorerRace]):
+        """
+        Displays the high roller report in a rich, formatted table.
+        """
         if not races:
             info_message = (
                 "[bold yellow]No races met the High Roller criteria.[/bold yellow]\n\n"
@@ -81,6 +90,7 @@ class TerminalUI:
             if not race.runners:
                 continue
 
+            # Find the favorite runner (lowest odds)
             favorite_runner = None
             min_odds = float('inf')
             for runner in race.runners:
@@ -89,6 +99,7 @@ class TerminalUI:
                     favorite_runner = runner
 
             if favorite_runner:
+                # Convert float odds back to a string for display
                 odds_str = f"{favorite_runner.odds:.2f}" if favorite_runner.odds is not None else "N/A"
                 table.add_row(
                     race.race_time,
@@ -99,167 +110,60 @@ class TerminalUI:
 
         self.console.print(table)
 
-    def display_tiered_dashboard(self, tiered_data: dict, total_races: int, successful_adapter_count: int):
-        """Displays the tiered race data in a series of tables."""
-        tier_titles = {
-            "tier_1": "[bold green]== Tier 1: The Perfect Match ==[/bold green]",
-            "tier_2": "[bold yellow]== Tier 2: The Strong Contenders ==[/bold yellow]",
-            "tier_3": "[bold cyan]== Tier 3: The Singular Signals ==[/bold cyan]",
-        }
+    def start_fetching_progress(self, num_tasks: int):
+        """Initializes and starts a progress bar for fetching races."""
+        self.progress = Progress(console=self.console)
+        self.progress.start()
+        self.progress_task = self.progress.add_task("Fetching races...", total=num_tasks)
 
-        # Check if all tiers are empty and display the new message
-        if not any(tiered_data.values()):
-            self.console.print(
-                f"Found {total_races} races from {successful_adapter_count} adapters, "
-                f"but [bold yellow]none met the criteria for the Tiered Dashboard.[/bold yellow]"
-            )
-            return
+    def update_fetching_progress(self):
+        """Advances the fetching progress bar by one step."""
+        if self.progress and self.progress_task is not None:
+            self.progress.update(self.progress_task, advance=1)
 
-        for tier_name, races in tiered_data.items():
-            if races:
-                table = Table(title=tier_titles[tier_name])
-                table.add_column("Track", justify="left")
-                table.add_column("Race #", justify="left")
-                table.add_column("Post Time", justify="left")
-                table.add_column("Runners", justify="left")
-
-                for race in races:
-                    post_time_str = race.race_time if race.race_time else "N/A"
-                    num_runners = race.number_of_runners if race.number_of_runners is not None else len(race.runners)
-                    table.add_row(
-                        race.venue,
-                        str(race.race_number),
-                        post_time_str,
-                        str(num_runners),
-                    )
-                self.console.print(table)
+    def stop_fetching_progress(self):
+        """Stops the progress bar and cleans up."""
+        if self.progress:
+            self.progress.stop()
+            self.progress = None
+            self.progress_task = None
 
     def setup_logging(self):
+        """Creates a RichHandler and sets it up."""
         self.log_handler = RichHandler(console=self.console, show_path=False)
 
     def _display_main_menu(self):
+        """Displays the main menu options."""
         self.console.print("\n[bold magenta]Paddock Parser NG - Main Menu[/bold magenta]")
-        self.console.print("1. Get Tiered Dashboard Report")
-        self.console.print("2. Run Full Pipeline (Unfiltered)")
-        self.console.print("3. View & Edit Settings")
-        self.console.print("4. Quit")
+        self.console.print("1. Get High Roller Report")
+        self.console.print("2. Quit")
 
     async def start_interactive_mode(self):
+        """Starts the main interactive loop for the UI."""
         while True:
             self._display_main_menu()
             choice = self.console.input("[bold]Select an option: [/bold]")
             if choice == '1':
-                await self._run_tiered_dashboard_report()
+                await self._run_high_roller_report()
             elif choice == '2':
-                await self._run_full_pipeline_report()
-            elif choice == '3':
-                self._view_and_edit_settings()
-            elif choice == '4':
                 self.console.print("[yellow]Goodbye![/yellow]")
                 break
             else:
                 self.console.print("[bold red]Invalid option, please try again.[/bold red]")
 
-    async def _run_tiered_dashboard_report(self):
-        with self.console.status("Fetching data for Tiered Dashboard...", spinner="dots"):
-            normalized_races, enabled_adapter_count, successful_adapter_count = await run_pipeline(
-                min_runners=0,
-                time_window_minutes=config.TIME_WINDOW_MINUTES,
-                specific_source=None
-            )
-
-            if not normalized_races:
-                self.console.print(
-                    f"[yellow]No races found from {enabled_adapter_count} enabled adapters "
-                    f"({successful_adapter_count} successfully returned data).[/yellow]"
-                )
-                return
-
-            scorer_races = [
-                race for race in
-                (_convert_normalized_to_scorer_race(nr) for nr in normalized_races)
-                if race is not None
-            ]
-
-            tiered_data = score_trifecta_factors(scorer_races)
-            total_races = len(scorer_races)
-
-        self.display_tiered_dashboard(tiered_data, total_races, successful_adapter_count)
-
-    async def _run_full_pipeline_report(self):
-        with self.console.status("Running full unfiltered pipeline...", spinner="dots"):
-            normalized_races, enabled_adapter_count, successful_adapter_count = await run_pipeline(
-                min_runners=0,
-                time_window_minutes=0, # No time filter
-                specific_source=None
-            )
-
-            if not normalized_races:
-                self.console.print(
-                    f"[yellow]No races found from {enabled_adapter_count} enabled adapters "
-                    f"({successful_adapter_count} successfully returned data).[/yellow]"
-                )
-                return
-
-        self.display_races(normalized_races)
-
-    def _view_and_edit_settings(self):
-        """Displays current config settings and allows the user to edit them for the session."""
-        while True:
-            self.console.print("\n[bold cyan]Current Configuration Settings[/bold cyan]")
-
-            settings = {name: getattr(config, name) for name in dir(config) if name.isupper()}
-
-            table = Table(title="Configuration")
-            table.add_column("Setting", style="magenta")
-            table.add_column("Current Value", style="green")
-
-            for name, value in settings.items():
-                table.add_row(name, str(value))
-
-            self.console.print(table)
-
-            self.console.print("\nEnter the name of a setting to change, or type 'exit' to return to the main menu.")
-            setting_to_change = self.console.input("[bold]Setting name: [/bold]").upper()
-
-            if setting_to_change == 'EXIT':
-                break
-
-            if setting_to_change in settings:
-                current_value = settings[setting_to_change]
-                new_value_str = self.console.input(f"Enter new value for [magenta]{setting_to_change}[/magenta] (current: {current_value}): ")
-
-                try:
-                    # Attempt to cast to the same type as the original value
-                    original_type = type(current_value)
-                    if original_type == list:
-                        # Simple list parsing for strings
-                        new_value = [item.strip() for item in new_value_str.split(',')]
-                    else:
-                        new_value = original_type(new_value_str)
-
-                    setattr(config, setting_to_change, new_value)
-                    self.console.print(f"[green]'{setting_to_change}' updated to '{new_value}' for this session.[/green]")
-                except (ValueError, TypeError) as e:
-                    self.console.print(f"[bold red]Error: Invalid value. Could not convert '{new_value_str}' to the required type. {e}[/bold red]")
-            else:
-                self.console.print(f"[bold red]Error: Setting '{setting_to_change}' not found.[/bold red]")
-
     async def _run_high_roller_report(self):
+        """Runs the full pipeline and displays the high roller report."""
+        high_roller_races = None
         with self.console.status("Fetching data from providers...", spinner="dots"):
-            normalized_races, enabled_adapter_count, successful_adapter_count = await run_pipeline(
-                min_runners=0,
-                time_window_minutes=0,  # High Roller does its own time filtering
-                specific_source=None
-            )
+            # The pipeline returns the final normalized model. For the high roller report,
+            # we need to convert it to the scorer's model.
+            normalized_races = await run_pipeline(min_runners=0, specific_source=None)
 
             if not normalized_races:
-                self.console.print(
-                    f"[yellow]No races found from {enabled_adapter_count} enabled adapters "
-                    f"({successful_adapter_count} successfully returned data).[/yellow]"
-                )
+                self.console.print("[yellow]No races were found by the pipeline.[/yellow]")
                 return
 
+            # Convert to the ScorerRace model for the high roller function
             scorer_races = [
                 race for race in
                 (_convert_normalized_to_scorer_race(nr) for nr in normalized_races)

@@ -27,9 +27,7 @@ These are non-negotiable and have been learned through mission failures.
     - **Tier 2 (Contingency Path): `ReviewableJSON` Protocol.** If, and only if, the direct `.py` review fails due to a tool error, the Architect will charter a mission for the agent to synchronize the `ReviewableJSON/` directory. This provides a high-reliability fallback for verification.
 
 -   **PROTOCOL 1: The "Handcuffed Branch":** Jules cannot switch branches. An entire session lives on a single `session/jules...` branch.
-- **PROTOCOL 2: The "Controlled Demolition" Protocol:** The `reset_all()` command is a catastrophic self-destruct sequence and is **strictly forbidden**. However, in the event of an unrecoverable *code-level* corruption (e.g., a hopelessly tangled Git history or a failed refactoring), a "Controlled Demolition" may be authorized by the Project Lead as a last resort.
-    - **The Command:** `git reset --hard origin/main`
-    - **Effect:** This command will irretrievably destroy all local, uncommitted work and reset the branch to a perfect copy of the `main` branch. It is a tool for workspace recovery, not a normal workflow step.
+-   **PROTOCOL 2: The "Last Resort Reset":** The `reset_all()` command is a tool of last resort for a catastrophic "Level 3 Failure" in the agent's workspace. Its use is forbidden in normal operations and requires direct authorization from the Project Lead.
 -   **PROTOCOL 3: The "Authenticity of Sample Data":** All sample data (`.html`, `.json`) used for testing must be authentic and logically consistent.
 -   **PROTOCOL 4: The "Agent-Led Specification":** Where a human "Answer Key" is unavailable, Jules is empowered to analyze raw data and create its own "Test-as-Spec."
 -   **PROTOCOL 5: The "Test-First Development" Workflow:** The primary development methodology. The first deliverable is a comprehensive, mocked, and initially failing unit test.
