@@ -6,9 +6,10 @@ from rich.table import Table
 from rich.progress import Progress
 from rich.logging import RichHandler
 
+from .. import config
 from ..base import NormalizedRace
 from ..pipeline import run_pipeline
-from ..scorer import get_high_roller_races
+from ..scorer import get_high_roller_races, score_trifecta_factors
 from ..models import Race as ScorerRace, Runner as ScorerRunner
 
 
@@ -146,10 +147,17 @@ class TerminalUI:
 
     async def _run_tiered_dashboard_report(self):
         with self.console.status("Fetching data for Tiered Dashboard...", spinner="dots"):
-            normalized_races, adapter_count = await run_pipeline(min_runners=0, specific_source=None)
+            normalized_races, enabled_adapter_count, successful_adapter_count = await run_pipeline(
+                min_runners=0,
+                time_window_minutes=config.TIME_WINDOW_MINUTES,
+                specific_source=None
+            )
 
             if not normalized_races:
-                self.console.print(f"[yellow]No races were found for {adapter_count} enabled adapters.[/yellow]")
+                self.console.print(
+                    f"[yellow]No races found from {enabled_adapter_count} enabled adapters "
+                    f"({successful_adapter_count} successfully returned data).[/yellow]"
+                )
                 return
 
             scorer_races = [
@@ -164,10 +172,17 @@ class TerminalUI:
 
     async def _run_high_roller_report(self):
         with self.console.status("Fetching data from providers...", spinner="dots"):
-            normalized_races, adapter_count = await run_pipeline(min_runners=0, specific_source=None)
+            normalized_races, enabled_adapter_count, successful_adapter_count = await run_pipeline(
+                min_runners=0,
+                time_window_minutes=0,  # High Roller does its own time filtering
+                specific_source=None
+            )
 
             if not normalized_races:
-                self.console.print(f"[yellow]No races were found for {adapter_count} enabled adapters.[/yellow]")
+                self.console.print(
+                    f"[yellow]No races found from {enabled_adapter_count} enabled adapters "
+                    f"({successful_adapter_count} successfully returned data).[/yellow]"
+                )
                 return
 
             scorer_races = [
