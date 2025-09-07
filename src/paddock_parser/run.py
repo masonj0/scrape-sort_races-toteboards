@@ -4,7 +4,7 @@ import asyncio
 
 from .pipeline import run_pipeline
 from .ui.terminal_ui import TerminalUI
-from . import __version__
+from . import version
 from . import config
 
 def main():
@@ -12,7 +12,7 @@ def main():
     The main entry point for the Paddock Parser application.
     """
     parser = argparse.ArgumentParser(
-        description=f"Paddock Parser NG (Version {__version__}) - A toolkit for analyzing racecards."
+        description=f"Paddock Parser NG (Version {version}) - A toolkit for analyzing racecards."
     )
 
     parser.add_argument(
@@ -46,19 +46,23 @@ def main():
     log_level = logging.INFO if args.verbose else logging.WARNING
     logging.basicConfig(level=log_level, format='%(asctime)s - %(levelname)s - %(message)s')
 
-    # The pipeline now returns the data, so we need to handle the display here.
     ui = TerminalUI()
-    ui.setup_logging() # The UI can still manage the logging format.
+    ui.setup_logging()
 
-    races = asyncio.run(run_pipeline(
+    races, enabled_adapter_count, successful_adapter_count = asyncio.run(run_pipeline(
         min_runners=args.min_runners,
         time_window_minutes=args.time_window,
         specific_source=args.source,
-        ui=ui # Pass the UI for progress updates
+        ui=ui
     ))
 
     if races:
         ui.display_races(races)
+    else:
+        ui.console.print(
+            f"[yellow]No races found from {enabled_adapter_count} enabled adapters "
+            f"({successful_adapter_count} successfully returned data).[/yellow]"
+        )
 
 if __name__ == "__main__":
     main()
