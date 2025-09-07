@@ -1,3 +1,4 @@
+import inspect
 from datetime import datetime
 from typing import List, Optional
 
@@ -131,7 +132,10 @@ class TerminalUI:
     def _display_main_menu(self):
         self.console.print("\n[bold magenta]Paddock Parser NG - Main Menu[/bold magenta]")
         self.console.print("1. Get Tiered Dashboard Report")
-        self.console.print("2. Quit")
+        self.console.print("2. Run Full Pipeline (Unfiltered)")
+        self.console.print("3. View & Edit Settings")
+        self.console.print("4. Quit")
+
 
     async def start_interactive_mode(self):
         while True:
@@ -140,6 +144,10 @@ class TerminalUI:
             if choice == '1':
                 await self._run_tiered_dashboard_report()
             elif choice == '2':
+                await self._run_full_pipeline_report()
+            elif choice == '3':
+                self._view_and_edit_settings()
+            elif choice == '4':
                 self.console.print("[yellow]Goodbye![/yellow]")
                 break
             else:
@@ -169,6 +177,67 @@ class TerminalUI:
             tiered_data = score_trifecta_factors(scorer_races)
 
         self.display_tiered_dashboard(tiered_data)
+
+
+    async def _run_full_pipeline_report(self):
+        with self.console.status("Running full unfiltered pipeline...", spinner="dots"):
+            normalized_races, enabled_adapter_count, successful_adapter_count = await run_pipeline(
+                min_runners=0,
+                time_window_minutes=0, # No time filter
+                specific_source=None
+            )
+
+            if not normalized_races:
+                self.console.print(
+                    f"[yellow]No races found from {enabled_adapter_count} enabled adapters "
+                    f"({successful_adapter_count} successfully returned data).[/yellow]"
+                )
+                return
+
+        self.display_races(normalized_races)
+
+    def _view_and_edit_settings(self):
+        """Displays current config settings and allows the user to edit them for the session."""
+        while True:
+            self.console.print("\n[bold cyan]Current Configuration Settings[/bold cyan]")
+
+            settings = {name: getattr(config, name) for name in dir(config) if name.isupper()}
+
+            table = Table(title="Configuration")
+            table.add_column("Setting", style="magenta")
+            table.add_column("Current Value", style="green")
+
+            for name, value in settings.items():
+                table.add_row(name, str(value))
+
+            self.console.print(table)
+
+            self.console.print("\nEnter the name of a setting to change, or type 'exit' to return to the main menu.")
+            setting_to_change = self.console.input("[bold]Setting name: [/bold]").upper()
+
+            if setting_to_change == 'EXIT':
+                break
+
+            if setting_to_change in settings:
+                current_value = settings[setting_to_change]
+                new_value_str = self.console.input(f"Enter new value for [magenta]{setting_to_change}[/magenta] (current: {current_value}): ")
+
+                try:
+                    # Attempt to cast to the same type as the original value
+                    original_type = type(current_value)
+                    if original_type == list:
+                        # Simple list parsing for strings
+                        new_value = [item.strip() for item in new_value_str.split(',')]
+                    else:
+                        new_value = original_type(new_value_str)
+
+                    setattr(config, setting_to_change, new_value)
+                    self.console.print(f"[green]'{setting_to_change}' updated to '{new_value}' for this session.[/green]")
+                except (ValueError, TypeError) as e:
+                    self.console.print(f"[bold red]Error: Invalid value. Could not convert '{new_value_str}' to the required type. {e}[/bold red]")
+            else:
+                self.console.print(f"[bold red]Error: Setting '{setting_to_change}' not found.[/bold red]")
+
 
     async def _run_high_roller_report(self):
         with self.console.status("Fetching data from providers...", spinner="dots"):
