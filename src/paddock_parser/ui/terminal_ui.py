@@ -97,12 +97,39 @@ class TerminalUI:
 
         self.console.print(table)
 
+    def display_tiered_dashboard(self, tiered_data: dict):
+        """Displays the tiered race data in a series of tables."""
+        tier_titles = {
+            "tier_1": "[bold green]== Tier 1: The Perfect Match ==[/bold green]",
+            "tier_2": "[bold yellow]== Tier 2: The Strong Contenders ==[/bold yellow]",
+            "tier_3": "[bold cyan]== Tier 3: The Singular Signals ==[/bold cyan]",
+        }
+
+        for tier_name, races in tiered_data.items():
+            if races:
+                table = Table(title=tier_titles[tier_name])
+                table.add_column("Track", justify="left")
+                table.add_column("Race #", justify="left")
+                table.add_column("Post Time", justify="left")
+                table.add_column("Runners", justify="left")
+
+                for race in races:
+                    post_time_str = race.race_time if race.race_time else "N/A"
+                    num_runners = race.number_of_runners if race.number_of_runners is not None else len(race.runners)
+                    table.add_row(
+                        race.venue,
+                        str(race.race_number),
+                        post_time_str,
+                        str(num_runners),
+                    )
+                self.console.print(table)
+
     def setup_logging(self):
         self.log_handler = RichHandler(console=self.console, show_path=False)
 
     def _display_main_menu(self):
         self.console.print("\n[bold magenta]Paddock Parser NG - Main Menu[/bold magenta]")
-        self.console.print("1. Get High Roller Report")
+        self.console.print("1. Get Tiered Dashboard Report")
         self.console.print("2. Quit")
 
     async def start_interactive_mode(self):
@@ -110,12 +137,30 @@ class TerminalUI:
             self._display_main_menu()
             choice = self.console.input("[bold]Select an option: [/bold]")
             if choice == '1':
-                await self._run_high_roller_report()
+                await self._run_tiered_dashboard_report()
             elif choice == '2':
                 self.console.print("[yellow]Goodbye![/yellow]")
                 break
             else:
                 self.console.print("[bold red]Invalid option, please try again.[/bold red]")
+
+    async def _run_tiered_dashboard_report(self):
+        with self.console.status("Fetching data for Tiered Dashboard...", spinner="dots"):
+            normalized_races, adapter_count = await run_pipeline(min_runners=0, specific_source=None)
+
+            if not normalized_races:
+                self.console.print(f"[yellow]No races were found for {adapter_count} enabled adapters.[/yellow]")
+                return
+
+            scorer_races = [
+                race for race in
+                (_convert_normalized_to_scorer_race(nr) for nr in normalized_races)
+                if race is not None
+            ]
+
+            tiered_data = score_trifecta_factors(scorer_races)
+
+        self.display_tiered_dashboard(tiered_data)
 
     async def _run_high_roller_report(self):
         with self.console.status("Fetching data from providers...", spinner="dots"):
