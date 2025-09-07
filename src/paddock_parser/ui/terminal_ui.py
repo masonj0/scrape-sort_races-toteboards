@@ -66,18 +66,23 @@ class TerminalUI:
             )
         self.console.print(table)
 
-    def display_high_roller_report(self, races: List[ScorerRace]):
+    def display_high_roller_report(self, races: List[ScorerRace], funnel_stats: dict = None):
         """
         Displays the high roller report in a rich, formatted table.
+        If no races are found, it displays the funnel statistics.
         """
         if not races:
-            info_message = (
-                "[bold yellow]No races met the High Roller criteria.[/bold yellow]\n\n"
-                "The report is filtered based on the following rules:\n"
-                " - [bold]Time:[/bold] Only includes races starting in the next 25 minutes.\n"
-                " - [bold]Runners:[/bold] Only includes races with Fewer than 7 runners."
-            )
-            self.console.print(info_message)
+            if funnel_stats:
+                initial_races = funnel_stats.get('initial_races', 0)
+                after_time_filter = funnel_stats.get('after_time_filter', 0)
+                final_races = funnel_stats.get('final_races', 0)
+                self.console.print(
+                    f"[yellow]Pipeline complete. Initial races found: {initial_races}. "
+                    f"After time filter: {after_time_filter}. After runner filter: {final_races}. "
+                    f"No races matched all criteria.[/yellow]"
+                )
+            else:
+                 self.console.print("[yellow]No races were found by the pipeline.[/yellow]")
             return
 
         table = Table(title="[bold green]High Roller Report[/bold green]")
@@ -155,15 +160,12 @@ class TerminalUI:
         """Runs the full pipeline and displays the high roller report."""
         high_roller_races = None
         with self.console.status("Fetching data from providers...", spinner="dots"):
-            # The pipeline returns the final normalized model. For the high roller report,
-            # we need to convert it to the scorer's model.
-            normalized_races = await run_pipeline(min_runners=0, specific_source=None)
+            normalized_races, funnel_stats = await run_pipeline(min_runners=0, time_window_minutes=25, specific_source=None)
 
             if not normalized_races:
-                self.console.print("[yellow]No races were found by the pipeline.[/yellow]")
+                self.display_high_roller_report([], funnel_stats=funnel_stats)
                 return
 
-            # Convert to the ScorerRace model for the high roller function
             scorer_races = [
                 race for race in
                 (_convert_normalized_to_scorer_race(nr) for nr in normalized_races)
@@ -173,4 +175,4 @@ class TerminalUI:
             now = datetime.now()
             high_roller_races = get_high_roller_races(scorer_races, now)
 
-        self.display_high_roller_report(high_roller_races)
+        self.display_high_roller_report(high_roller_races, funnel_stats=funnel_stats)
