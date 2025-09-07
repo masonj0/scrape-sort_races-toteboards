@@ -53,7 +53,7 @@ def test_score_trifecta_factors_categorizes_correctly(sample_races_for_tiering):
     assert len(tiered_results["tier_3"]) == 1
     assert tiered_results["tier_3"][0].race_id == "T3_ONLY_RUNNERS"
 
-# --- Test for "The Face" (terminal_ui.py) ---
+# --- Tests for "The Face" (terminal_ui.py) ---
 @patch('src.paddock_parser.ui.terminal_ui.Table')
 @patch('src.paddock_parser.ui.terminal_ui.Console')
 def test_display_tiered_dashboard_creates_multiple_tables(MockConsole, MockTable, sample_races_for_tiering):
@@ -67,7 +67,8 @@ def test_display_tiered_dashboard_creates_multiple_tables(MockConsole, MockTable
     ui = TerminalUI(console=mock_console_instance)
 
     # Act
-    ui.display_tiered_dashboard(tiered_data) # This is the new function you will create
+    # The counts passed here don't matter for this test, as it asserts on the success path
+    ui.display_tiered_dashboard(tiered_data, total_races=3, successful_adapter_count=1)
 
     # Assert
     # 1. It should have attempted to print three times (once for each table).
@@ -79,3 +80,22 @@ def test_display_tiered_dashboard_creates_multiple_tables(MockConsole, MockTable
     assert "[bold green]== Tier 1: The Perfect Match ==[/bold green]" in call_args_list
     assert "[bold yellow]== Tier 2: The Strong Contenders ==[/bold yellow]" in call_args_list
     assert "[bold cyan]== Tier 3: The Singular Signals ==[/bold cyan]" in call_args_list
+
+@patch('src.paddock_parser.ui.terminal_ui.Console')
+def test_display_tiered_dashboard_shows_contextual_message_when_empty(MockConsole):
+    """
+    SPEC: The UI must show an informative message when no races meet the tier criteria.
+    """
+    # Arrange
+    mock_console_instance = MockConsole.return_value
+    empty_tiered_data = {"tier_1": [], "tier_2": [], "tier_3": []}
+    ui = TerminalUI(console=mock_console_instance)
+
+    # Act
+    ui.display_tiered_dashboard(empty_tiered_data, total_races=50, successful_adapter_count=8)
+
+    # Assert
+    mock_console_instance.print.assert_called_once_with(
+        "Found 50 races from 8 adapters, "
+        "but [bold yellow]none met the criteria for the Tiered Dashboard.[/bold yellow]"
+    )
