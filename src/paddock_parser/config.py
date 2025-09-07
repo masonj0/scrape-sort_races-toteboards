@@ -7,7 +7,7 @@ MIN_RUNNERS = 7
 
 # The time window in minutes from now to include races.
 # For example, 25 means only show races starting in the next 25 minutes.
-TIME_WINDOW_MINUTES = 25
+TIME_WINDOW_MINUTES = 115
 
 # --- Adapter Configuration ---
 
@@ -20,3 +20,7 @@ DISABLED_ADAPTERS = []
 # Set the log level for the application.
 # Options: "DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"
 LOG_LEVEL = "INFO"
+
+# --- High Roller Report Configuration ---
+HIGH_ROLLER_MAX_RUNNERS = 7
+HIGH_ROLLER_MIN_ODDS = 0.5

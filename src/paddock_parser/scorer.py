@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 from typing import List
 
+from . import config
 from .base import NormalizedRace
 from .models import Race, Runner
 
@@ -9,7 +10,7 @@ def get_high_roller_races(races: List[Race], now: datetime) -> List[Race]:
     Filters and scores races to find "High Roller" opportunities.
     """
     valid_races = []
-    max_time_to_post = timedelta(minutes=25)
+    max_time_to_post = timedelta(minutes=config.TIME_WINDOW_MINUTES)
 
     for race in races:
         # 1. Time filtering
@@ -25,8 +26,8 @@ def get_high_roller_races(races: List[Race], now: datetime) -> List[Race]:
         if not (timedelta(minutes=0) < time_to_post <= max_time_to_post):
             continue
 
-        # 2. Runner count filtering (must be less than 7)
-        if not (hasattr(race, 'number_of_runners') and race.number_of_runners and 0 < race.number_of_runners < 7):
+        # 2. Runner count filtering
+        if not (hasattr(race, 'number_of_runners') and race.number_of_runners and 0 < race.number_of_runners < config.HIGH_ROLLER_MAX_RUNNERS):
             continue
 
         # 3. Scoring based on favorite's odds
@@ -36,11 +37,15 @@ def get_high_roller_races(races: List[Race], now: datetime) -> List[Race]:
             if odds < min_odds:
                 min_odds = odds
 
+        # 4. Odds filtering
+        if min_odds < config.HIGH_ROLLER_MIN_ODDS:
+            continue
+
         if min_odds != float('inf'):
             setattr(race, 'high_roller_score', min_odds)
             valid_races.append(race)
 
-    # 4. Sort by the dynamically added score
+    # 5. Sort by the dynamically added score
     valid_races.sort(key=lambda r: getattr(r, 'high_roller_score', float('inf')), reverse=True)
     return valid_races
 
