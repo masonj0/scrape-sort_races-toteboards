@@ -49,7 +49,7 @@ def main():
     ui = TerminalUI()
     ui.setup_logging()
 
-    races, adapter_count = asyncio.run(run_pipeline(
+    races, enabled_adapter_count, successful_adapter_count = asyncio.run(run_pipeline(
         min_runners=args.min_runners,
         time_window_minutes=args.time_window,
         specific_source=args.source,
@@ -59,7 +59,10 @@ def main():
     if races:
         ui.display_races(races)
     else:
-        ui.console.print(f"[yellow]No races were found from {adapter_count} enabled adapters.[/yellow]")
+        ui.console.print(
+            f"[yellow]No races found from {enabled_adapter_count} enabled adapters "
+            f"({successful_adapter_count} successfully returned data).[/yellow]"
+        )
 
 if __name__ == "__main__":
     main()

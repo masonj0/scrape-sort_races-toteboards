@@ -50,7 +50,7 @@ async def test_run_high_roller_report_uses_rich_status(
     mock_console_instance = MockConsole()
     async def mock_pipeline(*args, **kwargs):
         races = [NormalizedRace(race_id="D1", track_name="Dummy", race_number=1, post_time=datetime.now(), runners=[NormalizedRunner(name="DummyHorse", program_number=1, odds=10.0)])]
-        return races, 1
+        return races, 1, 1
     MockRunPipeline.side_effect = mock_pipeline
     MockGetHighRoller.return_value = sample_high_roller_races
     ui = TerminalUI(console=mock_console_instance)
@@ -65,7 +65,10 @@ async def test_run_high_roller_report_uses_rich_status(
 @patch('paddock_parser.ui.terminal_ui.Console')
 async def test_run_high_roller_report_no_races(MockConsole, MockRunPipeline):
     mock_console_instance = MockConsole.return_value
-    MockRunPipeline.return_value = ([], 5)
+    MockRunPipeline.return_value = ([], 5, 0)
     ui = TerminalUI(console=mock_console_instance)
     await ui._run_high_roller_report()
-    mock_console_instance.print.assert_called_once_with("[yellow]No races were found for 5 enabled adapters.[/yellow]")
+    mock_console_instance.print.assert_called_once_with(
+        "[yellow]No races found from 5 enabled adapters "
+        "(0 successfully returned data).[/yellow]"
+    )
