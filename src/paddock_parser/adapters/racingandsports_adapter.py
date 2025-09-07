@@ -1,7 +1,7 @@
 import json
 from typing import Dict, List, Any
 
-from ..http_client import ForagerClient
+from ..fetcher import get_page_content
 from ..base import BaseAdapterV3, NormalizedRace
 
 class RacingAndSportsAdapter(BaseAdapterV3):
@@ -9,11 +9,10 @@ class RacingAndSportsAdapter(BaseAdapterV3):
     Adapter for fetching and parsing data from the Racing & Sports API.
     """
 
-    def __init__(self, client: ForagerClient = None):
+    def __init__(self):
         """
-        Initializes the adapter with an optional ForagerClient.
+        Initializes the adapter.
         """
-        self.client = client or ForagerClient()
         self.base_url = "https://www.racingandsports.com.au/todays-racing-json-v2"
 
     async def fetch(self) -> List[NormalizedRace]:
@@ -23,8 +22,9 @@ class RacingAndSportsAdapter(BaseAdapterV3):
         NOTE: This is a partial implementation. It currently only fetches the
         list of meetings and does not yet parse the individual race details.
         """
-        # json_data = await self.client.fetch(self.base_url)
-        # meetings = self.parse_meetings(json_data)
+        response = await get_page_content(self.base_url)
+        json_data = response.text
+        meetings = self.parse_meetings(json_data)
         # For now, return an empty list to prevent crashes in the pipeline.
         # The full implementation will involve a second stage of fetching and parsing.
         return []

@@ -60,6 +60,30 @@ class TestDynamicRaceTable:
         assert call("Churchill", "1", "14:30", "8", "85") in row_calls
         assert call("Belmont", "3", "N/A", "12", "N/A") in row_calls
 
+class TestProgressBarFunctionality:
+    @patch('src.paddock_parser.ui.terminal_ui.Progress')
+    def test_progress_bar_workflow(self, mock_progress_class):
+        from src.paddock_parser.ui.terminal_ui import TerminalUI
+        mock_progress = Mock()
+        mock_progress_class.return_value = mock_progress
+        mock_task_id = "task_123"
+        mock_progress.add_task.return_value = mock_task_id
+
+        terminal_ui = TerminalUI(console=Mock())
+        num_tasks = 5
+
+        terminal_ui.start_fetching_progress(num_tasks)
+        mock_progress_class.assert_called_once()
+        mock_progress.start.assert_called_once()
+        mock_progress.add_task.assert_called_once_with("Fetching races...", total=num_tasks)
+
+        terminal_ui.update_fetching_progress()
+        mock_progress.update.assert_called_once_with(mock_task_id, advance=1)
+
+        terminal_ui.stop_fetching_progress()
+        mock_progress.stop.assert_called_once()
+        assert terminal_ui.progress is None
+
 class TestLoggingIntegration:
     @patch('src.paddock_parser.ui.terminal_ui.RichHandler')
     def test_setup_logging_creates_handler(self, mock_rich_handler_class):
@@ -80,4 +104,8 @@ def test_display_high_roller_report_shows_info_when_empty(MockConsole):
     # Act
     ui.display_high_roller_report([])
     # Assert
-    mock_console_instance.print.assert_called_once_with("[yellow]No races were found by the pipeline.[/yellow]")
+    mock_console_instance.print.assert_called_once()
+    actual_output = mock_console_instance.print.call_args[0][0]
+    assert "No races met the High Roller criteria." in actual_output
+    assert "next 25 minutes" in actual_output
+    assert "Fewer than 7" in actual_output
