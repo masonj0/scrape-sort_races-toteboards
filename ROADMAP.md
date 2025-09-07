@@ -38,7 +38,7 @@ This section outlines the next generation of features, building upon our stable 
 This section documents the verified, completed features that form the stable foundation for our V3 evolution, categorized by our four architectural pillars.
 
 ### The Brain (Scoring & Analysis)
-*   **Advanced Weighted Scoring:** A flexible, weighted scoring engine (`scorer.py`) forms the foundation for future analytical models.
+*   **"Trifecta" Scoring Engine:** A sophisticated, multi-factor scoring engine (`scorer.py`) that categorizes races into tiers based on the Project Lead's "Trifecta of Factors" (Field Size, Favorite Odds, 2nd Favorite Odds).
 *   **Backtesting Engine:** A `Backtester` module for scientifically validating scoring models against historical data.
 
 ### The Guardian (Data Integrity & Persistence)
@@ -51,7 +51,7 @@ This section documents the verified, completed features that form the stable fou
 
 ### The Face (User Experience & Delivery)
 *   **Rich Terminal User Interface (TUI):** An enhanced, `rich`-powered interactive display for running reports.
-*   **High Roller Report:** A one-click, user-defined value report in the TUI.
+*   **Tiered Bettor's Dashboard:** A dynamic, multi-table report that presents races in prioritized tiers ("The Perfect Match," "Strong Contenders," etc.), providing at-a-glance, actionable intelligence.
 *   **Web Service API:** A FastAPI service with JSON and CSV exports.
 
 ---
