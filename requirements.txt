@@ -11,6 +11,8 @@ numpy
 beautifulsoup4
 lxml
 httpx
+tenacity
+requests
 
 # Testing
 pytest

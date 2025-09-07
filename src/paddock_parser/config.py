@@ -7,7 +7,7 @@ MIN_RUNNERS = 7
 
 # The time window in minutes from now to include races.
 # For example, 25 means only show races starting in the next 25 minutes.
-TIME_WINDOW_MINUTES = 25
+TIME_WINDOW_MINUTES = 115
 
 # --- Adapter Configuration ---
 
