@@ -53,7 +53,8 @@ async def test_run_high_roller_report_uses_rich_status(
 
     # Configure run_pipeline mock to return a value to prevent early exit
     async def mock_pipeline(*args, **kwargs):
-        return [NormalizedRace(race_id="D1", track_name="Dummy", race_number=1, post_time=datetime.now(), runners=[NormalizedRunner(name="DummyHorse", program_number=1, odds=10.0)])]
+        races = [NormalizedRace(race_id="D1", track_name="Dummy", race_number=1, post_time=datetime.now(), runners=[NormalizedRunner(name="DummyHorse", program_number=1, odds=10.0)])]
+        return races, {}
     MockRunPipeline.side_effect = mock_pipeline
 
     MockGetHighRoller.return_value = sample_high_roller_races
@@ -67,4 +68,18 @@ async def test_run_high_roller_report_uses_rich_status(
     mock_console_instance.status.assert_called_once_with("Fetching data from providers...", spinner="dots")
     MockRunPipeline.assert_called_once()
     MockGetHighRoller.assert_called_once()
-    MockDisplay.assert_called_once_with(sample_high_roller_races)
+    MockDisplay.assert_called_once_with(sample_high_roller_races, funnel_stats={})
+
+@patch('paddock_parser.ui.terminal_ui.Console')
+def test_display_high_roller_report_no_races_shows_funnel_stats(MockConsole):
+    mock_console_instance = MockConsole.return_value
+    ui = TerminalUI(console=mock_console_instance)
+    funnel_stats = {'initial_races': 50, 'after_time_filter': 10, 'final_races': 0}
+
+    ui.display_high_roller_report([], funnel_stats=funnel_stats)
+
+    mock_console_instance.print.assert_called_once_with(
+        "[yellow]Pipeline complete. Initial races found: 50. "
+        "After time filter: 10. After runner filter: 0. "
+        "No races matched all criteria.[/yellow]"
+    )
