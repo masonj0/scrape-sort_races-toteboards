@@ -11,6 +11,14 @@ The development of Paddock Parser V3 is guided by a clear architectural philosop
 *   **The Template (The `adapters/` module):** The patterns and tools for resiliently acquiring data from the outside world.
 *   **The Face (`terminal_ui.py`, the API):** The interfaces that deliver value and insight to the end-user.
 
+## Usage
+
+To run the application in interactive mode, use the following command:
+
+```bash
+python launch_paddock_parser.py
+```
+
 ## Supported Data Sources
 This project leverages a sophisticated, multi-source approach. The current V3-compliant adapter fleet includes (but is not limited to):
 *   **Racing Post** (Hybrid JSON/HTML)
