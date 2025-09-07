@@ -34,24 +34,22 @@ This section outlines the next generation of features, building upon our stable 
 ---
 
 ## Part 3: The V2 "Golden Branch" (Our Foundation)
-
-This section documents the verified, completed features that form the stable foundation for our V3 evolution, categorized by our four architectural pillars.
+This section documents our verified, completed features, categorized by our four architectural pillars.
 
 ### The Brain (Scoring & Analysis)
-*   **"Trifecta" Scoring Engine:** A sophisticated, multi-factor scoring engine (`scorer.py`) that categorizes races into tiers based on the Project Lead's "Trifecta of Factors" (Field Size, Favorite Odds, 2nd Favorite Odds).
-*   **Backtesting Engine:** A `Backtester` module for scientifically validating scoring models against historical data.
+*   **"Trifecta" Scoring Engine:** A sophisticated, multi-factor scoring engine that categorizes races into tiers based on the Project Lead's "Trifecta of Factors."
+*   **Backtesting Engine:** A `Backtester` module for scientifically validating scoring models.
 
 ### The Guardian (Data Integrity & Persistence)
-*   **Data Persistence:** A `DatabaseManager` using SQLite provides the project with long-term memory.
-*   **Data Deduplication:** `SmartMerge` logic fuses data from multiple sources into a single, authoritative record.
+*   **Data Persistence:** A `DatabaseManager` using SQLite provides long-term memory.
+*   **Data Deduplication:** `SmartMerge` logic fuses data from multiple sources.
 
 ### The Template (Data Acquisition & Resilience)
-*   **Professional Fetching Engine:** A resilient `ForagerClient` with User-Agent rotation and intelligent retries.
-*   **Expanded Adapter Fleet:** A vast suite of resurrected and V3-modernized adapters, including premier API-driven sources (**Racing Post, FanDuel**) and comprehensive HTML scrapers (**Timeform, Equibase**), providing extensive data coverage.
+*   **Professional Fetching Engine:** A resilient `ForagerClient` with User-Agent rotation.
+*   **Expanded Adapter Fleet:** A vast suite of V3-modernized adapters providing extensive data coverage.
 
 ### The Face (User Experience & Delivery)
-*   **Rich Terminal User Interface (TUI):** An enhanced, `rich`-powered interactive display for running reports.
-*   **Tiered Bettor's Dashboard:** A dynamic, multi-table report that presents races in prioritized tiers ("The Perfect Match," "Strong Contenders," etc.), providing at-a-glance, actionable intelligence.
+*   **Tiered Bettor's Dashboard:** A dynamic, multi-table `rich`-powered TUI that presents races in prioritized tiers.
 *   **Web Service API:** A FastAPI service with JSON and CSV exports.
 
 ---

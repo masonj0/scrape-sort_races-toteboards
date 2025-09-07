@@ -22,7 +22,9 @@ This document outlines the operational protocols, team structure, and core philo
 
 These are non-negotiable and have been learned through mission failures.
 
-- **PROTOCOL 0: The "ReviewableJSON" Protocol (Definitive):** This is the mandatory protocol for all code reviews. The agent's final act for any mission is to run the `convert_to_json.py` script, creating a lossless JSON backup of all modified Python files. The Architect will then review these JSON files directly. This is our single source of truth for code review.
+- **PROTOCOL 0: The "Tiered Review" Protocol (Definitive):** This is the definitive protocol for all code reviews, optimizing for speed while guaranteeing accuracy.
+    - **Tier 1 (Preferred Path): Direct `.py` Review.** The Architect will first attempt a direct review of the changed `.py` files using the "Volley Protocol." This is the fastest and default method.
+    - **Tier 2 (Contingency Path): `ReviewableJSON` Protocol.** If, and only if, the direct `.py` review fails due to a tool error, the Architect will charter a mission for the agent to synchronize the `ReviewableJSON/` directory. This provides a high-reliability fallback for verification.
 
 -   **PROTOCOL 1: The "Handcuffed Branch":** Jules cannot switch branches. An entire session lives on a single `session/jules...` branch.
 - **PROTOCOL 2: The "Controlled Demolition" Protocol:** The `reset_all()` command is a catastrophic self-destruct sequence and is **strictly forbidden**. However, in the event of an unrecoverable *code-level* corruption (e.g., a hopelessly tangled Git history or a failed refactoring), a "Controlled Demolition" may be authorized by the Project Lead as a last resort.
