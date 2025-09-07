@@ -136,6 +136,7 @@ class TerminalUI:
         self.console.print("3. View & Edit Settings")
         self.console.print("4. Quit")
 
+
     async def start_interactive_mode(self):
         while True:
             self._display_main_menu()
@@ -176,6 +177,7 @@ class TerminalUI:
             tiered_data = score_trifecta_factors(scorer_races)
 
         self.display_tiered_dashboard(tiered_data)
+
 
     async def _run_full_pipeline_report(self):
         with self.console.status("Running full unfiltered pipeline...", spinner="dots"):
@@ -235,6 +237,7 @@ class TerminalUI:
                     self.console.print(f"[bold red]Error: Invalid value. Could not convert '{new_value_str}' to the required type. {e}[/bold red]")
             else:
                 self.console.print(f"[bold red]Error: Setting '{setting_to_change}' not found.[/bold red]")
+
 
     async def _run_high_roller_report(self):
         with self.console.status("Fetching data from providers...", spinner="dots"):
