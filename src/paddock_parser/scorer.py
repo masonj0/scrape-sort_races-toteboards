@@ -88,38 +88,3 @@ def calculate_weighted_score(race: Race, weights: dict) -> float:
     # Calculate final score
     score = field_size_component + favorite_odds_component
     return score
-
-
-def score_trifecta_factors(races: List[Race]) -> dict:
-    """
-    Categorizes races into three tiers based on the "Trifecta of Factors."
-    The base factor is always having fewer than 7 runners.
-    """
-    tiered_results = {"tier_1": [], "tier_2": [], "tier_3": []}
-
-    for race in races:
-        # Base criteria: must have fewer than 7 runners to be considered for any tier.
-        if len(race.runners) >= 7:
-            continue
-
-        factors_met = 1  # Start with 1 factor for passing the runner count criteria.
-
-        # Sort runners by odds to find favorite and 2nd favorite
-        runners_with_odds = sorted([r for r in race.runners if r.odds is not None], key=lambda r: r.odds)
-
-        # Factor 2: Favorite's odds > 1.0
-        if len(runners_with_odds) >= 1 and runners_with_odds[0].odds > 1.0:
-            factors_met += 1
-
-        # Factor 3: Second favorite's odds > 4.0
-        if len(runners_with_odds) >= 2 and runners_with_odds[1].odds > 4.0:
-            factors_met += 1
-
-        if factors_met == 3:
-            tiered_results["tier_1"].append(race)
-        elif factors_met == 2:
-            tiered_results["tier_2"].append(race)
-        elif factors_met == 1:
-            tiered_results["tier_3"].append(race)
-
-    return tiered_results

@@ -76,25 +76,21 @@ async def run_pipeline(
     time_window_minutes: int,
     specific_source: str = None,
     ui: Optional['TerminalUI'] = None
-) -> Tuple[List[NormalizedRace], int, int]:
-    """
-    Orchestrates the end-to-end pipeline.
-    Returns a tuple of (races, enabled_adapter_count, successful_adapter_count).
-    """
+) -> List[NormalizedRace]:
+    """Orchestrates the end-to-end pipeline."""
     logging.info("--- Paddock Parser NG Pipeline Start ---")
 
     unmerged_races: List[Race] = []
     prog_num_map: Dict[Tuple[str, str], int] = {}  # Map to preserve program numbers across lossy conversion
     adapter_classes = load_adapters(specific_source)
     races_per_adapter: Dict[str, int] = {}
-    enabled_adapter_count = len(adapter_classes)
 
     if not adapter_classes:
         logging.warning("No adapters found.")
-        return [], 0, 0
+        return []
 
-    if ui and hasattr(ui, 'start_fetching_progress'):
-        ui.start_fetching_progress(enabled_adapter_count)
+    if ui:
+        ui.start_fetching_progress(len(adapter_classes))
 
     for adapter_class in adapter_classes:
         adapter = adapter_class()
@@ -129,13 +125,11 @@ async def run_pipeline(
         except Exception:
             logging.error(f"An error occurred in the '{source_id}' adapter. See details below.", exc_info=True)
         finally:
-            if ui and hasattr(ui, 'update_fetching_progress'):
+            if ui:
                 ui.update_fetching_progress()
 
-    if ui and hasattr(ui, 'stop_fetching_progress'):
+    if ui:
         ui.stop_fetching_progress()
-
-    successful_adapter_count = sum(1 for count in races_per_adapter.values() if count > 0)
 
     logging.info("\n--- Data Ingestion Summary ---")
     for source, count in races_per_adapter.items():
@@ -148,7 +142,7 @@ async def run_pipeline(
 
     if not unmerged_races:
         logging.info("No races were successfully parsed from any source.")
-        return [], enabled_adapter_count, successful_adapter_count
+        return []
 
     # Merge the races
     logging.info(f"Merging {len(unmerged_races)} race records...")
@@ -187,4 +181,4 @@ async def run_pipeline(
     final_normalized_races.sort(key=lambda r: r.score or 0, reverse=True)
 
     logging.info("--- Pipeline End ---")
-    return final_normalized_races, enabled_adapter_count, successful_adapter_count
+    return final_normalized_races
