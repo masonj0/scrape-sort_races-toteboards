@@ -157,7 +157,7 @@ class TerminalUI:
         with self.console.status("Fetching data from providers...", spinner="dots"):
             # The pipeline returns the final normalized model. For the high roller report,
             # we need to convert it to the scorer's model.
-            normalized_races = await run_pipeline(min_runners=0, specific_source=None)
+            normalized_races = await run_pipeline(min_runners=0, time_window_minutes=25, specific_source=None)
 
             if not normalized_races:
                 self.console.print("[yellow]No races were found by the pipeline.[/yellow]")
