@@ -1,10 +1,10 @@
 import json
+import httpx
 import logging
 from datetime import datetime
 from typing import List, Dict, Any
 
 from ..base import BaseAdapter, NormalizedRace, NormalizedRunner
-from ..sync_fetcher import post_json_content
 
 
 def parse_from_json(schedule_data: str, detail_data: str) -> List[NormalizedRace]:
@@ -93,36 +93,42 @@ class FanDuelGraphQLAdapter(BaseAdapter):
         """
         Fetches schedule and detail data from the FanDuel GraphQL endpoint.
         """
-        try:
-            # Fetch the race schedule
-            schedule_response = post_json_content(self.API_ENDPOINT, json_payload=self.SCHEDULE_QUERY)
-            schedule_json = schedule_response.json()
+        with httpx.Client() as client:
+            try:
+                # Fetch the race schedule
+                schedule_response = client.post(self.API_ENDPOINT, json=self.SCHEDULE_QUERY, headers=self.HEADERS)
+                schedule_response.raise_for_status()
+                schedule_json = schedule_response.json()
 
-            # Extract tvgRaceIds from the schedule
-            tvg_race_ids = []
-            for track in schedule_json.get("data", {}).get("scheduleRaces", []):
-                for race in track.get("races", []):
-                    if race.get("tvgRaceId"):
-                        tvg_race_ids.append(race["tvgRaceId"])
+                # Extract tvgRaceIds from the schedule
+                tvg_race_ids = []
+                for track in schedule_json.get("data", {}).get("scheduleRaces", []):
+                    for race in track.get("races", []):
+                        if race.get("tvgRaceId"):
+                            tvg_race_ids.append(race["tvgRaceId"])
 
-            if not tvg_race_ids:
-                logging.warning("No races found in the schedule.")
-                return {"schedule": schedule_response.text, "detail": "{}"}
+                if not tvg_race_ids:
+                    logging.warning("No races found in the schedule.")
+                    return {"schedule": schedule_response.text, "detail": "{}"}
 
-            # Fetch the details for the found races
-            detail_query = self.DETAIL_QUERY.copy()
-            detail_query["variables"]["tvgRaceIds"] = tvg_race_ids
+                # Fetch the details for the found races
+                detail_query = self.DETAIL_QUERY.copy()
+                detail_query["variables"]["tvgRaceIds"] = tvg_race_ids
 
-            detail_response = post_json_content(self.API_ENDPOINT, json_payload=detail_query)
+                detail_response = client.post(self.API_ENDPOINT, json=detail_query, headers=self.HEADERS)
+                detail_response.raise_for_status()
 
-            return {
-                "schedule": schedule_response.text,
-                "detail": detail_response.text
-            }
+                return {
+                    "schedule": schedule_response.text,
+                    "detail": detail_response.text
+                }
 
-        except Exception as e:
-            logging.error(f"An error occurred while fetching data from FanDuel: {e}", exc_info=True)
-            return {"schedule": "{}", "detail": "{}"}
+            except httpx.RequestError as e:
+                logging.error(f"An error occurred while requesting {e.request.url!r}: {e}")
+                return {"schedule": "{}", "detail": "{}"}
+            except httpx.HTTPStatusError as e:
+                logging.error(f"Error response {e.response.status_code} while requesting {e.request.url!r}.")
+                return {"schedule": "{}", "detail": "{}"}
 
 
     def parse_data(self, raw_data: Dict[str, Any]) -> List[NormalizedRace]:
