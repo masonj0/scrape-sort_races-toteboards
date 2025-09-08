@@ -92,5 +92,4 @@ def score_races(races: List[Race]) -> List[Race]:
         setattr(race, 'scores', scores)
         # Attach the final score for sorting and filtering
         setattr(race, 'score', scores.get('total_score', 0.0))
-
     return races

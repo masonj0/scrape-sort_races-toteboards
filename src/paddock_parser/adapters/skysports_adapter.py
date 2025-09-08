@@ -7,7 +7,7 @@ from typing import List, Optional
 from bs4 import BeautifulSoup
 
 from ..base import BaseAdapterV3, NormalizedRace, NormalizedRunner
-from ..http_client import ForagerClient
+from ..fetcher import get_page_content
 
 
 def _convert_odds_to_float(odds_str: Optional[str]) -> Optional[float]:
@@ -47,7 +47,6 @@ class SkySportsAdapter(BaseAdapterV3):
     def __init__(self, config=None):
         super().__init__(config)
         self.base_url = "https://www.skysports.com"
-        self.forager = ForagerClient()
 
     async def fetch(self) -> List[NormalizedRace]:
         """
@@ -55,9 +54,10 @@ class SkySportsAdapter(BaseAdapterV3):
         race links, then fetching each of those pages concurrently.
         """
         index_page_url = f"{self.base_url}/racing/racecards"
-        index_html = await self.forager.fetch(index_page_url)
-        if not index_html:
-            logging.warning("Failed to fetch the racecards index page.")
+        try:
+            index_html = await get_page_content(index_page_url)
+        except Exception as e:
+            logging.error(f"Failed to fetch the skysports racecards index page: {e}")
             return []
 
         soup = BeautifulSoup(index_html, "lxml")
@@ -79,12 +79,16 @@ class SkySportsAdapter(BaseAdapterV3):
             if not race_urls:
                 continue
 
-            tasks = [self.forager.fetch(url) for url in race_urls]
-            race_html_pages = await asyncio.gather(*tasks)
+            tasks = [get_page_content(url) for url in race_urls]
+            race_html_pages = await asyncio.gather(*tasks, return_exceptions=True)
 
-            for i, (html, url) in enumerate(zip(race_html_pages, race_urls)):
-                if html:
-                    race = self._parse_race_details(html, url, track_name, i + 1)
+            for i, (html_or_exc, url) in enumerate(zip(race_html_pages, race_urls)):
+                if isinstance(html_or_exc, Exception):
+                    logging.warning(f"Failed to fetch race page {url}: {html_or_exc}")
+                    continue
+
+                if html_or_exc:
+                    race = self._parse_race_details(html_or_exc, url, track_name, i + 1)
                     if race:
                         all_races.append(race)
 
@@ -98,7 +102,6 @@ class SkySportsAdapter(BaseAdapterV3):
         soup = BeautifulSoup(html_content, "lxml")
 
         try:
-            # --- Race Info Extraction ---
             header_tag = soup.select_one("h2.sdc-site-racing-header__name")
             header_text = header_tag.text.strip() if header_tag else ""
 
@@ -112,9 +115,8 @@ class SkySportsAdapter(BaseAdapterV3):
                 date.today(), datetime.strptime(race_time_str, "%H:%M").time()
             )
 
-            race_type = "Handicap" if "handicap" in race_name.lower() else "Unknown"
+            race_type = "Handicap" if "handicap" in header_text.lower() else "Unknown"
 
-            # --- Runner Extraction ---
             runners_list = []
             runner_items = soup.select("div.sdc-site-racing-card__item")
             for i, item in enumerate(runner_items):
@@ -141,7 +143,6 @@ class SkySportsAdapter(BaseAdapterV3):
                         )
                     )
 
-            # The race ID in the URL is the second to last path segment
             path_parts = [part for part in url.split("/") if part]
             race_id = path_parts[-2] if len(path_parts) >= 2 else url
 

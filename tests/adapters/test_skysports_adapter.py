@@ -1,46 +1,71 @@
 import pytest
-import sys
 from pathlib import Path
-from unittest.mock import patch
-from paddock_parser.adapters.skysports_adapter import SkySportsAdapter
+from unittest.mock import patch, AsyncMock
+from src.paddock_parser.adapters.skysports_adapter import SkySportsAdapter
+
+@pytest.fixture
+def mock_race_card_html():
+    # A simplified version of the racecards index page
+    return """
+    <div class="sdc-site-concertina-block">
+        <h3 class="sdc-site-concertina-block__title">
+            <span class="sdc-site-concertina-block__title">Chelmsford City</span>
+        </h3>
+        <div class="sdc-site-racing-meetings__event">
+            <a class="sdc-site-racing-meetings__event-link" href="/racing/results/full-result/12345"></a>
+        </div>
+    </div>
+    """
+
+@pytest.fixture
+def mock_race_detail_html():
+    # A simplified version of a race detail page
+    return Path(__file__).parent.joinpath("skysports_race_detail_sample.html").read_text()
+
+import sys
 
 @pytest.mark.anyio
-@patch("paddock_parser.http_client.ForagerClient.fetch")
-async def test_skysports_adapter_fetches_and_parses(mock_fetch):
+@patch("src.paddock_parser.adapters.skysports_adapter.get_page_content")
+async def test_skysports_adapter_fetches_and_parses(mock_get_page_content, mock_race_card_html, mock_race_detail_html):
     """
     Tests the full end-to-end fetch and parse process for SkySportsAdapter,
-    with the fetch mechanism mocked.
+    mocking the new resilient fetcher.
     """
-    # --- Setup ---
-    # The trio backend has issues with asyncio.gather in the current test setup.
-    # Skip the test if running on trio to allow the main asyncio test to proceed.
     if 'trio' in sys.modules:
-        pytest.skip("Skipping skysports test on trio due to asyncio event loop conflict")
+        pytest.skip("Skipping skysports test on trio due to asyncio.gather conflict.")
+    # --- Setup ---
+    # Configure the mock to return the index page on the first call,
+    # and the detail page on the second call.
+    mock_get_page_content.side_effect = [
+        mock_race_card_html,
+        mock_race_detail_html
+    ]
 
     adapter = SkySportsAdapter()
 
-    # Load the sample HTML from a fixture file for the test
-    fixture_path = Path(__file__).parent / "skysports_racecards_sample.html"
-    sample_html = fixture_path.read_text(encoding="utf-8")
-
-    # Configure the mock to return our sample HTML
-    # Since the mocked function is async, the mock's return value will be awaited
-    mock_fetch.return_value = sample_html
-
     # --- Run ---
-    # Run the fetch method, which will use the mocked fetch_html_content
     races = await adapter.fetch()
 
     # --- Assertions ---
-    # The adapter should make one call for the index, and one for each of the 113 race links found.
-    assert mock_fetch.call_count == 114
+    # The adapter should make one call for the index, and one for the single race link found.
+    assert mock_get_page_content.call_count == 2
 
-    # With the flawed mock returning the index page for every detail fetch, the parser
-    # will still create race objects, just with default/empty data.
-    assert len(races) == 113
+    # We should have parsed exactly one race.
+    assert len(races) == 1
+    race = races[0]
 
-    # We can't do a deep check on a specific race's details because the detail page
-    # HTML is not correctly mocked. However, we can verify that the track_name
-    # from the index page was correctly passed to the parser.
-    found_chelmsford = any(race.track_name == "Chelmsford City" for race in races)
-    assert found_chelmsford is True, "The adapter failed to parse any races for Chelmsford City"
+    # Assert details from the parsed race.
+    assert race.track_name == "Chelmsford City"
+    assert race.race_number == 1
+    assert race.race_type == "Handicap" # from "Handicap" in the h2 title
+    assert len(race.runners) == 2
+
+    runner1 = race.runners[0]
+    assert runner1.name == "Horse One"
+    assert runner1.program_number == 1
+    assert runner1.odds == pytest.approx(6.0) # 5/1
+
+    runner2 = race.runners[1]
+    assert runner2.name == "Horse Two"
+    assert runner2.program_number == 2
+    assert runner2.odds == pytest.approx(2.0) # EVENS
