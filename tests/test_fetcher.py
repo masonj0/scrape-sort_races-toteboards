@@ -45,6 +45,7 @@ async def test_get_page_content_retry_on_http_error():
     url = "http://test.com/retry"
     request = httpx.Request("GET", url)
 
+    # Simulate a 503 error then a success
     mock_responses = [
         httpx.Response(503, request=request),
         httpx.Response(200, text="Success after retry", request=request)
@@ -63,6 +64,7 @@ async def test_get_page_content_retry_on_request_error():
     url = "http://test.com/network-error"
     request = httpx.Request("GET", url)
 
+    # Simulate a network error then a success
     side_effects = [
         httpx.RequestError("Network Error", request=request),
         httpx.Response(200, text="Success after network error", request=request)
@@ -81,6 +83,7 @@ async def test_get_page_content_fails_after_max_retries():
     url = "http://test.com/persistent-failure"
     request = httpx.Request("GET", url)
 
+    # Create a side effect that will always raise an HTTPStatusError
     side_effect = httpx.HTTPStatusError(
         "Internal Server Error",
         request=request,
@@ -91,4 +94,5 @@ async def test_get_page_content_fails_after_max_retries():
         with pytest.raises(httpx.HTTPStatusError):
             await get_page_content(url)
 
+        # Tenacity default is 5 attempts
         assert mock_get.call_count == 5
