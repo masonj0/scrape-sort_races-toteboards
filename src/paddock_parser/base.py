@@ -32,6 +32,7 @@ class NormalizedRace:
     minutes_to_post: Optional[int] = None
     number_of_runners: Optional[int] = None
     score: Optional[float] = None
+    scores: Dict[str, float] = field(default_factory=dict)
     runners: List[NormalizedRunner] = field(default_factory=list)
 
 

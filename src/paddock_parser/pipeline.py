@@ -152,7 +152,9 @@ async def run_pipeline(
     # Score the merged races (which are Race models)
     scorer = RaceScorer()
     for race in merged_model_races:
-        setattr(race, 'score', scorer.score(race))
+        scores = scorer.score(race)
+        setattr(race, 'scores', scores)
+        setattr(race, 'score', scores.get('total_score', 0.0))
 
     # Filter based on min_runners
     if min_runners > 1:
@@ -163,6 +165,7 @@ async def run_pipeline(
     for race_model in merged_model_races:
         norm_race = _convert_to_normalized_race(race_model, prog_num_map)
         norm_race.score = getattr(race_model, 'score', 0.0)
+        norm_race.scores = getattr(race_model, 'scores', {})
         final_normalized_races.append(norm_race)
 
     # Filter by time window
