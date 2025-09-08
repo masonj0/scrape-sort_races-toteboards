@@ -1,153 +1,81 @@
-import json
-import unittest
+import pytest
 from unittest.mock import patch
-from datetime import datetime
-from paddock_parser.adapters.fanduel_graphql_adapter import FanDuelGraphQLAdapter
-from paddock_parser.base import NormalizedRace, NormalizedRunner
+from src.paddock_parser.adapters.fanduel_graphql_adapter import FanDuelGraphQLAdapter
+from src.paddock_parser.base import NormalizedRace, NormalizedRunner
 
-class TestFanDuelAdapter(unittest.TestCase):
-
-    def test_parse_data_as_specification(self):
-        """
-        This test serves as the specification for the FanDuel adapter.
-        It defines the expected output structure for a given input.
-        The adapter should be implemented to make this test pass.
-        """
-        adapter = FanDuelGraphQLAdapter()
-
-        # --- Input Data (The Specification) ---
-        mock_schedule_data = {
-            "data": {
-                "scheduleRaces": [
+@pytest.fixture
+def mock_graphql_response():
+    """Provides a mock of the raw GraphQL API response."""
+    return {
+        "data": {
+            "allRaces": {
+                "edges": [
                     {
-                        "id": "SA",
-                        "races": [
-                            {
-                                "id": "SA-5",
-                                "tvgRaceId": 12345,
-                                "mtp": 10,
-                                "number": "5",
-                                "postTime": "2025-09-01T15:30:00Z",
-                                "isGreyhound": False,
-                                "type": {"code": "T"},
-                                "track": {"name": "Santa Anita"}
-                            }
-                        ]
+                        "node": {
+                            "trackName": "Saratoga",
+                            "raceNumber": 1,
+                            "postTime": "2025-09-08T18:00:00.000Z",
+                            "runners": [
+                                {"runnerName": "Horse A", "odds": "5/2", "scratched": False},
+                                {"runnerName": "Horse B", "odds": "3/1", "scratched": True},
+                                {"runnerName": "Horse C", "odds": "10/1", "scratched": False},
+                            ]
+                        }
+                    },
+                    {
+                        "node": {
+                            "trackName": "Del Mar",
+                            "raceNumber": 5,
+                            "postTime": "2025-09-08T20:30:00.000Z",
+                            "runners": [
+                                {"runnerName": "Horse D", "odds": "1/1", "scratched": False}
+                            ]
+                        }
                     }
                 ]
             }
         }
+    }
 
-        mock_detail_data = {
-            "data": {
-                "races": [
-                    {
-                        "id": "SA-5",
-                        "tvgRaceId": 12345,
-                        "bettingInterests": [
-                            {
-                                "biNumber": 1,
-                                "runners": [{"scratched": False, "horseName": "Speedy Gonzales", "jockey": "Buggs, B", "trainer": "Jones, W. E."}],
-                                "currentOdds": {"numerator": 8, "denominator": 1}
-                            },
-                            {
-                                "biNumber": 2,
-                                "runners": [{"scratched": False, "horseName": "Road Runner", "jockey": "Coyote, W", "trainer": "Acme, Corp"}],
-                                "currentOdds": {"numerator": 3, "denominator": 1}
-                            },
-                            {
-                                "biNumber": 3,
-                                "runners": [{"scratched": True, "horseName": "Slowpoke Rodriguez", "jockey": "Mouse, D", "trainer": "Hanna, B."}],
-                                "currentOdds": {}
-                            }
-                        ]
-                    }
-                ]
-            }
-        }
+def test_parse_races(mock_graphql_response):
+    """
+    SPEC: `parse_races` should correctly parse the GraphQL JSON into NormalizedRace objects.
+    """
+    adapter = FanDuelGraphQLAdapter()
+    races = adapter.parse_races(mock_graphql_response)
 
-        raw_data = {
-            "schedule": json.dumps(mock_schedule_data),
-            "detail": json.dumps(mock_detail_data)
-        }
+    assert len(races) == 2
 
-        # --- Run the parsing logic ---
-        result = adapter.parse_data(raw_data)
+    # Test Race 1 (Saratoga)
+    saratoga_race = races[0]
+    assert saratoga_race.track_name == "Saratoga"
+    assert saratoga_race.race_number == 1
+    assert saratoga_race.number_of_runners == 2 # Horse B is scratched
+    assert len(saratoga_race.runners) == 2
 
-        # --- Assertions (The Specification) ---
-        self.assertIsInstance(result, list)
-        self.assertEqual(len(result), 1)
+    # Test Runner A
+    runner_a = saratoga_race.runners[0]
+    assert runner_a.name == "Horse A"
+    assert runner_a.odds == pytest.approx(3.5) # 5/2 + 1
 
-        race = result[0]
-        self.assertIsInstance(race, NormalizedRace)
+    # Test Race 2 (Del Mar)
+    delmar_race = races[1]
+    assert delmar_race.track_name == "Del Mar"
+    assert delmar_race.race_number == 5
+    assert delmar_race.runners[0].odds == pytest.approx(2.0) # 1/1 + 1
 
-        self.assertEqual(race.race_id, "SA-5")
-        self.assertEqual(race.track_name, "Santa Anita")
-        self.assertEqual(race.race_number, 5)
-        self.assertEqual(race.post_time, datetime.fromisoformat("2025-09-01T15:30:00+00:00"))
-        self.assertEqual(race.race_type, "T")
-        self.assertEqual(race.minutes_to_post, 10)
-        self.assertEqual(race.number_of_runners, 2)
+@patch('src.paddock_parser.adapters.fanduel_graphql_adapter.post_page_content')
+def test_fetch_uses_sync_fetcher(mock_post_page_content, mock_graphql_response):
+    """
+    SPEC: The `fetch` method must use the `post_page_content` sync_fetcher.
+    """
+    mock_post_page_content.return_value = mock_graphql_response
+    adapter = FanDuelGraphQLAdapter()
 
-        self.assertIsInstance(race.runners, list)
-        self.assertEqual(len(race.runners), 2)
+    # Since fetch is async but calls sync code, we need to run it in an event loop
+    import asyncio
+    races = asyncio.run(adapter.fetch())
 
-        runner1 = race.runners[0]
-        self.assertIsInstance(runner1, NormalizedRunner)
-        self.assertEqual(runner1.name, "Speedy Gonzales")
-        self.assertEqual(runner1.program_number, 1)
-        self.assertFalse(runner1.scratched)
-        self.assertEqual(runner1.jockey, "Buggs, B")
-        self.assertEqual(runner1.trainer, "Jones, W. E.")
-        self.assertEqual(runner1.odds, 8.0)
-
-        runner2 = race.runners[1]
-        self.assertIsInstance(runner2, NormalizedRunner)
-        self.assertEqual(runner2.name, "Road Runner")
-        self.assertEqual(runner2.program_number, 2)
-        self.assertFalse(runner2.scratched)
-        self.assertEqual(runner2.jockey, "Coyote, W")
-        self.assertEqual(runner2.trainer, "Acme, Corp")
-        self.assertEqual(runner2.odds, 3.0)
-
-    @patch('paddock_parser.adapters.fanduel_graphql_adapter.httpx.Client')
-    def test_fetch_data_logic(self, MockClient):
-        """
-        Tests the two-stage fetching logic of the fetch_data method, ensuring
-        it makes the correct sequence of API calls.
-        """
-        # --- Mock Setup ---
-        mock_client = MockClient.return_value.__enter__.return_value
-
-        mock_schedule_response = unittest.mock.Mock()
-        mock_schedule_response.text = '{"data": {"scheduleRaces": [{"races": [{"tvgRaceId": 999}]}]}}'
-        mock_schedule_response.json.return_value = json.loads(mock_schedule_response.text)
-
-        mock_detail_response = unittest.mock.Mock()
-        mock_detail_response.text = '{"data": {"races": []}}'
-
-        mock_client.post.side_effect = [mock_schedule_response, mock_detail_response]
-
-        adapter = FanDuelGraphQLAdapter()
-
-        # --- Run ---
-        result = adapter.fetch_data()
-
-        # --- Assertions ---
-        self.assertEqual(mock_client.post.call_count, 2)
-
-        schedule_call = mock_client.post.call_args_list[0]
-        self.assertEqual(schedule_call.args[0], adapter.API_ENDPOINT)
-        self.assertEqual(schedule_call.kwargs['json']['operationName'], 'getLhnInfo')
-
-        detail_call = mock_client.post.call_args_list[1]
-        self.assertEqual(detail_call.args[0], adapter.API_ENDPOINT)
-        self.assertEqual(detail_call.kwargs['json']['operationName'], 'getGraphRaceBettingInterest')
-        self.assertEqual(detail_call.kwargs['json']['variables']['tvgRaceIds'], [999])
-
-        self.assertEqual(result['schedule'], mock_schedule_response.text)
-        self.assertEqual(result['detail'], mock_detail_response.text)
-
-
-if __name__ == '__main__':
-    unittest.main()
+    mock_post_page_content.assert_called_once()
+    assert len(races) == 2
+    assert races[0].track_name == "Saratoga"
