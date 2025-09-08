@@ -23,3 +23,13 @@ LOG_LEVEL = "INFO"
 
 # The path to the log file for analysis.
 LOG_FILE_PATH = "paddock_parser.log"
+
+# --- Scorer Configuration ---
+
+# Weights for the dynamic scoring engine. These values should ideally sum to 1.0
+# but are not required to. Adjust them to prioritize different factors.
+SCORER_WEIGHTS = {
+    "FIELD_SIZE_WEIGHT": 0.5,      # Prioritizes smaller fields. Score = (1 / number_of_runners) * WEIGHT
+    "FAVORITE_ODDS_WEIGHT": 0.3,   # Prioritizes races where the favorite has higher odds. Score = (favorite_odds) * WEIGHT
+    "CONTENTION_WEIGHT": 0.2,      # Prioritizes races with low contention (large gap between fav and 2nd fav). Score = (abs(fav_odds - 2nd_fav_odds)) * WEIGHT
+}
