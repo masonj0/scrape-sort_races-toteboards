@@ -10,6 +10,8 @@ from ..base import NormalizedRace
 from ..pipeline import run_pipeline
 from ..scorer import score_races
 from ..models import Race as ScorerRace, Runner as ScorerRunner
+from ..config import LOG_FILE_PATH
+from ..log_analyzer import analyze_log_file
 
 
 def _convert_normalized_to_scorer_race(norm_race: NormalizedRace) -> Optional[ScorerRace]:
@@ -45,7 +47,6 @@ class TerminalUI:
     def display_scoring_report(self, races: List[NormalizedRace]):
         """
         Displays the dynamic scoring report in a rich, formatted table.
-        The rows are sorted by Total Score in descending order.
         NOTE: This expects races to already be sorted by the pipeline.
         """
         if not races:
@@ -64,7 +65,6 @@ class TerminalUI:
         table.add_column("Total Score", style="bold green")
 
         for race in races:
-            # The pipeline now attaches the 'scores' dictionary to the NormalizedRace object
             scores = getattr(race, 'scores', {})
             post_time_str = race.post_time.strftime("%H:%M") if race.post_time else "N/A"
             is_handicap_str = "Yes" if (race.race_type and "handicap" in race.race_type.lower()) else "No"
@@ -80,7 +80,25 @@ class TerminalUI:
                 f"{scores.get('field_size_score', 0):.3f}",
                 f"{scores.get('total_score', 0):.2f}",
             )
+        self.console.print(table)
 
+    def display_log_analysis_report(self):
+        """
+        Analyzes the log file and displays a summary report.
+        """
+        self.console.print(f"\n[bold]Analyzing log file at:[/] [cyan]{LOG_FILE_PATH}[/cyan]")
+        log_counts = analyze_log_file(LOG_FILE_PATH)
+
+        if not log_counts:
+            self.console.print("[yellow]No log data found or file could not be read.[/yellow]")
+            return
+
+        table = Table(title="[bold blue]Log File Analysis[/bold blue]")
+        table.add_column("Log Level", style="cyan")
+        table.add_column("Count", style="magenta", justify="right")
+
+        for level, count in sorted(log_counts.items()):
+            table.add_row(level, str(count))
         self.console.print(table)
 
     def start_fetching_progress(self, num_tasks: int):
@@ -109,7 +127,8 @@ class TerminalUI:
         """Displays the main menu options."""
         self.console.print("\n[bold magenta]Paddock Parser NG - Main Menu[/bold magenta]")
         self.console.print("1. Get Dynamic Scoring Report")
-        self.console.print("2. Quit")
+        self.console.print("2. View Log Analysis Report")
+        self.console.print("3. Quit")
 
     async def start_interactive_mode(self):
         """Starts the main interactive loop for the UI."""
@@ -119,6 +138,8 @@ class TerminalUI:
             if choice == '1':
                 await self._run_scoring_report()
             elif choice == '2':
+                self.display_log_analysis_report()
+            elif choice == '3':
                 self.console.print("[yellow]Goodbye![/yellow]")
                 break
             else:
@@ -127,11 +148,9 @@ class TerminalUI:
     async def _run_scoring_report(self):
         """Runs the full pipeline and displays the dynamic scoring report."""
         with self.console.status("Fetching data from providers...", spinner="dots"):
-            # The pipeline now returns scored and sorted NormalizedRace objects
             scored_races = await run_pipeline(min_runners=0, specific_source=None)
 
         if not scored_races:
             self.console.print("[yellow]No races were found by the pipeline.[/yellow]")
             return
-
         self.display_scoring_report(scored_races)

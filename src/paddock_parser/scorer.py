@@ -4,7 +4,6 @@ from typing import List, Dict, Optional
 from .config import SCORER_WEIGHTS
 from .models import Race, Runner
 
-
 class RaceScorer:
     """
     Analyzes a Race to produce a score based on a weighted combination of factors.
@@ -77,10 +76,9 @@ class RaceScorer:
 
 def score_races(races: List[Race]) -> List[Race]:
     """Scores a list of races and attaches the score to each race object."""
-    scorer = RaceScorer() # Now uses weights from config by default
+    scorer = RaceScorer()
     for race in races:
         scores = scorer.score(race)
-        # Attach the detailed dictionary and the final score to the race object
         setattr(race, 'scores', scores)
         setattr(race, 'score', scores['total_score'])
     return races
