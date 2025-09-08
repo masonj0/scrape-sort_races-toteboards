@@ -7,7 +7,8 @@ from typing import List, Optional
 from bs4 import BeautifulSoup
 
 from ..base import BaseAdapterV3, NormalizedRace, NormalizedRunner
-from ..http_client import ForagerClient
+from ..fetcher import get_page_content
+import httpx
 
 
 def _convert_odds_to_float(odds_str: Optional[str]) -> Optional[float]:
@@ -47,7 +48,6 @@ class SkySportsAdapter(BaseAdapterV3):
     def __init__(self, config=None):
         super().__init__(config)
         self.base_url = "https://www.skysports.com"
-        self.forager = ForagerClient()
 
     async def fetch(self) -> List[NormalizedRace]:
         """
@@ -55,9 +55,11 @@ class SkySportsAdapter(BaseAdapterV3):
         race links, then fetching each of those pages concurrently.
         """
         index_page_url = f"{self.base_url}/racing/racecards"
-        index_html = await self.forager.fetch(index_page_url)
-        if not index_html:
-            logging.warning("Failed to fetch the racecards index page.")
+        try:
+            response = await get_page_content(index_page_url)
+            index_html = response.text
+        except Exception as e:
+            logging.error(f"Failed to fetch the racecards index page: {e}", exc_info=True)
             return []
 
         soup = BeautifulSoup(index_html, "lxml")
@@ -79,14 +81,16 @@ class SkySportsAdapter(BaseAdapterV3):
             if not race_urls:
                 continue
 
-            tasks = [self.forager.fetch(url) for url in race_urls]
-            race_html_pages = await asyncio.gather(*tasks)
+            tasks = [get_page_content(url) for url in race_urls]
+            responses = await asyncio.gather(*tasks, return_exceptions=True)
 
-            for i, (html, url) in enumerate(zip(race_html_pages, race_urls)):
-                if html:
-                    race = self._parse_race_details(html, url, track_name, i + 1)
+            for i, (res, url) in enumerate(zip(responses, race_urls)):
+                if isinstance(res, httpx.Response):
+                    race = self._parse_race_details(res.text, url, track_name, i + 1)
                     if race:
                         all_races.append(race)
+                else:
+                    logging.error(f"Failed to fetch {url}: {res}")
 
         return all_races
 
