@@ -7,17 +7,20 @@ from .models import Race, Runner
 class RaceScorer:
     """
     Analyzes a Race to produce a score based on a weighted combination of factors.
+    The weights for each factor are drawn from config.py to allow for easy tuning.
     """
     def __init__(self, weights: Optional[Dict[str, float]] = None):
+        """Initializes the scorer with weights, falling back to the config file."""
         self.weights = weights if weights is not None else SCORER_WEIGHTS
 
     def _get_sorted_runners(self, race: Race) -> List[Runner]:
-        """Returns runners sorted by their odds."""
+        """Returns runners sorted by their odds, lowest first."""
         return sorted(race.runners, key=lambda r: r.odds or float('inf'))
 
     def _calculate_field_size_score(self, race: Race) -> float:
         """
-        Calculates the field size score. Inverse of the number of runners.
+        Calculates the field size score. A smaller field is generally considered
+        less competitive, so we reward it with a higher score (inverse relationship).
         """
         if not race.number_of_runners:
             return 0.0
@@ -25,7 +28,8 @@ class RaceScorer:
 
     def _calculate_favorite_odds_score(self, race: Race, sorted_runners: List[Runner]) -> float:
         """
-        Calculates the favorite odds score. This is simply the odds of the favorite.
+        Calculates the favorite's odds score. A higher-odds favorite suggests
+        a more open race, which can be a valuable signal.
         """
         if not sorted_runners:
             return 0.0
@@ -33,9 +37,10 @@ class RaceScorer:
 
     def _calculate_contention_score(self, race: Race, sorted_runners: List[Runner]) -> float:
         """
-        Calculates the contention score.
-        - The absolute difference between the odds of the first and second favorites.
-        - If there is only one runner, it's the favorite's odds.
+        Calculates the contention score. This measures the gap between the favorite
+        and the second favorite. A large gap (low contention) is rewarded with a
+        higher score, as it suggests a more predictable race.
+        If there's only one runner, we use their odds as the score.
         """
         if len(sorted_runners) < 2:
             return self._calculate_favorite_odds_score(race, sorted_runners)
@@ -47,24 +52,25 @@ class RaceScorer:
     def score(self, race: Race) -> Dict[str, float]:
         """
         Calculates a weighted score for a race based on various factors.
-        Returns a dictionary with the total score and the individual factor scores.
+        Returns a dictionary with the total score and the individual factor scores
+        for transparency and potential UI display.
         """
         if not race.runners:
             return {"total_score": 0.0, "field_size_score": 0.0, "favorite_odds_score": 0.0, "contention_score": 0.0}
 
         sorted_runners = self._get_sorted_runners(race)
 
-        # Calculate raw scores
+        # Calculate raw scores for each factor
         field_size_score = self._calculate_field_size_score(race)
         favorite_odds_score = self._calculate_favorite_odds_score(race, sorted_runners)
         contention_score = self._calculate_contention_score(race, sorted_runners)
 
-        # Calculate weighted scores
+        # Apply weights from config
         weighted_field_size = field_size_score * self.weights.get("FIELD_SIZE_WEIGHT", 0)
         weighted_favorite_odds = favorite_odds_score * self.weights.get("FAVORITE_ODDS_WEIGHT", 0)
         weighted_contention = contention_score * self.weights.get("CONTENTION_WEIGHT", 0)
 
-        # Total Score
+        # Calculate the final total score
         total_score = weighted_field_size + weighted_favorite_odds + weighted_contention
 
         return {
@@ -75,10 +81,16 @@ class RaceScorer:
         }
 
 def score_races(races: List[Race]) -> List[Race]:
-    """Scores a list of races and attaches the score to each race object."""
+    """
+    A helper function to score a list of races and attach the scoring
+    details back to each race object.
+    """
     scorer = RaceScorer()
     for race in races:
         scores = scorer.score(race)
+        # Attach the detailed dictionary for the UI
         setattr(race, 'scores', scores)
-        setattr(race, 'score', scores['total_score'])
+        # Attach the final score for sorting and filtering
+        setattr(race, 'score', scores.get('total_score', 0.0))
+
     return races

@@ -65,7 +65,6 @@ def test_display_log_analysis_report_uses_rich_table(MockConsole, MockAnalyze, M
     mock_table_instance = MockTable.return_value
     mock_log_counts = {"INFO": 10, "WARNING": 2, "ERROR": 1}
     MockAnalyze.return_value = mock_log_counts
-
     ui = TerminalUI(console=mock_console_instance)
     ui.display_log_analysis_report()
     MockAnalyze.assert_called_once()
