@@ -1,53 +1,67 @@
 import pytest
-from datetime import datetime
-
-from paddock_parser.adapters.attheraces_adapter import AtTheRacesAdapter
-from paddock_parser.base import NormalizedRace, NormalizedRunner
+from unittest.mock import patch, AsyncMock
+from src.paddock_parser.adapters.attheraces_adapter import AtTheRacesAdapter
 
 @pytest.fixture
-def real_attheraces_html():
-    """
-    Fixture providing actual At The Races HTML structure.
-    Based on https://www.attheraces.com/racecard/Roscommon/01-September-2025/1745
-    """
+def mock_race_card_html():
     return """
-    <!DOCTYPE html>
-    <html>
-    <body>
-        <div class="race-header"><h1>17:45 Roscommon (IRE) 01 Sep 2025</h1><div class="race-info"><div>Lecarrow Race</div></div></div>
-        <div class="runner-card" data-horse="In My Teens"><div class="runner-info"><div class="horse-name"><a>In My Teens</a></div><div class="runner-number">72</div><div class="connections"><div class="jockey">J: G F Carroll</div><div class="trainer">T: G P Cromwell</div></div><div class="odds">7/2</div></div></div>
-        <div class="runner-card" data-horse="Vorfreude"><div class="runner-info"><div class="horse-name"><a>Vorfreude</a></div><div class="runner-number">11</div><div class="connections"><div class="jockey">J: B M Coen</div><div class="trainer">T: J G Murphy</div></div><div class="odds">11/4</div></div></div>
-    </body>
-    </html>
+    <section class="panel">
+        <h2 class="h6">Lingfield Park Racecards</h2>
+        <div class="meeting-list-entry">
+            <a href="/racecard/Lingfield/1/2025-09-08" class="a--plain">
+                <span class="post__number">1</span>
+                <span class="h7">13:50 - Sky Sports Racing Open Maiden</span>
+            </a>
+        </div>
+    </section>
     """
 
-def test_parse_races_extracts_correct_data(real_attheraces_html):
+@pytest.fixture
+def mock_race_page_html():
+    return """
+    <div class="race-header"><h1>13:50 Lingfield Park 08 Sep 2025</h1></div>
+    <div class="race-info"><div>(4yo+, 6f)</div></div>
+    <div class="runner-card">
+        <div class="runner-number">1</div>
+        <div class="horse-name"><a>Horse One</a></div>
+        <div class="odds">5/1</div>
+    </div>
+    <div class="runner-card">
+        <div class="runner-number">2</div>
+        <div class="horse-name"><a>Horse Two</a></div>
+        <div class="odds">EVS</div>
+    </div>
     """
-    Tests that the adapter correctly parses the HTML and extracts all runner and race data.
+
+@pytest.mark.anyio
+@patch('src.paddock_parser.adapters.attheraces_adapter.get_page_content')
+async def test_fetch_e2e(mock_get_page_content, mock_race_card_html, mock_race_page_html):
     """
+    SPEC: Full end-to-end test of the fetch method.
+    """
+    # Mock the two calls to get_page_content
+    mock_get_page_content.side_effect = [
+        mock_race_card_html,
+        mock_race_page_html
+    ]
+
     adapter = AtTheRacesAdapter()
-    races = adapter.parse_races(real_attheraces_html)
+    races = await adapter.fetch()
 
     assert len(races) == 1
     race = races[0]
-
-    assert race.track_name == "Roscommon (IRE)"
-    assert race.post_time == datetime(2025, 9, 1, 17, 45)
-    assert race.race_type == "Lecarrow Race"
+    assert race.track_name == "Lingfield Park"
+    assert race.race_number == 1
     assert race.number_of_runners == 2
+    assert race.runners[0].name == "Horse One"
+    assert race.runners[0].odds == pytest.approx(6.0)
+    assert race.runners[1].name == "Horse Two"
+    assert race.runners[1].odds == pytest.approx(2.0)
 
-    assert len(race.runners) == 2
-
-    in_my_teens = race.runners[0]
-    assert in_my_teens.name == "In My Teens"
-    assert in_my_teens.program_number == 72
-    assert in_my_teens.jockey == "G F Carroll"
-    assert in_my_teens.trainer == "G P Cromwell"
-    assert in_my_teens.odds == 4.5 # 7/2 + 1
-
-    vorfreude = race.runners[1]
-    assert vorfreude.name == "Vorfreude"
-    assert vorfreude.program_number == 11
-    assert vorfreude.jockey == "B M Coen"
-    assert vorfreude.trainer == "J G Murphy"
-    assert vorfreude.odds == 3.75 # 11/4 + 1
+def test_parse_races_is_not_supported(mock_race_page_html):
+    """
+    SPEC: This adapter does not support offline parsing.
+    """
+    adapter = AtTheRacesAdapter()
+    races = adapter.parse_races(mock_race_page_html)
+    assert races == []

@@ -38,7 +38,7 @@ This section outlines the next generation of features, building upon our stable 
 This section documents the verified, completed features that form the stable foundation for our V3 evolution, categorized by our four architectural pillars.
 
 ### The Brain (Scoring & Analysis)
-*   **Advanced Weighted Scoring:** A flexible, weighted scoring engine (`scorer.py`) forms the foundation for future analytical models.
+*   **Enlightened Scorer:** A dynamic, multi-factor scoring engine (`RaceScorer` in `scorer.py`). It uses a "Trifecta of Factors" (field size, favorite's odds, and contention) and a user-configurable weighting system in `config.py` to produce a transparent, detailed score for each race.
 *   **Backtesting Engine:** A `Backtester` module for scientifically validating scoring models against historical data.
 
 ### The Guardian (Data Integrity & Persistence)
@@ -46,7 +46,9 @@ This section documents the verified, completed features that form the stable fou
 *   **Data Deduplication:** `SmartMerge` logic fuses data from multiple sources into a single, authoritative record.
 
 ### The Template (Data Acquisition & Resilience)
-*   **Professional Fetching Engine:** A resilient `ForagerClient` with User-Agent rotation and intelligent retries.
+*   **Dual-Track Data Acquisition:** A new, two-pronged strategy for data collection.
+    *   **API-First (The Diplomat):** Prioritizes clean, structured data from GraphQL and other web APIs (e.g., FanDuel).
+    *   **Resilient Scraping (The Soldier):** A robust `fetcher.py` module with `tenacity`-based retries, exponential backoff, and User-Agent rotation for gracefully handling traditional HTML scraping.
 *   **Expanded Adapter Fleet:** A vast suite of resurrected and V3-modernized adapters, including premier API-driven sources (**Racing Post, FanDuel**) and comprehensive HTML scrapers (**Timeform, Equibase**), providing extensive data coverage.
 
 ### The Face (User Experience & Delivery)
