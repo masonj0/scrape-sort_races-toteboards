@@ -17,3 +17,6 @@ pytest
 pytest-anyio
 trio
 rich
+
+# Dashboarding
+streamlit

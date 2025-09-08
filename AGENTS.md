@@ -42,6 +42,8 @@ These are non-negotiable and have been learned through mission failures.
 
 - **PROTOCOL 13: The "Code Fence" Protocol for Asset Transit:** To prevent the chat interface from corrupting raw code assets (especially HTML), all literal code must be encapsulated within a triple-backtick Markdown code fence. The language specifier (e.g., `python`, `json`) must be set to a non-HTML format to ensure the interface treats it as pre-formatted text and does not render it.
 
+- **PROTOCOL 14: The Synchronization Mandate.** The git reset --hard origin/main command is STRICTLY FORBIDDEN for routine workflow. It is a disaster recovery tool only. To stay synchronized with the main branch after a successful merge by the Project Lead, the agent MUST use the command git pull origin main. This command integrates upstream changes without destroying local session work. pull, not reset, is the standard procedure for synchronization.
+
 ## Essential Workflows & Mandates
 
 -   **The "Show, Don't Tell" Mandate:** The Architect's `browse` tool analysis is prone to hallucination. Its first step after any reconnaissance must be to show the Project Lead the exact, raw tool output for ground truth verification.
