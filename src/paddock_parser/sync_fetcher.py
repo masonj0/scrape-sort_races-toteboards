@@ -1,33 +1,39 @@
 import random
-import time
+from typing import Optional
+
 import requests
-from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
+from tenacity import retry, stop_after_attempt, wait_exponential
 
-from .fetcher import USER_AGENTS
 
-@retry(
-    stop=stop_after_attempt(3),
-    wait=wait_exponential(multiplier=1, min=2, max=10),
-    retry=retry_if_exception_type((requests.exceptions.RequestException, requests.exceptions.HTTPError))
-)
-def post_json_content(url: str, json_payload: dict) -> requests.Response:
+USER_AGENTS = [
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:53.0) Gecko/20100101 Firefox/53.0",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.79 Safari/537.36 Edge/14.14393"
+]
+
+@retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10))
+def get_sync_page_content(
+    url: str,
+    cache_dir: Optional[str] = None,
+    headers: Optional[dict] = None,
+    **kwargs,
+) -> str:
     """
-    Posts a JSON payload to a URL with a rotating user agent, realistic headers,
-    randomized rate limiting, and a retry mechanism.
+    Fetches the content of a given URL synchronously.
+
+    Args:
+        url: The URL to fetch.
+        cache_dir: The directory to cache the response in.
+        headers: The headers to use for the request.
+        **kwargs: Additional keyword arguments to pass to the requests library.
+
+    Returns:
+        The content of the page as a string.
     """
-    headers = {
-        "User-Agent": random.choice(USER_AGENTS),
-        "content-type": "application/json",
-        "Accept": "application/json",
-        "Accept-Encoding": "gzip, deflate, br",
-        "Accept-Language": "en-US,en;q=0.9",
-        "Connection": "keep-alive",
-        "DNT": "1",
-    }
+    if headers is None:
+        headers = {}
+    headers.setdefault("User-Agent", random.choice(USER_AGENTS))
 
-    # Randomized rate limiting ("jitter")
-    time.sleep(random.uniform(0.5, 1.5))
-
-    response = requests.post(url, json=json_payload, headers=headers, timeout=15.0)
+    response = requests.get(url, headers=headers, **kwargs)
     response.raise_for_status()
-    return response
+    return response.text
