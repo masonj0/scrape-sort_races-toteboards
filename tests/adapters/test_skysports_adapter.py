@@ -2,13 +2,11 @@ import pytest
 import sys
 from pathlib import Path
 from unittest.mock import patch
-import unittest
-import httpx
 from paddock_parser.adapters.skysports_adapter import SkySportsAdapter
 
 @pytest.mark.anyio
-@patch("paddock_parser.adapters.skysports_adapter.get_page_content")
-async def test_skysports_adapter_fetches_and_parses(mock_get_page_content):
+@patch("paddock_parser.http_client.ForagerClient.fetch")
+async def test_skysports_adapter_fetches_and_parses(mock_fetch):
     """
     Tests the full end-to-end fetch and parse process for SkySportsAdapter,
     with the fetch mechanism mocked.
@@ -25,15 +23,9 @@ async def test_skysports_adapter_fetches_and_parses(mock_get_page_content):
     fixture_path = Path(__file__).parent / "skysports_racecards_sample.html"
     sample_html = fixture_path.read_text(encoding="utf-8")
 
-    # Configure the mock to return our sample HTML for the first call (the index page)
-    # and a different response for subsequent calls (the detail pages)
-    mock_index_response = unittest.mock.AsyncMock(spec=httpx.Response)
-    mock_index_response.text = sample_html
-
-    mock_detail_response = unittest.mock.AsyncMock(spec=httpx.Response)
-    mock_detail_response.text = "<html><body>Race Detail Page</body></html>" # Dummy detail page
-
-    mock_get_page_content.side_effect = [mock_index_response] + [mock_detail_response] * 113
+    # Configure the mock to return our sample HTML
+    # Since the mocked function is async, the mock's return value will be awaited
+    mock_fetch.return_value = sample_html
 
     # --- Run ---
     # Run the fetch method, which will use the mocked fetch_html_content
@@ -41,7 +33,7 @@ async def test_skysports_adapter_fetches_and_parses(mock_get_page_content):
 
     # --- Assertions ---
     # The adapter should make one call for the index, and one for each of the 113 race links found.
-    assert mock_get_page_content.call_count == 114
+    assert mock_fetch.call_count == 114
 
     # With the flawed mock returning the index page for every detail fetch, the parser
     # will still create race objects, just with default/empty data.

@@ -86,6 +86,7 @@ class TestFanDuelAdapter(unittest.TestCase):
         self.assertEqual(race.race_number, 5)
         self.assertEqual(race.post_time, datetime.fromisoformat("2025-09-01T15:30:00+00:00"))
         self.assertEqual(race.race_type, "T")
+        self.assertEqual(race.minutes_to_post, 10)
         self.assertEqual(race.number_of_runners, 2)
 
         self.assertIsInstance(race.runners, list)
@@ -96,6 +97,8 @@ class TestFanDuelAdapter(unittest.TestCase):
         self.assertEqual(runner1.name, "Speedy Gonzales")
         self.assertEqual(runner1.program_number, 1)
         self.assertFalse(runner1.scratched)
+        self.assertEqual(runner1.jockey, "Buggs, B")
+        self.assertEqual(runner1.trainer, "Jones, W. E.")
         self.assertEqual(runner1.odds, 8.0)
 
         runner2 = race.runners[1]
@@ -103,15 +106,19 @@ class TestFanDuelAdapter(unittest.TestCase):
         self.assertEqual(runner2.name, "Road Runner")
         self.assertEqual(runner2.program_number, 2)
         self.assertFalse(runner2.scratched)
+        self.assertEqual(runner2.jockey, "Coyote, W")
+        self.assertEqual(runner2.trainer, "Acme, Corp")
         self.assertEqual(runner2.odds, 3.0)
 
-    @patch('paddock_parser.adapters.fanduel_graphql_adapter.post_json_content')
-    def test_fetch_data_logic(self, mock_post_json_content):
+    @patch('paddock_parser.adapters.fanduel_graphql_adapter.httpx.Client')
+    def test_fetch_data_logic(self, MockClient):
         """
         Tests the two-stage fetching logic of the fetch_data method, ensuring
         it makes the correct sequence of API calls.
         """
         # --- Mock Setup ---
+        mock_client = MockClient.return_value.__enter__.return_value
+
         mock_schedule_response = unittest.mock.Mock()
         mock_schedule_response.text = '{"data": {"scheduleRaces": [{"races": [{"tvgRaceId": 999}]}]}}'
         mock_schedule_response.json.return_value = json.loads(mock_schedule_response.text)
@@ -119,7 +126,7 @@ class TestFanDuelAdapter(unittest.TestCase):
         mock_detail_response = unittest.mock.Mock()
         mock_detail_response.text = '{"data": {"races": []}}'
 
-        mock_post_json_content.side_effect = [mock_schedule_response, mock_detail_response]
+        mock_client.post.side_effect = [mock_schedule_response, mock_detail_response]
 
         adapter = FanDuelGraphQLAdapter()
 
@@ -127,16 +134,16 @@ class TestFanDuelAdapter(unittest.TestCase):
         result = adapter.fetch_data()
 
         # --- Assertions ---
-        self.assertEqual(mock_post_json_content.call_count, 2)
+        self.assertEqual(mock_client.post.call_count, 2)
 
-        schedule_call = mock_post_json_content.call_args_list[0]
+        schedule_call = mock_client.post.call_args_list[0]
         self.assertEqual(schedule_call.args[0], adapter.API_ENDPOINT)
-        self.assertEqual(schedule_call.kwargs['json_payload']['operationName'], 'getLhnInfo')
+        self.assertEqual(schedule_call.kwargs['json']['operationName'], 'getLhnInfo')
 
-        detail_call = mock_post_json_content.call_args_list[1]
+        detail_call = mock_client.post.call_args_list[1]
         self.assertEqual(detail_call.args[0], adapter.API_ENDPOINT)
-        self.assertEqual(detail_call.kwargs['json_payload']['operationName'], 'getGraphRaceBettingInterest')
-        self.assertEqual(detail_call.kwargs['json_payload']['variables']['tvgRaceIds'], [999])
+        self.assertEqual(detail_call.kwargs['json']['operationName'], 'getGraphRaceBettingInterest')
+        self.assertEqual(detail_call.kwargs['json']['variables']['tvgRaceIds'], [999])
 
         self.assertEqual(result['schedule'], mock_schedule_response.text)
         self.assertEqual(result['detail'], mock_detail_response.text)

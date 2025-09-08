@@ -1,80 +1,53 @@
-import asyncio
-import os
-from unittest.mock import patch
-
 import pytest
+from datetime import datetime
+
 from paddock_parser.adapters.attheraces_adapter import AtTheRacesAdapter
 from paddock_parser.base import NormalizedRace, NormalizedRunner
 
-
 @pytest.fixture
-def adapter():
-    return AtTheRacesAdapter()
+def real_attheraces_html():
+    """
+    Fixture providing actual At The Races HTML structure.
+    Based on https://www.attheraces.com/racecard/Roscommon/01-September-2025/1745
+    """
+    return """
+    <!DOCTYPE html>
+    <html>
+    <body>
+        <div class="race-header"><h1>17:45 Roscommon (IRE) 01 Sep 2025</h1><div class="race-info"><div>Lecarrow Race</div></div></div>
+        <div class="runner-card" data-horse="In My Teens"><div class="runner-info"><div class="horse-name"><a>In My Teens</a></div><div class="runner-number">72</div><div class="connections"><div class="jockey">J: G F Carroll</div><div class="trainer">T: G P Cromwell</div></div><div class="odds">7/2</div></div></div>
+        <div class="runner-card" data-horse="Vorfreude"><div class="runner-info"><div class="horse-name"><a>Vorfreude</a></div><div class="runner-number">11</div><div class="connections"><div class="jockey">J: B M Coen</div><div class="trainer">T: J G Murphy</div></div><div class="odds">11/4</div></div></div>
+    </body>
+    </html>
+    """
 
+def test_parse_races_extracts_correct_data(real_attheraces_html):
+    """
+    Tests that the adapter correctly parses the HTML and extracts all runner and race data.
+    """
+    adapter = AtTheRacesAdapter()
+    races = adapter.parse_races(real_attheraces_html)
 
-@pytest.fixture
-def attheraces_racecards_html():
-    with open(os.path.join(os.path.dirname(__file__), "..", "data", "attheraces_racecards.html"), "r") as f:
-        return f.read()
+    assert len(races) == 1
+    race = races[0]
 
+    assert race.track_name == "Roscommon (IRE)"
+    assert race.post_time == datetime(2025, 9, 1, 17, 45)
+    assert race.race_type == "Lecarrow Race"
+    assert race.number_of_runners == 2
 
-@pytest.fixture
-def attheraces_race_html():
-    with open(os.path.join(os.path.dirname(__file__), "..", "data", "attheraces_race.html"), "r") as f:
-        return f.read()
-
-
-def test_get_race_details(adapter, attheraces_racecards_html):
-    race_details = adapter._get_race_details(attheraces_racecards_html)
-    assert len(race_details) == 1
-    assert race_details[0]["course"] == "Fontwell"
-    assert race_details[0]["time"] == "14:12"
-    assert "Southern Cranes" in race_details[0]["name"]
-    assert race_details[0]["url"] == "https://www.attheraces.com/racecard/Fontwell/07-September-2025/1412"
-    assert race_details[0]["race_number"] == 1
-
-
-def test_parse_race(adapter, attheraces_race_html):
-    race_details = {
-        "course": "Fontwell",
-        "time": "14:12",
-        "name": "Southern Cranes And Access Conditional Jockeys' Handicap Hurdle",
-        "url": "https://www.attheraces.com/racecard/Fontwell/07-September-2025/1412",
-        "race_number": 1,
-    }
-    race = adapter._parse_race(attheraces_race_html, race_details)
-    assert isinstance(race, NormalizedRace)
-    assert race.track_name == "Fontwell"
-    assert race.race_type == "Southern Cranes And Access Conditional Jockeys' Handicap Hurdle"
     assert len(race.runners) == 2
-    assert isinstance(race.runners[0], NormalizedRunner)
-    assert race.runners[0].name == "Youremyeverything"
-    assert race.runners[0].odds == 7.0
-    assert race.runners[1].name == "Speedy Smartie"
-    assert race.runners[1].odds == 3.5
 
+    in_my_teens = race.runners[0]
+    assert in_my_teens.name == "In My Teens"
+    assert in_my_teens.program_number == 72
+    assert in_my_teens.jockey == "G F Carroll"
+    assert in_my_teens.trainer == "G P Cromwell"
+    assert in_my_teens.odds == 4.5 # 7/2 + 1
 
-@pytest.mark.anyio
-async def test_fetch(adapter, attheraces_racecards_html, attheraces_race_html):
-    with patch("paddock_parser.adapters.attheraces_adapter.get_page_content") as mock_get_page_content:
-
-        async def mock_return(url):
-            if "racecards" in url:
-                return attheraces_racecards_html
-            return attheraces_race_html
-
-        mock_get_page_content.side_effect = mock_return
-
-        races = await adapter.fetch()
-
-        assert len(races) == 1
-        race = races[0]
-        assert isinstance(race, NormalizedRace)
-        assert race.track_name == "Fontwell"
-        assert "Southern Cranes" in race.race_type
-        assert len(race.runners) == 2
-        assert isinstance(race.runners[0], NormalizedRunner)
-        assert race.runners[0].name == "Youremyeverything"
-        assert race.runners[0].odds == 7.0
-        assert race.runners[1].name == "Speedy Smartie"
-        assert race.runners[1].odds == 3.5
+    vorfreude = race.runners[1]
+    assert vorfreude.name == "Vorfreude"
+    assert vorfreude.program_number == 11
+    assert vorfreude.jockey == "B M Coen"
+    assert vorfreude.trainer == "J G Murphy"
+    assert vorfreude.odds == 3.75 # 11/4 + 1

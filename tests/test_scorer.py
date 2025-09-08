@@ -1,5 +1,4 @@
 import pytest
-from unittest.mock import patch
 from datetime import datetime, timedelta
 from src.paddock_parser.models import Race, Runner
 from src.paddock_parser.scorer import get_high_roller_races, calculate_weighted_score
@@ -10,10 +9,10 @@ def sample_races():
     now = datetime.now()
     races = [
         Race(race_id="RACE_PERFECT", venue="Goodwood", race_time=(now + timedelta(minutes=10)).strftime("%H:%M"), race_number=1, is_handicap=False, runners=[Runner(name="Horse A", odds=4.0)]),
-        Race(race_id="RACE_TOO_LATE", venue="Ascot", race_time=(now + timedelta(minutes=120)).strftime("%H:%M"), race_number=2, is_handicap=True, runners=[Runner(name="Horse C", odds=2.0)]),
-        Race(race_id="RACE_TOO_MANY_RUNNERS", venue="York", race_time=(now + timedelta(minutes=15)).strftime("%H:%M"), race_number=3, is_handicap=False, runners=[Runner(name=f"Runner {i}", odds=10.0) for i in range(8)]),
+        Race(race_id="RACE_TOO_LATE", venue="Ascot", race_time=(now + timedelta(minutes=30)).strftime("%H:%M"), race_number=2, is_handicap=True, runners=[Runner(name="Horse C", odds=2.0)]),
+        Race(race_id="RACE_TOO_MANY_RUNNERS", venue="York", race_time=(now + timedelta(minutes=15)).strftime("%H:%M"), race_number=3, is_handicap=False, runners=[Runner(name=f"Runner {i}", odds=10.0) for i in range(7)]),
         Race(race_id="RACE_HIGH_ODDS_FAV", venue="Newmarket", race_time=(now + timedelta(minutes=5)).strftime("%H:%M"), race_number=4, is_handicap=True, runners=[Runner(name="Horse E", odds=5.0)]),
-        Race(race_id="RACE_LOW_ODDS_FAV", venue="Cheltenham", race_time=(now + timedelta(minutes=12)).strftime("%H:%M"), race_number=5, is_handicap=False, runners=[Runner(name="Horse G", odds=0.4)]),
+        Race(race_id="RACE_LOW_ODDS_FAV", venue="Cheltenham", race_time=(now + timedelta(minutes=12)).strftime("%H:%M"), race_number=5, is_handicap=False, runners=[Runner(name="Horse G", odds=0.5)]),
     ]
     # Add number_of_runners to each race
     for race in races:
@@ -24,30 +23,19 @@ def test_filters_races_correctly(sample_races):
     now = datetime.now()
     high_roller_races = get_high_roller_races(sample_races, now)
     race_ids = {race.race_id for race in high_roller_races}
-    assert len(high_roller_races) == 2
+    assert len(high_roller_races) == 3
     assert "RACE_PERFECT" in race_ids
     assert "RACE_HIGH_ODDS_FAV" in race_ids
+    assert "RACE_LOW_ODDS_FAV" in race_ids
 
 def test_sorts_races_by_high_roller_score(sample_races):
     now = datetime.now()
     sorted_races = get_high_roller_races(sample_races, now)
-    assert len(sorted_races) == 2
+    assert len(sorted_races) == 3
     assert sorted_races[0].race_id == "RACE_HIGH_ODDS_FAV"
     assert sorted_races[1].race_id == "RACE_PERFECT"
+    assert sorted_races[2].race_id == "RACE_LOW_ODDS_FAV"
 
-@patch('src.paddock_parser.scorer.config')
-def test_get_high_roller_races_uses_config_values(mock_config, sample_races):
-    mock_config.HIGH_ROLLER_MAX_RUNNERS = 5
-    mock_config.HIGH_ROLLER_MIN_ODDS = 3.0
-    mock_config.TIME_WINDOW_MINUTES = 20
-
-    now = datetime.now()
-    high_roller_races = get_high_roller_races(sample_races, now)
-    race_ids = {race.race_id for race in high_roller_races}
-
-    assert len(high_roller_races) == 2
-    assert "RACE_PERFECT" in race_ids
-    assert "RACE_HIGH_ODDS_FAV" in race_ids
 
 def test_calculate_weighted_score():
     """

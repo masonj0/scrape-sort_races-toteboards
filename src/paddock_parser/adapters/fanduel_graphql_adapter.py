@@ -1,10 +1,10 @@
 import json
+import httpx
 import logging
 from datetime import datetime
 from typing import List, Dict, Any
 
 from ..base import BaseAdapter, NormalizedRace, NormalizedRunner
-from ..sync_fetcher import post_json_content
 
 
 def parse_from_json(schedule_data: str, detail_data: str) -> List[NormalizedRace]:
@@ -36,19 +36,14 @@ def parse_from_json(schedule_data: str, detail_data: str) -> List[NormalizedRace
                 odds_info = interest.get("currentOdds", {})
                 odds_num = odds_info.get('numerator')
                 odds_den = odds_info.get('denominator')
-
-                if odds_num is not None and odds_den is not None:
-                    try:
-                        odds = float(odds_num / odds_den)
-                    except ZeroDivisionError:
-                        odds = None
-                else:
-                    odds = None
+                odds = float(odds_num / odds_den) if odds_num is not None and odds_den is not None else None
 
                 runner = NormalizedRunner(
                     name=runner_info.get("horseName"),
                     program_number=interest.get("biNumber"),
                     scratched=runner_info.get("scratched", False),
+                    jockey=runner_info.get("jockey"),
+                    trainer=runner_info.get("trainer"),
                     odds=odds,
                 )
                 runners.append(runner)
@@ -63,6 +58,7 @@ def parse_from_json(schedule_data: str, detail_data: str) -> List[NormalizedRace
             race_number=int(race_schedule_info.get("number")),
             post_time=datetime.fromisoformat(race_schedule_info.get("postTime").replace("Z", "+00:00")),
             race_type=race_schedule_info.get("type", {}).get("code"),
+            minutes_to_post=race_schedule_info.get("mtp"),
             number_of_runners=len(runners),
             runners=runners,
         )
@@ -89,7 +85,7 @@ class FanDuelGraphQLAdapter(BaseAdapter):
     DETAIL_QUERY = {
         "operationName": "getGraphRaceBettingInterest",
         "variables": {"tvgRaceIds": [], "tvgRaceIdsBiPartial": [], "wagerProfile": "FDR-Generic"},
-        "query": "query getGraphRaceBettingInterest($tvgRaceIds: [Long]) { races: races( tvgRaceIds: $tvgRaceIds ) { id tvgRaceId bettingInterests { biNumber runners { horseName scratched } currentOdds { numerator denominator } } } }"
+        "query": "query getGraphRaceBettingInterest($tvgRaceIds: [Long], $tvgRaceIdsBiPartial: [Long], $wagerProfile: String) { races: races( tvgRaceIds: $tvgRaceIds profile: $wagerProfile sorts: [{byRaceNumber: ASC}] ) { id tvgRaceId bettingInterests { biNumber saddleColor numberColor favorite currentOdds { numerator denominator __typename } morningLineOdds { numerator denominator __typename } recentOdds(pages: [{current: 0, results: 4}]) { odd trending __typename } biPools { wagerType { id code name __typename } poolRunnersData { amount __typename } __typename } runners { runnerId entityRunnerId scratched horseName age sex weight med jockey trainer dob hasJockeyChanges ...timeformFragment handicapping { freePick { number info __typename } __typename } ...handicappingFragment __typename } __typename } ...Probables ...RacePools ...WillPays __typename } racesBiPartial: races( tvgRaceIds: $tvgRaceIdsBiPartial profile: $wagerProfile sorts: [{byRaceNumber: ASC}] ) { id tvgRaceId bettingInterests { biNumber saddleColor numberColor favorite currentOdds { numerator denominator __typename } morningLineOdds { numerator denominator __typename } runners { runnerId entityRunnerId scratched horseName jockey trainer hasJockeyChanges winProbability __typename } __typename } __typename } }\\n\\nfragment handicappingFragment on Runner { ownerName sire damSire dam handicapping { speedAndClass { avgClassRating highSpeed avgSpeed lastClassRating avgDistance __typename } averagePace { finish numRaces middle early __typename } jockeyTrainer { places jockeyName trainerName shows wins starts __typename } snapshot { powerRating daysOff horseWins horseStarts __typename } pastResults { totalNumberOfStarts numberOfFirstPlace numberOfSecondPlace numberOfThirdPlace winPercentage winPercentageRanking top3Percentage top3PercentageRanking __typename } __typename } __typename }\\n\\nfragment timeformFragment on Runner { timeform { analystsComments silkUrl silkUrlSvg freePick { number info __typename } flags { horseInFocus warningHorse jockeyUplift trainerUplift horsesForCoursePos horsesForCourseNeg hotTrainer coldTrainer highestLastSpeedRating sectionalFlag significantImprover jockeyInForm clearTopRated interestingJockeyBooking firstTimeBlinkers __typename } __typename } __typename }\\n\\nfragment Probables on Race { probables { amount minWagerAmount wagerType { id code name __typename } betCombos { runner1 runner2 payout __typename } __typename } __typename }\\n\\nfragment RacePools on Race { racePools { wagerType { id code name __typename } amount __typename } __typename } __typename }\\n\\nfragment WillPays on Race { willPays { wagerAmount payOffType type { id code name __typename } payouts { bettingInterestNumber payoutAmount __typename } legResults { legNumber winningBi __typename } __typename } __typename } }"
     }
 
 
@@ -97,36 +93,42 @@ class FanDuelGraphQLAdapter(BaseAdapter):
         """
         Fetches schedule and detail data from the FanDuel GraphQL endpoint.
         """
-        try:
-            # Fetch the race schedule
-            schedule_response = post_json_content(self.API_ENDPOINT, json_payload=self.SCHEDULE_QUERY)
-            schedule_json = schedule_response.json()
+        with httpx.Client() as client:
+            try:
+                # Fetch the race schedule
+                schedule_response = client.post(self.API_ENDPOINT, json=self.SCHEDULE_QUERY, headers=self.HEADERS)
+                schedule_response.raise_for_status()
+                schedule_json = schedule_response.json()
 
-            # Extract tvgRaceIds from the schedule
-            tvg_race_ids = []
-            for track in schedule_json.get("data", {}).get("scheduleRaces", []):
-                for race in track.get("races", []):
-                    if race.get("tvgRaceId"):
-                        tvg_race_ids.append(race["tvgRaceId"])
+                # Extract tvgRaceIds from the schedule
+                tvg_race_ids = []
+                for track in schedule_json.get("data", {}).get("scheduleRaces", []):
+                    for race in track.get("races", []):
+                        if race.get("tvgRaceId"):
+                            tvg_race_ids.append(race["tvgRaceId"])
 
-            if not tvg_race_ids:
-                logging.warning("No races found in the schedule.")
-                return {"schedule": schedule_response.text, "detail": "{}"}
+                if not tvg_race_ids:
+                    logging.warning("No races found in the schedule.")
+                    return {"schedule": schedule_response.text, "detail": "{}"}
 
-            # Fetch the details for the found races
-            detail_query = self.DETAIL_QUERY.copy()
-            detail_query["variables"]["tvgRaceIds"] = tvg_race_ids
+                # Fetch the details for the found races
+                detail_query = self.DETAIL_QUERY.copy()
+                detail_query["variables"]["tvgRaceIds"] = tvg_race_ids
 
-            detail_response = post_json_content(self.API_ENDPOINT, json_payload=detail_query)
+                detail_response = client.post(self.API_ENDPOINT, json=detail_query, headers=self.HEADERS)
+                detail_response.raise_for_status()
 
-            return {
-                "schedule": schedule_response.text,
-                "detail": detail_response.text
-            }
+                return {
+                    "schedule": schedule_response.text,
+                    "detail": detail_response.text
+                }
 
-        except Exception as e:
-            logging.error(f"An error occurred while fetching data from FanDuel: {e}", exc_info=True)
-            return {"schedule": "{}", "detail": "{}"}
+            except httpx.RequestError as e:
+                logging.error(f"An error occurred while requesting {e.request.url!r}: {e}")
+                return {"schedule": "{}", "detail": "{}"}
+            except httpx.HTTPStatusError as e:
+                logging.error(f"Error response {e.response.status_code} while requesting {e.request.url!r}.")
+                return {"schedule": "{}", "detail": "{}"}
 
 
     def parse_data(self, raw_data: Dict[str, Any]) -> List[NormalizedRace]:

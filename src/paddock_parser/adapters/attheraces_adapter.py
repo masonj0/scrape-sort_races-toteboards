@@ -4,7 +4,7 @@ from typing import Any, List, Dict
 
 from bs4 import BeautifulSoup
 
-from paddock_parser.utils.fetcher import get_page_content
+from ..fetcher import get_page_content
 from ..base import BaseAdapterV3, NormalizedRace, NormalizedRunner
 from .utils import get_datetime_from_string, _convert_odds_to_float
 
