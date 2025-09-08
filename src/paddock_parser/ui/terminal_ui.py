@@ -30,6 +30,7 @@ def _convert_normalized_to_scorer_race(norm_race: NormalizedRace) -> Optional[Sc
         number_of_runners=norm_race.number_of_runners,
         is_handicap=is_handicap,
         runners=scorer_runners,
+        # The score and scores attributes will be added by the pipeline
     )
 
 
