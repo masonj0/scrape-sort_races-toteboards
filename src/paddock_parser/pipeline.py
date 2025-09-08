@@ -3,7 +3,7 @@ import logging
 from typing import List, Optional, Dict, Tuple
 
 from . import adapters
-from .scorer import RaceScorer
+from .scorer import score_races
 from .base import BaseAdapter, BaseAdapterV3, NormalizedRace, NormalizedRunner
 from .merger import smart_merge
 from .models import Race, Runner
@@ -149,10 +149,8 @@ async def run_pipeline(
     merged_model_races = smart_merge(unmerged_races)
     logging.info(f"Merged down to {len(merged_model_races)} unique races.")
 
-    # Score the merged races (which are Race models)
-    scorer = RaceScorer()
-    for race in merged_model_races:
-        setattr(race, 'score', scorer.score(race))
+    # Score the merged races
+    merged_model_races = score_races(merged_model_races)
 
     # Filter based on min_runners
     if min_runners > 1:
@@ -163,6 +161,7 @@ async def run_pipeline(
     for race_model in merged_model_races:
         norm_race = _convert_to_normalized_race(race_model, prog_num_map)
         norm_race.score = getattr(race_model, 'score', 0.0)
+        norm_race.scores = getattr(race_model, 'scores', {})
         final_normalized_races.append(norm_race)
 
     # Filter by time window
