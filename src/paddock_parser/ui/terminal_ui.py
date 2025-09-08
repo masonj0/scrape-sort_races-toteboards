@@ -10,6 +10,8 @@ from ..base import NormalizedRace
 from ..pipeline import run_pipeline
 from ..scorer import get_high_roller_races
 from ..models import Race as ScorerRace, Runner as ScorerRunner
+from ..config import LOG_FILE_PATH
+from ..log_analyzer import analyze_log_file
 
 
 def _convert_normalized_to_scorer_race(norm_race: NormalizedRace) -> Optional[ScorerRace]:
@@ -110,6 +112,26 @@ class TerminalUI:
 
         self.console.print(table)
 
+    def display_log_analysis_report(self):
+        """
+        Analyzes the log file and displays a summary report.
+        """
+        self.console.print(f"\n[bold]Analyzing log file at:[/] [cyan]{LOG_FILE_PATH}[/cyan]")
+        log_counts = analyze_log_file(LOG_FILE_PATH)
+
+        if not log_counts:
+            self.console.print("[yellow]No log data found or file could not be read.[/yellow]")
+            return
+
+        table = Table(title="[bold blue]Log File Analysis[/bold blue]")
+        table.add_column("Log Level", style="cyan")
+        table.add_column("Count", style="magenta", justify="right")
+
+        for level, count in sorted(log_counts.items()):
+            table.add_row(level, str(count))
+
+        self.console.print(table)
+
     def start_fetching_progress(self, num_tasks: int):
         """Initializes and starts a progress bar for fetching races."""
         self.progress = Progress(console=self.console)
@@ -136,7 +158,8 @@ class TerminalUI:
         """Displays the main menu options."""
         self.console.print("\n[bold magenta]Paddock Parser NG - Main Menu[/bold magenta]")
         self.console.print("1. Get High Roller Report")
-        self.console.print("2. Quit")
+        self.console.print("2. View Log Analysis Report")
+        self.console.print("3. Quit")
 
     async def start_interactive_mode(self):
         """Starts the main interactive loop for the UI."""
@@ -146,6 +169,8 @@ class TerminalUI:
             if choice == '1':
                 await self._run_high_roller_report()
             elif choice == '2':
+                self.display_log_analysis_report()
+            elif choice == '3':
                 self.console.print("[yellow]Goodbye![/yellow]")
                 break
             else:

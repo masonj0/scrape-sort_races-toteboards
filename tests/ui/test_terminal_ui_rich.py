@@ -40,6 +40,41 @@ def test_display_high_roller_report_uses_rich_table(MockConsole, MockTable, samp
 
     mock_console_instance.print.assert_called_once_with(mock_table_instance)
 
+@patch('paddock_parser.ui.terminal_ui.Table')
+@patch('paddock_parser.ui.terminal_ui.analyze_log_file')
+@patch('paddock_parser.ui.terminal_ui.Console')
+def test_display_log_analysis_report_uses_rich_table(MockConsole, MockAnalyze, MockTable):
+    # Arrange
+    mock_console_instance = MockConsole()
+    mock_table_instance = MockTable.return_value
+    mock_log_counts = {"INFO": 10, "WARNING": 2, "ERROR": 1}
+    MockAnalyze.return_value = mock_log_counts
+    ui = TerminalUI(console=mock_console_instance)
+
+    # Act
+    ui.display_log_analysis_report()
+
+    # Assert
+    MockAnalyze.assert_called_once()
+    MockTable.assert_called_once_with(title="[bold blue]Log File Analysis[/bold blue]")
+
+    expected_column_calls = [
+        call("Log Level", style="cyan"),
+        call("Count", style="magenta", justify="right"),
+    ]
+    mock_table_instance.add_column.assert_has_calls(expected_column_calls, any_order=False)
+
+    expected_row_calls = [
+        call("ERROR", "1"),
+        call("INFO", "10"),
+        call("WARNING", "2"),
+    ]
+    mock_table_instance.add_row.assert_has_calls(expected_row_calls, any_order=True)
+    assert mock_table_instance.add_row.call_count == len(mock_log_counts)
+
+    mock_console_instance.print.assert_called_with(mock_table_instance)
+
+
 @pytest.mark.anyio
 @patch('paddock_parser.ui.terminal_ui.get_high_roller_races')
 @patch('paddock_parser.ui.terminal_ui.run_pipeline')

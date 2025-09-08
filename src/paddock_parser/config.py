@@ -20,3 +20,6 @@ DISABLED_ADAPTERS = []
 # Set the log level for the application.
 # Options: "DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"
 LOG_LEVEL = "INFO"
+
+# The path to the log file for analysis.
+LOG_FILE_PATH = "paddock_parser.log"
