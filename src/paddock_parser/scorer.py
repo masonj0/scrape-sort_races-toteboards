@@ -1,90 +1,95 @@
-from datetime import datetime, timedelta
-from typing import List
+import math
+from typing import List, Dict, Optional
 
-from .base import NormalizedRace
+from .config import SCORER_WEIGHTS
 from .models import Race, Runner
 
-def get_high_roller_races(races: List[Race], now: datetime) -> List[Race]:
-    """
-    Filters and scores races to find "High Roller" opportunities.
-    """
-    valid_races = []
-    max_time_to_post = timedelta(minutes=25)
-
-    for race in races:
-        # 1. Time filtering
-        try:
-            race_hour, race_minute = map(int, race.race_time.split(':'))
-            race_dt = now.replace(hour=race_hour, minute=race_minute, second=0, microsecond=0)
-            if race_dt < now - timedelta(hours=1):
-                race_dt += timedelta(days=1)
-        except (ValueError, TypeError):
-            continue
-
-        time_to_post = race_dt - now
-        if not (timedelta(minutes=0) < time_to_post <= max_time_to_post):
-            continue
-
-        # 2. Runner count filtering (must be less than 7)
-        if not (hasattr(race, 'number_of_runners') and race.number_of_runners and 0 < race.number_of_runners < 7):
-            continue
-
-        # 3. Scoring based on favorite's odds
-        min_odds = float('inf')
-        for runner in race.runners:
-            odds = runner.odds or float('inf') # Odds are now floats
-            if odds < min_odds:
-                min_odds = odds
-
-        if min_odds != float('inf'):
-            setattr(race, 'high_roller_score', min_odds)
-            valid_races.append(race)
-
-    # 4. Sort by the dynamically added score
-    valid_races.sort(key=lambda r: getattr(r, 'high_roller_score', float('inf')), reverse=True)
-    return valid_races
-
-
 class RaceScorer:
-    """Analyzes a Race to produce a score based on specific criteria."""
+    """
+    Analyzes a Race to produce a score based on a weighted combination of factors.
+    The weights for each factor are drawn from config.py to allow for easy tuning.
+    """
+    def __init__(self, weights: Optional[Dict[str, float]] = None):
+        """Initializes the scorer with weights, falling back to the config file."""
+        self.weights = weights if weights is not None else SCORER_WEIGHTS
 
-    def score(self, race: Race) -> float:
-        """Calculates a score for a single race based on the number of runners."""
-        if not hasattr(race, 'number_of_runners') or not race.number_of_runners:
+    def _get_sorted_runners(self, race: Race) -> List[Runner]:
+        """Returns runners sorted by their odds, lowest first."""
+        return sorted(race.runners, key=lambda r: r.odds or float('inf'))
+
+    def _calculate_field_size_score(self, race: Race) -> float:
+        """
+        Calculates the field size score. A smaller field is generally considered
+        less competitive, so we reward it with a higher score (inverse relationship).
+        """
+        if not race.number_of_runners:
             return 0.0
-        field_size = race.number_of_runners
-        if 5 <= field_size <= 7:
-            return 100.0
-        if 8 <= field_size <= 10:
-            return 80.0
-        if 3 <= field_size <= 4:
-            return 60.0
-        if 11 <= field_size <= 12:
-            return 40.0
-        return 20.0
+        return 1 / race.number_of_runners
 
+    def _calculate_favorite_odds_score(self, race: Race, sorted_runners: List[Runner]) -> float:
+        """
+        Calculates the favorite's odds score. A higher-odds favorite suggests
+        a more open race, which can be a valuable signal.
+        """
+        if not sorted_runners:
+            return 0.0
+        return sorted_runners[0].odds or 0.0
 
-def calculate_weighted_score(race: Race, weights: dict) -> float:
+    def _calculate_contention_score(self, race: Race, sorted_runners: List[Runner]) -> float:
+        """
+        Calculates the contention score. This measures the gap between the favorite
+        and the second favorite. A large gap (low contention) is rewarded with a
+        higher score, as it suggests a more predictable race.
+        If there's only one runner, we use their odds as the score.
+        """
+        if len(sorted_runners) < 2:
+            return self._calculate_favorite_odds_score(race, sorted_runners)
+
+        fav_odds = sorted_runners[0].odds or 0.0
+        second_fav_odds = sorted_runners[1].odds or 0.0
+        return abs(second_fav_odds - fav_odds)
+
+    def score(self, race: Race) -> Dict[str, float]:
+        """
+        Calculates a weighted score for a race based on various factors.
+        Returns a dictionary with the total score and the individual factor scores
+        for transparency and potential UI display.
+        """
+        if not race.runners:
+            return {"total_score": 0.0, "field_size_score": 0.0, "favorite_odds_score": 0.0, "contention_score": 0.0}
+
+        sorted_runners = self._get_sorted_runners(race)
+
+        # Calculate raw scores for each factor
+        field_size_score = self._calculate_field_size_score(race)
+        favorite_odds_score = self._calculate_favorite_odds_score(race, sorted_runners)
+        contention_score = self._calculate_contention_score(race, sorted_runners)
+
+        # Apply weights from config
+        weighted_field_size = field_size_score * self.weights.get("FIELD_SIZE_WEIGHT", 0)
+        weighted_favorite_odds = favorite_odds_score * self.weights.get("FAVORITE_ODDS_WEIGHT", 0)
+        weighted_contention = contention_score * self.weights.get("CONTENTION_WEIGHT", 0)
+
+        # Calculate the final total score
+        total_score = weighted_field_size + weighted_favorite_odds + weighted_contention
+
+        return {
+            "total_score": total_score,
+            "field_size_score": field_size_score,
+            "favorite_odds_score": favorite_odds_score,
+            "contention_score": contention_score,
+        }
+
+def score_races(races: List[Race]) -> List[Race]:
     """
-    Calculates a weighted score for a race based on various factors.
+    A helper function to score a list of races and attach the scoring
+    details back to each race object.
     """
-    if not race.runners or not hasattr(race, 'number_of_runners') or not race.number_of_runners:
-        return 0.0
-
-    # Find the favorite (lowest odds)
-    favorite_odds = float('inf')
-    for runner in race.runners:
-        odds = runner.odds or float('inf') # Odds are now floats
-        if odds < favorite_odds:
-            favorite_odds = odds
-
-    if favorite_odds == float('inf'):
-        favorite_odds = 0
-
-    # Calculate score components
-    field_size_component = (1 / race.number_of_runners) * weights.get("FIELD_SIZE_WEIGHT", 0)
-    favorite_odds_component = favorite_odds * weights.get("FAVORITE_ODDS_WEIGHT", 0)
-
-    # Calculate final score
-    score = field_size_component + favorite_odds_component
-    return score
+    scorer = RaceScorer()
+    for race in races:
+        scores = scorer.score(race)
+        # Attach the detailed dictionary for the UI
+        setattr(race, 'scores', scores)
+        # Attach the final score for sorting and filtering
+        setattr(race, 'score', scores.get('total_score', 0.0))
+    return races

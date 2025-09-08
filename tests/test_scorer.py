@@ -1,65 +1,72 @@
 import pytest
-from datetime import datetime, timedelta
+from unittest.mock import patch
 from src.paddock_parser.models import Race, Runner
-from src.paddock_parser.scorer import get_high_roller_races, calculate_weighted_score
+from src.paddock_parser.scorer import RaceScorer, score_races
 
-# --- Tests for the Main High Roller Logic ---
 @pytest.fixture
-def sample_races():
-    now = datetime.now()
-    races = [
-        Race(race_id="RACE_PERFECT", venue="Goodwood", race_time=(now + timedelta(minutes=10)).strftime("%H:%M"), race_number=1, is_handicap=False, runners=[Runner(name="Horse A", odds=4.0)]),
-        Race(race_id="RACE_TOO_LATE", venue="Ascot", race_time=(now + timedelta(minutes=30)).strftime("%H:%M"), race_number=2, is_handicap=True, runners=[Runner(name="Horse C", odds=2.0)]),
-        Race(race_id="RACE_TOO_MANY_RUNNERS", venue="York", race_time=(now + timedelta(minutes=15)).strftime("%H:%M"), race_number=3, is_handicap=False, runners=[Runner(name=f"Runner {i}", odds=10.0) for i in range(7)]),
-        Race(race_id="RACE_HIGH_ODDS_FAV", venue="Newmarket", race_time=(now + timedelta(minutes=5)).strftime("%H:%M"), race_number=4, is_handicap=True, runners=[Runner(name="Horse E", odds=5.0)]),
-        Race(race_id="RACE_LOW_ODDS_FAV", venue="Cheltenham", race_time=(now + timedelta(minutes=12)).strftime("%H:%M"), race_number=5, is_handicap=False, runners=[Runner(name="Horse G", odds=0.5)]),
-    ]
-    # Add number_of_runners to each race
-    for race in races:
-        race.number_of_runners = len(race.runners)
-    return races
-
-def test_filters_races_correctly(sample_races):
-    now = datetime.now()
-    high_roller_races = get_high_roller_races(sample_races, now)
-    race_ids = {race.race_id for race in high_roller_races}
-    assert len(high_roller_races) == 3
-    assert "RACE_PERFECT" in race_ids
-    assert "RACE_HIGH_ODDS_FAV" in race_ids
-    assert "RACE_LOW_ODDS_FAV" in race_ids
-
-def test_sorts_races_by_high_roller_score(sample_races):
-    now = datetime.now()
-    sorted_races = get_high_roller_races(sample_races, now)
-    assert len(sorted_races) == 3
-    assert sorted_races[0].race_id == "RACE_HIGH_ODDS_FAV"
-    assert sorted_races[1].race_id == "RACE_PERFECT"
-    assert sorted_races[2].race_id == "RACE_LOW_ODDS_FAV"
-
-
-def test_calculate_weighted_score():
-    """
-    SPEC: The weighted score must correctly apply weights to different race factors.
-    - A lower runner count should increase the score.
-    - Higher odds for the favorite should increase the score.
-    """
-    # Arrange: A sample race with a clear favorite
-    race = Race(
-        race_id="R1", venue="Test", race_time="14:00", source="Test", race_number=1, is_handicap=False, number_of_runners=2,
-        runners=[
-            Runner(name="Favorite", odds=2.5),
-            Runner(name="Longshot", odds=10.0)
-        ]
-    )
-    # Arrange: Sample weights from our V3 strategy
-    weights = {
-        "FIELD_SIZE_WEIGHT": 0.6,
-        "FAVORITE_ODDS_WEIGHT": 0.4
+def sample_weights():
+    """Fixture for sample scorer weights."""
+    return {
+        "FIELD_SIZE_WEIGHT": 0.5,
+        "FAVORITE_ODDS_WEIGHT": 0.3,
+        "CONTENTION_WEIGHT": 0.2,
     }
 
-    # Act
-    actual_score = calculate_weighted_score(race, weights)
+@pytest.fixture
+def race_with_clear_favorite():
+    """Fixture for a race with a clear favorite and low contention."""
+    return Race(
+        race_id="R1", venue="Test", race_time="14:00", source="Test", race_number=1, is_handicap=False, number_of_runners=8,
+        runners=[
+            Runner(name="Favorite", odds=2.0),
+            Runner(name="Runner2", odds=8.0),
+        ]
+    )
 
-    # Assert
-    # Expected: (1/2 * 0.6) + (2.5 * 0.4) = 0.3 + 1.0 = 1.3
-    assert actual_score == pytest.approx(1.3)
+@pytest.fixture
+def race_with_high_contention():
+    """Fixture for a race with high contention (two joint favorites)."""
+    return Race(
+        race_id="R2", venue="Test", race_time="15:00", source="Test", race_number=2, is_handicap=True, number_of_runners=10,
+        runners=[
+            Runner(name="JointFav1", odds=4.5),
+            Runner(name="JointFav2", odds=4.5),
+        ]
+    )
+
+def test_race_scorer_initialization(sample_weights):
+    scorer = RaceScorer(weights=sample_weights)
+    assert scorer.weights == sample_weights
+
+@patch('src.paddock_parser.scorer.SCORER_WEIGHTS', {"FIELD_SIZE_WEIGHT": 0.5, "FAVORITE_ODDS_WEIGHT": 0.3, "CONTENTION_WEIGHT": 0.2})
+def test_race_scorer_initialization_from_config():
+    scorer = RaceScorer()
+    assert scorer.weights["FIELD_SIZE_WEIGHT"] == 0.5
+
+def test_score_calculation_low_contention(sample_weights, race_with_clear_favorite):
+    scorer = RaceScorer(weights=sample_weights)
+    scores = scorer.score(race_with_clear_favorite)
+    assert scores['field_size_score'] == pytest.approx(1/8)
+    assert scores['favorite_odds_score'] == pytest.approx(2.0)
+    assert scores['contention_score'] == pytest.approx(6.0)
+    expected_score = (1/8 * 0.5) + (2.0 * 0.3) + (6.0 * 0.2)
+    assert scores['total_score'] == pytest.approx(expected_score)
+
+def test_score_calculation_high_contention(sample_weights, race_with_high_contention):
+    scorer = RaceScorer(weights=sample_weights)
+    scores = scorer.score(race_with_high_contention)
+    assert scores['field_size_score'] == pytest.approx(1/10)
+    assert scores['favorite_odds_score'] == pytest.approx(4.5)
+    assert scores['contention_score'] == pytest.approx(0.0)
+    expected_score = (0.1 * 0.5) + (4.5 * 0.3) + (0.0 * 0.2)
+    assert scores['total_score'] == pytest.approx(expected_score)
+
+@patch('src.paddock_parser.scorer.SCORER_WEIGHTS', {"FIELD_SIZE_WEIGHT": 0.5, "FAVORITE_ODDS_WEIGHT": 0.3, "CONTENTION_WEIGHT": 0.2})
+def test_score_races_function(race_with_clear_favorite):
+    races = [race_with_clear_favorite]
+    scored_races = score_races(races)
+    expected_score = (1/8 * 0.5) + (2.0 * 0.3) + (6.0 * 0.2)
+    assert hasattr(scored_races[0], 'score')
+    assert hasattr(scored_races[0], 'scores')
+    assert scored_races[0].score == pytest.approx(expected_score)
+    assert scored_races[0].scores['total_score'] == pytest.approx(expected_score)
