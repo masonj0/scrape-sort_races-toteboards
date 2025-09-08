@@ -47,7 +47,8 @@ async def test_get_page_content_retry_on_http_error():
     url = "http://test.com/retry"
     request = httpx.Request("GET", url)
 
-    # Configure the mock's side_effect to simulate a 503 error then a success
+    # Configure the mock's side_effect to simulate a failure followed by a success.
+
     mock_responses = [
         httpx.Response(503, request=request),
         httpx.Response(200, text="Success after retry", request=request)

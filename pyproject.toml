@@ -14,5 +14,9 @@ classifiers = [
     "Operating System :: OS Independent",
 ]
 
+[project.scripts]
+paddock_parser_ui = "paddock_parser.entry_points:run_terminal_ui"
+paddock_parser_dashboard = "paddock_parser.entry_points:run_dashboard"
+
 [tool.setuptools.packages.find]
 where = ["src"]
