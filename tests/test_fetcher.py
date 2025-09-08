@@ -13,6 +13,8 @@ async def test_get_page_content_success():
     request = httpx.Request("GET", url)
     expected_content = "<html>Success</html>"
 
+    # Create a mock response object that includes the request context.
+    # This is necessary for the `raise_for_status` method to work correctly.
     mock_response = httpx.Response(200, text=expected_content, request=request)
 
     with patch('httpx.AsyncClient.get', new_callable=AsyncMock, return_value=mock_response) as mock_get:
@@ -45,7 +47,7 @@ async def test_get_page_content_retry_on_http_error():
     url = "http://test.com/retry"
     request = httpx.Request("GET", url)
 
-    # Simulate a 503 error then a success
+    # Configure the mock's side_effect to simulate a 503 error then a success
     mock_responses = [
         httpx.Response(503, request=request),
         httpx.Response(200, text="Success after retry", request=request)
@@ -64,7 +66,7 @@ async def test_get_page_content_retry_on_request_error():
     url = "http://test.com/network-error"
     request = httpx.Request("GET", url)
 
-    # Simulate a network error then a success
+    # Configure the side_effect to simulate a network error, then a successful response.
     side_effects = [
         httpx.RequestError("Network Error", request=request),
         httpx.Response(200, text="Success after network error", request=request)
@@ -83,7 +85,8 @@ async def test_get_page_content_fails_after_max_retries():
     url = "http://test.com/persistent-failure"
     request = httpx.Request("GET", url)
 
-    # Create a side effect that will always raise an HTTPStatusError
+    # Configure the side_effect to consistently raise an HTTPStatusError.
+    # This simulates a persistent server-side failure.
     side_effect = httpx.HTTPStatusError(
         "Internal Server Error",
         request=request,
@@ -94,5 +97,5 @@ async def test_get_page_content_fails_after_max_retries():
         with pytest.raises(httpx.HTTPStatusError):
             await get_page_content(url)
 
-        # Tenacity default is 5 attempts
+        # The tenacity decorator is configured to try 5 times in total.
         assert mock_get.call_count == 5
