@@ -93,3 +93,47 @@ def score_races(races: List[Race]) -> List[Race]:
         # Attach the final score for sorting and filtering
         setattr(race, 'score', scores.get('total_score', 0.0))
     return races
+
+
+def _get_dynamic_odds_thresholds(field_size: int) -> Dict[str, float]:
+    """
+    Returns the required odds thresholds for the favorite and second-favorite
+    based on the number of runners in the race.
+    """
+    if field_size >= 7:
+        return {"fav": 1.0, "second_fav": 4.0}
+    if field_size == 6:
+        return {"fav": 1.0, "second_fav": 3.5}
+    if field_size == 5:
+        return {"fav": 0.8, "second_fav": 3.0}
+    if field_size == 4:
+        return {"fav": 0.5, "second_fav": 2.0}
+    return {"fav": 0.0, "second_fav": 0.0}  # Default for very small fields
+
+
+def find_checkmate_opportunities(races: List[Race]) -> List[Race]:
+    """
+    Filters a list of races to find those that meet the dynamic "Checkmate" criteria.
+    """
+    checkmate_races = []
+    for race in races:
+        if not race.runners or not race.number_of_runners:
+            continue
+
+        thresholds = _get_dynamic_odds_thresholds(race.number_of_runners)
+
+        sorted_runners = sorted(race.runners, key=lambda r: r.odds or float('inf'))
+
+        if len(sorted_runners) < 2:
+            continue
+
+        favorite_odds = sorted_runners[0].odds or 0.0
+        second_favorite_odds = sorted_runners[1].odds or 0.0
+
+        if (
+            favorite_odds > thresholds["fav"]
+            and second_favorite_odds > thresholds["second_fav"]
+        ):
+            checkmate_races.append(race)
+
+    return checkmate_races
