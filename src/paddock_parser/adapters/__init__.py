@@ -5,11 +5,13 @@ from .fanduel_graphql_adapter import FanDuelGraphQLAdapter
 from .equibase_adapter import EquibaseAdapter
 from .greyhound_recorder import GreyhoundRecorderAdapter
 from .racingpost_adapter import RacingPostAdapter
+from .rpb2b_adapter import Rpb2bAdapter
 from .racingandsports_adapter import RacingAndSportsAdapter
 from .timeform_adapter import TimeformAdapter
 from .attheraces_adapter import AtTheRacesAdapter
 
 __all__ = [
+    "Rpb2bAdapter",
     "SkySportsAdapter",
     "FanDuelGraphQLAdapter",
     "EquibaseAdapter",
@@ -17,5 +19,5 @@ __all__ = [
     "RacingPostAdapter",
     "RacingAndSportsAdapter",
     "TimeformAdapter",
-    "AtTheRacesAdapter"
+    "AtTheRacesAdapter",
 ]
