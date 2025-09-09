@@ -42,8 +42,10 @@ async def test_rpb2b_adapter_fetches_and_parses(
         race_detail = json.loads(mock_race_detail_json)
         if "81650def-54b2-408c-991f-fbae800060b0" in url:
             race_detail["raceNumber"] = 1
+            race_detail["results"]["result"][0]["startingPrice"] = "10/1"
         elif "4c459555-265e-4aa4-beaf-e82d8781c13d" in url:
             race_detail["raceNumber"] = 2
+            race_detail["results"]["result"][0]["startingPrice"] = "5/1"
         return json.dumps(race_detail)
 
     mock_get_page_content.side_effect = fetch_side_effect
@@ -63,7 +65,7 @@ async def test_rpb2b_adapter_fetches_and_parses(
     assert race1.race_number == 1
     assert race1.race_type == "Flat"
     assert race1.number_of_runners == 6
-    assert race1.runners[0].odds == 18.8
+    assert race1.runners[0].odds == 11.0
 
     # Test the second race to ensure different data is processed
     race2 = next(
@@ -72,3 +74,4 @@ async def test_rpb2b_adapter_fetches_and_parses(
     assert race2 is not None
     assert race2.track_name == "Parx"
     assert race2.race_number == 2
+    assert race2.runners[0].odds == 6.0

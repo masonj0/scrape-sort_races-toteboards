@@ -2,7 +2,7 @@ import time
 import asyncio
 import pandas as pd
 import streamlit as st
-from datetime import datetime, UTC
+from datetime import datetime, UTC, timedelta
 
 from src.paddock_parser.pipeline import run_pipeline
 from src.paddock_parser.scorer import find_checkmate_opportunities
@@ -22,57 +22,65 @@ st.markdown(
 # Initialize session state
 if 'monitoring' not in st.session_state:
     st.session_state.monitoring = False
-if 'last_run' not in st.session_state:
-    st.session_state.last_run = None
+if 'daily_races' not in st.session_state:
+    st.session_state.daily_races = []
 
 # --- Control Buttons ---
 col1, col2 = st.columns(2)
 with col1:
     if st.button("Start Monitoring", type="primary"):
         st.session_state.monitoring = True
-        st.session_state.last_run = datetime.now(UTC)
+        with st.spinner("Fetching initial race list for the day..."):
+            st.session_state.daily_races = asyncio.run(
+                run_pipeline(specific_source="rpb2b")
+            )
+        st.experimental_rerun()
 
 with col2:
     if st.button("Stop Monitoring"):
         st.session_state.monitoring = False
+        st.experimental_rerun()
 
 # --- Live Monitoring Loop ---
 if st.session_state.monitoring:
     st.success("Monitoring for Checkmate opportunities... The dashboard will update automatically.")
 
-    # Create placeholders for live data
     placeholder = st.empty()
 
     while st.session_state.monitoring:
         with placeholder.container():
             st.write(f"Last check: {datetime.now(UTC).strftime('%Y-%m-%d %H:%M:%S')} UTC")
 
-            with st.spinner("Running pipeline for `rpb2b` adapter..."):
-                try:
-                    races = asyncio.run(
-                        run_pipeline(min_runners=0, time_window_minutes=120, specific_source="rpb2b")
-                    )
+            now = datetime.now(UTC)
+            imminent_races = [
+                race for race in st.session_state.daily_races
+                if race.post_time and (now - timedelta(minutes=2)) < race.post_time <= (now + timedelta(minutes=10))
+            ]
 
-                    if races:
-                        checkmate_races = find_checkmate_opportunities(races)
+            if not imminent_races:
+                st.info("No races are imminent. Waiting for the next check...")
+            else:
+                imminent_race_ids = [race.race_id for race in imminent_races]
+                st.info(f"Found {len(imminent_races)} imminent races. Fetching live odds...")
 
-                        alert_races = []
-                        for race in checkmate_races:
-                            if race.post_time:
-                                time_diff = race.post_time - datetime.now(UTC)
-                                minutes_to_post = time_diff.total_seconds() / 60
-                                if 0 <= minutes_to_post <= 5:
-                                    alert_races.append(race)
+                with st.spinner(f"Fetching details for {len(imminent_races)} races..."):
+                    try:
+                        live_races = asyncio.run(
+                            run_pipeline(specific_source="rpb2b", race_ids=imminent_race_ids)
+                        )
 
-                        if alert_races:
+                        checkmate_races = find_checkmate_opportunities(live_races)
+
+                        if checkmate_races:
                             st.header("🚨 Checkmate Opportunity Found! 🚨")
                             st.balloons()
 
                             race_list = []
-                            for race in alert_races:
+                            for race in checkmate_races:
                                 race_list.append({
                                     "Track": race.track_name,
                                     "Time": race.post_time.strftime("%H:%M") if race.post_time else "N/A",
+                                    "MTP": int((race.post_time - now).total_seconds() / 60) if race.post_time else "N/A",
                                     "Race #": race.race_number,
                                     "Runners": race.number_of_runners,
                                     "Fav Odds": next((r.odds for r in sorted(race.runners, key=lambda r: r.odds or float('inf'))), 0),
@@ -81,17 +89,12 @@ if st.session_state.monitoring:
                             df = pd.DataFrame(race_list)
                             st.dataframe(df, use_container_width=True)
                         else:
-                            st.info("No imminent Checkmate opportunities found. Continuing to monitor...")
-                    else:
-                        st.warning("No races were found by the pipeline in the last run.")
+                            st.info("No Checkmate opportunities in the imminent races.")
 
-                except Exception as e:
-                    st.error(f"An error occurred: {e}")
+                    except Exception as e:
+                        st.error(f"An error occurred: {e}")
 
-        # Wait for 60 seconds before the next run
         time.sleep(60)
-
-        # Rerun the script to update the dashboard
         st.experimental_rerun()
 else:
     st.info("Monitoring is stopped. Click 'Start Monitoring' to begin.")
