@@ -35,29 +35,36 @@ class Rpb2bAdapter(BaseAdapterV3):
     SOURCE_ID = "rpb2b"
     BASE_URL = "https://backend-us-racecards.widget.rpb2b.com/v2"
 
-    async def fetch(self) -> List[NormalizedRace]:
+    async def fetch(self, race_ids: Optional[List[str]] = None) -> List[NormalizedRace]:
         """
-        Fetches all race data by first getting the daily summary to find
-        race links, then fetching each of those pages concurrently.
+        If `race_ids` are provided, fetches details for only those races.
+        Otherwise, fetches all daily races.
         """
-        today = datetime.now(UTC).strftime("%Y-%m-%d")
-        index_url = f"{self.BASE_URL}/racecards/daily/{today}"
-        index_json_str = await get_page_content(index_url)
+        if not race_ids:
+            today = datetime.now(UTC).strftime("%Y-%m-%d")
+            index_url = f"{self.BASE_URL}/racecards/daily/{today}"
+            index_json_str = await get_page_content(index_url)
 
-        if not index_json_str:
-            return []
+            if not index_json_str:
+                return []
 
-        race_list = json.loads(index_json_str)
+            race_list = json.loads(index_json_str)
 
-        race_id_to_track_map = {
-            race["id"]: course.get("name", "Unknown")
-            for course in race_list
-            for race in course.get("races", [])
-        }
-        race_ids = list(race_id_to_track_map.keys())
+            race_id_to_track_map = {
+                race["id"]: course.get("name", "Unknown")
+                for course in race_list
+                for race in course.get("races", [])
+            }
+            race_ids = list(race_id_to_track_map.keys())
+        else:
+            # If race_ids are provided, we don't have the track map.
+            # This is a limitation of this more efficient approach.
+            # The track name will be parsed from the detail response if available,
+            # otherwise it will be "Unknown".
+            race_id_to_track_map = {}
 
         tasks = [
-            get_page_content(f"{self.BASE_URL}/racecards/{race_id}")
+            get_page_content(f"{self.BASE_URL}/racecards/{race_id}?include=odds")
             for race_id in race_ids
         ]
         race_json_pages = await asyncio.gather(*tasks, return_exceptions=True)
