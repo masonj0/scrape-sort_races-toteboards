@@ -9,6 +9,8 @@ from .racingpost_adapter import RacingPostAdapter
 from .racingandsports_adapter import RacingAndSportsAdapter
 from .timeform_adapter import TimeformAdapter
 from .attheraces_adapter import AtTheRacesAdapter
+from .ras_adapter import RasAdapter
+from .atg_adapter import AtgAdapter
 
 __all__ = [
     "BetfairDataScientistAdapter",
@@ -19,5 +21,7 @@ __all__ = [
     "RacingPostAdapter",
     "RacingAndSportsAdapter",
     "TimeformAdapter",
-    "AtTheRacesAdapter"
+    "AtTheRacesAdapter",
+    "RasAdapter",
+    "AtgAdapter"
 ]
