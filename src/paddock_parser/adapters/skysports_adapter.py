@@ -144,7 +144,7 @@ class SkySportsAdapter(BaseAdapterV3):
                     )
 
             path_parts = [part for part in url.split("/") if part]
-            race_id = path_parts[-1] if path_parts else url
+            race_id = path_parts[-2] if len(path_parts) >= 2 else url
 
             return NormalizedRace(
                 race_id=race_id,
