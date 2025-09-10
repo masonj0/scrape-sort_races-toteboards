@@ -1,81 +1,121 @@
+import asyncio
 import logging
+import re
 from bs4 import BeautifulSoup
-from paddock_parser.base import BaseAdapterV3, NormalizedRace
 from datetime import datetime
-from typing import List
+from typing import List, Optional
+from urllib.parse import urljoin
+
+from ..base import BaseAdapterV3, NormalizedRace, NormalizedRunner
+from ..http_client import ForagerClient
+from .utils import _convert_odds_to_float
 
 class TimeformAdapter(BaseAdapterV3):
     """
     Adapter for timeform.com.
-
-    This adapter is a 'minimalist' implementation that parses the main racecards
-    summary page. It extracts a list of all races for the day but does not
-    currently fetch the individual detail page for each race to get runner info.
+    This adapter implements a three-stage "drill-down" to fetch all race data.
+    1. Fetch the main racecards page.
+    2. Extract links to all of today's meetings.
+    3. Concurrently fetch all race detail pages.
+    4. Parse each detail page to extract runner information.
     """
     SOURCE_ID = "timeform"
+    BASE_URL = "https://www.timeform.com"
 
     def __init__(self, config=None):
         super().__init__(config)
-        logging.getLogger(__name__).setLevel(self.config.get('log_level', logging.INFO))
+        self.forager = ForagerClient()
 
     async def fetch(self) -> List[NormalizedRace]:
-        """This is an offline adapter and should not be fetched by the pipeline."""
-        raise NotImplementedError("TimeformAdapter is an offline adapter and does not support live fetching.")
-
-    def parse_races(self, html_content: str) -> list[NormalizedRace]:
         """
-        Parses the HTML content of a Timeform race card index page.
-
-        This implementation extracts the basic details for all races listed on the
-        summary page. It does not contain runner information as that requires
-        fetching individual race pages, which is not supported by the current
-        mock data.
+        Fetches all race data by first getting the summary page to find
+        race links, then fetching each of those pages concurrently.
         """
-        if not html_content:
-            logging.warning("HTML content for TimeformAdapter is empty.")
+        index_url = f"{self.BASE_URL}/horse-racing/racecards"
+        index_html = await self.forager.fetch(index_url)
+        if not index_html:
+            logging.warning("Failed to fetch the Timeform racecards index page.")
             return []
 
+        race_links = self._extract_race_links(index_html)
+        if not race_links:
+            logging.warning("No race links found on the Timeform index page.")
+            return []
+
+        tasks = [self.forager.fetch(url) for url in race_links]
+        race_html_pages = await asyncio.gather(*tasks)
+
+        all_races = []
+        for html, url in zip(race_html_pages, race_links):
+            if html:
+                race = self.parse_race_details(html, url)
+                if race:
+                    all_races.append(race)
+        return all_races
+
+    def _extract_race_links(self, html_content: str) -> List[str]:
+        """Extracts all individual race links from the main racecards page."""
         soup = BeautifulSoup(html_content, 'lxml')
-        races = []
+        links = []
+        for link in soup.select("ul.w-racecard-grid-meeting-races-compact li a"):
+            href = link.get("href")
+            if href:
+                links.append(urljoin(self.BASE_URL, href))
+        return links
 
-        meeting_blocks = soup.select("div.w-racecard-grid-meeting")
-        logging.info(f"Found {len(meeting_blocks)} meeting blocks on the page.")
+    def parse_race_details(self, html_content: str, url: str) -> Optional[NormalizedRace]:
+        """Parses the race detail page to extract all available data."""
+        soup = BeautifulSoup(html_content, 'lxml')
 
-        for meeting in meeting_blocks:
-            track_name_tag = meeting.select_one("h2")
-            if not track_name_tag:
-                logging.warning("Could not find track name for a meeting block.")
+        header = soup.select_one("div.rp-race-card-header h1")
+        if not header:
+            return None
+
+        header_text = header.get_text(strip=True)
+        time_match = re.search(r"(\d{2}:\d{2})", header_text)
+        if not time_match:
+            return None
+
+        race_time_str = time_match.group(1)
+        track_name = header_text.replace(race_time_str, "").strip()
+
+        runners = []
+        for runner_item in soup.select("li.rp-race-card__runner"):
+            saddle_cloth_tag = runner_item.select_one(".rp-race-card__runner__saddle-cloth")
+            name_tag = runner_item.select_one(".rp-race-card__runner__name")
+            odds_tag = runner_item.select_one(".rp-race-card__runner__odds")
+
+            if not all([saddle_cloth_tag, name_tag, odds_tag]):
                 continue
 
-            track_name = track_name_tag.text.strip()
-
-            race_list_items = meeting.select("ul.w-racecard-grid-meeting-races-compact > li")
-            for i, race_item in enumerate(race_list_items):
-                time_tag = race_item.select_one("b")
-                if not time_tag:
-                    logging.warning(f"Could not find time for a race at {track_name}.")
-                    continue
-
-                race_time_str = time_tag.text.strip()
-
-                try:
-                    # Use today's date for the datetime object
-                    post_time = datetime.strptime(f"{datetime.now().date()} {race_time_str}", "%Y-%m-%d %H:%M")
-                except ValueError:
-                    logging.warning(f"Could not parse time '{race_time_str}' for a race at {track_name}.")
-                    post_time = None
-
-                # NOTE: The number of runners is not available on the summary page.
-                # A full implementation would require fetching the detail page for each race.
-                race = NormalizedRace(
-                    race_id=f"{track_name.replace(' ', '')}-{race_time_str}",
-                    track_name=track_name,
-                    race_number=i + 1,
-                    post_time=post_time,
-                    runners=[],
-                    number_of_runners=0
+            runners.append(
+                NormalizedRunner(
+                    program_number=int(saddle_cloth_tag.get_text(strip=True)),
+                    name=name_tag.get_text(strip=True),
+                    odds=_convert_odds_to_float(odds_tag.get_text(strip=True)),
                 )
-                races.append(race)
+            )
 
-        logging.info(f"Successfully parsed {len(races)} races from Timeform.")
-        return races
+        if not runners:
+            return None
+
+        try:
+            post_time = datetime.strptime(f"{datetime.now().date()} {race_time_str}", "%Y-%m-%d %H:%M")
+        except ValueError:
+            post_time = None
+
+        return NormalizedRace(
+            race_id=url,
+            track_name=track_name,
+            race_number=0, # Not available on detail page in this format
+            post_time=post_time,
+            runners=runners,
+            number_of_runners=len(runners),
+        )
+
+    def parse_races(self, html_content: str) -> List[NormalizedRace]:
+        """
+        This method is required by the BaseAdapterV3 interface, but is not
+        used by the new drill-down fetch logic.
+        """
+        pass
