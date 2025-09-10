@@ -19,3 +19,6 @@ env/
 # IDE settings
 .vscode/
 .idea/
+
+# Archive directory
+/attic
