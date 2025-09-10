@@ -70,3 +70,47 @@ def test_score_races_function(race_with_clear_favorite):
     assert hasattr(scored_races[0], 'scores')
     assert scored_races[0].score == pytest.approx(expected_score)
     assert scored_races[0].scores['total_score'] == pytest.approx(expected_score)
+
+def test_find_checkmate_opportunities():
+    from src.paddock_parser.scorer import find_checkmate_opportunities
+    races = [
+        # Meets criteria for 7 runners
+        Race(race_id="R1", venue="Test", race_time="14:00", race_number=1, is_handicap=False, number_of_runners=7, runners=[
+            Runner(name="Fav", odds=1.1),
+            Runner(name="2ndFav", odds=4.1)
+        ]),
+        # Fails criteria for 7 runners (fav odds too low)
+        Race(race_id="R2", venue="Test", race_time="14:00", race_number=1, is_handicap=False, number_of_runners=7, runners=[
+            Runner(name="Fav", odds=1.0),
+            Runner(name="2ndFav", odds=4.1)
+        ]),
+        # Meets criteria for 6 runners
+        Race(race_id="R3", venue="Test", race_time="14:00", race_number=1, is_handicap=False, number_of_runners=6, runners=[
+            Runner(name="Fav", odds=1.1),
+            Runner(name="2ndFav", odds=3.6)
+        ]),
+        # Fails criteria for 6 runners (2nd fav odds too low)
+        Race(race_id="R4", venue="Test", race_time="14:00", race_number=1, is_handicap=False, number_of_runners=6, runners=[
+            Runner(name="Fav", odds=1.1),
+            Runner(name="2ndFav", odds=3.5)
+        ]),
+        # Meets criteria for 5 runners
+        Race(race_id="R5", venue="Test", race_time="14:00", race_number=1, is_handicap=False, number_of_runners=5, runners=[
+            Runner(name="Fav", odds=0.9),
+            Runner(name="2ndFav", odds=3.1)
+        ]),
+        # Meets criteria for 4 runners
+        Race(race_id="R6", venue="Test", race_time="14:00", race_number=1, is_handicap=False, number_of_runners=4, runners=[
+            Runner(name="Fav", odds=0.6),
+            Runner(name="2ndFav", odds=2.1)
+        ]),
+    ]
+
+    checkmate_races = find_checkmate_opportunities(races)
+
+    assert len(checkmate_races) == 4
+    checkmate_ids = {r.race_id for r in checkmate_races}
+    assert "R1" in checkmate_ids
+    assert "R3" in checkmate_ids
+    assert "R5" in checkmate_ids
+    assert "R6" in checkmate_ids
