@@ -72,17 +72,16 @@ def _convert_to_normalized_race(model_race: Race, prog_num_map: Dict[Tuple[str, 
     )
 
 async def run_pipeline(
-    min_runners: int = 0,
-    time_window_minutes: int = 0,
+    min_runners: int,
+    time_window_minutes: int,
     specific_source: str = None,
-    race_ids: Optional[List[str]] = None,
-    ui: Optional["TerminalUI"] = None,
+    ui: Optional['TerminalUI'] = None
 ) -> List[NormalizedRace]:
     """Orchestrates the end-to-end pipeline."""
     logging.info("--- Paddock Parser NG Pipeline Start ---")
 
     unmerged_races: List[Race] = []
-    prog_num_map: Dict[Tuple[str, str], int] = {}
+    prog_num_map: Dict[Tuple[str, str], int] = {}  # Map to preserve program numbers across lossy conversion
     adapter_classes = load_adapters(specific_source)
     races_per_adapter: Dict[str, int] = {}
 
@@ -101,10 +100,7 @@ async def run_pipeline(
         try:
             normalized_races: List[NormalizedRace] = []
             if isinstance(adapter, BaseAdapterV3):
-                if specific_source and race_ids:
-                    races = await adapter.fetch(race_ids=race_ids)
-                else:
-                    races = await adapter.fetch()
+                races = await adapter.fetch()
                 normalized_races.extend(races)
             elif isinstance(adapter, BaseAdapter):
                 raw_data = adapter.fetch_data()
