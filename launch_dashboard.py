@@ -24,16 +24,17 @@ if 'monitoring' not in st.session_state:
     st.session_state.monitoring = False
 if 'daily_races' not in st.session_state:
     st.session_state.daily_races = []
+if 'last_full_fetch' not in st.session_state:
+    st.session_state.last_full_fetch = None
+
 
 # --- Control Buttons ---
 col1, col2 = st.columns(2)
 with col1:
     if st.button("Start Monitoring", type="primary"):
         st.session_state.monitoring = True
-        with st.spinner("Fetching initial race list for the day..."):
-            st.session_state.daily_races = asyncio.run(
-                run_pipeline(specific_source="rpb2b")
-            )
+        st.session_state.last_full_fetch = None # Reset on start
+
         st.experimental_rerun()
 
 with col2:
@@ -48,10 +49,23 @@ if st.session_state.monitoring:
     placeholder = st.empty()
 
     while st.session_state.monitoring:
-        with placeholder.container():
-            st.write(f"Last check: {datetime.now(UTC).strftime('%Y-%m-%d %H:%M:%S')} UTC")
+      now = datetime.now(UTC)
 
-            now = datetime.now(UTC)
+        # Perform a full refresh every 15 minutes
+        if (
+            st.session_state.last_full_fetch is None or
+            (now - st.session_state.last_full_fetch) > timedelta(minutes=15)
+        ):
+            with st.spinner("Performing full daily race refresh..."):
+                st.session_state.daily_races = asyncio.run(
+                    run_pipeline(specific_source="rpb2b")
+                )
+                st.session_state.last_full_fetch = now
+
+        with placeholder.container():
+            st.write(f"Last check: {now.strftime('%Y-%m-%d %H:%M:%S')} UTC")
+
+
             imminent_races = [
                 race for race in st.session_state.daily_races
                 if race.post_time and (now - timedelta(minutes=2)) < race.post_time <= (now + timedelta(minutes=10))
