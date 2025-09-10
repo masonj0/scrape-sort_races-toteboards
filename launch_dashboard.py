@@ -27,14 +27,12 @@ if 'daily_races' not in st.session_state:
 if 'last_full_fetch' not in st.session_state:
     st.session_state.last_full_fetch = None
 
-
 # --- Control Buttons ---
 col1, col2 = st.columns(2)
 with col1:
     if st.button("Start Monitoring", type="primary"):
         st.session_state.monitoring = True
         st.session_state.last_full_fetch = None # Reset on start
-
         st.experimental_rerun()
 
 with col2:
@@ -49,7 +47,7 @@ if st.session_state.monitoring:
     placeholder = st.empty()
 
     while st.session_state.monitoring:
-      now = datetime.now(UTC)
+        now = datetime.now(UTC)
 
         # Perform a full refresh every 15 minutes
         if (
@@ -64,7 +62,6 @@ if st.session_state.monitoring:
 
         with placeholder.container():
             st.write(f"Last check: {now.strftime('%Y-%m-%d %H:%M:%S')} UTC")
-
 
             imminent_races = [
                 race for race in st.session_state.daily_races
