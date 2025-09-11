@@ -1,0 +1,68 @@
+{
+  "events": [
+    {
+      "key": "PB-12345",
+      "meetingName": "Flemington",
+      "raceNumber": 1,
+      "startTime": "2025-09-12T13:00:00Z",
+      "runners": [
+        {
+          "name": "Speedy Steed",
+          "runnerNumber": 1,
+          "fixedWinOdds": {
+            "price": 4.50
+          }
+        },
+        {
+          "name": "Galloping Ghost",
+          "runnerNumber": 2,
+          "fixedWinOdds": {
+            "price": 8.00
+          }
+        },
+        {
+          "name": "Wired Winner",
+          "runnerNumber": 3,
+          "fixedWinOdds": {
+            "price": 3.20
+          }
+        }
+      ]
+    },
+    {
+      "key": "PB-12346",
+      "meetingName": "Flemington",
+      "raceNumber": 2,
+      "startTime": "2025-09-12T13:30:00Z",
+      "runners": [
+        {
+          "name": "Lucky Lass",
+          "runnerNumber": 1,
+          "fixedWinOdds": {
+            "price": 10.00
+          }
+        },
+        {
+          "name": "Sir Trots-a-Lot",
+          "runnerNumber": 2,
+          "fixedWinOdds": {
+            "price": 5.50
+          }
+        }
+      ]
+    },
+    {
+      "key": "PB-12347",
+      "meetingName": "Randwick",
+      "raceNumber": 1,
+      "startTime": "2025-09-12T14:00:00Z",
+      "runners": []
+    },
+    {
+      "key": "PB-12348",
+      "meetingName": "Eagle Farm",
+      "raceNumber": 1,
+      "startTime": "2025-09-12T14:15:00Z"
+    }
+  ]
+}

@@ -23,6 +23,7 @@ src/paddock_parser/adapters/betfair_data_scientist_adapter.py
 src/paddock_parser/adapters/equibase_adapter.py
 src/paddock_parser/adapters/fanduel_graphql_adapter.py
 src/paddock_parser/adapters/greyhound_recorder.py
+src/paddock_parser/adapters/pointsbet_adapter.py
 src/paddock_parser/adapters/racingandsports_adapter.py
 src/paddock_parser/adapters/racingpost_adapter.py
 src/paddock_parser/adapters/ras_adapter.py
