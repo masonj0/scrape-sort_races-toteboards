@@ -22,3 +22,17 @@ class Race:
     source: str = "" # The new field for the original source
     runners: List[Runner] = field(default_factory=list)
     sources: List[str] = field(default_factory=list) # New field for merged provenance
+
+# V4 Models for the Polyglot Renaissance
+from datetime import datetime
+
+@dataclass
+class NormalizedRunner:
+    name: str
+
+@dataclass
+class NormalizedRace:
+    track: str
+    race_number: int
+    race_time: datetime
+    runners: List[NormalizedRunner] = field(default_factory=list)
