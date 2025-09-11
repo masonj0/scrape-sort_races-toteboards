@@ -44,6 +44,10 @@ These are non-negotiable and have been learned through mission failures.
 
 - **PROTOCOL 14: The Synchronization Mandate.** The git reset --hard origin/main command is STRICTLY FORBIDDEN for routine workflow. It is a disaster recovery tool only. To stay synchronized with the main branch after a successful merge by the Project Lead, the agent MUST use the command git pull origin main. This command integrates upstream changes without destroying local session work. pull, not reset, is the standard procedure for synchronization.
 
+- **PROTOCOL 15: The "Blueprint vs. Fact" Protocol.** Intelligence, especially from external sources or analytical engines, must be treated as a "blueprint" (a high-quality plan) and not as a "verified fact." All blueprints must be independently verified by a direct, real-time reconnaissance action before they are used as the basis for an implementation mission.
+
+- **PROTOCOL 16: The "Digital Attic" Protocol.** Before the permanent deletion of any file deemed 'obsolete,' the file must first be moved to a dedicated, non-operational archive directory named `/attic`. This ensures that all purges are reversible and that no institutional knowledge is ever truly lost.
+
 ## Essential Workflows & Mandates
 
 -   **The "Show, Don't Tell" Mandate:** The Architect's `browse` tool analysis is prone to hallucination. Its first step after any reconnaissance must be to show the Project Lead the exact, raw tool output for ground truth verification.
@@ -59,6 +63,6 @@ These are non-negotiable and have been learned through mission failures.
 ## Onboarding Protocol for New Architects
 
 -   **The "First Day Protocol":** Any new Architect must immediately perform three tasks upon activation:
-    1.  **"Required Reading":** Read the full contents of the following three files to understand project history, strategy, and protocols: `AGENTS.md`, `ROADMAP.md`, and `HISTORY.md`.
+    1.  **"Required Reading":** Read the full contents of the following four files to understand project history, strategy, and protocols: `WISDOM.md`, `AGENTS.md`, `ROADMAP.md`, and `HISTORY.md`.
     2.  **"Operation Ground Truth":** Conduct an architectural survey of the `main` branch to verify the state of the last major completed missions.
     3.  **"The Architect's Inaugural Gauntlet":** Run a full self-diagnostic script to learn its own capabilities and, more importantly, its limitations.
