@@ -1,74 +1,66 @@
-from ..base import BaseAdapterV3, NormalizedRace
+#!/usr/bin/env python3
+"""
+A V3-compliant adapter for scraping race data from Equibase.
+This is the first new adapter of the V4 Polyglot Renaissance.
+The core logic is a Python translation of a modern, open-source JavaScript scraper.
+"""
+from datetime import datetime, date
+from paddock_parser.base import BaseAdapterV3
+from paddock_parser.models import NormalizedRace, NormalizedRunner
+from paddock_parser.fetcher import get_page_content
 from bs4 import BeautifulSoup
-from typing import List
 
 class EquibaseAdapter(BaseAdapterV3):
     """
-    Adapter for equibase.com, parsing data from offline HTML samples.
+    An adapter for fetching and parsing data from www.equibase.com.
+    It targets the daily entries pages.
     """
-    SOURCE_ID = "equibase"
 
-    def __init__(self, config=None):
-        super().__init__(config)
-        # Offline adapter
+    BASE_URL = "http://www.equibase.com"
 
-    async def fetch(self) -> List[NormalizedRace]:
-        """This is an offline adapter and should not be fetched by the pipeline."""
-        raise NotImplementedError("EquibaseAdapter is an offline adapter and does not support live fetching.")
+    async def fetch(self, fetch_date: date) -> list[NormalizedRace]:
+        """ Fetches all race data for a given date from the entries page. """
+        date_str = fetch_date.strftime('%m%d%y')
+        entries_url = f"{self.BASE_URL}/entries/ENT_{date_str}.html?COUNTRY=USA"
 
-    def parse_races(self, html_content: str) -> list[NormalizedRace]:
-        """Public method to parse races, fulfilling the BaseAdapterV3 contract."""
-        return self._parse_racecard(html_content)
+        html_content = await get_page_content(entries_url)
 
-    def _parse_racecard(self, html_content: str) -> list[NormalizedRace]:
-        """
-        Parses the HTML content of a Equibase race card page.
-        This implementation is specifically tailored to the structure of the
-        provided `equibase_sample.html` fixture.
-        """
         if not html_content:
             return []
 
-        soup = BeautifulSoup(html_content, 'lxml')
+        return self.parse_races(html_content)
 
-        # Extract track name from the h1 tag
-        track_name_tag = soup.select_one('h1#pageHeader')
-        if track_name_tag and 'Entries' in track_name_tag.text:
-            track_name_text = track_name_tag.text.replace('\n', '').strip()
-            track_name = track_name_text.split(' Entries')[0]
-        else:
-            track_name = "Unknown Track"
+    def parse_races(self, html_content: str) -> list[NormalizedRace]:
+        """ Parses the full HTML page of daily entries. """
+        soup = BeautifulSoup(html_content, 'html.parser')
+        all_races = []
 
-        races = []
-        race_table = soup.select_one('table#entryRaces tbody.results')
-        if not race_table:
-            return []
+        track_tables = soup.find_all('table', summary=lambda s: s and s.startswith('Track Abbr:'))
 
-        for row in race_table.select('tr'):
-            cells = row.select('td')
-            if len(cells) < 7:
+        for track_table in track_tables:
+            try:
+                track_name = track_table.find('tr').find('strong').text.strip()
+                race_rows = track_table.find_all('tr', class_='entry')
+
+                for race_row in race_rows:
+                    links = race_row.find_all('a')
+                    if not links:
+                        continue
+
+                    race_number_str = links[0].text.strip()
+                    race_number = int(''.join(filter(str.isdigit, race_number_str)))
+
+                    # NOTE: A full implementation would require a second, asynchronous
+                    # fetch to the race detail page (links[1]['href']) to get runners.
+                    # For this first version, we prove the schedule parsing.
+                    all_races.append(NormalizedRace(
+                        track=track_name,
+                        race_number=race_number,
+                        race_time=datetime.now().replace(hour=0, minute=0, second=0, microsecond=0),
+                        runners=[NormalizedRunner(name="TBD")]
+                    ))
+            except Exception as e:
+                print(f"Skipping a malformed table/row in Equibase parse: {e}")
                 continue
 
-            try:
-                race_number = int(cells[0].text.strip())
-                # Unused variables have been removed to pass linting.
-                # purse_text = cells[1].text.strip().replace('$', '').replace(',', '')
-                # purse = int(purse_text) if purse_text.isdigit() else 0
-                race_type = cells[2].text.strip()
-                # distance = cells[3].text.strip()
-                # surface = cells[4].text.strip()
-                starters = int(cells[5].text.strip())
-
-                race = NormalizedRace(
-                    race_id=f"{track_name.replace(' ', '')}-{race_number}",
-                    track_name=track_name,
-                    race_number=race_number,
-                    race_type=race_type,
-                    number_of_runners=starters,
-                    runners=[] # Runner details are not on this page
-                )
-                races.append(race)
-            except (ValueError, IndexError):
-                continue # Skip rows that don't have the expected data
-
-        return races
+        return all_races

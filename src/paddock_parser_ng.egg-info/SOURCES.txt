@@ -17,6 +17,7 @@ src/paddock_parser/run.py
 src/paddock_parser/scorer.py
 src/paddock_parser/sync_fetcher.py
 src/paddock_parser/adapters/__init__.py
+src/paddock_parser/adapters/atg_adapter.py
 src/paddock_parser/adapters/attheraces_adapter.py
 src/paddock_parser/adapters/betfair_data_scientist_adapter.py
 src/paddock_parser/adapters/equibase_adapter.py
