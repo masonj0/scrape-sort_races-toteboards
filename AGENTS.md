@@ -48,6 +48,10 @@ These are non-negotiable and have been learned through mission failures.
 
 - **PROTOCOL 16: The "Digital Attic" Protocol.** Before the permanent deletion of any file deemed 'obsolete,' the file must first be moved to a dedicated, non-operational archive directory named `/attic`. This ensures that all purges are reversible and that no institutional knowledge is ever truly lost.
 
+- **PROTOCOL 15: The "Blueprint vs. Fact" Protocol.** Intelligence, especially from external sources or analytical engines, must be treated as a "blueprint" (a high-quality plan) and not as a "verified fact." All blueprints must be independently verified by a direct, real-time reconnaissance action before they are used as the basis for an implementation mission.
+
+- **PROTOCOL 16: The "Digital Attic" Protocol.** Before the permanent deletion of any file deemed 'obsolete,' the file must first be moved to a dedicated, non-operational archive directory named `/attic`. This ensures that all purges are reversible and that no institutional knowledge is ever truly lost.
+
 ## Essential Workflows & Mandates
 
 -   **The "Show, Don't Tell" Mandate:** The Architect's `browse` tool analysis is prone to hallucination. Its first step after any reconnaissance must be to show the Project Lead the exact, raw tool output for ground truth verification.
