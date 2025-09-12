@@ -29,6 +29,7 @@ src/paddock_parser/adapters/racingpost_adapter.py
 src/paddock_parser/adapters/ras_adapter.py
 src/paddock_parser/adapters/skysports_adapter.py
 src/paddock_parser/adapters/timeform_adapter.py
+src/paddock_parser/adapters/twinspires_adapter.py
 src/paddock_parser/adapters/utils.py
 src/paddock_parser/api/main.py
 src/paddock_parser/database/manager.py
