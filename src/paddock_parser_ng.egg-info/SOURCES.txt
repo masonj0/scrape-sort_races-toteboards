@@ -13,6 +13,7 @@ src/paddock_parser/log_analyzer.py
 src/paddock_parser/merger.py
 src/paddock_parser/models.py
 src/paddock_parser/pipeline.py
+src/paddock_parser/prediction_engine.py
 src/paddock_parser/run.py
 src/paddock_parser/scorer.py
 src/paddock_parser/sync_fetcher.py

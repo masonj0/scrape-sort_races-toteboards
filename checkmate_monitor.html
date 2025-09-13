@@ -39,7 +39,6 @@ th,td{text-align:left;padding:8px;border-bottom:1px solid var(--border);font-siz
 .ticker{margin:12px 0;padding:8px;border:1px dashed var(--border);border-radius:6px;background:#fcfcff}
 .ticker h4{margin:0 0 8px}
 .initial-state{text-align:center;color:var(--muted);margin:40px 0;padding:20px;border:2px dashed var(--border);border-radius:8px;background:#fafafa}
-#logContainer h3{border-bottom:none;padding-bottom:0;margin-bottom:0}
 @media (max-width:380px){.grid{grid-template-columns:1fr}}
 </style>
 </head>
@@ -75,14 +74,6 @@ th,td{text-align:left;padding:8px;border-bottom:1px solid var(--border);font-siz
   <div class="hint" id="proxyHint">
     If nothing loads, the public CORS proxy may be rate-limited. You might need to request temporary access at cors-anywhere.herokuapp.com/corsdemo, or configure your own proxy endpoint.
   </div>
-
-  <div id="logContainer" class="card" style="display: none; margin-top: 16px;">
-    <div class="row">
-      <h3>Opportunity Log</h3>
-      <button id="clearLogBtn" class="secondary small">Clear Log</button>
-    </div>
-    <div id="logContent"></div>
-  </div>
 </div>
 <script>
 // =============================
@@ -105,9 +96,6 @@ const testModeToggle = document.getElementById('testModeToggle');
 const wsToggle = document.getElementById('wsToggle');
 const liveTicker = document.getElementById('liveTicker');
 const tickerFeed = document.getElementById('tickerFeed');
-const logContainer = document.getElementById('logContainer');
-const logContent = document.getElementById('logContent');
-const clearLogBtn = document.getElementById('clearLogBtn');
 
 // State
 let isMonitoring = false;
@@ -373,10 +361,6 @@ function findCheckmateOpportunities(races){
 // UI
 // =============================
 function displayOpportunities(opps){
-  if (opps.length > 0) {
-    opps.forEach(opp => opportunityLog.add(opp));
-  }
-
   if (!opps.length){ opportunitiesDiv.style.display = 'none'; opportunitiesDiv.innerHTML = ''; return; }
   let html = '<h3>🚨 Checkmate Opportunities</h3>';
   html += '<table><thead><tr><th>Track</th><th>Race</th><th>Fav Odds</th><th>2nd Fav Odds</th><th>Field</th></tr></thead><tbody>';
@@ -429,90 +413,6 @@ function setLoading(loading){
   refreshBtn.disabled = loading || !isMonitoring;
   monitorBtn.disabled = loading && isMonitoring;
 }
-
-// =============================
-// Opportunity Log
-// =============================
-const opportunityLog = {
-    STORAGE_KEY: 'checkmate_opportunity_log',
-    _log: [],
-
-    init() {
-        this.load();
-        this.render();
-        clearLogBtn.addEventListener('click', () => this.clear());
-    },
-
-    load() {
-        try {
-            const storedLog = localStorage.getItem(this.STORAGE_KEY);
-            this._log = storedLog ? JSON.parse(storedLog) : [];
-        } catch (e) {
-            console.error("Failed to load opportunity log from localStorage", e);
-            this._log = [];
-        }
-    },
-
-    save() {
-        try {
-            localStorage.setItem(this.STORAGE_KEY, JSON.stringify(this._log));
-        } catch (e) {
-            console.error("Failed to save opportunity log to localStorage", e);
-        }
-    },
-
-    add(opportunity) {
-        const sortedRunners = [...opportunity.runners].sort((a, b) => a.odds - b.odds);
-        const opportunityId = `${keyOf(opportunity)}-${sortedRunners[0].odds}-${sortedRunners[1].odds}`;
-
-        if (!this._log.some(item => item.id === opportunityId)) {
-            const logEntry = {
-                id: opportunityId,
-                track: opportunity.track,
-                raceNumber: opportunity.raceNumber,
-                timestamp: new Date().toISOString(),
-                favOdds: sortedRunners[0].odds,
-                secondFavOdds: sortedRunners[1].odds,
-                fieldSize: opportunity.runners.length
-            };
-            this._log.unshift(logEntry);
-            this.save();
-            this.render();
-        }
-    },
-
-    clear() {
-        if (confirm("Are you sure you want to clear the entire opportunity log?")) {
-            this._log = [];
-            this.save();
-            this.render();
-        }
-    },
-
-    render() {
-        if (this._log.length === 0) {
-            logContainer.style.display = 'none';
-            return;
-        }
-        logContainer.style.display = 'block';
-
-        let html = '<table><thead><tr><th>Logged</th><th>Track</th><th>Race</th><th>Fav Odds</th><th>2nd Fav Odds</th><th>Field</th></tr></thead><tbody>';
-        this._log.forEach(entry => {
-            html += `
-                <tr>
-                    <td class="small muted">${new Date(entry.timestamp).toLocaleString()}</td>
-                    <td>${escapeHtml(entry.track)}</td>
-                    <td>${entry.raceNumber}</td>
-                    <td class="mono">${fmtOdds(entry.favOdds)}</td>
-                    <td class="mono">${fmtOdds(entry.secondFavOdds)}</td>
-                    <td>${entry.fieldSize}</td>
-                </tr>
-            `;
-        });
-        html += '</tbody></table>';
-        logContent.innerHTML = html;
-    }
-};
 
 // =============================
 // Test Data
@@ -615,8 +515,6 @@ document.addEventListener('DOMContentLoaded', () => {
       <h3>Welcome to Checkmate Monitor</h3>
       <p>Start monitoring to see live racing data and checkmate opportunities.</p>
     </div>`;
-
-  opportunityLog.init();
 });
 
 // =============================
@@ -637,4 +535,3 @@ wsToggle.addEventListener('change', () => {
 </script>
 </body>
 </html>
- 

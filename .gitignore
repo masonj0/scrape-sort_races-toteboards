@@ -19,3 +19,8 @@ env/
 # IDE settings
 .vscode/
 .idea/
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3

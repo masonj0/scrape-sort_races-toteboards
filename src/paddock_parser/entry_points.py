@@ -19,12 +19,26 @@ def run_dashboard():
     dashboard_path = Path(__file__).resolve().parents[2] / "launch_dashboard.py"
     subprocess.run(["streamlit", "run", str(dashboard_path)])
 
+def run_prediction_engine():
+    """Entry point for the Prediction Engine."""
+    # This path hack is needed to ensure relative imports in the engine work
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+    import anyio
+    from paddock_parser.prediction_engine import main as run_engine_main
+
+    anyio.run(run_engine_main)
+
 if __name__ == '__main__':
     # This allows running the entry points directly for testing
     # e.g., python -m src.paddock_parser.entry_points ui
-    if len(sys.argv) > 1 and sys.argv[1] == 'ui':
-        run_terminal_ui()
-    elif len(sys.argv) > 1 and sys.argv[1] == 'dashboard':
-        run_dashboard()
+    if len(sys.argv) > 1:
+        if sys.argv[1] == 'ui':
+            run_terminal_ui()
+        elif sys.argv[1] == 'dashboard':
+            run_dashboard()
+        elif sys.argv[1] == 'predict':
+            run_prediction_engine()
+        else:
+            print("Usage: python -m src.paddock_parser.entry_points [ui|dashboard|predict]")
     else:
-        print("Usage: python -m src.paddock_parser.entry_points [ui|dashboard]")
+        print("Usage: python -m src.paddock_parser.entry_points [ui|dashboard|predict]")
