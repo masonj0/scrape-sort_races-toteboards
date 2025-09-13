@@ -36,3 +36,13 @@ class NormalizedRace:
     race_number: int
     race_time: datetime
     runners: List[NormalizedRunner] = field(default_factory=list)
+    source: Optional[str] = None
+
+@dataclass
+class Prediction:
+    race_id: str
+    track: str
+    race_number: int
+    predicted_at: datetime
+    favorite_name: str
+    favorite_odds: float
