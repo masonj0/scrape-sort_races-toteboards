@@ -8,7 +8,7 @@ from datetime import datetime, date
 from paddock_parser.base import BaseAdapterV3
 from paddock_parser.models import NormalizedRace, NormalizedRunner
 from paddock_parser.fetcher import get_page_content
-from bs4 import BeautifulSoup
+rom bs4 import BeautifulSoup
 
 class TwinSpiresAdapter(BaseAdapterV3):
     """ An adapter for the TwinSpires website. """

@@ -4,6 +4,7 @@ A V3-compliant adapter for PointsBet's public racing API.
 This is the second adapter of the V4 Polyglot Renaissance.
 Logic translated from a Ruby open-source project.
 """
+import json
 import logging
 from datetime import datetime
 from typing import List, Optional, Dict, Any
@@ -22,12 +23,20 @@ class PointsBetAdapter(BaseAdapterV3):
 
     async def fetch(self) -> List[NormalizedRace]:
         """ Fetches today's racing events from the PointsBet AU API. """
-        json_content = await get_page_content(self.API_URL, response_type='json')
-
-        if not json_content or 'events' not in json_content:
+        text_content = await get_page_content(self.API_URL)
+        if not text_content:
             return []
 
-        return self.parse(json_content['events'])
+        try:
+            json_content = json.loads(text_content)
+        except json.JSONDecodeError:
+            logging.error("Failed to decode JSON from PointsBet API.")
+            return []
+
+        if 'events' not in json_content:
+            return []
+
+        return self.parse(json_content.get('events', []))
 
     def parse(self, events: List[Dict[str, Any]]) -> List[NormalizedRace]:
         """ Parses the JSON response from the PointsBet API. """
