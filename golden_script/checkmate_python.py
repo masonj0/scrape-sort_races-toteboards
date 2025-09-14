@@ -210,6 +210,7 @@ class DatabaseManager:
         with sqlite3.connect(self.db_path) as conn:
             conn.execute("DELETE FROM audit_records")
             conn.execute("DELETE FROM predictions")
+            logging.info("All prediction and audit history has been cleared.")
 
 # --- Race Data Fetcher (The Template) ---
 class RaceDataFetcher:
@@ -252,17 +253,16 @@ class RaceDataFetcher:
             return None
 
     async def fetch_twinspires_data(self) -> List[Race]:
-        # This is a placeholder for the actual implementation
-        logging.info("Fetching data from TwinSpires...")
+        logging.warning("TwinSpires fetching is not implemented.")
         return []
 
     async def fetch_rpb2b_data(self) -> List[Race]:
-        # This is a placeholder for the actual implementation
-        logging.info("Fetching data from RPB2B...")
+        logging.warning("RPB2B fetching is not implemented.")
         return []
 
     def get_test_data(self) -> List[Race]:
         """Generate test data"""
+        logging.info("Generating test data.")
         return [
             Race(
                 discipline='Thoroughbred',
@@ -420,23 +420,28 @@ class CheckmateGUI:
         if self.is_monitoring:
             self.monitor_btn.config(text="Stop Monitoring")
             self.status_label.config(text="Starting monitoring thread...")
+            logging.info("Monitoring started.")
             threading.Thread(target=self.monitor_loop, daemon=True).start()
         else:
             self.monitor_btn.config(text="Start Monitoring")
             self.status_label.config(text="Monitoring stopped.")
+            logging.info("Monitoring stopped.")
 
     def monitor_loop(self):
         while self.is_monitoring:
             self.update_queue.put(('status', 'Fetching race data...'))
+            logging.info("Starting new fetch cycle.")
             try:
                 asyncio.run(self.fetch_and_process_races())
             except Exception as e:
+                logging.error(f"Error in monitor loop: {e}")
                 self.update_queue.put(('error', f"Error in monitor loop: {e}"))
             time.sleep(UPDATE_INTERVAL)
 
     async def fetch_and_process_races(self):
         fetcher = RaceDataFetcher()
         source = self.source_var.get()
+        logging.info(f"Fetching data from source: {source}")
         if source == "Test Data":
             races = fetcher.get_test_data()
         else:
@@ -445,6 +450,7 @@ class CheckmateGUI:
                     races = await fetcher.fetch_twinspires_data()
                 else:
                     races = await fetcher.fetch_rpb2b_data()
+        logging.info(f"Found {len(races)} races from {source}.")
         self.update_queue.put(('races', races))
 
     def check_queue(self):
@@ -464,8 +470,10 @@ class CheckmateGUI:
         self.root.after(100, self.check_queue)
 
     def process_race_data(self, races: List[Race]):
+        logging.info(f"Processing {len(races)} fetched races.")
         self.races_tree.delete(*self.races_tree.get_children())
         self.opps_tree.delete(*self.opps_tree.get_children())
+        opportunities_found = 0
 
         for race in races:
             analysis = self.analyzer.analyze_race(race)
@@ -478,6 +486,7 @@ class CheckmateGUI:
             ))
 
             if analysis.should_bet:
+                opportunities_found += 1
                 self.opps_tree.insert('', 'end', values=(
                     race.track, f"R{race.race_number}", analysis.favorite.name, f"{analysis.favorite.odds:.2f}",
                     f"{analysis.place_probability:.2%}", f"{analysis.expected_value:.2%}", f"${FIXED_STAKE:.2f}"
@@ -489,29 +498,33 @@ class CheckmateGUI:
                     place_probability=analysis.place_probability, expected_value=analysis.expected_value,
                     estimated_place_odds=analysis.estimated_place_odds, stake=FIXED_STAKE
                 )
+                logging.info(f"Saving prediction for race: {prediction.race_key}")
                 self.db_manager.save_prediction(prediction)
+        logging.info(f"Processing complete. Identified {opportunities_found} new opportunities.")
 
     def audit_results(self):
-        # In a real application, this would fetch real results.
-        # Here we simulate it for pending bets.
+        logging.info("Audit process initiated.")
         pending = self.db_manager.get_pending_predictions()
         if not pending:
+            logging.info("No pending bets to audit.")
             messagebox.showinfo("Audit", "No pending bets to audit.")
             return
 
+        logging.info(f"Found {len(pending)} pending bets to audit.")
         for pred in pending:
-            # SIMULATION: 50% chance the favorite places
             import random
             won = random.random() < pred.place_probability
-            payout = (pred.estimated_place_odds * pred.stake) / 2 if won else 0 # Place pays on half stake
+            payout = (pred.estimated_place_odds * pred.stake) / 2 if won else 0
             profit = payout - pred.stake
 
             result = RaceResult(pred.race_key, pred.track, pred.race_number, True, won, payout, 'simulated', datetime.now().isoformat())
             audit = AuditRecord(pred, result, won, payout, profit, (profit/pred.stake)*100, datetime.now().isoformat())
             self.db_manager.save_audit_record(audit)
+            logging.info(f"Audited {pred.race_key}. Result: {'Win' if won else 'Loss'}")
 
         messagebox.showinfo("Audit", f"Audited {len(pending)} pending bets.")
         self.update_performance_display()
+        logging.info("Audit process complete.")
 
     def clear_history(self):
         if messagebox.askyesno("Confirm", "Are you sure you want to clear all prediction and audit history?"):
