@@ -8,12 +8,14 @@ import time
 import json
 import re
 from abc import ABC, abstractmethod
-from datetime import date
-from typing import List
+from datetime import date, datetime, timezone
+from typing import List, Optional
 
 import aiohttp
+import pandas as pd
 from bs4 import BeautifulSoup
 from celery import Celery
+from io import StringIO
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.exc import SQLAlchemyError
@@ -54,7 +56,13 @@ class DefensiveFetcher:
     def __init__(self):
         self.circuit_breakers = {}
 
-    async def fetch(self, url, headers=None):
+    async def fetch(self, url, headers=None, response_type='text'):
+        return await self._request('GET', url, headers=headers, response_type=response_type)
+
+    async def post(self, url, headers=None, json_data=None, response_type='json'):
+        return await self._request('POST', url, headers=headers, json_data=json_data, response_type=response_type)
+
+    async def _request(self, method, url, headers=None, json_data=None, response_type='text'):
         domain = url.split('/')[2]
         if domain not in self.circuit_breakers:
             self.circuit_breakers[domain] = CircuitBreaker()
@@ -66,21 +74,22 @@ class DefensiveFetcher:
             try:
                 async with cb:
                     async with aiohttp.ClientSession(headers=headers) as session:
-                        # "think_time_ms"
                         await asyncio.sleep(random.uniform(0.5, 1.5))
 
-                        async with session.get(url, timeout=15) as response:
+                        async with session.request(method, url, json=json_data, timeout=15) as response:
                             response.raise_for_status()
-                            return await response.text()
+                            if response_type == 'json':
+                                return await response.json()
+                            else:
+                                return await response.text()
             except Exception as e:
-                logging.warning(f"Attempt {i+1}/{retries} failed for {url}: {e}")
+                logging.warning(f"Attempt {i+1}/{retries} failed for {method} {url}: {e}")
                 if i < retries - 1:
-                    # Exponential backoff
                     wait_time = (2 ** i) + random.uniform(0, 1)
                     logging.info(f"Retrying in {wait_time:.2f} seconds...")
                     await asyncio.sleep(wait_time)
                 else:
-                    logging.error(f"All retries failed for {url}")
+                    logging.error(f"All retries failed for {method} {url}")
                     raise
 
 class DataSourceOrchestrator:
@@ -89,6 +98,11 @@ class DataSourceOrchestrator:
         self.db_session = session
         # Gold, Silver, Bronze tiering
         self.adapters: List[BaseAdapterV7] = [
+            # --- NEW TIER 1 API ADAPTERS ---
+            FanDuelGraphQLAdapterV7(self.fetcher),
+            BetfairDataScientistAdapterV7(self.fetcher),
+            TwinspiresAdapterV7(self.fetcher),
+            # --- EXISTING FOUNDATION ---
             RacingPostAdapterV7(self.fetcher),
             PointsBetAdapterV7(self.fetcher),
             EquibaseAdapterV7(self.fetcher),
@@ -438,3 +452,224 @@ class EquibaseAdapterV7(BaseAdapterV7):
                 logging.warning(f"EquibaseV7: Skipping a malformed runner row: {e}")
                 continue
         return runners
+
+
+class FanDuelGraphQLAdapterV7(BaseAdapterV7):
+    """Adapter for the FanDuel GraphQL API."""
+    SOURCE_ID = "fanduel"
+    API_URL = "https://sb-prod-df.sportsbook.fanduel.com/api/v2/horse-racing/races"
+
+    async def fetch_races(self) -> List[Race]:
+        """Fetches data from the FanDuel GraphQL API."""
+        graphql_query = {
+            "query": """
+                query AllRaces($first: Int!, $next: String) {
+                    allRaces(first: $first, after: $next) {
+                        edges { node { trackName raceNumber postTime runners { runnerName odds scratched } } }
+                    }
+                }
+            """,
+            "variables": {"first": 100}
+        }
+        try:
+            raw_data = await self.fetcher.post(self.API_URL, json_data=graphql_query)
+            if not raw_data:
+                return []
+            return self._parse_races(raw_data)
+        except Exception as e:
+            logging.error(f"{self.SOURCE_ID}: Failed to fetch or parse races: {e}")
+            return []
+
+    def _parse_races(self, raw_data: dict) -> List[Race]:
+        """Parses the JSON response from the GraphQL API."""
+        races = []
+        race_edges = raw_data.get("data", {}).get("allRaces", {}).get("edges", [])
+        if not race_edges:
+            return []
+
+        for edge in race_edges:
+            node = edge.get("node", {})
+            if not node:
+                continue
+
+            runners = []
+            for runner_data in node.get("runners", []):
+                if runner_data.get('scratched'):
+                    continue
+                runners.append(Runner(
+                    name=runner_data.get("runnerName"),
+                    odds=self._to_float_odds(runner_data.get("odds")),
+                    program_number=None  # Not provided in API
+                ))
+
+            post_time = self._to_datetime(node.get("postTime"))
+            track_name = node.get('trackName')
+            race_number = node.get('raceNumber')
+
+            races.append(Race(
+                race_id=f"{self.SOURCE_ID}_{track_name}_{race_number}",
+                track_name=track_name,
+                race_number=race_number,
+                post_time=post_time,
+                runners=runners
+            ))
+        return races
+
+    def _to_float_odds(self, odds_str: Optional[str]) -> Optional[float]:
+        if not odds_str or "/" not in odds_str:
+            return None
+        try:
+            num, den = map(int, odds_str.split('/'))
+            return (num / den) + 1.0
+        except (ValueError, ZeroDivisionError):
+            return None
+
+    def _to_datetime(self, timestamp_str: Optional[str]) -> Optional[datetime]:
+        if not timestamp_str:
+            return None
+        try:
+            return datetime.fromisoformat(timestamp_str.replace("Z", "+00:00"))
+        except (ValueError, TypeError):
+            return None
+
+
+class BetfairDataScientistAdapterV7(BaseAdapterV7):
+    """Adapter for the Betfair Data Scientist API (CSV format)."""
+    SOURCE_ID = "betfair_data_scientist"
+    BASE_URL = "https://betfair-data-supplier.herokuapp.com/api/widgets/iggy-joey/datasets"
+
+    async def fetch_races(self) -> List[Race]:
+        """Fetches and parses data from the Betfair Data Scientist API."""
+        today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+        url = f"{self.BASE_URL}/?date={today}&presenter=RatingsPresenter&csv=true"
+
+        csv_data = await self.fetcher.fetch(url, response_type='text')
+        if not csv_data:
+            return []
+        return self._parse_races(csv_data)
+
+    def _parse_races(self, csv_content: str) -> List[Race]:
+        """Parses the CSV content from the API into a list of Race objects."""
+        if not csv_content:
+            return []
+
+        try:
+            data = StringIO(csv_content)
+            df = pd.read_csv(data, dtype={"selection_id": str})
+            df.rename(columns={"meetings.races.runners.ratedPrice": "rating"}, inplace=True)
+            df = df[["market_id", "selection_id", "rating"]]
+
+            races = {}
+            for _, row in df.iterrows():
+                race_id = str(row["market_id"])
+                if race_id not in races:
+                    races[race_id] = Race(
+                        race_id=race_id,
+                        track_name="Unknown", # Not in this API response
+                        race_number=None,
+                        runners=[],
+                    )
+
+                runner = Runner(
+                    name=str(row["selection_id"]), # Using selection_id as name
+                    program_number=None, # Not in this API response
+                    odds=row["rating"],
+                )
+                races[race_id].runners.append(runner)
+
+            return list(races.values())
+        except Exception as e:
+            logging.error(f"{self.SOURCE_ID}: Failed to parse CSV data: {e}")
+            return []
+
+
+class TwinspiresAdapterV7(BaseAdapterV7):
+    """Adapter for the TwinSpires website (two-stage scrape)."""
+    SOURCE_ID = "twinspires"
+    BASE_URL = "https://www.twinspires.com"
+
+    async def fetch_races(self) -> List[Race]:
+        """Fetches all race data using a two-stage process."""
+        index_url = f"{self.BASE_URL}/adw/todays-tracks?sortOrder=nextUp"
+        index_html = await self.fetcher.fetch(index_url, response_type='text')
+        if not index_html:
+            return []
+
+        detail_links = self._parse_race_links(index_html)
+        if not detail_links:
+            return []
+
+        detail_pages_html = await asyncio.gather(
+            *(self.fetcher.fetch(link, response_type='text') for link in detail_links)
+        )
+
+        all_races = []
+        for html in detail_pages_html:
+            if html:
+                try:
+                    race = self._parse_single_race_detail(html)
+                    if race:
+                        all_races.append(race)
+                except Exception as e:
+                    logging.warning(f"{self.SOURCE_ID}: Skipping a malformed race detail page: {e}")
+                    continue
+        return all_races
+
+    def _parse_race_links(self, html_content: str) -> List[str]:
+        """Parses the index page to find links to all race detail pages."""
+        soup = BeautifulSoup(html_content, 'html.parser')
+        race_links = []
+        for link in soup.find_all('a', href=lambda h: h and '/races/' in h and '/results/' not in h):
+            race_links.append(self.BASE_URL + link['href'])
+        return list(set(race_links)) # Use set to remove duplicate links
+
+    def _parse_single_race_detail(self, html: str) -> Optional[Race]:
+        """Parses a single race detail HTML page."""
+        soup = BeautifulSoup(html, 'html.parser')
+
+        header = soup.find('div', class_='race-title')
+        if not header: return None
+
+        track_name = header.find('a').text.strip()
+        race_number_text = header.find('strong').text
+        race_number = int(''.join(filter(str.isdigit, race_number_text)))
+
+        runners = []
+        program = soup.find('div', id='program')
+        if not program: return None
+
+        for i, runner_row in enumerate(program.find_all('div', class_='runner-wrapper')):
+            name_tag = runner_row.find('div', class_='runner-name')
+            if not name_tag: continue
+            name = name_tag.text.strip()
+
+            odds_span = runner_row.find('span', class_='odds')
+            odds_str = odds_span.text.strip() if odds_span else None
+
+            if not odds_str: continue
+
+            try:
+                if '/' in odds_str:
+                    num, den = map(int, odds_str.split('/'))
+                    odds = (num / den) + 1.0 if den != 0 else None
+                else:
+                    odds = float(odds_str) + 1.0
+
+                if odds is not None:
+                    runners.append(Runner(
+                        name=name,
+                        odds=odds,
+                        program_number=i + 1
+                    ))
+            except (ValueError, TypeError):
+                continue
+
+        if not runners:
+            return None
+
+        return Race(
+            race_id=f"{self.SOURCE_ID}_{track_name.replace(' ', '')}_{race_number}",
+            track_name=track_name,
+            race_number=race_number,
+            runners=runners
+        )
