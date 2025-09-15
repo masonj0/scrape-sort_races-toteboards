@@ -17,7 +17,6 @@ classifiers = [
 [project.scripts]
 paddock_parser_ui = "paddock_parser.entry_points:run_terminal_ui"
 paddock_parser_dashboard = "paddock_parser.entry_points:run_dashboard"
-paddock_parser_predict = "paddock_parser.entry_points:run_prediction_engine"
 
 [tool.setuptools.packages.find]
 where = ["src"]

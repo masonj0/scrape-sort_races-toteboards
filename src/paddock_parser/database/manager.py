@@ -1,7 +1,7 @@
 import sqlite3
 from typing import List
 from collections import defaultdict
-from paddock_parser.models import Race, Runner, Prediction
+from src.paddock_parser.models import Race, Runner
 
 class DatabaseManager:
     def __init__(self, db_path: str):
@@ -34,42 +34,7 @@ class DatabaseManager:
                 FOREIGN KEY (race_id) REFERENCES races (race_id) ON DELETE CASCADE
             )
         """)
-        cursor.execute("""
-            CREATE TABLE IF NOT EXISTS predictions (
-                prediction_id INTEGER PRIMARY KEY AUTOINCREMENT,
-                race_id TEXT NOT NULL,
-                track TEXT NOT NULL,
-                race_number INTEGER NOT NULL,
-                predicted_at TEXT NOT NULL,
-                favorite_name TEXT NOT NULL,
-                favorite_odds REAL NOT NULL,
-                UNIQUE(race_id, predicted_at)
-            )
-        """)
         self.conn.commit()
-
-    def save_prediction(self, prediction: Prediction):
-        """Saves a prediction to the database."""
-        cursor = self.conn.cursor()
-        try:
-            cursor.execute("""
-                INSERT INTO predictions (race_id, track, race_number, predicted_at, favorite_name, favorite_odds)
-                VALUES (?, ?, ?, ?, ?, ?)
-            """, (
-                prediction.race_id,
-                prediction.track,
-                prediction.race_number,
-                prediction.predicted_at.isoformat(),
-                prediction.favorite_name,
-                prediction.favorite_odds
-            ))
-            self.conn.commit()
-        except sqlite3.IntegrityError:
-            # This is expected if we try to log the same opportunity again, so we can ignore it silently.
-            self.conn.rollback()
-        except sqlite3.Error as e:
-            print(f"Database error during prediction save: {e}")
-            self.conn.rollback()
 
     def save_race(self, race: Race):
         """Saves a race and its runners to the database using an upsert logic."""

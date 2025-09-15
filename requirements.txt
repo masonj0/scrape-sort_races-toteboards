@@ -1,23 +1,16 @@
-# Core application dependencies
-anyio
+# V7 Architecture Dependencies
 fastapi
 uvicorn[standard]
+sqlalchemy
 pydantic
+celery
+streamlit
 
-# Data analysis
-pandas
-numpy
-
-# Scraping
+# Common
+anyio
 beautifulsoup4
 lxml
 httpx
-
-# Testing
 pytest
 pytest-anyio
-trio
 rich
-
-# Dashboarding
-streamlit

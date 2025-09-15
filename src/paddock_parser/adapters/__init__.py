@@ -12,7 +12,6 @@ from .attheraces_adapter import AtTheRacesAdapter
 from .ras_adapter import RasAdapter
 from .atg_adapter import AtgAdapter
 from .pointsbet_adapter import PointsBetAdapter
-from .twinspires_adapter import TwinSpiresAdapter
 
 __all__ = [
     "BetfairDataScientistAdapter",
@@ -26,6 +25,5 @@ __all__ = [
     "AtTheRacesAdapter",
     "RasAdapter",
     "AtgAdapter",
-    "PointsBetAdapter",
-    "TwinSpiresAdapter"
+    "PointsBetAdapter"
 ]

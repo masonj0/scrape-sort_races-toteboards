@@ -126,27 +126,3 @@ A curated list of projects and resources to accelerate development.
 8.  **scrapy-horse-racing:** https://github.com/chrismattmann/scrapy-horse-racing
 9.  **horse-racing-data:** https://github.com/jeffkub/horse-racing-data
 10. **Greyhound results scraping example:** https://stackoverflow.com/questions/77761268/...
-
----
-
-## Part 4: The "Checkmate" Endgame (September 2025)
-
-After achieving a stable V4 architecture and a powerful, multi-source data pipeline, the project has received its final, unifying Prime Directive from its solitary, final customer. The sole and exclusive goal of the "Modern Renaissance" is now to build and verify a single, specific betting angle.
-
-### The Prime Directive: The "Favorite to Place" Angle
-
-The application's purpose is to identify "Checkmate" races that meet a dynamic, odds-based criteria, and then to track the historical profitability of a single, specific bet within those races: the **"Favorite to Place"** bet (a wager that the favorite at post time will finish in either 1st or 2nd place).
-
-All future development will be in service of this single, laser-focused goal.
-
-### The "Closed Loop" Architecture
-
-To achieve this, the project will be evolved into a "Closed Loop" analytical system with three core engines:
-
-1.  **The Prediction Engine:** A live monitor that uses our V3 adapters (`TwinSpires`, `RPB2B`, etc.) to find pre-race "Checkmate" opportunities and logs them to a permanent database.
-
-2.  **The Historian Engine:** A new class of results-focused adapters designed for one purpose: to fetch the official results of a completed race and, crucially, to extract the specific **payout value** for the favorite's "Place" finish.
-
-3.  **The Accountant Engine:** A final, analytical process that joins the predictions with the results to calculate the precise, long-term **Return on Investment (ROI)** of the "Favorite to Place" strategy. The final output will be a cumulative P/L graph, which will serve as the project's ultimate report card.
-
-This "Endgame" phase moves the project beyond simple data acquisition and into the realm of true, verifiable, and continuously improving analytical intelligence.
