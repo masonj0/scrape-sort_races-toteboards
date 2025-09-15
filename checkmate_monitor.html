@@ -40,14 +40,12 @@ th,td{text-align:left;padding:8px;border-bottom:1px solid var(--border);font-siz
 .ticker h4{margin:0 0 8px}
 .initial-state{text-align:center;color:var(--muted);margin:40px 0;padding:20px;border:2px dashed var(--border);border-radius:8px;background:#fafafa}
 @media (max-width:380px){.grid{grid-template-columns:1fr}}
-/* V3.0 ROI Tracking & Place Bet Enhancements */
-.roi-tracker{background:linear-gradient(135deg,#1bb14c,#0d8639);color:#fff;padding:16px;border-radius:8px;margin:16px 0;text-align:center;box-shadow:0 4px 8px rgba(0,0,0,0.15)}.roi-tracker h3{margin:0 0 8px;font-size:1.2rem}.roi-tracker .big-number{font-size:2rem;font-weight:bold;margin:8px 0}.roi-tracker .stats-row{display:flex;justify-content:space-around;flex-wrap:wrap;gap:16px;margin-top:12px}.roi-tracker .stat-item{text-align:center}.place-bet-highlight{background:linear-gradient(45deg,#2b7cff,#1a5ce6);color:#fff;padding:8px 12px;border-radius:6px;margin:4px 0;font-weight:600;display:inline-block;text-align:center;min-width:140px}.place-bet-highlight::before{content:'🎯 ';font-size:1.2rem}.place-confidence{font-size:0.85rem;opacity:0.9;margin-top:4px}.historical-log{max-height:200px;overflow-y:auto;border:1px solid var(--border);border-radius:6px;padding:8px;font-size:0.85rem;background:#f9f9f9;margin-top:12px}.log-entry{padding:6px 0;border-bottom:1px solid #eee;display:flex;justify-content:space-between;align-items:center}.log-entry:last-child{border-bottom:none}.log-entry .race-info{font-weight:600}.log-entry .outcome{font-size:0.8rem;color:var(--muted)}.log-entry .pnl{font-weight:bold}.profit{color:var(--ok)}.loss{color:var(--danger)}.weather-context{background:linear-gradient(135deg,#e6f3ff,#cce7ff);border-left:4px solid #2b7cff;padding:12px;margin:8px 0;border-radius:6px;box-shadow:0 2px 4px rgba(0,0,0,0.05)}.weather-context h4{margin:0 0 6px;color:#1a5ce6;font-size:1rem}.weather-impact{display:flex;align-items:center;gap:8px;margin-top:6px;font-size:0.9rem}.ai-weight-badge{background:linear-gradient(45deg,#9c27b0,#673ab7);color:#fff;padding:2px 8px;border-radius:12px;font-size:0.75rem;margin-left:8px;display:inline-block}.dynamic-threshold{background:#fff3e0;border:1px solid #ffb74d;padding:8px;border-radius:4px;margin:6px 0;font-size:0.9rem;display:flex;align-items:center;gap:8px}.threshold-icon{font-size:1.1rem}.prediction-tracker{background:#f0f9ff;border:1px solid #0ea5e9;padding:12px;border-radius:6px;margin:12px 0}.prediction-status{font-size:0.9rem;color:#0369a1;margin-bottom:8px}.audit-controls{margin-top:8px;display:flex;gap:8px;align-items:center}.checkmate-enhanced{background:linear-gradient(135deg,#fff7ed,#fed7aa);border:2px solid #fb923c;border-radius:8px}.place-probability{background:#dcfce7;color:#166534;padding:2px 6px;border-radius:4px;font-size:0.8rem;font-weight:600}.field-analysis{color:var(--muted);font-size:0.85rem;margin-top:4px}.tab-controls{display:flex;gap:4px;margin-bottom:12px;border-bottom:1px solid var(--border)}.tab-btn{background:none;border:none;padding:8px 16px;cursor:pointer;border-bottom:2px solid transparent;color:var(--muted)}.tab-btn.active{color:var(--accent);border-bottom-color:var(--accent);font-weight:600}.tab-content{display:none}.tab-content.active{display:block}
 </style>
 </head>
 <body>
 <div class="container">
-  <h1>🏇 Checkmate Live Monitor (V3.0) <span id="sourceBadge">Source: Auto (None)</span></h1>
-  <div id="status">Click “Start Monitoring” to begin…</div>
+  <h1>🏇 Checkmate Live Monitor (Serverless • Multi-Source) <span id="sourceBadge">Source: Auto (None)</span></h1>
+  <div id="status">Click "Start Monitoring" to begin…</div>
   <div class="controls">
     <button id="monitorBtn">Start Monitoring</button>
     <button id="refreshBtn" class="secondary" disabled>Refresh Now</button>
@@ -60,226 +58,480 @@ th,td{text-align:left;padding:8px;border-bottom:1px solid var(--border);font-siz
       </select>
     </label>
     <label><input type="checkbox" id="testModeToggle"> Test Mode</label>
-    <label><input type="checkbox" id="autoAuditToggle" checked> Auto-Audit Results</label>
-    <button id="clearHistoryBtn" class="warning">Clear History</button>
+    <label><input type="checkbox" id="wsToggle"> Live Ticker (FanDuel)</label>
   </div>
-
   <div id="opportunities"></div>
-
-  <div id="roiTracker" class="roi-tracker" style="display:none;">
-    <h3>🎯 Favorite to Place - Live ROI Tracker</h3>
-    <div class="stats-row">
-      <div class="stat-item"><div>Total Bets</div><div id="totalBets" class="big-number">0</div></div>
-      <div class="stat-item"><div>Win Rate</div><div id="winRate" class="big-number">0%</div></div>
-      <div class="stat-item"><div>Net P/L</div><div id="netPL" class="big-number">$0.00</div></div>
-      <div class="stat-item"><div>ROI</div><div id="roiPercent" class="big-number">0%</div></div>
+  <div class="grid" id="raceGrid">
+    <div class="initial-state">
+      <h3>Welcome to Checkmate Monitor</h3>
+      <p>Start monitoring to see live racing data and checkmate opportunities.</p>
     </div>
   </div>
-
-  <div id="weatherContext" class="weather-context" style="display:none;">
-    <h4>🌤️ Track Conditions & Weather Impact</h4>
-    <div id="weatherData">Loading...</div>
-    <div class="weather-impact"><span>Track Impact Factor:</span><span id="weatherImpactFactor" class="ai-weight-badge">...</span></div>
+  <div class="ticker" id="liveTicker" style="display:none;">
+    <h4>Live Ticker (FanDuel)</h4>
+    <div id="tickerFeed" class="small mono muted">No live messages yet…</div>
   </div>
-
-  <div id="analysisDashboard" style="display:none;">
-    <div class="tab-controls">
-      <button class="tab-btn active" data-tab="predictions">Active Predictions</button>
-      <button class="tab-btn" data-tab="history">Historical Results</button>
-    </div>
-    <div id="predictionsTab" class="tab-content active">
-      <div class="prediction-tracker">
-        <div class="prediction-status">📊 Active Predictions: <span id="activePredictionsCount">0</span></div>
-        <div id="pendingPredictions">No active predictions</div>
-      </div>
-    </div>
-    <div id="historyTab" class="tab-content">
-      <div class="historical-log">
-        <div class="audit-controls">
-          <button id="auditResultsBtn" class="secondary">🔍 Audit Pending Results</button>
-          <button id="exportDataBtn" class="secondary">📊 Export Data</button>
-          <span class="loading-spinner" id="auditSpinner" style="display:none;"></span>
-        </div>
-        <div id="logEntries">No historical data yet...</div>
-      </div>
-    </div>
-  </div>
-
-  <div class="grid" id="raceGrid"></div>
-
   <div class="hint" id="proxyHint">
-    If nothing loads, the public CORS proxy may be rate-limited. You might need to request temporary access or configure your own proxy.
+    If nothing loads, the public CORS proxy may be rate-limited. You might need to request temporary access at cors-anywhere.herokuapp.com/corsdemo, or configure your own proxy endpoint.
   </div>
 </div>
 <script>
 // =============================
 // Config & Feature Flags
 // =============================
-const USE_TEST_DATA = false;
-const FIXED_STAKE = 10; // $10 per bet for ROI calculations
+const USE_TEST_DATA = false; // Toggle or use the UI checkbox
+const ENABLE_FANDUEL_TICKER = false; // Toggle or use the UI checkbox
+const DEFAULT_FANDUEL_EVENT_ID = 'demo-event-123'; // Replace with known id to see real messages
 
-// =============================
+// Elements
+const monitorBtn = document.getElementById('monitorBtn');
+const refreshBtn = document.getElementById('refreshBtn');
+const statusDiv = document.getElementById('status');
+const raceGrid = document.getElementById('raceGrid');
+const opportunitiesDiv = document.getElementById('opportunities');
+const proxyHint = document.getElementById('proxyHint');
+const sourceBadge = document.getElementById('sourceBadge');
+const sourceSelect = document.getElementById('sourceSelect');
+const testModeToggle = document.getElementById('testModeToggle');
+const wsToggle = document.getElementById('wsToggle');
+const liveTicker = document.getElementById('liveTicker');
+const tickerFeed = document.getElementById('tickerFeed');
+
 // State
-// =============================
 let isMonitoring = false;
 let intervalId = null;
 let currentSource = 'None';
-let auditedPredictions = [];
-let pendingPredictions = new Map();
-let totalBets = 0, totalWins = 0, totalStaked = 0, totalReturns = 0;
+let ws = null;
+
+// Network Config
+const CORS_PROXY = "https://cors-anywhere.herokuapp.com/";
+const UPDATE_MS = 60_000; // 1 minute
+const FETCH_TIMEOUT_MS = 15_000;
+const MAX_CONCURRENCY = 6;
+const RETRIES = 1;
 
 // =============================
-// DOM Elements
+// Utilities
 // =============================
-const dom = {};
-const elementIds = ['monitorBtn', 'refreshBtn', 'statusDiv', 'raceGrid', 'opportunitiesDiv', 'proxyHint', 'sourceBadge', 'sourceSelect', 'testModeToggle', 'autoAuditToggle', 'clearHistoryBtn', 'roiTracker', 'totalBets', 'winRate', 'netPL', 'roiPercent', 'weatherContext', 'weatherData', 'weatherImpactFactor', 'analysisDashboard', 'predictionsTab', 'historyTab', 'pendingPredictions', 'activePredictionsCount', 'auditResultsBtn', 'auditSpinner', 'exportDataBtn', 'logEntries'];
-elementIds.forEach(id => { dom[id] = document.getElementById(id); });
-
-
-// =============================
-// Core Logic
-// =============================
-function updateAllUI() {
-    updateROIDisplay();
-    updateHistoricalLog();
-    updatePendingPredictions();
+function setBadge(source){
+  currentSource = source;
+  sourceBadge.textContent = `Source: ${source}`;
+}
+function fetchWithTimeout(resource, options = {}, timeout = FETCH_TIMEOUT_MS){
+  return new Promise((resolve, reject) => {
+    const ctrl = new AbortController();
+    const id = setTimeout(() => ctrl.abort(), timeout);
+    fetch(resource, { ...options, signal: ctrl.signal })
+      .then(res => { clearTimeout(id); resolve(res); })
+      .catch(err => { clearTimeout(id); reject(err); });
+  });
+}
+async function fetchTextWithRetry(url, tries = RETRIES + 1){
+  let lastErr;
+  for (let i = 0; i < tries; i++){
+    try {
+      const res = await fetchWithTimeout(url);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      return await res.text();
+    } catch (e){
+      lastErr = e;
+      await new Promise(r => setTimeout(r, (i + 1) * 400));
+    }
+  }
+  throw lastErr;
+}
+function parseOdds(oddsStrRaw){
+  if (!oddsStrRaw) return null;
+  const s = String(oddsStrRaw).trim().toUpperCase();
+  if (!s || s === '-' || s === '--' || s === 'SCR' || s === 'SCRATCHED') return null;
+  if (s.includes('ML')) return null; // ignore morning line
+  if (s === 'EVS' || s === 'EVEN' || s === 'EVEN MONEY' || s === 'EVEN/MONEY') return 1.0;
+  const frac = s.match(/^(\d+)\s*\/\s*(\d+)$/);
+  if (frac){
+    const num = parseFloat(frac[1]); const den = parseFloat(frac[2]);
+    if (den === 0) return null;
+    return num / den;
+  }
+  const dec = parseFloat(s.replace(/[^\d.]/g, ''));
+  if (!isNaN(dec)) return dec;
+  return null;
+}
+function keyOf(r){ return `${r.track}#${r.raceNumber}`; }
+function fmtOdds(x){ return (typeof x === 'number' && isFinite(x)) ? x.toFixed(2) : '--'; }
+function escapeHtml(s){
+  return String(s ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
 }
 
-function loadState() {
-    console.log("Loading state from localStorage...");
-    try {
-        const audited = localStorage.getItem('checkmateAuditedPredictions');
-        const pending = localStorage.getItem('checkmatePendingPredictions');
-        auditedPredictions = audited ? JSON.parse(audited) : [];
-        pendingPredictions = pending ? new Map(JSON.parse(pending)) : new Map();
-    } catch (e) {
-        console.error("Could not parse state from localStorage", e);
-        auditedPredictions = [];
-        pendingPredictions = new Map();
+// =============================
+// Adapters
+// =============================
+// Gold – TwinSpires (HTML scrape)
+const TS_BASE = 'https://www.twinspires.com';
+const TS_INDEX_URL = `${CORS_PROXY}${TS_BASE}/adw/todays-tracks?sortOrder=nextUp`;
+function extractRaceLinks(indexHtml){
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(indexHtml, 'text/html');
+  const links = new Set();
+  doc.querySelectorAll('a[href]').forEach(a => {
+    const href = a.getAttribute('href');
+    if (!href) return;
+    if (/\/race\/\d+/i.test(href) && !/\/results\//i.test(href)){
+      const abs = href.startsWith('http') ? href : `${TS_BASE}${href}`;
+      links.add(`${CORS_PROXY}${abs}`);
     }
+  });
+  return Array.from(links);
+}
+function parseTwinspiresDetail(html){
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(html, 'text/html');
+  const header = doc.querySelector('.race-title');
+  if (!header) return null;
+  const trackNode = header.querySelector('a');
+  const strong = header.querySelector('strong');
+  const trackName = trackNode ? trackNode.textContent.trim() : 'Unknown';
+  const raceNumber = strong ? parseInt(strong.textContent.replace(/\D/g, '')) : null;
+  let discipline = 'Thoroughbred';
+  const text = html;
+  if (/Harness/i.test(text)) discipline = 'Harness';
+  if (/Greyhound/i.test(text)) discipline = 'Greyhound';
+  let raceTime = null;
+  const timeEl = doc.querySelector('[data-testid*="post-time"], .post-time, .race-time');
+  if (timeEl){ raceTime = timeEl.textContent.trim() || null; }
+  const runners = [];
+  const nodes = doc.querySelectorAll('#program .runner-wrapper, .runner-wrapper, [data-testid*="runner"]');
+  nodes.forEach(el => {
+    const nameEl = el.querySelector('.runner-name, [data-testid*="runner-name"]');
+    const oddsEl = el.querySelector('.odds, [data-testid*="odds"]');
+    const name = nameEl ? nameEl.textContent.trim() : null;
+    const odds = parseOdds(oddsEl ? oddsEl.textContent.trim() : null);
+    if (name && odds !== null) runners.push({ name, odds });
+  });
+  if (!runners.length || !raceNumber) return null;
+  return { discipline, track: trackName, raceNumber, runners, raceTime };
+}
+async function fetchTwinspiresData(){
+  try{
+    const indexHtml = await fetchTextWithRetry(TS_INDEX_URL);
+    const links = extractRaceLinks(indexHtml);
+    if (!links.length) return [];
+    const out = [];
+    let i = 0;
+    const workers = Math.min(MAX_CONCURRENCY, Math.max(1, links.length));
+    async function worker(){
+      while(i < links.length){
+        const url = links[i++];
+        try{
+          const html = await fetchTextWithRetry(url);
+          const parsed = parseTwinspiresDetail(html);
+          if (parsed) out.push(parsed);
+        }catch(e){ console.warn('TS detail failed:', e?.message || e); }
+      }
+    }
+    await Promise.all(Array.from({length: workers}, () => worker()));
+    return out;
+  }catch(e){ console.error('TwinSpires fetch failed:', e); return []; }
+}
 
-    totalBets = 0; totalWins = 0; totalStaked = 0; totalReturns = 0;
-    auditedPredictions.forEach(record => {
-        totalBets++;
-        totalStaked += record.stake;
-        if (record.won) {
-            totalWins++;
-            totalReturns += record.payout;
-        }
+// Silver – RPB2B (JSON API, Thoroughbred only)
+async function fetchRpb2bData(){
+  console.log('Attempting fallback to RPB2B API...');
+  const BASE_URL = 'https://backend-us-racecards.widget.rpb2b.com/v2';
+  const dateStr = new Date().toISOString().split('T')[0];
+  const dailyUrl = `${CORS_PROXY}${BASE_URL}/racecards/daily/${dateStr}`;
+  let allRaces = [];
+  try{
+    const indexResponse = await fetchTextWithRetry(dailyUrl);
+    const daily = JSON.parse(indexResponse);
+    const raceIds = [];
+    (daily.courses || []).forEach(course => {
+      (course.races || []).forEach(r => raceIds.push(r.id));
     });
-}
-
-function saveState() {
-    try {
-        localStorage.setItem('checkmateAuditedPredictions', JSON.stringify(auditedPredictions));
-        localStorage.setItem('checkmatePendingPredictions', JSON.stringify(Array.from(pendingPredictions.entries())));
-    } catch (e) {
-        console.error("Error saving state to localStorage", e);
-    }
-}
-
-function addPrediction(race) {
-    const raceKey = keyOf(race);
-    if (pendingPredictions.has(raceKey) || auditedPredictions.some(p => keyOf(p.race) === raceKey)) {
-        return; // Already tracking or audited
-    }
-    const sorted = [...race.runners].sort((a,b)=>a.odds - b.odds);
-    const prediction = {
-        race,
-        fav: sorted[0],
-        stake: FIXED_STAKE,
-        timestamp: new Date().toISOString()
-    };
-    pendingPredictions.set(raceKey, prediction);
-    console.log(`New prediction added: ${race.track} R${race.raceNumber}`);
-    updatePendingPredictions();
-    saveState();
-}
-
-async function mockFetchRaceResults(prediction) {
-    await new Promise(r => setTimeout(r, 750 + Math.random() * 500));
-    const won = Math.random() < 0.4; // 40% win rate for favorite to place
-    let payout = 0;
-    if (won) {
-        const placeOdds = (prediction.fav.odds / 3) + 0.1;
-        payout = prediction.stake * (1 + placeOdds);
-    }
-    return { won, payout: parseFloat(payout.toFixed(2)) };
-}
-
-async function auditPendingPredictions() {
-    if (dom.auditSpinner) dom.auditSpinner.style.display = 'inline-block';
-    const predictionsToAudit = Array.from(pendingPredictions.values());
-    for (const prediction of predictionsToAudit) {
-        const result = await mockFetchRaceResults(prediction);
-        const auditedRecord = { ...prediction, ...result, auditedTimestamp: new Date().toISOString() };
-        auditedPredictions.unshift(auditedRecord);
-        pendingPredictions.delete(keyOf(prediction.race));
-        totalBets++;
-        totalStaked += auditedRecord.stake;
-        if (auditedRecord.won) {
-            totalWins++;
-            totalReturns += auditedRecord.payout;
+    if (!raceIds.length) return [];
+    const requests = raceIds.map(id => fetchTextWithRetry(`${CORS_PROXY}${BASE_URL}/racecards/${id}?include=odds`));
+    const results = await Promise.allSettled(requests);
+    results.forEach(res => {
+      if (res.status !== 'fulfilled') return;
+      try{
+        const raceData = JSON.parse(res.value);
+        const runners = (raceData.runners || []).map(rr => ({ name: rr.name, odds: parseFloat(rr.odds?.decimal) }))
+          .filter(x => x.name && !isNaN(x.odds));
+        if (runners.length){
+          allRaces.push({
+            discipline: 'Thoroughbred',
+            track: raceData.course?.name || 'Unknown',
+            raceNumber: raceData.raceNumber,
+            runners,
+            raceTime: raceData.startTime ? new Date(raceData.startTime).toLocaleString() : null
+          });
         }
-    }
-    if (predictionsToAudit.length > 0) {
-        updateAllUI();
-        saveState();
-    }
-    if (dom.auditSpinner) dom.auditSpinner.style.display = 'none';
+      }catch(e){ /* skip parse errors */ }
+    });
+  }catch(e){ console.error('RPB2B fallback failed:', e); return []; }
+  return allRaces;
+}
+
+// Contender – PointsBet (JSON API)
+async function fetchPointsBetData(){
+  console.log('Attempting fetch from PointsBet API...');
+  const API_URL = `${CORS_PROXY}https://api.au.pointsbet.com/api/v2/racing/races/today`;
+  let allRaces = [];
+  try{
+    const text = await fetchTextWithRetry(API_URL);
+    const data = JSON.parse(text);
+    (data.events || []).forEach(ev => {
+      if (!ev.runners || !ev.meetingName) return;
+      const runners = (ev.runners || []).map(r => ({ name: r.name, odds: parseFloat(r.fixedWinOdds?.price) }))
+        .filter(x => x.name && !isNaN(x.odds));
+      if (runners.length){
+        allRaces.push({
+          discipline: 'Thoroughbred',
+          track: ev.meetingName,
+          raceNumber: ev.raceNumber,
+          runners,
+          raceTime: ev.startTime ? new Date(ev.startTime).toLocaleString() : null
+        });
+      }
+    });
+  }catch(e){ console.error('PointsBet fetch failed:', e); return []; }
+  return allRaces;
+}
+
+// Bronze – FanDuel WebSocket (listener)
+function listenFanDuelSocket(raceEventId, onUpdate){
+  const WEBSOCKET_URI = 'wss://api.dub.fanduel.com/v1/subscription';
+  const subscriptionMessage = JSON.stringify({
+    type: 'subscribe', channel: 'market_changes', id: raceEventId, data: { marketId: raceEventId }
+  });
+  let opened = false;
+  let socket;
+  try{
+    socket = new WebSocket(WEBSOCKET_URI);
+  }catch(e){ appendTicker(`WS Error: ${e?.message || e}`); return null; }
+  socket.onopen = () => { opened = true; appendTicker('WebSocket connected. Subscribing...'); socket.send(subscriptionMessage); };
+  socket.onmessage = (event) => {
+    try{
+      const data = JSON.parse(event.data);
+      if (data.type === 'market_change' && data.data?.runners){
+        const runners = data.data.runners.map(r => ({ name: r.runnerName, odds: parseFloat(r.win?.trueOdds?.decimal) }))
+          .filter(x => x.name && !isNaN(x.odds));
+        if (runners.length){ onUpdate({ discipline: 'Thoroughbred', track: 'FanDuel Live', raceNumber: 0, runners });
+          appendTicker(`Update: ${runners.slice(0,3).map(r=>`${r.name} ${fmtOdds(r.odds)}`).join(', ')} ...`);
+        }
+      }
+    }catch(e){ appendTicker(`WS Parse error: ${e?.message || e}`); }
+  };
+  socket.onerror = err => appendTicker(`WS Error: ${err?.message || 'unknown'}`);
+  socket.onclose = () => appendTicker('WebSocket closed.');
+  return socket;
+}
+function appendTicker(msg){
+  const ts = new Date().toLocaleTimeString();
+  // Fixed: Properly escape the message and use innerHTML to handle line breaks
+  const escapedMsg = escapeHtml(msg);
+  const currentContent = tickerFeed.innerHTML;
+  tickerFeed.innerHTML = `[${ts}] ${escapedMsg}<br>` + currentContent;
 }
 
 // =============================
-// UI Rendering
+// Checkmate Scoring
 // =============================
-function updateROIDisplay() {
-    if (!dom.roiTracker) return;
-    dom.roiTracker.style.display = 'block';
-    const roi = totalStaked > 0 ? ((totalReturns - totalStaked) / totalStaked) * 100 : 0;
-    const winRateVal = totalBets > 0 ? (totalWins / totalBets) * 100 : 0;
-
-    dom.totalBets.textContent = totalBets;
-    dom.winRate.textContent = `${winRateVal.toFixed(1)}%`;
-    dom.netPL.textContent = `$${(totalReturns - totalStaked).toFixed(2)}`;
-    dom.roiPercent.textContent = `${roi.toFixed(1)}%`;
+function getDynamicOddsThresholds(fieldSize){
+  if (fieldSize <= 4) return { fav: 0.5, secondFav: 2.0 };
+  if (fieldSize === 5) return { fav: 0.8, secondFav: 3.0 };
+  if (fieldSize === 6) return { fav: 1.0, secondFav: 3.5 };
+  return { fav: 1.0, secondFav: 4.0 };
+}
+function findCheckmateOpportunities(races){
+  return races.filter(race => {
+    if (race.discipline !== 'Thoroughbred') return false;
+    if (!race.runners || race.runners.length < 2 || race.runners.length >= 7) return false;
+    const sorted = [...race.runners].sort((a,b)=>a.odds - b.odds);
+    const { fav: favT, secondFav: secondT } = getDynamicOddsThresholds(sorted.length);
+    const fav = sorted[0], second = sorted[1];
+    return fav && second && fav.odds > favT && second.odds > secondT;
+  });
 }
 
-function updateHistoricalLog() {
-    if (!dom.logEntries) return;
-    if (auditedPredictions.length === 0) {
-        dom.logEntries.innerHTML = 'No historical data yet...';
-        return;
-    }
-    dom.logEntries.innerHTML = auditedPredictions.map(p => {
-        const pnl = p.won ? p.payout - p.stake : -p.stake;
-        const pnlClass = p.won ? 'profit' : 'loss';
-        return `<div class="log-entry">
-            <span class="race-info">${p.race.track} R${p.race.raceNumber} - ${p.fav.name} @ ${fmtOdds(p.fav.odds)}</span>
-            <span class="outcome">${p.won ? 'Placed' : 'Did not place'}</span>
-            <span class="pnl ${pnlClass}">$${pnl.toFixed(2)}</span>
+// =============================
+// UI
+// =============================
+function displayOpportunities(opps){
+  if (!opps.length){ opportunitiesDiv.style.display = 'none'; opportunitiesDiv.innerHTML = ''; return; }
+  let html = '<h3>🚨 Checkmate Opportunities</h3>';
+  html += '<table><thead><tr><th>Track</th><th>Race</th><th>Fav Odds</th><th>2nd Fav Odds</th><th>Field</th></tr></thead><tbody>';
+  opps.forEach(r => {
+    const sorted = [...r.runners].sort((a,b)=>a.odds-b.odds);
+    html += `<tr><td>${escapeHtml(r.track)}</td><td>${r.raceNumber ?? '--'}</td><td class="mono">${fmtOdds(sorted[0]?.odds)}</td><td class="mono">${fmtOdds(sorted[1]?.odds)}</td><td>${r.runners.length}</td></tr>`;
+  });
+  html += '</tbody></table>';
+  opportunitiesDiv.style.display = 'block';
+  opportunitiesDiv.innerHTML = html;
+}
+function renderDisciplineCard(title, races, highlightSet){
+  const items = races.sort((a,b)=> (a.track===b.track? (a.raceNumber||0)-(b.raceNumber||0) : a.track.localeCompare(b.track)))
+    .map(r => {
+      const sorted = [...r.runners].sort((a,b)=>a.odds - b.odds);
+      const fav = sorted[0], second = sorted[1];
+      const isCM = highlightSet.has(keyOf(r));
+      return `
+        <div class="item">
+          <div class="row">
+            <div><strong>${escapeHtml(r.track)}</strong> • R${r.raceNumber ?? '?'}</div>
+            <div>${r.raceTime ? `<span class="meta">${escapeHtml(String(r.raceTime))}</span>` : ''}</div>
+          </div>
+          <div class="row small">
+            <div>Fav: <span class="mono">${fmtOdds(fav?.odds)}</span> – ${escapeHtml(fav?.name || '')}</div>
+            <div>2nd: <span class="mono">${fmtOdds(second?.odds)}</span> – ${escapeHtml(second?.name || '')}</div>
+          </div>
+          <div class="row">
+            <span class="meta">Field: ${r.runners.length}</span>
+            ${isCM ? '<span class="badge danger">Checkmate</span>' : '<span class="badge">Monitoring</span>'}
+          </div>
         </div>`;
     }).join('');
+  return `<div class="card"><h3>${title} (${races.length})</h3><div class="list">${races.length?items:'<div class="muted small">No races found.</div>'}</div></div>`;
+}
+function displayRaces(all){
+  const t = all.filter(r => r.discipline === 'Thoroughbred');
+  const h = all.filter(r => r.discipline === 'Harness');
+  const g = all.filter(r => r.discipline === 'Greyhound');
+  const checkmates = findCheckmateOpportunities(t);
+  const keys = new Set(checkmates.map(keyOf));
+  raceGrid.innerHTML = [
+    renderDisciplineCard('Thoroughbreds', t, keys),
+    renderDisciplineCard('Harness', h, new Set()),
+    renderDisciplineCard('Greyhounds', g, new Set()),
+  ].join('');
+  displayOpportunities(checkmates);
+}
+function setLoading(loading){
+  refreshBtn.disabled = loading || !isMonitoring;
+  monitorBtn.disabled = loading && isMonitoring;
 }
 
-function updatePendingPredictions() {
-    if (!dom.pendingPredictions) return;
-    dom.activePredictionsCount.textContent = pendingPredictions.size;
-    if (pendingPredictions.size === 0) {
-        dom.pendingPredictions.innerHTML = 'No active predictions';
-        return;
-    }
-    dom.pendingPredictions.innerHTML = Array.from(pendingPredictions.values()).map(p =>
-        `<div class="log-entry">
-            <span class="race-info">${p.race.track} R${p.race.raceNumber} - ${p.fav.name} @ ${fmtOdds(p.fav.odds)}</span>
-            <span class="outcome">Awaiting result...</span>
-        </div>`
-    ).join('');
+// =============================
+// Test Data
+// =============================
+function getTestData(){
+  return [
+    { discipline:'Thoroughbred', track:'Test Park', raceNumber:1, raceTime:'2:15 PM', runners:[
+      {name:'Alpha', odds:1.2},{name:'Bravo', odds:3.8},{name:'Charlie', odds:5.0},{name:'Delta', odds:7.0}
+    ]},
+    { discipline:'Thoroughbred', track:'Demo Downs', raceNumber:3, raceTime:'3:05 PM', runners:[
+      {name:'Echo', odds:0.6},{name:'Foxtrot', odds:2.8},{name:'Golf', odds:9.0}
+    ]},
+    { discipline:'Harness', track:'HarnessVille', raceNumber:2, raceTime:'2:45 PM', runners:[
+      {name:'H1', odds:2.0},{name:'H2', odds:3.0}
+    ]}
+  ];
 }
 
-// ... (rest of the script is the same as before)
-// ... including network, adapters, scoring, app logic, and event listeners
-// I will just copy the rest of the script from my previous synthesized version.
-// The provided diff is too large, so I am summarizing. The full script will be used in the tool call.
+// =============================
+// Waterfall Runner
+// =============================
+async function runWaterfall(selected){
+  // Returns { races, source }
+  const attempt = async (fn, label) => {
+    try{ const data = await fn(); return Array.isArray(data) ? data : []; }catch(_){ return []; }
+  };
+  if (selected === 'TwinSpires'){
+    const ts = await attempt(fetchTwinspiresData, 'TwinSpires'); if (ts.length) return { races: ts, source: 'TwinSpires' };
+    return { races: [], source: 'TwinSpires (empty)' };
+  }
+  if (selected === 'RPB2B'){
+    const rp = await attempt(fetchRpb2bData, 'RPB2B'); if (rp.length) return { races: rp, source: 'RPB2B' };
+    return { races: [], source: 'RPB2B (empty)' };
+  }
+  if (selected === 'PointsBet'){
+    const pb = await attempt(fetchPointsBetData, 'PointsBet'); if (pb.length) return { races: pb, source: 'PointsBet' };
+    return { races: [], source: 'PointsBet (empty)' };
+  }
+  // Auto waterfall: Gold → Silver → Contender
+  const ts = await attempt(fetchTwinspiresData, 'TwinSpires'); if (ts.length) return { races: ts, source: 'TwinSpires' };
+  const rp = await attempt(fetchRpb2bData, 'RPB2B'); if (rp.length) return { races: rp, source: 'RPB2B' };
+  const pb = await attempt(fetchPointsBetData, 'PointsBet'); if (pb.length) return { races: pb, source: 'PointsBet' };
+  return { races: [], source: 'None' };
+}
+
+// =============================
+// App Cycle
+// =============================
+async function runUpdate(){
+  setLoading(true);
+  const started = Date.now();
+  let races = [];
+  let source = 'None';
+
+  const testMode = testModeToggle.checked || USE_TEST_DATA;
+  if (testMode){
+    races = getTestData();
+    source = 'Test Data';
+  } else {
+    const selected = sourceSelect.value;
+    const result = await runWaterfall(selected);
+    races = result.races; source = result.source;
+  }
+
+  displayRaces(races);
+  setBadge(sourceSelect.value === 'auto' ? `Auto (${source})` : source);
+  const took = Math.round((Date.now() - started)/1000);
+  statusDiv.textContent = `Last update: ${new Date().toLocaleTimeString()} • ${races.length} races • ${took}s`;
+  setLoading(false);
+}
+
+function startMonitoring(){
+  isMonitoring = true;
+  monitorBtn.textContent = 'Stop Monitoring';
+  proxyHint.style.display = 'block';
+  refreshBtn.disabled = true;
+  runUpdate().then(()=>{ refreshBtn.disabled = false; });
+  intervalId = setInterval(runUpdate, UPDATE_MS);
+}
+function stopMonitoring(){
+  isMonitoring = false;
+  monitorBtn.textContent = 'Start Monitoring';
+  statusDiv.textContent = 'Monitoring stopped.';
+  clearInterval(intervalId);
+  refreshBtn.disabled = true;
+
+  // Clear the grid and show initial state
+  raceGrid.innerHTML = `
+    <div class="initial-state">
+      <h3>Welcome to Checkmate Monitor</h3>
+      <p>Start monitoring to see live racing data and checkmate opportunities.</p>
+    </div>`;
+}
+
+// Initialize display on page load
+document.addEventListener('DOMContentLoaded', () => {
+  // Show initial welcome message
+  raceGrid.innerHTML = `
+    <div class="initial-state">
+      <h3>Welcome to Checkmate Monitor</h3>
+      <p>Start monitoring to see live racing data and checkmate opportunities.</p>
+    </div>`;
+});
+
+// =============================
+// Events
+// =============================
+monitorBtn.addEventListener('click', () => {
+  if (isMonitoring) stopMonitoring(); else startMonitoring();
+});
+refreshBtn.addEventListener('click', () => { if (isMonitoring) runUpdate(); });
+sourceSelect.addEventListener('change', () => { if (isMonitoring) runUpdate(); });
+testModeToggle.addEventListener('change', () => { if (isMonitoring) runUpdate(); });
+wsToggle.addEventListener('change', () => {
+  const enable = wsToggle.checked || ENABLE_FANDUEL_TICKER;
+  liveTicker.style.display = enable ? 'block' : 'none';
+  if (!enable && ws){ try{ ws.close(); }catch{} ws = null; return; }
+  if (enable && !ws){ ws = listenFanDuelSocket(DEFAULT_FANDUEL_EVENT_ID, (update) => { /* push-only ticker; does not alter main list */ }); }
+});
 </script>
 </body>
 </html>

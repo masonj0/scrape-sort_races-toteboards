@@ -1,0 +1,45 @@
+{
+    "events": [
+        {
+            "key": "PB_R_12345",
+            "meetingName": "Flemington",
+            "raceNumber": 7,
+            "startTime": "2025-09-15T16:30:00Z",
+            "runners": [
+                {
+                    "name": "Lightning Bolt",
+                    "runnerNumber": 1,
+                    "fixedWinOdds": {
+                        "price": 3.50
+                    }
+                },
+                {
+                    "name": "Steady Eddie",
+                    "runnerNumber": 2,
+                    "fixedWinOdds": {
+                        "price": 8.00
+                    }
+                },
+                {
+                    "name": "No Show",
+                    "runnerNumber": 3,
+                    "fixedWinOdds": null
+                },
+                {
+                    "name": "Just Happy To Be Here",
+                    "runnerNumber": 4,
+                    "fixedWinOdds": {
+                        "price": 51.00
+                    }
+                }
+            ]
+        },
+        {
+            "key": "PB_R_67890",
+            "meetingName": "Randwick",
+            "raceNumber": 4,
+            "startTime": "2025-09-15T14:00:00Z",
+            "runners": []
+        }
+    ]
+}

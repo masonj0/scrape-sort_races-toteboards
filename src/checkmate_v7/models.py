@@ -103,3 +103,21 @@ class HealthCheckResponse(BaseModel):
     status: str
     database: str
     celery: str
+
+# --- Adapter Data Models ---
+
+class Runner(BaseModel):
+    name: str
+    odds: Optional[float] = None
+    program_number: Optional[int] = None
+    jockey: Optional[str] = None
+    trainer: Optional[str] = None
+
+class Race(BaseModel):
+    race_id: str
+    track_name: str
+    race_number: Optional[int] = None
+    post_time: Optional[datetime] = None
+    race_type: Optional[str] = None
+    number_of_runners: Optional[int] = None
+    runners: List[Runner]
