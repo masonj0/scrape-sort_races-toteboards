@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Racecard</title>
+</head>
+<body>
+<script>
+    rp_config_.page = {
+        "subEvent": [
+            {
+                "raceId": "12345",
+                "name": "The Big Handicap"
+            }
+        ],
+        "location": {
+            "name": "Newmarket"
+        }
+    };
+</script>
+<div class="RC-meetingDay">
+    <div class="RC-meetingDay__race" data-diffusion-race-id="rp_12345">
+        <div class="RC-runnerRow">
+            <span class="RC-runnerNumber__no">1</span>
+            <a class="RC-runnerName" href="#">Speedy Gonzales</a>
+            <a data-test-selector="RC-cardPage-runnerJockey-name" href="#">A. Jockey</a>
+            <a data-test-selector="RC-cardPage-runnerTrainer-name" href="#">B. Trainer</a>
+        </div>
+        <div class="RC-runnerRow">
+            <span class="RC-runnerNumber__no">2</span>
+            <a class="RC-runnerName" href="#">Slow Poke</a>
+            <a data-test-selector="RC-cardPage-runnerJockey-name" href="#">C. Jockey</a>
+            <a data-test-selector="RC-cardPage-runnerTrainer-name" href="#">D. Trainer</a>
+        </div>
+        <div class="RC-runnerRow RC-runnerRow_disabled">
+            <span class="RC-runnerNumber__no">3</span>
+            <a class="RC-runnerName" href="#">Non Runner</a>
+            <a data-test-selector="RC-cardPage-runnerJockey-name" href="#">E. Jockey</a>
+            <a data-test-selector="RC-cardPage-runnerTrainer-name" href="#">F. Trainer</a>
+        </div>
+        <div class="RC-runnerRow">
+            <span class="RC-runnerNumber__no">4</span>
+            <a class="RC-runnerName" href="#">Just a Horse</a>
+            <a data-test-selector="RC-cardPage-runnerJockey-name" href="#">G. Jockey</a>
+            <a data-test-selector="RC-cardPage-runnerTrainer-name" href="#">H. Trainer</a>
+        </div>
+    </div>
+</div>
+</body>
+</html>
