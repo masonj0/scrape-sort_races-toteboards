@@ -27,4 +27,5 @@ def get_test_data():
         Race(discipline='Greyhound', track='Wheeling Island', race_number=10, race_time='8:15 PM', runners=[Runner(name='Box 1 Blitz', odds=4.0), Runner(name='Trap 6 Titan', odds=1.5)]),
         # Harness
         Race(discipline='Harness', track='Meadowlands', race_number=5, race_time='9:00 PM', runners=[Runner(name='Pacing Power', odds=2.2), Runner(name='Trotter Triumphant', odds=3.5)])
+
     ]
