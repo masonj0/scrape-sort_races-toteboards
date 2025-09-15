@@ -6,6 +6,10 @@ pydantic
 celery
 streamlit
 
+# V7 Statistical Dependencies
+numpy
+scipy
+
 # Common
 anyio
 beautifulsoup4
