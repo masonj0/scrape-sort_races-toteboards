@@ -16,29 +16,16 @@ def apply_final_qualification(score: float, odds: float) -> bool:
     return score > 7.0
 
 def get_test_data():
-    """Generates test data for development and testing."""
-    # This function is moved from the old RaceDataFetcher for better separation of concerns.
-    from .models import Race, Runner # Local import to avoid circular dependency issues
+    """Generates a diverse set of test data for development and testing."""
+    from .models import Race, Runner
     return [
-        Race(
-            discipline='Thoroughbred',
-            track='Test Park',
-            race_number=1,
-            race_time='2:15 PM',
-            runners=[
-                Runner(name='Alpha', odds=1.5), Runner(name='Bravo', odds=3.8),
-                Runner(name='Charlie', odds=5.0), Runner(name='Delta', odds=7.0),
-                Runner(name='Eagle', odds=10.0)
-            ]
-        ),
-        Race(
-            discipline='Thoroughbred',
-            track='Demo Downs',
-            race_number=3,
-            race_time='3:05 PM',
-            runners=[
-                Runner(name='Echo', odds=0.8), Runner(name='Foxtrot', odds=2.8),
-                Runner(name='Golf', odds=9.0)
-            ]
-        )
+        # Thoroughbreds
+        Race(discipline='Thoroughbred', track='Santa Anita', race_number=1, race_time='1:00 PM', runners=[Runner(name='Star Racer', odds=2.5), Runner(name='Gallop King', odds=3.0)]),
+        Race(discipline='Thoroughbred', track='Churchill Downs', race_number=4, race_time='2:30 PM', runners=[Runner(name='Mint Julep', odds=1.8), Runner(name='Derby Dreamer', odds=4.5)]),
+        # Greyhounds
+        Race(discipline='Greyhound', track='Southland', race_number=8, race_time='7:00 PM', runners=[Runner(name='Rapid Fire', odds=3.0), Runner(name='Silver Bullet', odds=2.0)]),
+        Race(discipline='Greyhound', track='Wheeling Island', race_number=10, race_time='8:15 PM', runners=[Runner(name='Box 1 Blitz', odds=4.0), Runner(name='Trap 6 Titan', odds=1.5)]),
+        # Harness
+        Race(discipline='Harness', track='Meadowlands', race_number=5, race_time='9:00 PM', runners=[Runner(name='Pacing Power', odds=2.2), Runner(name='Trotter Triumphant', odds=3.5)])
+
     ]
