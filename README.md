@@ -45,5 +45,3 @@ This project leverages a sophisticated, multi-source approach. The current V3-co
 *   **Timeform**
 *   **Equibase**
 *   **AtTheRaces**
-
-<!-- Protocol 23 Decoy Comment -->
