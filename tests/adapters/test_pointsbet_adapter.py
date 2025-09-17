@@ -69,16 +69,17 @@ async def test_pointsbet_adapter_fetch_method(mock_get_page_content, mock_points
     parses the content, and returns a list of NormalizedRace objects.
     """
     # 1. Setup
-    mock_get_page_content.return_value = mock_pointsbet_json
+    # The fetcher now returns raw text, so we dump the JSON to a string for the mock.
+    mock_get_page_content.return_value = json.dumps(mock_pointsbet_json)
     adapter = PointsBetAdapter()
 
     # 2. Execution
     fetched_races = await adapter.fetch()
 
     # 3. Assertions
+    # The fetcher no longer takes response_type, so we check the URL only.
     mock_get_page_content.assert_called_once_with(
-        "https://api.au.pointsbet.com/api/v2/racing/races/today",
-        response_type='json'
+        "https://api.au.pointsbet.com/api/v2/racing/races/today"
     )
 
     assert isinstance(fetched_races, list)
