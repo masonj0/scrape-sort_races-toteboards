@@ -28,6 +28,7 @@ class PredictionORM(Base):
     qualified_flag = Column(Boolean)
     confidence = Column(Float)
     stake_used = Column(Float)
+    race_local_datetime = Column(DateTime, nullable=True)
 
     join = relationship("JoinORM", back_populates="prediction", uselist=False)
 
@@ -82,6 +83,11 @@ class PredictionSchema(BaseModel):
     prediction_id: str
     race_key: str
     status: str
+    qualified_flag: Optional[bool] = None
+    stake_used: Optional[float] = None
+    score_total: Optional[float] = None
+    minutes_to_post: Optional[float] = None
+
     class Config:
         orm_mode = True
 

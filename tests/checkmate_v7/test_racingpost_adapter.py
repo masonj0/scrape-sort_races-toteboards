@@ -51,7 +51,7 @@ def test_parse_races_with_runners(adapter, mock_html_content):
     assert race.runners[2].name == "Just a Horse"
     assert race.runners[2].program_number == 4
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_fetch_races_end_to_end(adapter, mock_fetcher, mock_html_content):
     """
     Tests the end-to-end flow of the fetch_races method using the detailed fixture.

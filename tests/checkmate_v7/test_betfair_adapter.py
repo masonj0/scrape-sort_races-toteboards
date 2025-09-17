@@ -53,7 +53,7 @@ def test_parse_races(adapter, mock_csv_content):
     assert race2.runners[1].name == "2002"
     assert race2.runners[1].odds == 4.5
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_fetch_races_end_to_end(adapter, mock_fetcher, mock_csv_content):
     """
     Tests the end-to-end flow of the fetch_races method.

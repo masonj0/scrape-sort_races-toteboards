@@ -61,7 +61,7 @@ def test_parse_races_with_runners(adapter, mock_json_content):
     assert race.runners[3].program_number == 4
     assert race.runners[3].odds == 51.00
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_fetch_races_end_to_end(adapter, mock_fetcher, mock_json_content):
     """
     Tests the end-to-end flow of the fetch_races method using the detailed fixture.

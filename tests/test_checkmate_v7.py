@@ -46,7 +46,7 @@ from unittest.mock import patch, MagicMock, AsyncMock
 from src.checkmate_v7 import services
 from src.checkmate_v7.models import Race
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_data_source_orchestrator_v7():
     """
     Tests the new V7 DataSourceOrchestrator logic by mocking an adapter.

@@ -54,7 +54,7 @@ def test_parse_runners_from_detail_page(adapter, detail_html):
     assert runners[2].name == "Citation"
     assert runners[2].program_number == 3
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_fetch_races_two_step(adapter, mock_fetcher, schedule_html, detail_html):
     """
     Tests the full two-step fetch process, mocking both API calls.

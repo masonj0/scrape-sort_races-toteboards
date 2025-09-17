@@ -54,7 +54,7 @@ def test_parse_races(adapter, mock_graphql_response):
     assert race2.runners[0].name == "Seabiscuit"
     assert race2.runners[0].odds == 1.5 # 1/2 + 1
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_fetch_races_end_to_end(adapter, mock_fetcher, mock_graphql_response):
     """
     Tests the end-to-end flow of the fetch_races method, mocking the post call.
