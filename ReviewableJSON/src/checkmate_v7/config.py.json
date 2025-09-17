@@ -1,0 +1,4 @@
+{
+    "filepath": "./src/checkmate_v7/config.py",
+    "content": "import os\nfrom dotenv import load_dotenv\n\nload_dotenv()\n\nDATABASE_URL = os.getenv(\"DATABASE_URL\", \"sqlite:///./checkmate_v7.db\")\nREDIS_URL = os.getenv(\"REDIS_URL\", \"redis://localhost:6379/0\")\nLOG_LEVEL = os.getenv(\"LOG_LEVEL\", \"INFO\").upper()\n"
+}

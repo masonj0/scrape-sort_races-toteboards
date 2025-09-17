@@ -5,6 +5,7 @@ import logging
 import asyncio
 import random
 import time
+import anyio
 import json
 import re
 from abc import ABC, abstractmethod
@@ -380,15 +381,25 @@ class EquibaseAdapterV7(BaseAdapterV7):
 
         partial_races, detail_urls = self._parse_race_schedule(schedule_html)
 
-        # Step 2: Fetch all detail pages concurrently
-        detail_pages_html = await asyncio.gather(
-            *(self.fetcher.fetch(f"{self.BASE_URL}{url}") for url in detail_urls)
-        )
+        # Create a mapping from URL to race object to recombine later
+        url_to_race_map = {url: race for url, race in zip(detail_urls, partial_races)}
+
+        # Step 2: Fetch all detail pages concurrently using anyio
+        detail_pages_html = {}
+
+        async def fetch_and_store(url):
+            html = await self.fetcher.fetch(f"{self.BASE_URL}{url}")
+            if html:
+                detail_pages_html[url] = html
+
+        async with anyio.create_task_group() as tg:
+            for url in detail_urls:
+                tg.start_soon(fetch_and_store, url)
 
         # Step 3: Parse runners from detail pages and combine
         final_races = []
-        for i, race in enumerate(partial_races):
-            detail_html = detail_pages_html[i]
+        for url, race in url_to_race_map.items():
+            detail_html = detail_pages_html.get(url)
             if detail_html:
                 runners = self._parse_runners_from_detail_page(detail_html)
                 race.runners = runners
@@ -599,9 +610,15 @@ class TwinspiresAdapterV7(BaseAdapterV7):
         if not detail_links:
             return []
 
-        detail_pages_html = await asyncio.gather(
-            *(self.fetcher.fetch(link, response_type='text') for link in detail_links)
-        )
+        detail_pages_html = []
+        async def fetch_and_store(link):
+            html = await self.fetcher.fetch(link, response_type='text')
+            if html:
+                detail_pages_html.append(html)
+
+        async with anyio.create_task_group() as tg:
+            for link in detail_links:
+                tg.start_soon(fetch_and_store, link)
 
         all_races = []
         for html in detail_pages_html:

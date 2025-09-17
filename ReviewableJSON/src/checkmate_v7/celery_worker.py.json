@@ -1,0 +1,4 @@
+{
+    "filepath": "./src/checkmate_v7/celery_worker.py",
+    "content": "from .services import celery_app\n"
+}

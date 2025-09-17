@@ -45,11 +45,42 @@ def process_race(race_url: str, background_tasks: BackgroundTasks):
     background_tasks.add_task(services.process_race_for_prediction, race_url)
     return {"message": "Race processing job accepted."}
 
-from .models import PerformanceMetricsSchema, JoinORM
+from .models import PerformanceMetricsSchema, JoinORM, PredictionORM, PredictionSchema
 from .services import get_db_session
 
 from sqlalchemy.exc import SQLAlchemyError
 import logging
+from typing import List
+from datetime import datetime, timezone
+
+@app.get("/predictions/active", response_model=List[PredictionSchema])
+def get_active_predictions():
+    """Returns all predictions with a 'pending' status."""
+    session = get_db_session()
+    try:
+        pending_preds = session.query(PredictionORM).filter(PredictionORM.status == 'pending').all()
+
+        results = []
+        for pred in pending_preds:
+            pred_schema = PredictionSchema.from_orm(pred)
+            if pred.race_local_datetime:
+                # Assume race_local_datetime is a naive datetime representing UTC
+                post_time_utc = pred.race_local_datetime.replace(tzinfo=timezone.utc)
+                now_utc = datetime.now(timezone.utc)
+                minutes_to_post = (post_time_utc - now_utc).total_seconds() / 60
+                pred_schema.minutes_to_post = minutes_to_post
+            results.append(pred_schema)
+
+        return results
+    except SQLAlchemyError as e:
+        logging.error("Database error while fetching active predictions", extra={"error": str(e)})
+        raise HTTPException(status_code=500, detail="Database error")
+    except Exception as e:
+        logging.error("An unexpected error occurred while fetching active predictions", extra={"error": str(e)})
+        raise HTTPException(status_code=500, detail="Internal server error")
+    finally:
+        if session:
+            session.close()
 
 @app.get("/performance", response_model=PerformanceMetricsSchema)
 def get_performance():

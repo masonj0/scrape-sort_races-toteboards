@@ -1,0 +1,4 @@
+{
+    "filepath": "./src/checkmate_v7/logging_config.py",
+    "content": "import logging\nfrom pythonjsonlogger import jsonlogger\nfrom . import config\n\ndef setup_logging():\n    \"\"\"Sets up structured JSON logging for the application.\"\"\"\n    logger = logging.getLogger()\n    logger.setLevel(config.LOG_LEVEL)\n\n    # Remove any existing handlers\n    for handler in logger.handlers[:]:\n        logger.removeHandler(handler)\n\n    logHandler = logging.StreamHandler()\n    formatter = jsonlogger.JsonFormatter('%(asctime)s %(name)s %(levelname)s %(message)s')\n    logHandler.setFormatter(formatter)\n    logger.addHandler(logHandler)\n"
+}

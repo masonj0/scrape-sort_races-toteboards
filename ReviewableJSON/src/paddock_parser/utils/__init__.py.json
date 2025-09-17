@@ -1,0 +1,4 @@
+{
+    "filepath": "./src/paddock_parser/utils/__init__.py",
+    "content": "# This file marks the `utils` directory as a Python package.\n\nfrom .browser import view_text_website\nfrom .honeypot import remove_honeypots\n\n__all__ = [\"view_text_website\", \"remove_honeypots\"]\n"
+}

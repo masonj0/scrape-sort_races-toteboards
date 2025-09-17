@@ -3,19 +3,29 @@ anyio
 fastapi
 uvicorn[standard]
 pydantic
+celery
+
+# Database
+SQLAlchemy
+redis
 
 # Data analysis
 pandas
 numpy
+scipy
 
 # Scraping
 beautifulsoup4
 lxml
 httpx
+aiohttp
+
+# Logging
+python-json-logger
 
 # Testing
 pytest
-pytest-anyio
+pytest-asyncio
 trio
 rich
 

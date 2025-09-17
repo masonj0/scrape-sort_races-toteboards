@@ -56,7 +56,7 @@ def test_parse_single_race_detail(adapter, detail_html):
     assert race.runners[1].program_number == 2
     assert race.runners[1].odds == 4.0 # 3/1 + 1
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_fetch_races_two_step(adapter, mock_fetcher, index_html, detail_html):
     """
     Tests the full two-step fetch process, mocking both API calls.

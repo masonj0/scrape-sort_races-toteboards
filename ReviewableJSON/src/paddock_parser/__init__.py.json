@@ -1,0 +1,4 @@
+{
+    "filepath": "./src/paddock_parser/__init__.py",
+    "content": "# This file marks the `paddock_parser` directory as a Python package.\n\nfrom .__version__ import __version__\n\n__all__ = [\"__version__\"]\n"
+}

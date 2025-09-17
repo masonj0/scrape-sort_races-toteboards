@@ -1,0 +1,4 @@
+{
+    "filepath": "./setup.py",
+    "content": "from setuptools import setup\n\nif __name__ == \"__main__\":\n    setup()\n"
+}
