@@ -75,3 +75,49 @@ async def test_data_source_orchestrator_v7():
         assert len(races) == 1
         assert races[0].race_id == "test_race_1"
         mock_fetch.assert_awaited_once()
+
+@patch('src.checkmate_v7.api.services.DataSourceOrchestrator')
+def test_get_all_races_endpoint(MockOrchestrator):
+    """
+    Tests the /api/v1/races/all endpoint, mocking the data source.
+    """
+    # --- Mock Setup ---
+    mock_orchestrator_instance = AsyncMock()
+
+    # Configure the mock to return a list of simple Race objects
+    from src.checkmate_v7.models import Race, Runner
+    mock_orchestrator_instance.get_races.return_value = [
+        Race(
+            race_id="R1",
+            track_name="Test Track",
+            race_number=1,
+            race_type="Stakes",
+            runners=[
+                Runner(name="Fav", odds=2.0),
+                Runner(name="SecondFav", odds=4.0),
+                Runner(name="Third", odds=10.0),
+            ]
+        )
+    ]
+    MockOrchestrator.return_value = mock_orchestrator_instance
+
+    # --- Run ---
+    response = client.get("/api/v1/races/all")
+
+    # --- Assertions ---
+    assert response.status_code == 200
+    data = response.json()
+    assert isinstance(data, list)
+    assert len(data) == 1
+
+    race_data = data[0]
+    # Check for enrichment fields
+    assert "checkmateScore" in race_data
+    assert "qualified" in race_data
+    assert "trifectaFactors" in race_data
+
+    # Verify the analysis was run correctly for our test case
+    # This race should qualify and have a score of 4
+    assert race_data["qualified"] is True
+    assert race_data["score"] == 4
+    assert race_data["trifectaFactors"]["isStakesOrTrial"] is True
