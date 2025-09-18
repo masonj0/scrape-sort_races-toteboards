@@ -32,7 +32,11 @@ def test_health_check_fully_mocked(mock_redis_from_url, mock_get_db):
     assert data["celery"] == "ok"
 
     mock_get_db.assert_called_once()
-    mock_db_session.execute.assert_called_once_with("SELECT 1")
+    # The application code wraps the SQL in a text() clause, so we need to
+    # assert the call was made and then check the string representation.
+    mock_db_session.execute.assert_called_once()
+    called_arg = mock_db_session.execute.call_args[0][0]
+    assert str(called_arg) == "SELECT 1"
     mock_redis_from_url.assert_called_once()
 
 def test_get_performance_empty():

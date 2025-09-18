@@ -33,7 +33,21 @@ app = FastAPI()
 
 @app.on_event("startup")
 def on_startup():
+    """
+    Configures logging and overrides Uvicorn's default loggers
+    to use the new structured JSON format on application startup.
+    """
     logging_config.setup_logging()
+
+    # Reconfigure Uvicorn's loggers to use our new handler
+    # This ensures that access logs and server errors are also in JSON format
+    loggers_to_override = ["uvicorn", "uvicorn.error", "uvicorn.access"]
+    root_handlers = logging.getLogger().handlers
+
+    for logger_name in loggers_to_override:
+        uvicorn_logger = logging.getLogger(logger_name)
+        uvicorn_logger.handlers = root_handlers
+        uvicorn_logger.propagate = False
 
 @app.get("/")
 def root():
@@ -49,6 +63,7 @@ from .models import PerformanceMetricsSchema, JoinORM, PredictionORM, Prediction
 from .services import get_db_session
 
 from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy import text
 import logging
 from typing import List
 from datetime import datetime, timezone
@@ -140,7 +155,7 @@ def get_health():
     db_status = "ok"
     try:
         session = get_db_session()
-        session.execute("SELECT 1")
+        session.execute(text("SELECT 1"))
         session.close()
     except Exception as e:
         db_status = f"error: {e}"
