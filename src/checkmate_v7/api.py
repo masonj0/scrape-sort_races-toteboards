@@ -33,7 +33,21 @@ app = FastAPI()
 
 @app.on_event("startup")
 def on_startup():
+    """
+    Configures logging and overrides Uvicorn's default loggers
+    to use the new structured JSON format on application startup.
+    """
     logging_config.setup_logging()
+
+    # Reconfigure Uvicorn's loggers to use our new handler
+    # This ensures that access logs and server errors are also in JSON format
+    loggers_to_override = ["uvicorn", "uvicorn.error", "uvicorn.access"]
+    root_handlers = logging.getLogger().handlers
+
+    for logger_name in loggers_to_override:
+        uvicorn_logger = logging.getLogger(logger_name)
+        uvicorn_logger.handlers = root_handlers
+        uvicorn_logger.propagate = False
 
 @app.get("/")
 def root():
@@ -49,6 +63,7 @@ from .models import PerformanceMetricsSchema, JoinORM, PredictionORM, Prediction
 from .services import get_db_session
 
 from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy import text
 import logging
 from typing import List
 from datetime import datetime, timezone
@@ -81,6 +96,69 @@ def get_active_predictions():
     finally:
         if session:
             session.close()
+
+from .models import RaceDataSchema, HorseSchema, Race
+from .logic import TrifectaAnalyzer
+import asyncio
+
+@app.get("/api/v1/races/all", response_model=List[RaceDataSchema])
+async def get_all_races():
+    """
+    The workhorse endpoint for the application. Fetches all race data,
+    analyzes it, and returns the enriched data.
+    """
+    orchestrator = services.DataSourceOrchestrator(session=get_db_session())
+    analyzer = TrifectaAnalyzer()
+
+    # 1. Fetch all raw race data
+    # This returns a list of simple `Race` objects
+    raw_races: List[Race] = await orchestrator.get_races()
+
+    enriched_races = []
+    for raw_race in raw_races:
+        # 2. Map the simple `Race` object to the rich `RaceDataSchema`
+        # This is a critical step. We provide default/placeholder values for
+        # fields that are not available from the basic adapters.
+        horses_for_schema = [
+            HorseSchema(
+                id=f"{raw_race.race_id}-{r.program_number}",
+                name=r.name,
+                number=r.program_number or 0,
+                jockey=r.jockey or "N/A",
+                trainer=r.trainer or "N/A",
+                odds=r.odds or 0.0,
+                morningLine=0.0, # Placeholder
+                speed=0,         # Placeholder
+                class_rating=0,  # Placeholder
+                form="",         # Placeholder
+                lastRaced=""     # Placeholder
+            ) for r in raw_race.runners
+        ]
+
+        race_data = RaceDataSchema(
+            id=raw_race.race_id,
+            track=raw_race.track_name,
+            raceNumber=raw_race.race_number or 0,
+            postTime=raw_race.post_time.isoformat() if raw_race.post_time else "",
+            horses=horses_for_schema,
+            conditions=raw_race.race_type or "Unknown", # Using race_type as conditions
+            distance="N/A", # Placeholder
+            surface="N/A"   # Placeholder
+        )
+
+        # 3. Use the new `TrifectaAnalyzer` to score and qualify each race
+        analysis_result = analyzer.analyze_race(race_data)
+
+        # 4. Add the analysis results to the schema object
+        race_data.checkmateScore = analysis_result["score"]
+        race_data.qualified = analysis_result["qualified"]
+        race_data.trifectaFactors = analysis_result["trifectaFactors"]
+
+        enriched_races.append(race_data)
+
+    # 5. Return the complete list of enriched race data
+    return enriched_races
+
 
 @app.get("/performance", response_model=PerformanceMetricsSchema)
 def get_performance():
@@ -140,7 +218,7 @@ def get_health():
     db_status = "ok"
     try:
         session = get_db_session()
-        session.execute("SELECT 1")
+        session.execute(text("SELECT 1"))
         session.close()
     except Exception as e:
         db_status = f"error: {e}"

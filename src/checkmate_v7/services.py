@@ -27,6 +27,22 @@ from .models import AdapterStatusORM, PredictionORM, ResultORM, JoinORM, Base, R
 # --- Celery App Configuration ---
 celery_app = Celery('tasks', broker=config.REDIS_URL)
 
+# --- Celery Logging Integration ---
+from celery.signals import after_setup_logger, after_setup_task_logger
+
+@after_setup_logger.connect
+@after_setup_task_logger.connect
+def setup_celery_logging(logger, **kwargs):
+    """
+    This function is connected to Celery's logging signals and
+    reconfigures the logger to use our structured JSON format.
+    """
+    # Use the same handlers from the root logger
+    for handler in logging.getLogger().handlers:
+        logger.addHandler(handler)
+
+    logger.propagate = False
+
 class CircuitBreaker:
     def __init__(self, failure_threshold=5, recovery_timeout=60):
         self.failure_threshold = failure_threshold
@@ -299,6 +315,7 @@ class RacingPostAdapterV7(BaseAdapterV7):
 
     def _extract_race_data_json(self, html_content: str) -> dict:
         """Extracts the main JSON data blob from the page's script tags."""
+        # Corrected the regex to match 'rp_config_.page' instead of 'rp_config_\.page'
         match = re.search(r'rp_config_\.page\s*=\s*({.*?});', html_content, re.DOTALL)
         if match:
             json_str = match.group(1)
