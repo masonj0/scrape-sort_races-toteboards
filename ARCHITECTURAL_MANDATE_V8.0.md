@@ -1,11 +1,11 @@
 # ARCHITECTURAL MANDATE V8.0
-**Project:** Checkmate V3: The Hybrid System
-**Status:** LOCKED & FINAL
-**Date:** 2025-09-18
+Project: Checkmate V3: The Hybrid System
+Status: LOCKED & FINAL
+Date: 2025-09-18
 
 ## 1.0 Abstract & Guiding Principles
 
-This document is the **final, locked architectural specification** for the Checkmate V3 project. It reflects our evolution into a hybrid, two-stack system. It is required reading for all AI teammates and serves as the single source of truth for the system's design.
+This document is the final, locked architectural specification for the Checkmate V3 project. It reflects our evolution into a hybrid, two-stack system. It is required reading for all AI teammates and serves as the single source of truth for the system's design.
 
 ### 1.1 The Two-Stack Architecture (Formerly The Five Pillars)
 
@@ -22,11 +22,11 @@ The system is now composed of two distinct, collaborating technology stacks:
 
 ### 1.2 Guiding Policies
 
-All implementation work must adhere to policies for **Configuration via Environment**, **Comprehensive Structured Logging**, and **Graceful Error Handling**.
+All implementation work must adhere to policies for Configuration via Environment, Comprehensive Structured Logging, and Graceful Error Handling.
 
 ### 1.3 The Modernization Mandate
 
-This remains a modernization project. The Python Engine **MUST** continue to leverage the project's historical logic. The React Cockpit **MUST** be considered the canonical implementation of the user experience.
+This remains a modernization project. The Python Engine MUST continue to leverage the project's historical logic. The React Cockpit MUST be considered the canonical implementation of the user experience.
 
 ---
 
@@ -38,7 +38,7 @@ The specifications for `models.py`, `logic.py`, `services.py`, and `api.py` rema
 
 ### 2.2 The React Cockpit
 
-The React application, as defined in the `checkmate-v7-production.tsx` artifact, is now the official blueprint for the project's user interface. The Python-based `dashboard.py` is now **deprecated** and will be archived.
+The React application, as defined in the `checkmate-v7-production.tsx` artifact, is now the official blueprint for the project's user interface. The Python-based `dashboard.py` is now **DEPRECATED** and will be archived.
 
 ### 2.3 The Headless Monitor
 
