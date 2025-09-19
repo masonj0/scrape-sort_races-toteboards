@@ -30,4 +30,5 @@ trio
 rich
 
 # Dashboarding
-streamlit
+dash
+requests

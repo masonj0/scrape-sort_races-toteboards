@@ -92,13 +92,13 @@ class PredictionSchema(BaseModel):
         orm_mode = True
 
 class PerformanceMetricsSchema(BaseModel):
-    total_bets: int
-    win_rate: float
-    roi_percent: float
-    net_profit: float
-    confidence_interval: List[float]
-    p_value: float
-    sample_size: int
+    totalBets: int
+    wins: int
+    winRate: float
+    roi: float
+    profit: float
+    confidenceInterval: List[float]
+    sampleSize: int
 
 class ActionStatusSchema(BaseModel):
     status: str
@@ -109,6 +109,40 @@ class HealthCheckResponse(BaseModel):
     status: str
     database: str
     celery: str
+
+# --- Data Contracts from React Blueprint ---
+
+class TrifectaFactorsSchema(BaseModel):
+    speedAdvantage: bool
+    classEdge: bool
+    valueOdds: bool
+
+class HorseSchema(BaseModel):
+    id: str
+    name: str
+    number: int
+    jockey: str
+    trainer: str
+    odds: float
+    morningLine: float
+    speed: int
+    class_rating: int
+    form: str
+    lastRaced: str
+
+class RaceDataSchema(BaseModel):
+    id: str
+    track: str
+    raceNumber: int
+    postTime: str
+    horses: List[HorseSchema]
+    conditions: str
+    distance: str
+    surface: str
+    checkmateScore: Optional[float] = None
+    qualified: Optional[bool] = None
+    trifectaFactors: Optional[TrifectaFactorsSchema] = None
+
 
 # --- Adapter Data Models ---
 
