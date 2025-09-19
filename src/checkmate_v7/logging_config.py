@@ -1,4 +1,5 @@
 import logging
+import sys
 from pythonjsonlogger import jsonlogger
 from . import config
 
@@ -7,11 +8,18 @@ def setup_logging():
     logger = logging.getLogger()
     logger.setLevel(config.LOG_LEVEL)
 
-    # Remove any existing handlers
-    for handler in logger.handlers[:]:
-        logger.removeHandler(handler)
+    # Remove any existing handlers to avoid conflicts
+    if logger.hasHandlers():
+        logger.handlers.clear()
 
-    logHandler = logging.StreamHandler()
-    formatter = jsonlogger.JsonFormatter('%(asctime)s %(name)s %(levelname)s %(message)s')
-    logHandler.setFormatter(formatter)
-    logger.addHandler(logHandler)
+    # Create a handler that outputs to stdout
+    log_handler = logging.StreamHandler(sys.stdout)
+
+    # Use a JSON formatter, renaming asctime to timestamp to match directive examples
+    formatter = jsonlogger.JsonFormatter(
+        '%(timestamp)s %(name)s %(levelname)s %(message)s',
+        rename_fields={'asctime': 'timestamp'}
+    )
+
+    log_handler.setFormatter(formatter)
+    logger.addHandler(log_handler)
