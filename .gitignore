@@ -24,3 +24,8 @@ env/
 *.db
 *.sqlite
 *.sqlite3
+
+# Node.js
+node_modules/
+/ui/node_modules/
+/ui/build/
