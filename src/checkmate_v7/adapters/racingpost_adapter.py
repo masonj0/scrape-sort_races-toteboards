@@ -35,6 +35,7 @@ class RacingPostModernAdapter(BaseAdapterV7):
 
     def _parse_races(self, html_content: str) -> List[Race]:
         """Parses races from the HTML content."""
+
         if not html_content:
             return []
 
