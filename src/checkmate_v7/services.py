@@ -24,6 +24,11 @@ from sqlalchemy.exc import SQLAlchemyError
 from . import config, logic
 from .models import AdapterStatusORM, PredictionORM, ResultORM, JoinORM, Base, Race, Runner
 from .base import CircuitBreaker, DefensiveFetcher, BaseAdapterV7
+from .adapters.fanduel import FanDuelApiAdapterV7
+from .adapters.twinspires_adapter import TwinspiresModernAdapter
+from .adapters.betfair_data_scientist_adapter import BetfairModernAdapter
+from .adapters.racingpost_adapter import RacingPostModernAdapter
+
 
 # --- Celery App Configuration ---
 celery_app = Celery('tasks', broker=config.REDIS_URL)
@@ -44,63 +49,62 @@ def setup_celery_logging(logger, **kwargs):
 
     logger.propagate = False
 
-from .adapters.fanduel import FanDuelApiAdapterV7
 
 
 class DataSourceOrchestrator:
     def __init__(self, session):
         self.fetcher = DefensiveFetcher()
         self.db_session = session
-        # Gold, Silver, Bronze tiering
+        # This list now contains our modern, modular adapters
         self.adapters: List[BaseAdapterV7] = [
-            # --- NEW TIER 1 API ADAPTERS ---
             FanDuelApiAdapterV7(self.fetcher),
-            BetfairDataScientistAdapterV7(self.fetcher),
-            TwinspiresAdapterV7(self.fetcher),
-            # --- EXISTING FOUNDATION ---
-            RacingPostAdapterV7(self.fetcher),
-            PointsBetAdapterV7(self.fetcher),
-            EquibaseAdapterV7(self.fetcher),
+            TwinspiresModernAdapter(self.fetcher),
+            BetfairModernAdapter(self.fetcher),
+            RacingPostModernAdapter(self.fetcher),
+            # TODO: Refit the remaining legacy adapters
+            # PointsBetAdapterV7(self.fetcher),
+            # EquibaseAdapterV7(self.fetcher),
+
         ]
 
-    async def get_races(self) -> List[Race]:
+    async def get_races(self) -> tuple[list[Race], list[dict]]:
         """
         Iterates through adapters by priority, attempting to fetch races.
-        Returns the first successful, non-empty list of races.
+        Now returns both the race data and a status report for each adapter.
         """
         all_races = []
+        statuses = []
         for adapter in self.adapters:
-            adapter_name = adapter.SOURCE_ID
-            logging.info(f"Attempting to fetch races from {adapter_name}")
+            adapter_id = adapter.__class__.__name__
+            races = []
+            error_message = None
+            status = "OK"
+
             try:
-                # In a real-world scenario, the URL would be dynamic or configured
-                # For now, we call fetch_races without arguments where possible
-                # or with a default/mock URL.
-                if isinstance(adapter, RacingPostAdapterV7):
-                    # This adapter needs a specific URL, which we don't have in this context.
-                    # We will rely on other adapters for now.
-                    logging.warning(f"Skipping {adapter_name} as it requires a specific URL.")
-                    continue
-
                 races = await adapter.fetch_races()
-
-                if races:
-                    logging.info(f"Successfully fetched {len(races)} races from {adapter_name}")
-                    # In a real system, we might aggregate or just return the first success
-                    all_races.extend(races)
-                    # For now, let's return after the first successful fetch to avoid duplicates
-                    return all_races
-                else:
-                    logging.info(f"No races found from {adapter_name}")
-
+                if not races:
+                    logging.info(f"No races found from {adapter_id}")
             except Exception as e:
-                logging.error(f"Failed to fetch from {adapter_name}: {e}")
-                # Here we would update the adapter status in the DB
-                # e.g., await self.update_adapter_status(adapter_name, "error")
-                continue
+                logging.error(f"Failed to fetch from {adapter_id}: {e}")
+                status = "ERROR"
+                error_message = str(e)
 
-        logging.info(f"Harvested a total of {len(all_races)} races from all sources.")
-        return all_races
+            statuses.append({
+                "adapter_id": adapter_id,
+                "status": status,
+                "races_found": len(races),
+                "error_message": error_message,
+                "last_run": datetime.now(timezone.utc).isoformat()
+            })
+
+            if races:
+                all_races.extend(races)
+                # For now, let's return after the first successful fetch to avoid duplicates
+                # and to ensure a timely response.
+                logging.info(f"Successfully fetched {len(races)} races from {adapter_id}")
+                break
+
+        return all_races, statuses
 
 def get_db_session():
     engine = create_engine(config.DATABASE_URL)
