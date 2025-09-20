@@ -1,97 +1,89 @@
 import dash
 from dash import dcc, html
 from dash.dependencies import Input, Output
+import dash_bootstrap_components as dbc
 import requests
 import pandas as pd
 import datetime
+import argparse
 
-# --- Styles ---
-STYLES = {
-    'app-container': {
-        'fontFamily': 'Arial, sans-serif',
-        'backgroundColor': '#f0f2f5',
-        'padding': '20px'
-    },
-    'header': {
-        'textAlign': 'center',
-        'marginBottom': '20px'
-    },
-    'main-content': {
-        'display': 'flex',
-        'flexDirection': 'row',
-        'gap': '20px'
-    },
-    'left-column': {
-        'flex': '3'
-    },
-    'right-column': {
-        'flex': '1',
-        'display': 'flex',
-        'flexDirection': 'column',
-        'gap': '20px'
-    },
-    'content-box': {
-        'border': '1px solid #ddd',
-        'borderRadius': '5px',
-        'padding': '20px',
-        'backgroundColor': 'white'
-    },
-    'metric-card': {
-        'border': '1px solid #eee',
-        'padding': '10px',
-        'borderRadius': '5px',
-        'marginBottom': '10px'
-    },
-    'tipsheet-card': {
-        'border': '1px solid #ddd',
-        'borderRadius': '5px',
-        'padding': '15px',
-        'marginBottom': '15px',
-        'boxShadow': '0 2px 4px rgba(0,0,0,0.1)'
-    }
-}
+# --- App Definition with Bootstrap Theme ---
+app = dash.Dash(__name__, external_stylesheets=[dbc.themes.FLATLY])
 
-# --- Helper Functions ---
+# --- Helper Functions (will be updated later) ---
 def make_metric_card(title, value):
     """Creates a styled metric card."""
-    return html.Div(style=STYLES['metric-card'], children=[
-        html.H4(title),
-        html.P(value, style={'fontSize': '24px', 'fontWeight': 'bold'})
-    ])
+    return dbc.Card(
+        dbc.CardBody([
+            html.H4(title, className="card-title"),
+            html.P(value, className="card-text", style={'fontSize': '24px', 'fontWeight': 'bold'})
+        ]),
+        className="mb-3",
+    )
 
 def make_tipsheet_card(race):
-    """Creates a styled card for a single race on the tipsheet."""
-    top_horse = race.get('horses', [{}])[0]
-    return html.Div(style=STYLES['tipsheet-card'], children=[
-        html.H3(f"{race.get('track')} - Race {race.get('raceNumber')}"),
-        html.P(f"Post Time: {datetime.datetime.fromisoformat(race.get('postTime')).strftime('%H:%M')}"),
-        html.Hr(),
-        html.H4("Top Selection"),
-        html.P(f"#{top_horse.get('number', 'N/A')} {top_horse.get('name', 'N/A')} ({top_horse.get('odds', 'N/A')})"),
-        html.Small(f"Jockey: {top_horse.get('jockey', 'N/A')} | Trainer: {top_horse.get('trainer', 'N/A')}")
-    ])
+    """Creates an enhanced, styled card for a single race on the tipsheet."""
 
-# --- App Definition ---
-app = dash.Dash(__name__)
+    # --- Trifecta Factors Badges ---
+    factors = race.get('trifectaFactors', {})
+    badges = []
+    if factors.get('speedAdvantage'):
+        badges.append(dbc.Badge("Speed Advantage", color="success", className="me-1"))
+    if factors.get('classEdge'):
+        badges.append(dbc.Badge("Class Edge", color="info", className="me-1"))
+    if factors.get('valueOdds'):
+        badges.append(dbc.Badge("Value Odds", color="warning", className="me-1"))
 
-app.layout = html.Div(style=STYLES['app-container'], children=[
-    html.Div(style=STYLES['header'], children=[
-        html.H1(children='Checkmate V7 - Cockpit')
-    ]),
+    # --- Top 3 Horses List ---
+    top_horses = race.get('horses', [])[:3]
+    horse_list_items = []
+    if top_horses:
+        for horse in top_horses:
+            horse_list_items.append(html.Li(
+                f"#{horse.get('number', 'N/A')} {horse.get('name', 'N/A')} ({horse.get('odds', 'N/A')})"
+            ))
+    else:
+        horse_list_items.append(html.Li("No horse data available."))
 
-    html.Div(style=STYLES['main-content'], children=[
-        html.Div(style=STYLES['left-column'], children=[
-            html.Div(id='tipsheet-container', style=STYLES['content-box'])
+    return dbc.Card(
+        dbc.CardBody([
+            html.H3(f"{race.get('track')} - Race {race.get('raceNumber')}", className="card-title"),
+            html.P(f"Post Time: {datetime.datetime.fromisoformat(race.get('postTime')).strftime('%H:%M')} | Score: {race.get('checkmateScore', 0):.2f}"),
+            html.Div(badges, className="mb-3"),
+            html.Hr(),
+            html.H4("Top Contenders"),
+            html.Ul(horse_list_items)
         ]),
-        html.Div(style=STYLES['right-column'], children=[
-            html.Div(id='metric-cards-container', style=STYLES['content-box']),
-            html.Div(id='feed-status-container', style=STYLES['content-box'])
-        ])
-    ]),
+        className="mb-3",
+    )
 
+# --- App Layout ---
+app.layout = dbc.Container(fluid=True, children=[
+    # Header
+    dbc.Row(
+        dbc.Col(html.H1("Checkmate V7 - Cockpit", className="text-center my-4"), width=12)
+    ),
+    # Main Content
+    dbc.Row([
+        # Left Column for Tipsheet
+        dbc.Col(
+            dbc.Card(dbc.CardBody(id='tipsheet-container')),
+            width=8
+        ),
+        # Right Column for Metrics and Status
+        dbc.Col(
+            [
+                dbc.Card(dbc.CardBody(id='metric-cards-container'), className="mb-3"),
+                dbc.Card(dbc.CardBody(id='feed-status-container'))
+            ],
+            width=4
+        )
+    ]),
+    # Interval component for live updates
     dcc.Interval(id='interval-component', interval=5*1000, n_intervals=0)
 ])
 
+# --- Callbacks (to be updated later) ---
 @app.callback(
     [Output('metric-cards-container', 'children'),
      Output('tipsheet-container', 'children'),
@@ -100,15 +92,21 @@ app.layout = html.Div(style=STYLES['app-container'], children=[
 )
 def update_live_data(n):
     try:
-        response = requests.get('http://127.0.0.1:8000/api/v1/races/all')
-        response.raise_for_status()
-        races = response.json()
+        # Fetch data from both endpoints, now using port 8001
+        api_url_base = "http://127.0.0.1:8001"
+        races_response = requests.get(f'{api_url_base}/api/v1/races/all')
+        races_response.raise_for_status()
+        races = races_response.json()
+
+        status_response = requests.get(f'{api_url_base}/api/v1/adapters/status')
+        status_response.raise_for_status()
+        statuses = status_response.json()
 
         qualified_races = [race for race in races if race.get('qualified', False)]
 
         # --- Metric Cards ---
         metric_cards = [
-            html.H2('Metrics'),
+            html.H2('Metrics', className="card-title"),
             make_metric_card('Total Races Analyzed', len(races)),
             make_metric_card('Qualified Races', len(qualified_races))
         ]
@@ -116,15 +114,21 @@ def update_live_data(n):
         # --- Tipsheet ---
         if qualified_races:
             tipsheet_cards = [make_tipsheet_card(race) for race in qualified_races]
-            tipsheet = [html.H2('Live Tipsheet'), *tipsheet_cards]
+            tipsheet = [html.H2('Live Tipsheet', className="card-title"), *tipsheet_cards]
         else:
-            tipsheet = [html.H2('Live Tipsheet'), html.P('No qualified races at the moment.')]
+            tipsheet = [html.H2('Live Tipsheet', className="card-title"), html.P('No qualified races at the moment.')]
 
         # --- Feed Status ---
+        status_items = []
+        for status in statuses:
+            color = "success" if status.get('status') == "OK" else "danger"
+            status_text = f"{status.get('adapter_id')}: {status.get('status')} ({status.get('races_found')} found)"
+            status_items.append(dbc.ListGroupItem(status_text, color=color))
+
         feed_status = [
-            html.H2('Feed Status'),
+            html.H2('Feed Status', className="card-title"),
             html.P(f"Last Update: {datetime.datetime.now().strftime('%H:%M:%S')}"),
-            html.P("Status: Connected to API", style={'color': 'green'})
+            dbc.ListGroup(status_items, flush=True)
         ]
         return metric_cards, tipsheet, feed_status
 
@@ -135,9 +139,14 @@ def update_live_data(n):
         status_display_error = [
             html.H2('Feed Status'),
             html.P(f"Last Update Attempt: {datetime.datetime.now().strftime('%H:%M:%S')}"),
-            html.P("Status: API Connection Failed", style={'color': 'red'})
+            html.P("Status: API Connection Failed", className="text-danger")
         ]
         return metric_cards_error, tipsheet_error, status_display_error
 
+# --- Main Execution ---
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=8050)
+    parser = argparse.ArgumentParser(description="Run the Checkmate Cockpit Dash app.")
+    parser.add_argument('--port', type=int, default=8050, help='Port to run the app on.')
+    args = parser.parse_args()
+
+    app.run(debug=True, host='0.0.0.0', port=args.port)
