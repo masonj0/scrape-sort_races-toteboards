@@ -1,7 +1,7 @@
 # ARCHITECTURAL MANDATE V8.0
 Project: Checkmate V3: The Hybrid System
 Status: LOCKED & FINAL
-Date: 2025-09-18
+Date: 2025-09-19
 
 ## 1.0 Abstract & Guiding Principles
 
@@ -34,7 +34,7 @@ This remains a modernization project. The Python Engine MUST continue to leverag
 
 ### 2.1 The Python Engine
 
-The specifications for `models.py`, `logic.py`, `services.py`, and `api.py` remain as defined in the V7.2 mandate. Their primary role is to serve the React frontend.
+The specifications for `models.py`, `logic.py`, `services.py`, and `api.py` from the V7.2 mandate remain the canonical blueprint for the Python backend. Their primary role is to serve the React frontend.
 
 ### 2.2 The React Cockpit
 
