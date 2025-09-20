@@ -23,12 +23,6 @@ from sqlalchemy.exc import SQLAlchemyError
 
 from . import config, logic
 from .models import AdapterStatusORM, PredictionORM, ResultORM, JoinORM, Base, Race, Runner
-from .base import CircuitBreaker, DefensiveFetcher, BaseAdapterV7
-from .adapters.fanduel import FanDuelApiAdapterV7
-from .adapters.twinspires_adapter import TwinspiresModernAdapter
-from .adapters.betfair_data_scientist_adapter import BetfairModernAdapter
-from .adapters.racingpost_adapter import RacingPostModernAdapter
-
 
 # --- Celery App Configuration ---
 celery_app = Celery('tasks', broker=config.REDIS_URL)
@@ -49,59 +43,126 @@ def setup_celery_logging(logger, **kwargs):
 
     logger.propagate = False
 
+class CircuitBreaker:
+    def __init__(self, failure_threshold=5, recovery_timeout=60):
+        self.failure_threshold = failure_threshold
+        self.recovery_timeout = recovery_timeout
+        self.failure_count = 0
+        self.state = "closed"
+        self.last_failure_time = None
+
+    async def __aenter__(self):
+        if self.state == "open":
+            if time.time() - self.last_failure_time > self.recovery_timeout:
+                self.state = "half-open"
+            else:
+                raise Exception("Circuit is open")
+        return self
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        if exc_type:
+            self.failure_count += 1
+            if self.failure_count >= self.failure_threshold:
+                self.state = "open"
+                self.last_failure_time = time.time()
+        elif self.state == "half-open":
+            self.failure_count = 0
+            self.state = "closed"
+
+class DefensiveFetcher:
+    def __init__(self):
+        self.circuit_breakers = {}
+
+    async def fetch(self, url, headers=None, response_type='text'):
+        return await self._request('GET', url, headers=headers, response_type=response_type)
+
+    async def post(self, url, headers=None, json_data=None, response_type='json'):
+        return await self._request('POST', url, headers=headers, json_data=json_data, response_type=response_type)
+
+    async def _request(self, method, url, headers=None, json_data=None, response_type='text'):
+        domain = url.split('/')[2]
+        if domain not in self.circuit_breakers:
+            self.circuit_breakers[domain] = CircuitBreaker()
+
+        cb = self.circuit_breakers[domain]
+
+        retries = 5
+        for i in range(retries):
+            try:
+                async with cb:
+                    async with aiohttp.ClientSession(headers=headers) as session:
+                        await asyncio.sleep(random.uniform(0.5, 1.5))
+
+                        async with session.request(method, url, json=json_data, timeout=15) as response:
+                            response.raise_for_status()
+                            if response_type == 'json':
+                                return await response.json()
+                            else:
+                                return await response.text()
+            except Exception as e:
+                logging.warning(f"Attempt {i+1}/{retries} failed for {method} {url}: {e}")
+                if i < retries - 1:
+                    wait_time = (2 ** i) + random.uniform(0, 1)
+                    logging.info(f"Retrying in {wait_time:.2f} seconds...")
+                    await asyncio.sleep(wait_time)
+                else:
+                    logging.error(f"All retries failed for {method} {url}")
+                    raise
+
 class DataSourceOrchestrator:
     def __init__(self, session):
         self.fetcher = DefensiveFetcher()
         self.db_session = session
-        # This list now contains our modern, modular adapters
+        # Gold, Silver, Bronze tiering
         self.adapters: List[BaseAdapterV7] = [
-            FanDuelApiAdapterV7(self.fetcher),
-            TwinspiresModernAdapter(self.fetcher),
-            BetfairModernAdapter(self.fetcher),
-            RacingPostModernAdapter(self.fetcher),
-            # TODO: Refit the remaining legacy adapters
-            # PointsBetAdapterV7(self.fetcher),
-            # EquibaseAdapterV7(self.fetcher),
+            # --- NEW TIER 1 API ADAPTERS ---
+            FanDuelGraphQLAdapterV7(self.fetcher),
+            BetfairDataScientistAdapterV7(self.fetcher),
+            TwinspiresAdapterV7(self.fetcher),
+            # --- EXISTING FOUNDATION ---
+            RacingPostAdapterV7(self.fetcher),
+            PointsBetAdapterV7(self.fetcher),
+            EquibaseAdapterV7(self.fetcher),
         ]
 
-    async def get_races(self) -> tuple[list[Race], list[dict]]:
+    async def get_races(self) -> List[Race]:
         """
         Iterates through adapters by priority, attempting to fetch races.
-        Now returns both the race data and a status report for each adapter.
+        Returns the first successful, non-empty list of races.
         """
         all_races = []
-        statuses = []
         for adapter in self.adapters:
-            adapter_id = adapter.__class__.__name__
-            races = []
-            error_message = None
-            status = "OK"
-
+            adapter_name = adapter.SOURCE_ID
+            logging.info(f"Attempting to fetch races from {adapter_name}")
             try:
+                # In a real-world scenario, the URL would be dynamic or configured
+                # For now, we call fetch_races without arguments where possible
+                # or with a default/mock URL.
+                if isinstance(adapter, RacingPostAdapterV7):
+                    # This adapter needs a specific URL, which we don't have in this context.
+                    # We will rely on other adapters for now.
+                    logging.warning(f"Skipping {adapter_name} as it requires a specific URL.")
+                    continue
+
                 races = await adapter.fetch_races()
-                if not races:
-                    logging.info(f"No races found from {adapter_id}")
+
+                if races:
+                    logging.info(f"Successfully fetched {len(races)} races from {adapter_name}")
+                    # In a real system, we might aggregate or just return the first success
+                    all_races.extend(races)
+                    # For now, let's return after the first successful fetch to avoid duplicates
+                    return all_races
+                else:
+                    logging.info(f"No races found from {adapter_name}")
+
             except Exception as e:
-                logging.error(f"Failed to fetch from {adapter_id}: {e}")
-                status = "ERROR"
-                error_message = str(e)
+                logging.error(f"Failed to fetch from {adapter_name}: {e}")
+                # Here we would update the adapter status in the DB
+                # e.g., await self.update_adapter_status(adapter_name, "error")
+                continue
 
-            statuses.append({
-                "adapter_id": adapter_id,
-                "status": status,
-                "races_found": len(races),
-                "error_message": error_message,
-                "last_run": datetime.now(timezone.utc).isoformat()
-            })
-
-            if races:
-                all_races.extend(races)
-                # For now, let's return after the first successful fetch to avoid duplicates
-                # and to ensure a timely response.
-                logging.info(f"Successfully fetched {len(races)} races from {adapter_id}")
-                break
-
-        return all_races, statuses
+        logging.info(f"Harvested a total of {len(all_races)} races from all sources.")
+        return all_races
 
 def get_db_session():
     engine = create_engine(config.DATABASE_URL)
