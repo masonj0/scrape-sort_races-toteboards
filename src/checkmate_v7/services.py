@@ -49,7 +49,6 @@ def setup_celery_logging(logger, **kwargs):
 
     logger.propagate = False
 
-
 class DataSourceOrchestrator:
     def __init__(self, session):
         self.fetcher = DefensiveFetcher()
