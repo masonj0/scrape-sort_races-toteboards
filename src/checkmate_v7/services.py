@@ -50,6 +50,7 @@ def setup_celery_logging(logger, **kwargs):
     logger.propagate = False
 
 
+
 class DataSourceOrchestrator:
     def __init__(self, session):
         self.fetcher = DefensiveFetcher()
@@ -63,6 +64,7 @@ class DataSourceOrchestrator:
             # TODO: Refit the remaining legacy adapters
             # PointsBetAdapterV7(self.fetcher),
             # EquibaseAdapterV7(self.fetcher),
+
         ]
 
     async def get_races(self) -> tuple[list[Race], list[dict]]:
