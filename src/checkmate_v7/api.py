@@ -97,9 +97,30 @@ def get_active_predictions():
         if session:
             session.close()
 
-from .models import RaceDataSchema, HorseSchema, Race
+from .models import RaceDataSchema, HorseSchema, Race, BaseModel
 from .logic import TrifectaAnalyzer
 import asyncio
+from typing import Optional
+
+# --- Pydantic Schemas for API Responses ---
+class AdapterStatusSchema(BaseModel):
+    adapter_id: str
+    status: str
+    races_found: int
+    error_message: Optional[str] = None
+    notes: Optional[str] = None
+    last_run: str
+
+# --- API Endpoints ---
+
+@app.get("/api/v1/adapters/status", response_model=List[AdapterStatusSchema])
+async def get_adapter_status():
+    """
+    Returns the real-time status of each data adapter in the system.
+    """
+    orchestrator = services.DataSourceOrchestrator(session=get_db_session())
+    _, statuses = await orchestrator.get_races()
+    return statuses
 
 @app.get("/api/v1/races/all", response_model=List[RaceDataSchema])
 async def get_all_races():
@@ -111,8 +132,8 @@ async def get_all_races():
     analyzer = TrifectaAnalyzer()
 
     # 1. Fetch all raw race data
-    # This returns a list of simple `Race` objects
-    raw_races: List[Race] = await orchestrator.get_races()
+    # get_races now returns a tuple: (races, statuses)
+    raw_races, _ = await orchestrator.get_races()
 
     enriched_races = []
     for raw_race in raw_races:
@@ -150,7 +171,7 @@ async def get_all_races():
         analysis_result = analyzer.analyze_race(race_data)
 
         # 4. Add the analysis results to the schema object
-        race_data.checkmateScore = analysis_result["score"]
+        race_data.checkmateScore = analysis_result["checkmateScore"]
         race_data.qualified = analysis_result["qualified"]
         race_data.trifectaFactors = analysis_result["trifectaFactors"]
 

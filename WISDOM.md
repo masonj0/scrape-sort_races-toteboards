@@ -1,27 +1,51 @@
-# THE COLLECTED WISDOM OF THE PADDOCK PARSER PROJECT
-Version: 4.1
-Status: REQUIRED READING
+# The Collected Wisdom of the Jules-Series Agents
 
-## 1.0 Abstract
-
-This document is a living artifact containing the hard-won wisdom, core principles, and non-negotiable operational protocols forged during the development of the Paddock Parser and Checkmate V3 systems. Adherence to these principles is mandatory.
+*A summary of the safest and riskiest actions for an implementation agent, compiled from the exit interviews and handoff documents of multiple Jules agents.*
 
 ---
 
-## 2.0 Core Principles
+## Safest Actions (The Path to Success)
 
-*   **The Prime Directive:** To identify "Favorite to Place" betting opportunities and build a "Closed Loop" system to track their historical ROI. All actions must ultimately serve this directive.
-*   **The "Polyglot Renaissance" Philosophy:** We operate as a "Council of AIs" under the direction of a human Project Lead. We discover, translate, and synthesize the best solutions, regardless of their origin or language.
-*   **The "Best Stack for the Job" Principle:** We officially embrace a hybrid, two-stack architecture. We use Python for its strengths in data processing and backend services (The Engine), and we use React/JavaScript for its strengths in creating modern, interactive user interfaces (The Cockpit).
-*   **Verify, Then Act:** The single most important principle. Never trust memory, state, or prior briefings. Always use read-only tools to verify the current state of the environment before taking any write action.
-*   **The Modernization Mandate:** Our work is a refactoring and hardening of existing, proven logic—not a rewrite from scratch. We build upon the valuable history of the project, transplanting battle-tested logic into superior architectural patterns.
+### 1. Verify, Then Act (The 'Ground Truth' Protocol)
+The single most-cited safe action. Agents must never trust session history, mission briefings, or their own memory. The only source of truth is the direct output of read-only tools like `ls`, `read_file`, and `grep` used immediately before an action is taken.
+*(Cited by: Jules910, Interface Jules, Jules909, Jules906B, Jules906, Jules904B)*
+
+### 2. Adhere to Formal Protocols & Directives
+Explicitly follow the established protocols in `AGENTS.md` and the direct instructions of the Project Lead. These rules were forged from past failures and are the surest path to success.
+*(Cited by: Interface Jules, Jules906B, Jules906)*
+
+### 3. Embrace Test-First Development (TDD)
+Use the test suite as the primary guide for development and the ultimate arbiter of correctness. Write failing tests first, run tests after every small change, and never proceed if tests are failing.
+*(Cited by: Jules910, Jules909, Jules906B, Jules906, Jules904B)*
+
+### 4. Communicate Blockers & Ambiguity Immediately
+If a tool fails, a directive is contradictory, or the environment behaves anomalously, the safest action is to halt all work, report the exact situation, and await guidance. Proceeding on assumptions is a high-risk gamble.
+*(Cited by: Jules910, Interface Jules, Jules909, Jules906B, Jules906, Jules904B)*
+
+### 5. Make Small, Atomic Commits
+Avoid large, monolithic changes. Execute the smallest possible change that moves the mission forward and can be easily verified. This makes debugging and recovery dramatically simpler.
+*(Cited by: Jules909, Jules906B, Jules904B)*
 
 ---
 
-## 3.0 Foundational Operational Protocols
+## Riskiest Actions (The Path to Corruption)
 
-*   **Protocol 0: The ReviewableJSON Mandate:** All significant code handoffs MUST be conducted via a `ReviewableJSON` file.
-*   **Protocol 14: The Synchronization Mandate:** Project state MUST be synchronized using `git pull`. The use of `git reset` is forbidden except under emergency directive.
-*   **Protocol 16: The Digital Attic Protocol:** Files are not deleted. They are archived to an `/attic` directory.
-*   **Protocol 19: The Stateless Verification Mandate:** The Architect must review code with fresh eyes, comparing it only against the provided specification.
-*   **Protocol 20: The Sudo Sanction Protocol:** A Jules agent can be granted temporary, audited `sudo` privileges by the Project Lead for specific environment management tasks.
+### 1. Making Unverified Assumptions
+The universally cited root cause of all catastrophic failures. Assuming a file's content, a tool's behavior, or the accuracy of a mission briefing without direct, real-time verification is the most dangerous action an agent can take.
+*(Cited by: Jules910, Interface Jules, Jules909, Jules906B, Jules906, Jules904B)*
+
+### 2. Unauthorized Environment Modification
+Using forbidden or high-risk commands like `reset_all()`, `git reset --hard` (unless explicitly authorized), or `pip install` for unapproved packages. These actions are known to corrupt the fragile workspace beyond repair.
+*(Cited by: Interface Jules, Jules909, Jules906B, Jules904B)*
+
+### 3. Blind Trust in Tools or Directives
+Assuming a write operation succeeded without verifying, or trusting a code review or mission briefing that contradicts the ground truth of the codebase. All external inputs must be validated against direct observation.
+*(Cited by: Jules910, Interface Jules, Jules906)*
+
+### 4. Ignoring Anomalies or Failing Tests
+Pushing forward with new code when the environment is behaving strangely or tests are failing. These are critical stop signals that indicate a deeper problem. Ignoring them only compounds the failure.
+*(Cited by: Jules909, Jules906, Jules904B)*
+
+### 5. Large-Scale, Monolithic Changes
+Attempting to perform complex refactoring across multiple files in a single step. This is extremely high-risk, as a single flawed assumption can invalidate the entire effort and make recovery nearly impossible.
+*(Cited by: Jules904B)*

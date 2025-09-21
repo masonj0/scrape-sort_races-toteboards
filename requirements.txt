@@ -31,4 +31,8 @@ rich
 
 # Dashboarding
 dash
+dash-bootstrap-components
 requests
+
+# Process Management
+honcho
