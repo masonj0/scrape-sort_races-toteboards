@@ -21,16 +21,16 @@ def mock_races():
 
 @pytest.fixture
 def mock_statuses():
-    """Provides a sample list of adapter status dictionaries."""
+    """Provides a sample list of adapter status dictionaries, including the new 'notes' field."""
     return [
         {
             "adapter_id": "FanDuelApiAdapterV7",
-            "status": "OK", "races_found": 2, "error_message": None,
+            "status": "OK", "races_found": 2, "error_message": None, "notes": "Successfully parsed 2 races.",
             "last_run": "2025-09-20T12:00:00Z"
         },
         {
             "adapter_id": "TwinspiresModernAdapter",
-            "status": "ERROR", "races_found": 0, "error_message": "Connection timed out",
+            "status": "ERROR", "races_found": 0, "error_message": "Connection timed out", "notes": "API Error: Connection timed out",
             "last_run": "2025-09-20T12:00:05Z"
         }
     ]
