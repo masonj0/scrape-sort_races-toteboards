@@ -74,3 +74,19 @@ def test_get_races_all_endpoint_handles_new_signature(mock_races, mock_statuses)
         assert len(response_data) == 2
         assert response_data[0]["id"] == "R1"
         assert response_data[1]["track"] == "Santa Anita"
+
+def test_post_refresh_action_endpoint():
+    """
+    Tests the new POST /api/v1/actions/refresh endpoint.
+    It should simply return a 200 OK with the specified acknowledgement message.
+    """
+    # Act
+    response = client.post("/api/v1/actions/refresh")
+
+    # Assert
+    assert response.status_code == 200
+    expected_response = {
+        "status": "acknowledged",
+        "message": "A data refresh can be triggered by hitting the primary data endpoints."
+    }
+    assert response.json() == expected_response
