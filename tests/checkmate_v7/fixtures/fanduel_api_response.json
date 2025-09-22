@@ -1,0 +1,46 @@
+{
+    "data": {
+        "allRaces": {
+            "edges": [
+                {
+                    "node": {
+                        "trackName": "Saratoga",
+                        "raceNumber": 5,
+                        "postTime": "2025-09-15T20:00:00Z",
+                        "runners": [
+                            {
+                                "runnerName": "Secretariat",
+                                "odds": { "decimal": 3.0 },
+                                "scratched": false
+                            },
+                            {
+                                "runnerName": "Man o' War",
+                                "odds": { "decimal": 6.0 },
+                                "scratched": false
+                            },
+                            {
+                                "runnerName": "Scratched Horse",
+                                "odds": { "decimal": 11.0 },
+                                "scratched": true
+                            }
+                        ]
+                    }
+                },
+                {
+                    "node": {
+                        "trackName": "Belmont Park",
+                        "raceNumber": 3,
+                        "postTime": "2025-09-15T18:30:00Z",
+                        "runners": [
+                             {
+                                "runnerName": "Seabiscuit",
+                                "odds": { "decimal": 1.5 },
+                                "scratched": false
+                            }
+                        ]
+                    }
+                }
+            ]
+        }
+    }
+}
