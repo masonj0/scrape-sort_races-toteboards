@@ -1,17 +1,15 @@
 import pytest
-from unittest.mock import MagicMock, AsyncMock
+from unittest.mock import MagicMock
 
 from src.checkmate_v7.services import DataSourceOrchestrator
 from src.checkmate_v7.adapters.fanduel import FanDuelApiAdapterV7
+from src.checkmate_v7.models import Race
 
 @pytest.fixture
 def mock_session():
     """Provides a mock database session."""
     return MagicMock()
 
-from src.checkmate_v7.models import Race
-
-@pytest.mark.anyio
 @pytest.mark.parametrize(
     "adapter_return_value, adapter_side_effect, expected_note, expected_status",
     [
@@ -21,7 +19,7 @@ from src.checkmate_v7.models import Race
     ],
     ids=["success", "no_races", "error"]
 )
-async def test_get_races_returns_status_with_notes(
+def test_get_races_returns_status_with_notes(
     mock_session, adapter_return_value, adapter_side_effect, expected_note, expected_status
 ):
     """
@@ -32,7 +30,7 @@ async def test_get_races_returns_status_with_notes(
     orchestrator = DataSourceOrchestrator(mock_session)
 
     mock_adapter_instance = MagicMock(spec=FanDuelApiAdapterV7)
-    mock_adapter_instance.fetch_races = AsyncMock(
+    mock_adapter_instance.fetch_races = MagicMock(
         return_value=adapter_return_value,
         side_effect=adapter_side_effect
     )
@@ -41,7 +39,7 @@ async def test_get_races_returns_status_with_notes(
     # The orchestrator should break on the first success, so for the empty and error
     # cases, we need a successful adapter to follow it.
     mock_successful_adapter = MagicMock(spec=FanDuelApiAdapterV7)
-    mock_successful_adapter.fetch_races = AsyncMock(return_value=[Race(race_id="r2", track_name="TrackB", runners=[])])
+    mock_successful_adapter.fetch_races = MagicMock(return_value=[Race(race_id="r2", track_name="TrackB", runners=[])])
     mock_successful_adapter.__class__.__name__ = "SuccessAdapter"
 
     if expected_status == "OK" and not adapter_return_value:
@@ -53,7 +51,7 @@ async def test_get_races_returns_status_with_notes(
 
 
     # Act
-    _, statuses = await orchestrator.get_races()
+    _, statuses = orchestrator.get_races()
 
     # Assert
     assert len(statuses) >= 1
