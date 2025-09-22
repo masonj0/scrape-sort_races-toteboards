@@ -1,0 +1,521 @@
+# Operation: Know Thyself - Diagnostic Report
+
+## Phase 1: Baseline Process Analysis
+
+### Command: ps aux
+
+USER         PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
+root           1  0.0  0.1  21296 12416 ?        Ss   Sep21   0:10 /usr/sbin/init
+root           2  0.0  0.0      0     0 ?        S    Sep21   0:00 [kthreadd]
+root           3  0.0  0.0      0     0 ?        S    Sep21   0:00 [pool_workqueue_release]
+root           4  0.0  0.0      0     0 ?        I<   Sep21   0:00 [kworker/R-rcu_g]
+root           5  0.0  0.0      0     0 ?        I<   Sep21   0:00 [kworker/R-rcu_p]
+root           6  0.0  0.0      0     0 ?        I<   Sep21   0:00 [kworker/R-slub_]
+root           7  0.0  0.0      0     0 ?        I<   Sep21   0:00 [kworker/R-netns]
+root           9  0.0  0.0      0     0 ?        I<   Sep21   0:00 [kworker/0:0H-events_highpri]
+root          12  0.0  0.0      0     0 ?        I<   Sep21   0:00 [kworker/R-mm_pe]
+root          13  0.0  0.0      0     0 ?        I    Sep21   0:00 [rcu_tasks_kthread]
+root          14  0.0  0.0      0     0 ?        I    Sep21   0:00 [rcu_tasks_trace_kthread]
+root          15  0.0  0.0      0     0 ?        S    Sep21   0:00 [ksoftirqd/0]
+root          16  0.0  0.0      0     0 ?        I    Sep21   0:04 [rcu_preempt]
+root          17  0.0  0.0      0     0 ?        S    Sep21   0:00 [migration/0]
+root          18  0.0  0.0      0     0 ?        S    Sep21   0:00 [cpuhp/0]
+root          19  0.0  0.0      0     0 ?        S    Sep21   0:00 [cpuhp/1]
+root          20  0.0  0.0      0     0 ?        S    Sep21   0:01 [migration/1]
+root          21  0.0  0.0      0     0 ?        S    Sep21   0:00 [ksoftirqd/1]
+root          23  0.0  0.0      0     0 ?        I<   Sep21   0:00 [kworker/1:0H-kblockd]
+root          24  0.0  0.0      0     0 ?        S    Sep21   0:00 [cpuhp/2]
+root          25  0.0  0.0      0     0 ?        S    Sep21   0:01 [migration/2]
+root          26  0.0  0.0      0     0 ?        S    Sep21   0:00 [ksoftirqd/2]
+root          28  0.0  0.0      0     0 ?        I<   Sep21   0:00 [kworker/2:0H]
+root          29  0.0  0.0      0     0 ?        S    Sep21   0:00 [cpuhp/3]
+root          30  0.0  0.0      0     0 ?        S    Sep21   0:01 [migration/3]
+root          31  0.0  0.0      0     0 ?        S    Sep21   0:00 [ksoftirqd/3]
+root          33  0.0  0.0      0     0 ?        I<   Sep21   0:00 [kworker/3:0H-kblockd]
+root          34  0.0  0.0      0     0 ?        S    Sep21   0:00 [kdevtmpfs]
+root          35  0.0  0.0      0     0 ?        I<   Sep21   0:00 [kworker/R-inet_]
+root          36  0.0  0.0      0     0 ?        S    Sep21   0:00 [oom_reaper]
+root          37  0.0  0.0      0     0 ?        I<   Sep21   0:00 [kworker/R-write]
+root          38  0.0  0.0      0     0 ?        S    Sep21   0:00 [kcompactd0]
+root          39  0.0  0.0      0     0 ?        SN   Sep21   0:00 [ksmd]
+root          40  0.0  0.0      0     0 ?        SN   Sep21   0:00 [khugepaged]
+root          41  0.0  0.0      0     0 ?        I<   Sep21   0:00 [kworker/R-crypt]
+root          42  0.0  0.0      0     0 ?        I<   Sep21   0:00 [kworker/R-kbloc]
+root          50  0.0  0.0      0     0 ?        I<   Sep21   0:00 [kworker/0:1H-kblockd]
+root          81  0.0  0.0      0     0 ?        S    Sep21   0:00 [kswapd0]
+root          84  0.0  0.0      0     0 ?        I<   Sep21   0:00 [kworker/R-kthro]
+root          89  0.0  0.0      0     0 ?        S    Sep21   0:00 [irq/24-ACPI:Ged]
+root          95  0.0  0.0      0     0 ?        I<   Sep21   0:00 [kworker/R-acpi_]
+root         178  0.0  0.0      0     0 ?        I<   Sep21   0:00 [kworker/R-kstrp]
+root         399  0.0  0.0      0     0 ?        I<   Sep21   0:00 [kworker/3:1H-kblockd]
+root         402  0.0  0.0      0     0 ?        I<   Sep21   0:00 [kworker/1:1H-kblockd]
+root         403  0.0  0.0      0     0 ?        S    Sep21   0:01 [jbd2/vdb-8]
+root         404  0.0  0.0      0     0 ?        I<   Sep21   0:00 [kworker/R-ext4-]
+root         423  0.0  0.0      0     0 ?        I<   Sep21   0:00 [kworker/2:1H-kblockd]
+root         429  0.1  0.3  67252 32512 ?        S<s  Sep21   0:16 /usr/lib/systemd/systemd-journald
+root         780  0.0  0.0  23960  5760 ?        Ss   Sep21   0:02 /usr/lib/systemd/systemd-udevd
+systemd+     816  0.0  0.1  21456 13056 ?        Ss   Sep21   0:00 /usr/lib/systemd/systemd-resolved
+systemd+     817  0.0  0.0  91024  7936 ?        Ssl  Sep21   0:00 /usr/lib/systemd/systemd-timesyncd
+message+     829  0.0  0.0   9544  4864 ?        Ss   Sep21   0:01 @dbus-daemon --system --address=systemd: --nofork --nopidfile --systemd-activation --syslog-only
+root         838  0.0  0.1  18024  8704 ?        Ss   Sep21   0:00 /usr/lib/systemd/systemd-logind
+root         846  0.0  0.0   6104  1920 tty1     Ss+  Sep21   0:00 /sbin/agetty -o -p -- \u --noclear - linux
+root         853  0.0  0.0   6148  2048 ttyS0    Ss+  Sep21   0:00 /sbin/agetty -o -p -- \u --keep-baud 115200,57600,38400,9600 - vt220
+root         878  0.0  0.2 110644 23520 ?        Ssl  Sep21   0:02 /usr/bin/python3 /usr/share/unattended-upgrades/unattended-upgrade-shutdown --wait-for-signal
+root         887  0.0  0.0  12020  7936 ?        Ss   Sep21   0:02 sshd: /usr/sbin/sshd -D [listener] 0 of 10-100 startups
+root         896  0.0  0.0   9288  3584 ?        Ss   Sep21   0:00 /usr/bin/socat -d VSOCK-LISTEN:22,fork TCP4:127.0.0.1:22
+root         898  0.1  0.5 1875920 48864 ?       Ssl  Sep21   0:25 /usr/bin/containerd
+jules        911  0.0  0.1  20092 11136 ?        Ss   Sep21   0:00 /usr/lib/systemd/systemd --user
+jules        912  0.0  0.0  21152  3508 ?        S    Sep21   0:00 (sd-pam)
+root         935 10268  0.9 1974208 77424 ?      Ssl  Sep21 24071:25 /usr/bin/dockerd -H fd:// --containerd=/run/containerd/containerd.sock
+jules       1346  0.0  0.0  13204  5060 ?        Ss   Sep21   0:01 tmux new-session -d -s default -c /app
+root       16952  0.0  0.0      0     0 ?        I    Sep21   0:00 [kworker/1:0]
+root       21965  0.0  0.0      0     0 ?        I    Sep21   0:00 [kworker/2:0-cgroup_destroy]
+jules      22923 44.1  1.2 387352 99552 ?        Sl   Sep21  69:52 /home/jules/.pyenv/versions/3.12.11/bin/python src/checkmate_v7/cockpit.py
+jules      27302  0.0  0.0   2800  1664 ?        Ss   Sep21   0:00 /bin/sh -c uvicorn src.checkmate_v7.api:app --host 0.0.0.0 --port 8001
+jules      27304  0.2  2.4 914588 196368 ?       Sl   Sep21   0:19 /home/jules/.pyenv/versions/3.12.11/bin/python3.12 /home/jules/.pyenv/versions/3.12.11/bin/uvicorn src.checkmate_v7.api:app --host 0.0.0.0 --port 8001
+jules      27305  0.0  0.0   2800  1664 ?        Ss   Sep21   0:00 /bin/sh -c python src/checkmate_v7/cockpit.py --port 8051
+jules      27306  2.8  1.2 387356 100084 ?       Sl   Sep21   3:55 python src/checkmate_v7/cockpit.py --port 8051
+root       27701  0.0  0.0      0     0 ?        I    Sep21   0:00 [kworker/3:0-cgroup_destroy]
+root       28005  0.0  0.1  14732  9984 ?        Ss   Sep21   0:00 sshd: swebot [priv]
+jules      28017  0.0  0.0  15484  7296 ?        S    Sep21   0:02 sshd: swebot@notty
+jules      30119  0.0  0.1 100008 16176 ?        Sl   Sep21   0:00 /home/jules/.pyenv/versions/3.12.11/bin/python3.12 /home/jules/.pyenv/versions/3.12.11/bin/honcho start
+jules      30120  0.0  0.1 100008 15920 ?        Sl   Sep21   0:00 /home/jules/.pyenv/versions/3.12.11/bin/python3.12 /home/jules/.pyenv/versions/3.12.11/bin/honcho start
+jules      30121  0.0  0.0   2800  1792 ?        Ss   Sep21   0:00 /bin/sh -c uvicorn src.checkmate_v7.api:app --host 0.0.0.0 --port 8002
+jules      30122  0.2  2.4 915632 196228 ?       Sl   Sep21   0:16 /home/jules/.pyenv/versions/3.12.11/bin/python3.12 /home/jules/.pyenv/versions/3.12.11/bin/uvicorn src.checkmate_v7.api:app --host 0.0.0.0 --port 8002
+jules      30125  224  1.2 387364 100084 ?       Sl   Sep21 259:13 python src/checkmate_v7/cockpit.py --port 8052
+root       32503  0.0  0.1  14864 10112 ?        Ss   Sep21   0:00 sshd: swebot [priv]
+jules      32516  0.0  0.0  15448  7224 ?        S    Sep21   0:03 sshd: swebot@notty
+root       37758  0.0  0.1  14864  9984 ?        Ss   Sep21   0:00 sshd: swebot [priv]
+jules      37770  0.0  0.0  15296  7192 ?        S    Sep21   0:00 sshd: swebot@notty
+root       38103  0.0  0.1  14864  9984 ?        Ss   Sep21   0:00 sshd: swebot [priv]
+jules      38115  0.0  0.0  15312  7244 ?        S    Sep21   0:00 sshd: swebot@notty
+root       38142  0.0  0.0      0     0 ?        I    Sep21   0:00 [kworker/0:2-cgroup_destroy]
+root       38775  0.0  0.1  14736  9984 ?        Ss   Sep21   0:00 sshd: swebot [priv]
+jules      38787  0.0  0.0  15264  6676 ?        S    Sep21   0:00 sshd: swebot@notty
+root       38799  0.0  0.0      0     0 ?        I    Sep21   0:00 [kworker/0:1-events]
+jules      39035  0.0  0.1  12612  8832 pts/1    Ss   00:01   0:00 -bash
+root       39375  0.0  0.1  14856  9984 ?        Ss   00:01   0:00 sshd: swebot [priv]
+jules      39387  0.1  0.0  15316  7084 ?        S    00:01   0:04 sshd: swebot@notty
+root       40168  0.0  0.0      0     0 ?        I    00:10   0:00 [kworker/u8:2-events_unbound]
+root       41841  0.0  0.0      0     0 ?        I    00:30   0:00 [kworker/1:1-mm_percpu_wq]
+root       42202  0.0  0.0      0     0 ?        I    00:32   0:00 [kworker/u8:3-writeback]
+root       43867  0.0  0.0      0     0 ?        I    00:38   0:00 [kworker/u8:1-ext4-rsv-conversion]
+root       43873  0.0  0.0      0     0 ?        I    00:40   0:00 [kworker/2:1-cgroup_destroy]
+root       45503  0.0  0.0      0     0 ?        I    00:50   0:00 [kworker/3:1-mm_percpu_wq]
+root       46487  0.0  0.0      0     0 ?        I    00:54   0:00 [kworker/0:0]
+root       46511  0.0  0.0      0     0 ?        I    00:54   0:00 [kworker/2:2-mm_percpu_wq]
+jules      46585  4.5  1.2 459588 98812 ?        Rl   00:55   0:09 /home/jules/.pyenv/versions/3.12.11/bin/python src/checkmate_v7/cockpit.py --port 8051
+jules      46587  4.5  1.2 459600 98276 ?        Rl   00:55   0:09 /home/jules/.pyenv/versions/3.12.11/bin/python src/checkmate_v7/cockpit.py
+jules      46588  4.5  1.2 459588 98636 ?        Rl   00:55   0:09 /home/jules/.pyenv/versions/3.12.11/bin/python src/checkmate_v7/cockpit.py --port 8052
+root       46619  0.7  0.1  14860 10240 ?        Ss   00:58   0:00 sshd: swebot [priv]
+jules      46631  0.3  0.0  15292  7316 ?        S    00:58   0:00 sshd: swebot@notty
+jules      46707  1.8  0.0   7740  3456 ?        Ss   00:58   0:00 bash -c echo "${BASHPID}"  RUN_ROOT_DIR=/run/devbox-session/default PANE_PID="39035"  # sleep 1  # enable this to mimic very slow command start. set -x umask 0 sudo mkdir -m777 -p "${RUN_ROOT_DIR}"  coproc inw {     LC_ALL=C exec inotifywait -e create,moved_to --include '/stamp$' "${RUN_ROOT_DIR}" 2>&1 }  set -m (     # If the pane has exited, also end the wait.     if ps -p ${PANE_PID} > /dev/null; then       tail --pid "${PANE_PID}" -f /dev/null     fi     touch "${RUN_ROOT_DIR}/stamp" ) & pane_waiter=$!  echo "pane waiter is at $pane_waiter"  while IFS= read -r -u "${inw[0]}" line 2>/dev/null; do     if [ "$line" = "Watches established." ]; then         break     fi done if [ -e "${RUN_ROOT_DIR}/stamp" ]; then     echo "stamp found"     kill "$inw_PID" else     echo "waiting for stamp"     wait -n fi echo "done" kill -- "-$pane_waiter" || exit 0
+jules      46713  0.0  0.0   2896  1792 ?        S    00:58   0:00 inotifywait -e create,moved_to --include /stamp$ /run/devbox-session/default
+jules      46714  0.0  0.0   7740  2204 ?        S    00:58   0:00 bash -c echo "${BASHPID}"  RUN_ROOT_DIR=/run/devbox-session/default PANE_PID="39035"  # sleep 1  # enable this to mimic very slow command start. set -x umask 0 sudo mkdir -m777 -p "${RUN_ROOT_DIR}"  coproc inw {     LC_ALL=C exec inotifywait -e create,moved_to --include '/stamp$' "${RUN_ROOT_DIR}" 2>&1 }  set -m (     # If the pane has exited, also end the wait.     if ps -p ${PANE_PID} > /dev/null; then       tail --pid "${PANE_PID}" -f /dev/null     fi     touch "${RUN_ROOT_DIR}/stamp" ) & pane_waiter=$!  echo "pane waiter is at $pane_waiter"  while IFS= read -r -u "${inw[0]}" line 2>/dev/null; do     if [ "$line" = "Watches established." ]; then         break     fi done if [ -e "${RUN_ROOT_DIR}/stamp" ]; then     echo "stamp found"     kill "$inw_PID" else     echo "waiting for stamp"     wait -n fi echo "done" kill -- "-$pane_waiter" || exit 0
+jules      46717  0.0  0.0   6144  1920 ?        S    00:58   0:00 tail --pid 39035 -f /dev/null
+jules      46727  400  0.0  11268  4352 pts/1    R+   00:58   0:00 ps aux
+
+---
+
+## Phase 2: The honcho Stress Test
+
+### Command: kill -9 30122 30125
+(No output)
+
+---
+
+### Command: timeout 15s honcho start
+
+01:06:25 system    | api.1 started (pid=47889)
+01:06:25 system    | cockpit.1 started (pid=47891)
+01:06:27 cockpit.1 | Dash is running on http://0.0.0.0:8052/
+01:06:27 cockpit.1 |
+01:06:27 cockpit.1 |  * Serving Flask app 'cockpit'
+01:06:27 cockpit.1 |  * Debug mode: on
+01:06:28 api.1     | /home/jules/.pyenv/versions/3.12.11/lib/python3.12/site-packages/pydantic/_internal/_config.py:373: UserWarning: Valid config keys have changed in V2:
+01:06:28 api.1     | * 'orm_mode' has been renamed to 'from_attributes'
+01:06:28 api.1     |   warnings.warn(message, UserWarning)
+01:06:29 api.1     | INFO:     Started server process [47890]
+01:06:29 api.1     | INFO:     Waiting for application startup.
+01:06:29 api.1     | {"timestamp": null, "name": "uvicorn.error", "levelname": "INFO", "message": "Application startup complete."}
+01:06:29 api.1     | {"timestamp": null, "name": "uvicorn.error", "levelname": "INFO", "message": "Uvicorn running on http://0.0.0.0:8002 (Press CTRL+C to quit)", "color_message": "Uvicorn running on \u001b[1m%s://%s:%d\u001b[0m (Press CTRL+C to quit)"}
+01:06:39 system    | SIGTERM received
+01:06:39 system    | sending SIGTERM to api.1 (pid 47889)
+01:06:39 system    | sending SIGTERM to cockpit.1 (pid 47891)
+01:06:39 api.1     | {"timestamp": null, "name": "uvicorn.error", "levelname": "INFO", "message": "Shutting down"}
+01:06:39 api.1     | {"timestamp": null, "name": "uvicorn.error", "levelname": "INFO", "message": "Waiting for application shutdown."}
+01:06:39 api.1     | {"timestamp": null, "name": "uvicorn.error", "levelname": "INFO", "message": "Application shutdown complete."}
+01:06:39 api.1     | {"timestamp": null, "name": "uvicorn.error", "levelname": "INFO", "message": "Finished server process [47890]", "color_message": "Finished server process [\u001b[36m%d\u001b[0m]"}
+01:06:39 system    | api.1 stopped (rc=-15)
+01:06:39 system    | cockpit.1 stopped (rc=-15)
+
+---
+
+### Command: ps aux
+
+USER         PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
+root           1  0.0  0.1  21296 12416 ?        Ss   Sep21   0:10 /usr/sbin/init
+root           2  0.0  0.0      0     0 ?        S    Sep21   0:00 [kthreadd]
+root           3  0.0  0.0      0     0 ?        S    Sep21   0:00 [pool_workqueue_release]
+root           4  0.0  0.0      0     0 ?        I<   Sep21   0:00 [kworker/R-rcu_g]
+root           5  0.0  0.0      0     0 ?        I<   Sep21   0:00 [kworker/R-rcu_p]
+root           6  0.0  0.0      0     0 ?        I<   Sep21   0:00 [kworker/R-slub_]
+root           7  0.0  0.0      0     0 ?        I<   Sep21   0:00 [kworker/R-netns]
+root           9  0.0  0.0      0     0 ?        I<   Sep21   0:00 [kworker/0:0H-events_highpri]
+root          12  0.0  0.0      0     0 ?        I<   Sep21   0:00 [kworker/R-mm_pe]
+root          13  0.0  0.0      0     0 ?        I    Sep21   0:00 [rcu_tasks_kthread]
+root          14  0.0  0.0      0     0 ?        I    Sep21   0:00 [rcu_tasks_trace_kthread]
+root          15  0.0  0.0      0     0 ?        S    Sep21   0:00 [ksoftirqd/0]
+root          16  0.0  0.0      0     0 ?        I    Sep21   0:05 [rcu_preempt]
+root          17  0.0  0.0      0     0 ?        S    Sep21   0:00 [migration/0]
+root          18  0.0  0.0      0     0 ?        S    Sep21   0:00 [cpuhp/0]
+root          19  0.0  0.0      0     0 ?        S    Sep21   0:00 [cpuhp/1]
+root          20  0.0  0.0      0     0 ?        S    Sep21   0:01 [migration/1]
+root          21  0.0  0.0      0     0 ?        S    Sep21   0:00 [ksoftirqd/1]
+root          23  0.0  0.0      0     0 ?        I<   Sep21   0:00 [kworker/1:0H-kblockd]
+root          24  0.0  0.0      0     0 ?        S    Sep21   0:00 [cpuhp/2]
+root          25  0.0  0.0      0     0 ?        S    Sep21   0:01 [migration/2]
+root          26  0.0  0.0      0     0 ?        S    Sep21   0:00 [ksoftirqd/2]
+root          28  0.0  0.0      0     0 ?        I<   Sep21   0:00 [kworker/2:0H]
+root          29  0.0  0.0      0     0 ?        S    Sep21   0:00 [cpuhp/3]
+root          30  0.0  0.0      0     0 ?        S    Sep21   0:01 [migration/3]
+root          31  0.0  0.0      0     0 ?        S    Sep21   0:00 [ksoftirqd/3]
+root          33  0.0  0.0      0     0 ?        I<   Sep21   0:00 [kworker/3:0H-kblockd]
+root          34  0.0  0.0      0     0 ?        S    Sep21   0:00 [kdevtmpfs]
+root          35  0.0  0.0      0     0 ?        I<   Sep21   0:00 [kworker/R-inet_]
+root          36  0.0  0.0      0     0 ?        S    Sep21   0:00 [oom_reaper]
+root          37  0.0  0.0      0     0 ?        I<   Sep21   0:00 [kworker/R-write]
+root          38  0.0  0.0      0     0 ?        S    Sep21   0:00 [kcompactd0]
+root          39  0.0  0.0      0     0 ?        SN   Sep21   0:00 [ksmd]
+root          40  0.0  0.0      0     0 ?        SN   Sep21   0:00 [khugepaged]
+root          41  0.0  0.0      0     0 ?        I<   Sep21   0:00 [kworker/R-crypt]
+root          42  0.0  0.0      0     0 ?        I<   Sep21   0:00 [kworker/R-kbloc]
+root          50  0.0  0.0      0     0 ?        I<   Sep21   0:00 [kworker/0:1H-kblockd]
+root          81  0.0  0.0      0     0 ?        S    Sep21   0:00 [kswapd0]
+root          84  0.0  0.0      0     0 ?        I<   Sep21   0:00 [kworker/R-kthro]
+root          89  0.0  0.0      0     0 ?        S    Sep21   0:00 [irq/24-ACPI:Ged]
+root          95  0.0  0.0      0     0 ?        I<   Sep21   0:00 [kworker/R-acpi_]
+root         178  0.0  0.0      0     0 ?        I<   Sep21   0:00 [kworker/R-kstrp]
+root         399  0.0  0.0      0     0 ?        I<   Sep21   0:00 [kworker/3:1H-kblockd]
+root         402  0.0  0.0      0     0 ?        I<   Sep21   0:00 [kworker/1:1H-kblockd]
+root         403  0.0  0.0      0     0 ?        S    Sep21   0:01 [jbd2/vdb-8]
+root         404  0.0  0.0      0     0 ?        I<   Sep21   0:00 [kworker/R-ext4-]
+root         423  0.0  0.0      0     0 ?        I<   Sep21   0:00 [kworker/2:1H-kblockd]
+root         429  0.1  0.4  67252 32640 ?        R<s  Sep21   0:17 /usr/lib/systemd/systemd-journald
+root         780  0.0  0.0  23960  5760 ?        Ss   Sep21   0:02 /usr/lib/systemd/systemd-udevd
+systemd+     816  0.0  0.1  21456 13056 ?        Ss   Sep21   0:00 /usr/lib/systemd/systemd-resolved
+systemd+     817  0.0  0.0  91024  7936 ?        Ssl  Sep21   0:00 /usr/lib/systemd/systemd-timesyncd
+message+     829  0.0  0.0   9544  4864 ?        Ss   Sep21   0:01 @dbus-daemon --system --address=systemd: --nofork --nopidfile --systemd-activation --syslog-only
+root         838  0.0  0.1  18024  8704 ?        Ss   Sep21   0:00 /usr/lib/systemd/systemd-logind
+root         846  0.0  0.0   6104  1920 tty1     Ss+  Sep21   0:00 /sbin/agetty -o -p -- \u --noclear - linux
+root         853  0.0  0.0   6148  2048 ttyS0    Ss+  Sep21   0:00 /sbin/agetty -o -p -- \u --keep-baud 115200,57600,38400,9600 - vt220
+root         878  0.0  0.2 110644 23520 ?        Ssl  Sep21   0:02 /usr/bin/python3 /usr/share/unattended-upgrades/unattended-upgrade-shutdown --wait-for-signal
+root         887  0.0  0.0  12020  7936 ?        Ss   Sep21   0:02 sshd: /usr/sbin/sshd -D [listener] 0 of 10-100 startups
+root         896  0.0  0.0   9288  3584 ?        Ss   Sep21   0:00 /usr/bin/socat -d VSOCK-LISTEN:22,fork TCP4:127.0.0.1:22
+root         898  0.1  0.5 1875920 48864 ?       Ssl  Sep21   0:26 /usr/bin/containerd
+jules        911  0.0  0.1  20092 11136 ?        Ss   Sep21   0:00 /usr/lib/systemd/systemd --user
+jules        912  0.0  0.0  21152  3508 ?        S    Sep21   0:00 (sd-pam)
+root         935 9869  0.9 1974208 77424 ?       Ssl  Sep21 24071:25 /usr/bin/dockerd -H fd:// --containerd=/run/containerd/containerd.sock
+jules       1346  0.0  0.0  13296  5060 ?        Ss   Sep21   0:01 tmux new-session -d -s default -c /app
+root       16952  0.0  0.0      0     0 ?        I    Sep21   0:00 [kworker/1:0]
+root       21965  0.0  0.0      0     0 ?        I    Sep21   0:00 [kworker/2:0-cgroup_destroy]
+jules      22923 41.8  1.2 387352 99552 ?        Sl   Sep21  70:09 /home/jules/.pyenv/versions/3.12.11/bin/python src/checkmate_v7/cockpit.py
+jules      27302  0.0  0.0   2800  1664 ?        Ss   Sep21   0:00 /bin/sh -c uvicorn src.checkmate_v7.api:app --host 0.0.0.0 --port 8001
+jules      27304  0.2  2.4 914588 196368 ?       Sl   Sep21   0:20 /home/jules/.pyenv/versions/3.12.11/bin/python3.12 /home/jules/.pyenv/versions/3.12.11/bin/uvicorn src.checkmate_v7.api:app --host 0.0.0.0 --port 8001
+jules      27305  0.0  0.0   2800  1664 ?        Ss   Sep21   0:00 /bin/sh -c python src/checkmate_v7/cockpit.py --port 8051
+jules      27306  2.8  1.2 387356 100084 ?       Sl   Sep21   4:12 python src/checkmate_v7/cockpit.py --port 8051
+root       27701  0.0  0.0      0     0 ?        I    Sep21   0:00 [kworker/3:0-cgroup_destroy]
+root       28005  0.0  0.1  14732  9984 ?        Ss   Sep21   0:00 sshd: swebot [priv]
+jules      28017  0.0  0.0  15484  7296 ?        S    Sep21   0:02 sshd: swebot@notty
+root       32503  0.0  0.1  14864 10112 ?        Ss   Sep21   0:00 sshd: swebot [priv]
+jules      32516  0.0  0.0  15448  7224 ?        S    Sep21   0:03 sshd: swebot@notty
+root       37758  0.0  0.1  14864  9984 ?        Ss   Sep21   0:00 sshd: swebot [priv]
+jules      37770  0.0  0.0  15296  7192 ?        S    Sep21   0:00 sshd: swebot@notty
+root       38103  0.0  0.1  14864  9984 ?        Ss   Sep21   0:00 sshd: swebot [priv]
+jules      38115  0.0  0.0  15312  7244 ?        S    Sep21   0:00 sshd: swebot@notty
+root       38775  0.0  0.1  14736  9984 ?        Ss   Sep21   0:00 sshd: swebot [priv]
+jules      38787  0.0  0.0  15264  6676 ?        S    Sep21   0:00 sshd: swebot@notty
+root       38799  0.0  0.0      0     0 ?        I    Sep21   0:00 [kworker/0:1-mm_percpu_wq]
+jules      39035  0.0  0.1  12612  8832 pts/1    Ss   00:01   0:00 -bash
+root       39375  0.0  0.1  14856  9984 ?        Ss   00:01   0:00 sshd: swebot [priv]
+jules      39387  0.1  0.0  15316  7084 ?        S    00:01   0:04 sshd: swebot@notty
+root       40168  0.0  0.0      0     0 ?        I    00:10   0:00 [kworker/u8:2-flush-254:16]
+root       42202  0.0  0.0      0     0 ?        I    00:32   0:00 [kworker/u8:3-events_unbound]
+root       43867  0.0  0.0      0     0 ?        I    00:38   0:00 [kworker/u8:1-flush-254:16]
+root       45503  0.0  0.0      0     0 ?        I    00:50   0:00 [kworker/3:1-mm_percpu_wq]
+root       46487  0.0  0.0      0     0 ?        I    00:54   0:00 [kworker/0:0]
+root       46511  0.0  0.0      0     0 ?        I    00:54   0:00 [kworker/2:2-events]
+root       46619  0.0  0.1  14860 10240 ?        Ss   00:58   0:00 sshd: swebot [priv]
+jules      46631  0.2  0.0  15292  7444 ?        S    00:58   0:01 sshd: swebot@notty
+root       46866  0.0  0.0      0     0 ?        I    01:00   0:00 [kworker/1:2-mm_percpu_wq]
+root       47169  0.0  0.0      0     0 ?        I    01:00   0:00 [kworker/u8:0-events_unbound]
+jules      48038  108  1.2 461144 99492 ?        Sl   01:08   0:01 /home/jules/.pyenv/versions/3.12.11/bin/python src/checkmate_v7/cockpit.py
+jules      48042  112  1.2 387388 99088 ?        Rl   01:08   0:01 /home/jules/.pyenv/versions/3.12.11/bin/python src/checkmate_v7/cockpit.py --port 8051
+jules      48057  0.0  0.0   7740  3456 ?        Ss   01:08   0:00 bash -c echo "${BASHPID}"  RUN_ROOT_DIR=/run/devbox-session/default PANE_PID="39035"  # sleep 1  # enable this to mimic very slow command start. set -x umask 0 sudo mkdir -m777 -p "${RUN_ROOT_DIR}"  coproc inw {     LC_ALL=C exec inotifywait -e create,moved_to --include '/stamp$' "${RUN_ROOT_DIR}" 2>&1 }  set -m (     # If the pane has exited, also end the wait.     if ps -p ${PANE_PID} > /dev/null; then       tail --pid "${PANE_PID}" -f /dev/null     fi     touch "${RUN_ROOT_DIR}/stamp" ) & pane_waiter=$!  echo "pane waiter is at $pane_waiter"  while IFS= read -r -u "${inw[0]}" line 2>/dev/null; do     if [ "$line" = "Watches established." ]; then         break     fi done if [ -e "${RUN_ROOT_DIR}/stamp" ]; then     echo "stamp found"     kill "$inw_PID" else     echo "waiting for stamp"     wait -n fi echo "done" kill -- "-$pane_waiter" || exit 0
+jules      48064  0.0  0.0   2896  1920 ?        S    01:08   0:00 inotifywait -e create,moved_to --include /stamp$ /run/devbox-session/default
+jules      48065  0.0  0.0   7740  2204 ?        S    01:08   0:00 bash -c echo "${BASHPID}"  RUN_ROOT_DIR=/run/devbox-session/default PANE_PID="39035"  # sleep 1  # enable this to mimic very slow command start. set -x umask 0 sudo mkdir -m777 -p "${RUN_ROOT_DIR}"  coproc inw {     LC_ALL=C exec inotifywait -e create,moved_to --include '/stamp$' "${RUN_ROOT_DIR}" 2>&1 }  set -m (     # If the pane has exited, also end the wait.     if ps -p ${PANE_PID} > /dev/null; then       tail --pid "${PANE_PID}" -f /dev/null     fi     touch "${RUN_ROOT_DIR}/stamp" ) & pane_waiter=$!  echo "pane waiter is at $pane_waiter"  while IFS= read -r -u "${inw[0]}" line 2>/dev/null; do     if [ "$line" = "Watches established." ]; then         break     fi done if [ -e "${RUN_ROOT_DIR}/stamp" ]; then     echo "stamp found"     kill "$inw_PID" else     echo "waiting for stamp"     wait -n fi echo "done" kill -- "-$pane_waiter" || exit 0
+jules      48067  0.0  0.0   6144  1792 ?        S    01:08   0:00 tail --pid 39035 -f /dev/null
+jules      48080  100  0.0  11268  4352 pts/1    R+   01:08   0:00 ps aux
+
+---
+
+### Command: honcho start &
+(No output)
+
+---
+
+### Command: echo "This is the next command. If you see this, the background process worked."
+
+This is the next command. If you see this, the background process worked.
+
+---
+
+### Command: ps aux | grep honcho
+
+jules      48246  0.2  0.2  26260 20096 pts/1    S    01:09   0:00 /home/jules/.pyenv/versions/3.12.11/bin/python3.12 /home/jules/.pyenv/versions/3.12.11/bin/honcho start
+jules      48367  0.0  0.2 100008 16312 pts/1    Sl   01:09   0:00 /home/jules/.pyenv/versions/3.12.11/bin/python3.12 /home/jules/.pyenv/versions/3.12.11/bin/honcho start
+jules      48368  0.0  0.2 100008 16312 pts/1    Sl   01:09   0:00 /home/jules/.pyenv/versions/3.12.11/bin/python3.12 /home/jules/.pyenv/versions/3.12.11/bin/honcho start
+jules      48753  0.0  0.0   7076  2048 pts/1    S+   01:12   0:00 grep --color=auto honcho
+
+---
+
+### Command: kill -9 48246 48367 48368
+(No output)
+
+---
+
+### Command: ps aux
+
+USER         PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
+root           1  0.0  0.1  21296 12416 ?        Ss   Sep21   0:10 /usr/sbin/init
+root           2  0.0  0.0      0     0 ?        S    Sep21   0:00 [kthreadd]
+root           3  0.0  0.0      0     0 ?        S    Sep21   0:00 [pool_workqueue_release]
+root           4  0.0  0.0      0     0 ?        I<   Sep21   0:00 [kworker/R-rcu_g]
+root           5  0.0  0.0      0     0 ?        I<   Sep21   0:00 [kworker/R-rcu_p]
+root           6  0.0  0.0      0     0 ?        I<   Sep21   0:00 [kworker/R-slub_]
+root           7  0.0  0.0      0     0 ?        I<   Sep21   0:00 [kworker/R-netns]
+root           9  0.0  0.0      0     0 ?        I<   Sep21   0:00 [kworker/0:0H-events_highpri]
+root          12  0.0  0.0      0     0 ?        I<   Sep21   0:00 [kworker/R-mm_pe]
+root          13  0.0  0.0      0     0 ?        I    Sep21   0:00 [rcu_tasks_kthread]
+root          14  0.0  0.0      0     0 ?        I    Sep21   0:00 [rcu_tasks_trace_kthread]
+root          15  0.0  0.0      0     0 ?        S    Sep21   0:00 [ksoftirqd/0]
+root          16  0.0  0.0      0     0 ?        I    Sep21   0:05 [rcu_preempt]
+root          17  0.0  0.0      0     0 ?        S    Sep21   0:00 [migration/0]
+root          18  0.0  0.0      0     0 ?        S    Sep21   0:00 [cpuhp/0]
+root          19  0.0  0.0      0     0 ?        S    Sep21   0:00 [cpuhp/1]
+root          20  0.0  0.0      0     0 ?        S    Sep21   0:01 [migration/1]
+root          21  0.0  0.0      0     0 ?        S    Sep21   0:00 [ksoftirqd/1]
+root          23  0.0  0.0      0     0 ?        I<   Sep21   0:00 [kworker/1:0H-kblockd]
+root          24  0.0  0.0      0     0 ?        S    Sep21   0:00 [cpuhp/2]
+root          25  0.0  0.0      0     0 ?        S    Sep21   0:01 [migration/2]
+root          26  0.0  0.0      0     0 ?        S    Sep21   0:00 [ksoftirqd/2]
+root          28  0.0  0.0      0     0 ?        I<   Sep21   0:00 [kworker/2:0H]
+root          29  0.0  0.0      0     0 ?        S    Sep21   0:00 [cpuhp/3]
+root          30  0.0  0.0      0     0 ?        S    Sep21   0:01 [migration/3]
+root          31  0.0  0.0      0     0 ?        S    Sep21   0:00 [ksoftirqd/3]
+root          33  0.0  0.0      0     0 ?        I<   Sep21   0:00 [kworker/3:0H-kblockd]
+root          34  0.0  0.0      0     0 ?        S    Sep21   0:00 [kdevtmpfs]
+root          35  0.0  0.0      0     0 ?        I<   Sep21   0:00 [kworker/R-inet_]
+root          36  0.0  0.0      0     0 ?        S    Sep21   0:00 [oom_reaper]
+root          37  0.0  0.0      0     0 ?        I<   Sep21   0:00 [kworker/R-write]
+root          38  0.0  0.0      0     0 ?        S    Sep21   0:00 [kcompactd0]
+root          39  0.0  0.0      0     0 ?        SN   Sep21   0:00 [ksmd]
+root          40  0.0  0.0      0     0 ?        SN   Sep21   0:00 [khugepaged]
+root          41  0.0  0.0      0     0 ?        I<   Sep21   0:00 [kworker/R-crypt]
+root          42  0.0  0.0      0     0 ?        I<   Sep21   0:00 [kworker/R-kbloc]
+root          50  0.0  0.0      0     0 ?        I<   Sep21   0:00 [kworker/0:1H-kblockd]
+root          81  0.0  0.0      0     0 ?        S    Sep21   0:00 [kswapd0]
+root          84  0.0  0.0      0     0 ?        I<   Sep21   0:00 [kworker/R-kthro]
+root          89  0.0  0.0      0     0 ?        S    Sep21   0:00 [irq/24-ACPI:Ged]
+root          95  0.0  0.0      0     0 ?        I<   Sep21   0:00 [kworker/R-acpi_]
+root         178  0.0  0.0      0     0 ?        I<   Sep21   0:00 [kworker/R-kstrp]
+root         399  0.0  0.0      0     0 ?        I<   Sep21   0:00 [kworker/3:1H-kblockd]
+root         402  0.0  0.0      0     0 ?        I<   Sep21   0:00 [kworker/1:1H-kblockd]
+root         403  0.0  0.0      0     0 ?        S    Sep21   0:01 [jbd2/vdb-8]
+root         404  0.0  0.0      0     0 ?        I<   Sep21   0:00 [kworker/R-ext4-]
+root         423  0.0  0.0      0     0 ?        I<   Sep21   0:00 [kworker/2:1H-kblockd]
+root         429  0.1  0.4  67252 32896 ?        S<s  Sep21   0:17 /usr/lib/systemd/systemd-journald
+root         780  0.0  0.0  23960  5760 ?        Ss   Sep21   0:02 /usr/lib/systemd/systemd-udevd
+systemd+     816  0.0  0.1  21456 13056 ?        Ss   Sep21   0:00 /usr/lib/systemd/systemd-resolved
+systemd+     817  0.0  0.0  91024  7936 ?        Ssl  Sep21   0:00 /usr/lib/systemd/systemd-timesyncd
+message+     829  0.0  0.0   9544  4864 ?        Ss   Sep21   0:01 @dbus-daemon --system --address=systemd: --nofork --nopidfile --systemd-activation --syslog-only
+root         838  0.0  0.1  18024  8704 ?        Ss   Sep21   0:00 /usr/lib/systemd/systemd-logind
+root         846  0.0  0.0   6104  1920 tty1     Ss+  Sep21   0:00 /sbin/agetty -o -p -- \u --noclear - linux
+root         853  0.0  0.0   6148  2048 ttyS0    Ss+  Sep21   0:00 /sbin/agetty -o -p -- \u --keep-baud 115200,57600,38400,9600 - vt220
+root         878  0.0  0.2 110644 23520 ?        Ssl  Sep21   0:02 /usr/bin/python3 /usr/share/unattended-upgrades/unattended-upgrade-shutdown --wait-for-signal
+root         887  0.0  0.0  12020  7936 ?        Ss   Sep21   0:02 sshd: /usr/sbin/sshd -D [listener] 0 of 10-100 startups
+root         896  0.0  0.0   9288  3584 ?        Ss   Sep21   0:00 /usr/bin/socat -d VSOCK-LISTEN:22,fork TCP4:127.0.0.1:22
+root         898  0.1  0.5 1875920 48864 ?       Ssl  Sep21   0:26 /usr/bin/containerd
+jules        911  0.0  0.1  20092 11136 ?        Ss   Sep21   0:00 /usr/lib/systemd/systemd --user
+jules        912  0.0  0.0  21152  3508 ?        S    Sep21   0:00 (sd-pam)
+root         935 9567  0.9 1974208 77424 ?       Ssl  Sep21 24071:25 /usr/bin/dockerd -H fd:// --containerd=/run/containerd/containerd.sock
+jules       1346  0.0  0.0  13348  5188 ?        Ss   Sep21   0:01 tmux new-session -d -s default -c /app
+root       16952  0.0  0.0      0     0 ?        I    Sep21   0:00 [kworker/1:0]
+root       21965  0.0  0.0      0     0 ?        I    Sep21   0:00 [kworker/2:0-cgroup_destroy]
+jules      22923 40.1  1.2 387352 99552 ?        Sl   Sep21  70:21 /home/jules/.pyenv/versions/3.12.11/bin/python src/checkmate_v7/cockpit.py
+jules      27302  0.0  0.0   2800  1664 ?        Ss   Sep21   0:00 /bin/sh -c uvicorn src.checkmate_v7.api:app --host 0.0.0.0 --port 8001
+jules      27304  0.2  2.4 914588 196368 ?       Sl   Sep21   0:21 /home/jules/.pyenv/versions/3.12.11/bin/python3.12 /home/jules/.pyenv/versions/3.12.11/bin/uvicorn src.checkmate_v7.api:app --host 0.0.0.0 --port 8001
+jules      27305  0.0  0.0   2800  1664 ?        Ss   Sep21   0:00 /bin/sh -c python src/checkmate_v7/cockpit.py --port 8051
+jules      27306  2.8  1.2 387356 100084 ?       Sl   Sep21   4:24 python src/checkmate_v7/cockpit.py --port 8051
+root       27701  0.0  0.0      0     0 ?        I    Sep21   0:00 [kworker/3:0-cgroup_destroy]
+root       28005  0.0  0.1  14732  9984 ?        Ss   Sep21   0:00 sshd: swebot [priv]
+jules      28017  0.0  0.0  15484  7296 ?        S    Sep21   0:02 sshd: swebot@notty
+root       32503  0.0  0.1  14864 10112 ?        Ss   Sep21   0:00 sshd: swebot [priv]
+jules      32516  0.0  0.0  15448  7224 ?        S    Sep21   0:03 sshd: swebot@notty
+root       37758  0.0  0.1  14864  9984 ?        Ss   Sep21   0:00 sshd: swebot [priv]
+jules      37770  0.0  0.0  15296  7192 ?        S    Sep21   0:00 sshd: swebot@notty
+root       38103  0.0  0.1  14864  9984 ?        Ss   Sep21   0:00 sshd: swebot [priv]
+jules      38115  0.0  0.0  15312  7244 ?        S    Sep21   0:00 sshd: swebot@notty
+root       38775  0.0  0.1  14736  9984 ?        Ss   Sep21   0:00 sshd: swebot [priv]
+jules      38787  0.0  0.0  15264  6676 ?        S    Sep21   0:00 sshd: swebot@notty
+root       38799  0.0  0.0      0     0 ?        I    Sep21   0:00 [kworker/0:1-events_power_efficient]
+jules      39035  0.0  0.1  12612  8832 pts/1    Ss   00:01   0:00 -bash
+root       39375  0.0  0.1  14856  9984 ?        Ss   00:01   0:00 sshd: swebot [priv]
+jules      39387  0.1  0.0  15316  7084 ?        S    00:01   0:04 sshd: swebot@notty
+root       40168  0.0  0.0      0     0 ?        I    00:10   0:00 [kworker/u8:2-flush-254:16]
+root       42202  0.0  0.0      0     0 ?        I    00:32   0:00 [kworker/u8:3-ext4-rsv-conversion]
+root       45503  0.0  0.0      0     0 ?        I    00:50   0:00 [kworker/3:1-events]
+root       46487  0.0  0.0      0     0 ?        I    00:54   0:00 [kworker/0:0]
+root       46511  0.0  0.0      0     0 ?        I    00:54   0:00 [kworker/2:2-events]
+root       46619  0.0  0.1  14860 10240 ?        Ss   00:58   0:00 sshd: swebot [priv]
+jules      46631  0.1  0.0  15292  7444 ?        S    00:58   0:01 sshd: swebot@notty
+root       46866  0.0  0.0      0     0 ?        I    01:00   0:00 [kworker/1:2-events]
+root       47169  0.0  0.0      0     0 ?        I    01:00   0:00 [kworker/u8:0-events_unbound]
+jules      48369  0.0  0.0   2800  1792 ?        Ss   01:09   0:00 /bin/sh -c uvicorn src.checkmate_v7.api:app --host 0.0.0.0 --port 8002
+jules      48371  0.0  0.0   2800  1664 ?        Ss   01:09   0:00 /bin/sh -c python src.checkmate_v7.cockpit.py --port 8052
+jules      48372  1.0  2.3 711896 191176 ?       Sl   01:09   0:03 /home/jules/.pyenv/versions/3.12.11/bin/python3.12 /home/jules/.pyenv/versions/3.12.11/bin/uvicorn src.checkmate_v7.api:app --host 0.0.0.0 --port 8002
+jules      48374  3.0  1.2 387380 99852 ?        Sl   01:09   0:11 python src.checkmate_v7.cockpit.py --port 8052
+root       48755  0.0  0.0      0     0 ?        I    01:12   0:00 [kworker/u8:1-events_unbound]
+jules      49063  100  1.2 461136 99596 ?        Sl   01:15   0:01 /home/jules/.pyenv/versions/3.12.11/bin/python src.checkmate_v7.cockpit.py --port 8051
+jules      49067  108  1.2 312408 98440 ?        Rl   01:15   0:01 /home/jules/.pyenv/versions/3.12.11/bin/python src.checkmate_v7.cockpit.py --port 8052
+jules      49068  106  1.1 308024 93252 ?        Rl   01:15   0:01 /home/jules/.pyenv/versions/3.12.11/bin/python src.checkmate_v7.cockpit.py
+jules      49080  0.0  0.0   7740  3456 ?        Ss   01:15   0:00 bash -c echo "${BASHPID}"  RUN_ROOT_DIR=/run/devbox-session/default PANE_PID="39035"  # sleep 1  # enable this to mimic very slow command start. set -x umask 0 sudo mkdir -m777 -p "${RUN_ROOT_DIR}"  coproc inw {     LC_ALL=C exec inotifywait -e create,moved_to --include '/stamp$' "${RUN_ROOT_DIR}" 2>&1 }  set -m (     # If the pane has exited, also end the wait.     if ps -p ${PANE_PID} > /dev/null; then       tail --pid "${PANE_PID}" -f /dev/null     fi     touch "${RUN_ROOT_DIR}/stamp" ) & pane_waiter=$!  echo "pane waiter is at $pane_waiter"  while IFS= read -r -u "${inw[0]}" line 2>/dev/null; do     if [ "$line" = "Watches established." ]; then         break     fi done if [ -e "${RUN_ROOT_DIR}/stamp" ]; then     echo "stamp found"     kill "$inw_PID" else     echo "waiting for stamp"     wait -n fi echo "done" kill -- "-$pane_waiter" || exit 0
+jules      49088  0.0  0.0   2896  1792 ?        S    01:15   0:00 inotifywait -e create,moved_to --include /stamp$ /run/devbox-session/default
+jules      49089  0.0  0.0   7740  2076 ?        S    01:15   0:00 bash -c echo "${BASHPID}"  RUN_ROOT_DIR=/run/devbox-session/default PANE_PID="39035"  # sleep 1  # enable this to mimic very slow command start. set -x umask 0 sudo mkdir -m777 -p "${RUN_ROOT_DIR}"  coproc inw {     LC_ALL=C exec inotifywait -e create,moved_to --include '/stamp$' "${RUN_ROOT_DIR}" 2>&1 }  set -m (     # If the pane has exited, also end the wait.     if ps -p ${PANE_PID} > /dev/null; then       tail --pid "${PANE_PID}" -f /dev/null     fi     touch "${RUN_ROOT_DIR}/stamp" ) & pane_waiter=$!  echo "pane waiter is at $pane_waiter"  while IFS= read -r -u "${inw[0]}" line 2>/dev/null; do     if [ "$line" = "Watches established." ]; then         break     fi done if [ -e "${RUN_ROOT_DIR}/stamp" ]; then     echo "stamp found"     kill "$inw_PID" else     echo "waiting for stamp"     wait -n fi echo "done" kill -- "-$pane_waiter" || exit 0
+jules      49093  0.0  0.0   6144  1792 ?        S    01:15   0:00 tail --pid 39035 -f /dev/null
+jules      49108  0.0  0.0  11268  4352 pts/1    R+   01:15   0:00 ps aux
+
+---
+
+## Phase 3: File System Integrity Test
+
+### Command: echo "This is a test file for Operation: Know Thyself." > /tmp/integrity_test.txt
+(No output)
+
+---
+
+### Command: ls -l /tmp/integrity_test.txt
+
+-rw-rw-r-- 1 jules jules 49 Sep 22 01:17 /tmp/integrity_test.txt
+
+---
+
+### Command: cat /tmp/integrity_test.txt
+
+This is a test file for Operation: Know Thyself.
+
+---
+
+### Command: rm /tmp/integrity_test.txt
+(No output)
+
+---
+
+### Command: ls -l /tmp/integrity_test.txt
+
+ls: cannot access '/tmp/integrity_test.txt': No such file or directory
+
+---
+
+## Phase 4: Network Egress & DNS Test
+
+### Command: curl -v https://www.google.com
+
+<!doctype html><html itemscope="" itemtype="http://schema.org/WebPage" lang="en"><head><meta content="Search the world's information, including webpages, images, videos and more. Google has many special features to help you find exactly what you're looking for." name="description"><meta content="noodp, " name="robots"><meta content="text/html; charset=UTF-8" http-equiv="Content-Type"><meta content="/images/branding/googleg/1x/googleg_standard_color_128dp.png" itemprop="image"><title>Google</title><script nonce="X9kuPLCRUhkoT0oKCUBLUQ">(function(){var _g={kEI:'EKXQaP39NvLCp84P9u2PoAk',kEXPI:'0,202854,2,82,4051218,159025,266578,290044,5242164,5991893,339,56048609,138267,37028,34213,8037,6758,23878,9139,4600,328,6225,64165,15048,49,15583,30379,28334,10903,18341,18996,39,624,5309,352,8613,9857,410,5870,7714,5773,27612,4719,837,1712,9256,2808,3443,35,16904,2440,9667,5683,3605,16009,1762,19280,15321,551,6021,1,1552,7355,727,1033,3829,2261,8141,1948,2646,103,4,1,320,781,63,4256,670,7056,5442,519,855,4,4172,747,8845,476,1460,3770,407,183,3,1380,31,104,3355,196,149,712,36,2264,279,264,2110,2,1347,5,683,127,3837,17,1189,653,3,6,3181,4874,158,4,1532,2,816,3,1868,1,2,742,134,22,2207,547,22,3342,432,153,593,19,3007,18,778,27,341,1851,1444,2142,34,2,2194,4,4,1428,314,120,117,1909,607,4698,2297,21,11,85,645,9,2,2635,313,1294,3136,723,7,1138,542,22,4394,610,472,202,41,239,549,124,120,1,4,1,10,1039,540,276,86,3136,262,355,28,3,2,2,2,1227,16,993,1,2,13,432,14,1125,484,241,515,1395,199,9,27,8,1489,3,2,2,2,646,3,171,9,1,1,3,723,360,4,325,323,118,2,611,975,39,4,774,49,339,8,2,133,16,678,366,425,250,570,742,284,845,1756,328,1583,219,90,172,28,100,207,273,360,2,6,482,2,1,2,162,428,3,3,253,1435,427,11,845,363,1583,35,83,5,95,323,9,1,129,304,24,620,1,11,1,143,347,153,398,499,1442,299,399,330,1260,161,2,3,134,643,627,83,12,97,45,480,252,1198,27,301,363,128,187,277,183,400,251,10,5,403,6,419,37,427,459,1,2,353,445,302,493,88,92,395,980,1785,2689,2,789,145,1,2,141,1,2,353,21133560,5,2992,4,2700,260,3,7884,607,2,706,852,3,2446,3,7198,514,562,3,358,11,153,1032,131,2,2436,66,2464,9057723,1078151',kBL:'Mwtx',kOPI:89978449};(function(){var a;((a=window.google)==null?0:a.stvsc)?google.kEI=_g.kEI:window.google=_g;}).call(this);})();(function(){google.sn='webhp';google.kHL='en';})();(function(){
+var g=this||self;function k(){return window.google&&window.google.kOPI||null};var l,m=[];function n(a){for(var b;a&&(!a.getAttribute||!(b=a.getAttribute("eid")));)a=a.parentNode;return b||l}function p(a){for(var b=null;a&&(!a.getAttribute||!(b=a.getAttribute("leid")));)a=a.parentNode;return b}function q(a){/^http:/i.test(a)&&window.location.protocol==="https:"&&(google.ml&&google.ml(Error("a"),!1,{src:a,glmm:1}),a="");return a}
+function r(a,b,d,c,h){var e="";b.search("&ei=")===-1&&(e="&ei="+n(c),b.search("&lei=")===-1&&(c=p(c))&&(e+="&lei="+c));var f=b.search("&cshid=")===-1&&a!=="slh";c="&zx="+Date.now().toString();g._cshid&&f&&(c+="&cshid="+g._cshid);(d=d())&&(c+="&opi="+d);return"/"+(h||"gen_204")+"?atyp=i&ct="+String(a)+"&cad="+(b+e+c)};l=google.kEI;google.getEI=n;google.getLEI=p;google.ml=function(){return null};google.log=function(a,b,d,c,h,e){e=e===void 0?k:e;d||(d=r(a,b,e,c,h));if(d=q(d)){a=new Image;var f=m.length;m[f]=a;a.onerror=a.onload=a.onabort=function(){delete m[f]};a.src=d}};google.logUrl=function(a,b){b=b===void 0?k:b;return r("",a,b)};}).call(this);(function(){google.y={};google.sy={};function e(a,b,c){if(a)var d=a.id;else{do d=Math.random();while(c[d])}c[d]=[a,b]}var f;(f=google).x||(f.x=function(a,b){e(a,b,google.y)});var g;(g=google).sx||(g.sx=function(a,b){e(a,b,google.sy)});google.lm=[];var h;(h=google).plm||(h.plm=function(a){google.lm.push.apply(google.lm,a)});google.lq=[];var k;(k=google).load||(k.load=function(a,b,c){google.lq.push([[a],b,c])});var l;(l=google).loadAll||(l.loadAll=function(a,b){google.lq.push([a,b])});google.bx=!1;var m;(m=google).lx||(m.lx=function(){});var n=[],p;(p=google).fce||(p.fce=function(a,b,c,d){n.push([a,b,c,d])});google.qce=n;google.adl=[];}).call(this);google.f={};(function(){
+document.documentElement.addEventListener("submit",function(b){var a;if(a=b.target){var c=a.getAttribute("data-submitfalse");a=c==="1"||c==="q"&&!a.elements.q.value?!0:!1}else a=!1;a&&(b.preventDefault(),b.stopPropagation())},!0);document.documentElement.addEventListener("click",function(b){var a;a:{for(a=b.target;a&&a!==document.documentElement;a=a.parentElement)if(a.tagName==="A"){a=a.getAttribute("data-nohref")==="1";break a}a=!1}a&&b.preventDefault()},!0);}).call(this);</script><style>#gbar,#guser{font-size:13px;padding-top:1px !important;}#gbar{height:22px}#guser{padding-bottom:7px !important;text-align:right}.gbh,.gbd{border-top:1px solid #c9d7f1;font-size:1px}.gbh{height:0;position:absolute;top:24px;width:100%}@media all{.gb1{height:22px;margin-right:.5em;vertical-align:top}#gbar{float:left}}a.gb1,a.gb4{text-decoration:underline !important}a.gb1,a.gb4{color:#00c !important}.gbi .gb4{color:#dd8e27 !important}.gbf .gb4{color:#900 !important}
+</style><style>body,td,a,p,.h{font-family:sans-serif}body{margin:0;overflow-y:scroll}#gog{padding:3px 8px 0}td{line-height:.8em}.gac_m td{line-height:17px}form{margin-bottom:20px}.h{color:#1967d2}em{font-weight:bold;font-style:normal}.lst{height:25px;width:496px}.gsfi,.lst{font:18px sans-serif}.gsfs{font:17px sans-serif}.ds{display:inline-box;display:inline-block;margin:3px 0 4px;margin-left:4px}input{font-family:inherit}body{background:#fff;color:#1f1f1f}a{color:#681da8;text-decoration:none}a:hover,a:active{text-decoration:underline}.fl a{color:#1967d2}a:visited{color:#681da8}.sblc{padding-top:5px}.sblc a{display:block;margin:2px 0;margin-left:13px;font-size:11px}.lsbb{background:#ecedee;border:solid 1px;border-color:#dadce0 #70757a #70757a #dadce0;height:30px}.lsbb{display:block}#WqQANb a{display:inline-block;margin:0 12px}.lsb{background:url(/images/nav_logo229.png) 0 -261px repeat-x;color:#1f1f1f;border:none;cursor:pointer;height:30px;margin:0;outline:0;font:15px sans-serif;vertical-align:top}.lsb:active{background:#dadce0}.lst:focus{outline:none}</style><script nonce="X9kuPLCRUhkoT0oKCUBLUQ">(function(){window.google.erd={jsr:1,bv:2293,de:true,dpf:'-3JdQD-ascasDxDvkEUVISFyiJOCxwIm2fBpvOus6zU'};
+var g=this||self;var k,l=(k=g.mei)!=null?k:1,m,p=(m=g.diel)!=null?m:0,q,r=(q=g.sdo)!=null?q:!0,t=0,u,w=google.erd,x=w.jsr;google.ml=function(a,b,d,n,e){e=e===void 0?2:e;b&&(u=a&&a.message);d===void 0&&(d={});d.cad="ple_"+google.ple+".aple_"+google.aple;if(google.dl)return google.dl(a,e,d,!0),null;b=d;if(x<0){window.console&&console.error(a,b);if(x===-2)throw a;b=!1}else b=!a||!a.message||a.message==="Error loading script"||t>=l&&!n?!1:!0;if(!b)return null;t++;d=d||{};b=encodeURIComponent;var c="/gen_204?atyp=i&ei="+b(google.kEI);google.kEXPI&&(c+="&jexpid="+b(google.kEXPI));c+="&srcpg="+b(google.sn)+"&jsr="+b(w.jsr)+
+"&bver="+b(w.bv);w.dpf&&(c+="&dpf="+b(w.dpf));var f=a.lineNumber;f!==void 0&&(c+="&line="+f);var h=a.fileName;h&&(h.indexOf("-extension:/")>0&&(e=3),c+="&script="+b(h),f&&h===window.location.href&&(f=document.documentElement.outerHTML.split("\n")[f],c+="&cad="+b(f?f.substring(0,300):"No script found.")));google.ple&&google.ple===1&&(e=2);c+="&jsel="+e;for(var v in d)c+="&",c+=b(v),c+="=",c+=b(d[v]);c=c+"&emsg="+b(a.name+": "+a.message);c=c+"&jsst="+b(a.stack||"N/A");c.length>=12288&&(c=c.substring(0,12288));a=c;n||google.log(0,"",a);return a};window.onerror=function(a,b,d,n,e){u!==a&&(a=e instanceof Error?e:Error(a),d===void 0||"lineNumber"in a||(a.lineNumber=d),b===void 0||"fileName"in a||(a.fileName=b),google.ml(a,!1,void 0,!1,a.name==="SyntaxError"||a.message.substring(0,11)==="SyntaxError"||a.message.indexOf("Script error")!==-1?3:p));u=null;r&&t>=l&&(window.onerror=null)};})();</script></head><body bgcolor="#fff"><script nonce="X9kuPLCRUhkoT0oKCUBLUQ">(function(){var src='/images/nav_logo229.png';var iesg=false;document.body.onload = function(){window.n && window.n();if (document.images){new Image().src=src;}
+if (!iesg){document.f&&document.f.q.focus();document.gbqf&&document.gbqf.q.focus();}
+}
+})();</script><div id="mngb"><div id=gbar><nobr><b class=gb1>Search</b> <a class=gb1 href="https://www.google.com/imghp?hl=en&tab=wi">Images</a> <a class=gb1 href="https://maps.google.com/maps?hl=en&tab=wl">Maps</a> <a class=gb1 href="https://play.google.com/?hl=en&tab=w8">Play</a> <a class=gb1 href="https://www.youtube.com/?tab=w1">YouTube</a> <a class=gb1 href="https://news.google.com/?tab=wn">News</a> <a class=gb1 href="https://mail.google.com/mail/?tab=wm">Gmail</a> <a class=gb1 href="https://drive.google.com/?tab=wo">Drive</a> <a class=gb1 style="text-decoration:none" href="https://www.google.com/intl/en/about/products?tab=wh"><u>More</u> &raquo;</a></nobr></div><div id=guser width=100%><nobr><span id=gbn class=gbi></span><span id=gbf class=gbf></span><span id=gbe></span><a href="http://www.google.com/history/optout?hl=en" class=gb4>Web History</a> | <a  href="/preferences?hl=en" class=gb4>Settings</a> | <a target=_top id=gb_70 href="https://accounts.google.com/ServiceLogin?hl=en&passive=true&continue=https://www.google.com/&ec=GAZAAQ" class=gb4>Sign in</a></nobr></div><div class=gbh style=left:0></div><div class=gbh style=right:0></div></div><center><br clear="all" id="lgpd"><div id="XjhHGf"><img alt="Google" height="92" src="/images/branding/googlelogo/1x/googlelogo_white_background_color_272x92dp.png" style="padding:28px 0 14px" width="272" id="hplogo"><br><br></div><form action="/search" name="f"><table cellpadding="0" cellspacing="0"><tr valign="top"><td width="25%">&nbsp;</td><td align="center" nowrap=""><input name="ie" value="ISO-8859-1" type="hidden"><input value="en" name="hl" type="hidden"><input name="source" type="hidden" value="hp"><input name="biw" type="hidden"><input name="bih" type="hidden"><div class="ds" style="height:32px;margin:4px 0"><input class="lst" style="margin:0;padding:5px 8px 0 6px;vertical-align:top;color:#1f1f1f" autocomplete="off" value="" title="Google Search" maxlength="2048" name="q" size="57"></div><br style="line-height:0"><span class="ds"><span class="lsbb"><input class="lsb" value="Google Search" name="btnG" type="submit"></span></span><span class="ds"><span class="lsbb"><input class="lsb" id="tsuid_EKXQaP39NvLCp84P9u2PoAk_1" value="I'm Feeling Lucky" name="btnI" type="submit"><script nonce="X9kuPLCRUhkoT0oKCUBLUQ">(function(){var id='tsuid_EKXQaP39NvLCp84P9u2PoAk_1';document.getElementById(id).onclick = function(){if (this.form.q.value){this.checked = 1;if (this.form.iflsig)this.form.iflsig.disabled = false;}
+else top.location='/doodles/';};})();</script><input value="AOw8s4IAAAAAaNCzIMAP22rj2s5YJVqsBdrbJt_gM-qo" name="iflsig" type="hidden"></span></span></td><td class="fl sblc" align="left" nowrap="" width="25%"><a href="/advanced_search?hl=en&amp;authuser=0">Advanced search</a></td></tr></table><input id="gbv" name="gbv" type="hidden" value="1"><script nonce="X9kuPLCRUhkoT0oKCUBLUQ">(function(){var a,b="1";if(document&&document.getElementById)if(typeof XMLHttpRequest!="undefined")b="2";else if(typeof ActiveXObject!="undefined"){var c,d,e=["MSXML2.XMLHTTP.6.0","MSXML2.XMLHTTP.3.0","MSXML2.XMLHTTP","Microsoft.XMLHTTP"];for(c=0;d=e[c++];)try{new ActiveXObject(d),b="2"}catch(h){}}a=b;if(a=="2"&&location.search.indexOf("&gbv=2")==-1){var f=google.gbvu,g=document.getElementById("gbv");g&&(g.value=a);f&&window.setTimeout(function(){location.href=f},0)};}).call(this);</script></form><div style="font-size:83%;min-height:3.5em"><br></div><span id="footer"><div style="font-size:10pt"><div style="margin:19px auto;text-align:center" id="WqQANb"><a href="/intl/en/ads/">Advertising</a><a href="/services/">Business Solutions</a><a href="/intl/en/about.html">About Google</a></div></div><p style="font-size:8pt;color:#636363">&copy; 2025 - <a href="/intl/en/policies/privacy/">Privacy</a> - <a href="/intl/en/policies/terms/">Terms</a></p></span></center><script nonce="X9kuPLCRUhkoT0oKCUBLUQ">(function(){window.google.cdo={height:757,width:1440};(function(){var a=window.innerWidth,b=window.innerHeight;if(!a||!b){var c=window.document,d=c.compatMode=="CSS1Compat"?c.documentElement:c.body;a=d.clientWidth;b=d.clientHeight}if(a&&b&&(a!=google.cdo.width||b!=google.cdo.height)){var e=google,f=e.log,g="/client_204?&atyp=i&biw="+a+"&bih="+b+"&ei="+google.kEI,h="",k=window.google&&window.google.kOPI||null;k&&(h+="&opi="+k);f.call(e,"","",g+h)};}).call(this);})();(function(){google.xjs={basecomb:'/xjs/_/js/k\x3dxjs.hp.en.LLdAWo3tNbY.es5.O/ck\x3dxjs.hp.kDv0wo6xF4Y.L.X.O/am\x3dAAIAAAAAAAAgAAAAAAAAAAAAAAAAAAAAAAAAAgAAAAIAAABBQCAAAAAAAAAAAAAAAAAIAAAAAIMSgAMAAAAIAAQIAAAAAAgAgAEAAAAAkAAAIAAQAAAA8R0BAACAQCwCAAAAeAE/d\x3d1/ed\x3d1/dg\x3d0/ujg\x3d1/rs\x3dACT90oGpPxKo_HG9XDJFM2PUKZx1Po3RgA',basecss:'/xjs/_/ss/k\x3dxjs.hp.kDv0wo6xF4Y.L.X.O/am\x3dAAIAAAAAAAAgAAAAAAAAAAAAAAAAAAAAAAAAAgAAAAIAAABBACAAAAAAAAAAAAAAAAAIAAAAAIMCAAAAAAAIAAQIAAAAAAgAgAEAAAAAkAAAIAAQAAAAAAAAAAAAQA/rs\x3dACT90oHGi1pImOxSojGYBL1yL1nz45XH4Q',basejs:'/xjs/_/js/k\x3dxjs.hp.en.LLdAWo3tNbY.es5.O/am\x3dAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABQAAAAAAAAAAAAAAAAAAIAAAAAAAQgAMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA8R0BAACAACwCAAAAeAE/dg\x3d0/rs\x3dACT90oFHHmtaAezJbaW_ecqIdnUTEmXXww',excm:[]};})();(function(){var u='/xjs/_/js/k\x3dxjs.hp.en.LLdAWo3tNbY.es5.O/am\x3dAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABQAAAAAAAAAAAAAAAAAAIAAAAAAAQgAMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA8R0BAACAACwCAAAAeAE/d\x3d1/ed\x3d1/dg\x3d3/rs\x3dACT90oFHHmtaAezJbaW_ecqIdnUTEmXXww/m\x3dsb_he,d';var st=1;var amd=1000;var mmd=0;var pop=true;var povp=false;var fp='';
+var e=this||self;function f(){var a=google.ia&&google.ia.r.B2Jtyd;return a&&[1,5,6].indexOf(a.m)>=0&&a.cbfd&&a.cbvi?a:void 0};function g(a){var b=document.createElement("link");b.as="script";b.href=a;b.rel="preload";document.body.appendChild(b)}function k(){var a=[u];google.dp||(a.forEach(g),google.dp=!0)};google.ps=google.ps||[];function l(){var a=u,b=function(){};google.lx=google.stvsc?b:function(){m(a);google.lx=b};google.bx||google.lx()}function n(a,b){b&&(a.src=b);fp&&google.caft&&google.caft(function(){a.fetchPriority=fp});var h=a.onload;a.onload=function(d){h&&h(d);google.ps=google.ps.filter(function(c){return a!==c})};google.ps.push(a);document.body.appendChild(a)}google.as=n;function m(a){google.tick&&google.tick("load","xjsls");var b=document.createElement("script");b.onerror=function(){google.ple=1};b.onload=function(){google.ple=0};google.xjsus=void 0;n(b,a);google.aple=-1;google.dp=!0};function p(){for(var a=document.getElementsByTagName("img"),b=0,h=a.length;b<h;b++){var d=a[b],c;if(c=d.hasAttribute("data-lzy_")&&Number(d.getAttribute("data-atf"))&1)c=d.getAttribute("jscontroller"),c=!((c==="UBXHI"||c==="R3fhkb"||c==="TSZEqd")&&d.hasAttribute("data-src"));if(c)return!0}return!1};var q,r,t,w,x,y,z,A,B;function C(){google.xjsu=u;e._F_jsUrl=u;x=function(){l()};q=!1;r=(st===1||st===3)&&!!google.caft&&!p();t=f();w=(st===2||st===3)&&!!t&&!p();y=pop;z=povp;A=y&&document.prerendering||z&&document.hidden;B=z?"visibilitychange":"prerenderingchange"}function D(){q||r||w||A||(x(),q=!0)}
+setTimeout(function(){google.tick&&google.tick("load","xjspls");C();if(r||w||A){if(r){var a=function(){r=!1;D()};google.caft(a);setTimeout(a,amd)}w&&(a=function(){w=!1;D()},t.cbvi.push(a),setTimeout(a,mmd));if(A){var b=function(){(z?document.hidden:document.prerendering)||(A=!1,D(),document.removeEventListener(B,b))};document.addEventListener(B,b,{passive:!0})}q||k()}else x()},0);})();window._ = window._ || {};window._DumpException = _._DumpException = function(e){throw e;};window._s = window._s || {};_s._DumpException = _._DumpException;window._qs = window._qs || {};_qs._DumpException = _._DumpException;(function(){var t=[512,0,512,0,0,0,0,128,512,25265152,2,16777216,0,8192,674238216,36364292,524352,8208,8422400,24576,268435456,12582914,264,4684864,8388608,2225,1540096];window._F_toggles = window._xjs_toggles = t;})();window._F_installCss = window._F_installCss || function(css){};(function(){google.jl={bfl:0,dw:false,eli:false,ine:false,ubm:false,uwp:true,vs:false};})();(function(){var pmc='{\x22d\x22:{},\x22sb_he\x22:{\x22client\x22:\x22heirloom-hp\x22,\x22dh\x22:true,\x22ds\x22:\x22\x22,\x22host\x22:\x22google.com\x22,\x22jsonp\x22:true,\x22msgs\x22:{\x22cibl\x22:\x22Clear Search\x22,\x22dym\x22:\x22Did you mean:\x22,\x22lcky\x22:\x22I\\u0026#39;m Feeling Lucky\x22,\x22lml\x22:\x22Learn more\x22,\x22psrc\x22:\x22This search was removed from your \\u003Ca href\x3d\\\x22/history\\\x22\\u003EWeb History\\u003C/a\\u003E\x22,\x22psrl\x22:\x22Remove\x22,\x22sbit\x22:\x22Search by image\x22,\x22srch\x22:\x22Google Search\x22},\x22ovr\x22:{},\x22pq\x22:\x22\x22,\x22rfs\x22:[],\x22stok\x22:\x22ecwxE8fwJ-_2i3fXCnuYsMGobb0\x22}}';google.pmc=JSON.parse(pmc);})();</script>
+
+---
+
+* Host www.google.com:443 was resolved.
+* IPv6: (none)
+* IPv4: 74.125.126.103, 74.125.126.99, 74.125.126.104, 74.125.126.105, 74.125.126.147, 74.125.126.106
+*   Trying 74.125.126.103:443...
+* Connected to www.google.com (74.125.126.103) port 443
+* ALPN: curl offers h2,http/1.1
+} [5 bytes data]
+* TLSv1.3 (OUT), TLS handshake, Client hello (1):
+} [512 bytes data]
+*  CAfile: /etc/ssl/certs/ca-certificates.crt
+*  CApath: /etc/ssl/certs
+{ [5 bytes data]
+* TLSv1.3 (IN), TLS handshake, Server hello (2):
+{ [122 bytes data]
+* TLSv1.3 (IN), TLS handshake, Encrypted Extensions (8):
+{ [15 bytes data]
+* TLSv1.3 (IN), TLS handshake, Certificate (11):
+{ [3814 bytes data]
+* TLSv1.3 (IN), TLS handshake, CERT verify (15):
+{ [79 bytes data]
+* TLSv1.3 (IN), TLS handshake, Finished (20):
+{ [52 bytes data]
+* TLSv1.3 (OUT), TLS change cipher, Change cipher spec (1):
+} [1 bytes data]
+* TLSv1.3 (OUT), TLS handshake, Finished (20):
+} [52 bytes data]
+* SSL connection using TLSv1.3 / TLS_AES_256_GCM_SHA384 / X25519 / id-ecPublicKey
+* ALPN: server accepted h2
+* Server certificate:
+*  subject: CN=www.google.com
+*  start date: Sep  8 08:37:54 2025 GMT
+*  expire date: Dec  1 08:37:53 2025 GMT
+*  subjectAltName: host "www.google.com" matched cert's "www.google.com"
+*  issuer: C=US; O=Google Trust Services; CN=WR2
+*  SSL certificate verify ok.
+*   Certificate level 0: Public key type EC/prime256v1 (256/128 Bits/secBits), signed using sha256WithRSAEncryption
+*   Certificate level 1: Public key type RSA (2048/112 Bits/secBits), signed using sha256WithRSAEncryption
+*   Certificate level 2: Public key type RSA (4096/152 Bits/secBits), signed using sha384WithRSAEncryption
+} [5 bytes data]
+* using HTTP/2
+* [HTTP/2] [1] OPENED stream for https://www.google.com/
+* [HTTP/2] [1] [:method: GET]
+* [HTTP/2] [1] [:scheme: https]
+* [HTTP/2] [1] [:authority: www.google.com]
+* [HTTP/2] [1] [:path: /]
+* [HTTP/2] [1] [user-agent: curl/8.5.0]
+* [HTTP/2] [1] [accept: */*]
+} [5 bytes data]
+> GET / HTTP/2
+> Host: www.google.com
+> User-Agent: curl/8.5.0
+> Accept: */*
+>
+{ [5 bytes data]
+< HTTP/2 200
+< date: Mon, 22 Sep 2025 01:23:28 GMT
+< expires: -1
+< cache-control: private, max-age=0
+< content-type: text/html; charset=ISO-8859-1
+< content-security-policy-report-only: object-src 'none';base-uri 'self';script-src 'nonce-X9kuPLCRUhkoT0oKCUBLUQ' 'strict-dynamic' 'report-sample' 'unsafe-eval' 'unsafe-inline' https: http:;report-uri https://csp.withgoogle.com/csp/gws/other-hp
+< accept-ch: Sec-CH-Prefers-Color-Scheme
+< p3p: CP="This is not a P3P policy! See g.co/p3phelp for more info."
+< server: gws
+< x-xss-protection: 0
+< x-frame-options: SAMEORIGIN
+< set-cookie: AEC=AaJma5sq4md6LJkM3_enHZzQkcscypDB3djPknIxiaeHNzYYNWv0hGPjpU0; expires=Sat, 21-Mar-2026 01:23:28 GMT; path=/; domain=.google.com; Secure; HttpOnly; SameSite=lax
+< set-cookie: NID=525=PkhVTuA5zRU-uz7u1bOGWVimACaehrCOGzPFedEqC1j94_fcfkKjPf6u-zvYd2h61mo26J2c8X0BZ-OZ7km0NRVratz9RTAG9b62pehCSUdS36wDn3v-KHf7Y4D3K5XGW50qoEbeqTx8yqG4mmt7kde2Jcz8d6C05rMZtUli_4aFgT8IK5O9layjPJXp; expires=Tue, 24-Mar-2026 01:23:28 GMT; path=/; domain=.google.com; HttpOnly
+< accept-ranges: none
+< vary: Accept-Encoding
+<
+{ [15299 bytes data]
+* Connection #0 to host www.google.com left intact
