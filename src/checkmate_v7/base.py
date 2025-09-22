@@ -2,84 +2,71 @@
 Checkmate V7: `base.py` - Core abstractions and base classes.
 """
 import logging
-import asyncio
-import random
-import time
+import json
+import subprocess
 from abc import ABC, abstractmethod
 from typing import List
-
-import aiohttp
 
 # Moved from services.py to break circular dependency
 from .models import Race
 
 
-class CircuitBreaker:
-    def __init__(self, failure_threshold=5, recovery_timeout=60):
-        self.failure_threshold = failure_threshold
-        self.recovery_timeout = recovery_timeout
-        self.failure_count = 0
-        self.state = "closed"
-        self.last_failure_time = None
-
-    async def __aenter__(self):
-        if self.state == "open":
-            if time.time() - self.last_failure_time > self.recovery_timeout:
-                self.state = "half-open"
-            else:
-                raise Exception("Circuit is open")
-        return self
-
-    async def __aexit__(self, exc_type, exc_val, exc_tb):
-        if exc_type:
-            self.failure_count += 1
-            if self.failure_count >= self.failure_threshold:
-                self.state = "open"
-                self.last_failure_time = time.time()
-        elif self.state == "half-open":
-            self.failure_count = 0
-            self.state = "closed"
-
-
 class DefensiveFetcher:
-    def __init__(self):
-        self.circuit_breakers = {}
+    """
+    An "Ironclad" Fetcher that uses curl via subprocess to bypass environment
+    issues with Python's HTTP libraries. This is a synchronous implementation.
+    """
+    def fetch(self, url: str, headers: dict = None) -> dict:
+        """
+        Performs a GET request using curl and returns parsed JSON.
+        """
+        try:
+            command = ["curl", "-s", "-L"]
+            if headers:
+                for key, value in headers.items():
+                    command.extend(["-H", f"{key}: {value}"])
+            command.append(url)
 
-    async def fetch(self, url, headers=None, response_type='text'):
-        return await self._request('GET', url, headers=headers, response_type=response_type)
+            result = subprocess.run(
+                command,
+                capture_output=True,
+                text=True,
+                check=True,
+                timeout=30
+            )
+            return json.loads(result.stdout)
+        except (subprocess.CalledProcessError, json.JSONDecodeError, subprocess.TimeoutExpired) as e:
+            logging.error(f"ERROR: curl GET command failed for {url}. Details: {e}")
+            return {}
 
-    async def post(self, url, headers=None, json_data=None, response_type='json'):
-        return await self._request('POST', url, headers=headers, json_data=json_data, response_type=response_type)
+    def post(self, url: str, json_data: dict, headers: dict = None) -> dict:
+        """
+        Performs a POST request with a JSON payload using curl.
+        """
+        try:
+            command = ["curl", "-s", "-L", "-X", "POST"]
 
-    async def _request(self, method, url, headers=None, json_data=None, response_type='text'):
-        domain = url.split('/')[2]
-        if domain not in self.circuit_breakers:
-            self.circuit_breakers[domain] = CircuitBreaker()
+            # Add headers, ensuring Content-Type is set for JSON
+            final_headers = headers.copy() if headers else {}
+            final_headers['Content-Type'] = 'application/json'
 
-        cb = self.circuit_breakers[domain]
+            for key, value in final_headers.items():
+                command.extend(["-H", f"{key}: {value}"])
 
-        retries = 5
-        for i in range(retries):
-            try:
-                async with cb:
-                    async with aiohttp.ClientSession(headers=headers) as session:
-                        await asyncio.sleep(random.uniform(0.5, 1.5))
+            command.extend(["-d", json.dumps(json_data)])
+            command.append(url)
 
-                        async with session.request(method, url, json=json_data, timeout=15) as response:
-                            response.raise_for_status()
-                            if response_type == 'json':
-                                return await response.json()
-                            else:
-                                return await response.text()
-            except Exception as e:
-                logging.warning(f"Attempt {i+1}/{retries} failed for {method} {url}: {e}")
-                if i < retries - 1:
-                    wait_time = (2 ** i) + random.uniform(0, 1)
-                    logging.info(f"Retrying in {wait_time:.2f} seconds...")
-                    await asyncio.sleep(wait_time)
-                else:
-                    logging.error(f"All retries failed for {method} {url}")
-                    raise
+            result = subprocess.run(
+                command,
+                capture_output=True,
+                text=True,
+                check=True,
+                timeout=30
+            )
+            return json.loads(result.stdout)
+        except (subprocess.CalledProcessError, json.JSONDecodeError, subprocess.TimeoutExpired) as e:
+            logging.error(f"ERROR: curl POST command failed for {url}. Details: {e}")
+            return {}
 
 
 class BaseAdapterV7(ABC):
@@ -87,5 +74,5 @@ class BaseAdapterV7(ABC):
         self.fetcher = defensive_fetcher
 
     @abstractmethod
-    async def fetch_races(self) -> List[Race]:
+    def fetch_races(self) -> List[Race]:
         raise NotImplementedError
