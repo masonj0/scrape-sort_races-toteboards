@@ -11,11 +11,11 @@ import shutil
 import requests
 from abc import ABC, abstractmethod
 from datetime import date, datetime, timezone
-from typing import List, Optional
+from typing import List, Optional, Union
 from urllib.parse import urlparse
 
 # New dependencies for the Golden Age Fetcher
-from curl_cffi.requests import Session as CurlCffiSession
+from curl_cffi.requests import Session as CurlCffiSession, Response
 from bs4 import BeautifulSoup
 import pandas as pd
 from celery import Celery
@@ -26,11 +26,9 @@ from sqlalchemy.exc import SQLAlchemyError
 
 from . import config, logic
 from .models import AdapterStatusORM, PredictionORM, ResultORM, JoinORM, Base, Race, Runner
-from .base import BaseAdapterV7 # DefensiveFetcher is no longer imported from here
+from .base import BaseAdapterV7
 from .adapters.fanduel import FanDuelApiAdapterV7
-# from .adapters.twinspires_adapter import TwinspiresModernAdapter
-# from .adapters.betfair_data_scientist_adapter import BetfairModernAdapter
-# from .adapters.racingpost_adapter import RacingPostModernAdapter
+from .adapters.skysports import SkySportsAdapter
 
 # --- Celery App Configuration ---
 celery_app = Celery('tasks', broker=config.REDIS_URL)
@@ -46,29 +44,28 @@ def setup_celery_logging(logger, **kwargs):
     logger.propagate = False
 
 
-# --- Golden Age DefensiveFetcher ---
+# --- The Universal DefensiveFetcher (V3 - Phoenix Edition) ---
 class DefensiveFetcher:
     """
-    A resilient, multi-method, 'waterfall' fetcher adapted from the project's
-    'Golden Age' source material. It tries different fetching strategies
-    sequentially until one succeeds.
+    The definitive, universal, multi-method fetcher. It handles both JSON APIs
+    and HTML scraping by allowing the caller to specify the expected response type.
     """
-    def _try_curl_cffi(self, method: str, url: str, headers: dict, json_data: Optional[dict] = None) -> Optional[dict]:
+    def _try_curl_cffi(self, method: str, url: str, headers: dict, json_data: Optional[dict] = None) -> Optional[Response]:
         logging.info(f"Fetcher: Trying curl_cffi for {method} {urlparse(url).netloc}")
         try:
-            session = CurlCffiSession(impersonate="chrome120", timeout=20)
+            session = CurlCffiSession(impersonate="chrome110", timeout=20)
             if method == 'POST':
                 response = session.post(url, headers=headers, json=json_data, verify=False, timeout=20)
             else:
                 response = session.get(url, headers=headers, verify=False, timeout=20)
             response.raise_for_status()
             logging.info("Fetcher: Success with curl_cffi!")
-            return response.json()
+            return response
         except Exception as e:
             logging.warning(f"Fetcher: curl_cffi failed: {str(e)[:150]}")
             return None
 
-    def _try_requests_with_variations(self, method: str, url: str, headers: dict, json_data: Optional[dict] = None) -> Optional[dict]:
+    def _try_requests(self, method: str, url: str, headers: dict, json_data: Optional[dict] = None) -> Optional[requests.Response]:
         logging.info(f"Fetcher: Trying requests for {method} {urlparse(url).netloc}")
         try:
             if method == 'POST':
@@ -76,68 +73,80 @@ class DefensiveFetcher:
             else:
                 response = requests.get(url, headers=headers, verify=False, timeout=15, allow_redirects=True)
 
-            if response.status_code == 200 and response.text:
-                logging.info("Fetcher: Success with requests!")
-                return response.json()
-        except (requests.exceptions.RequestException, json.JSONDecodeError) as e:
+            response.raise_for_status()
+            logging.info("Fetcher: Success with requests!")
+            return response
+        except requests.exceptions.RequestException as e:
             logging.warning(f"Fetcher: requests failed: {str(e)[:150]}")
             return None
-        return None
 
-    def _try_subprocess_curl(self, method: str, url: str, headers: dict, json_data: Optional[dict] = None) -> Optional[dict]:
+    def _try_subprocess_curl(self, method: str, url: str, headers: dict, json_data: Optional[dict] = None) -> Optional[str]:
         logging.info(f"Fetcher: Trying subprocess curl for {method} {urlparse(url).netloc}")
         if not shutil.which("curl"):
             logging.warning("Fetcher: 'curl' command not found in system PATH.")
             return None
         try:
-            curl_cmd = ['curl', '--silent', '--show-error', '--location', '--compressed', '--max-time', '30']
+            curl_cmd = ['curl', '-s', '-L', '--show-error', '--compressed', '--max-time', '30']
             for key, value in headers.items():
-                curl_cmd.extend(['--header', f'{key}: {value}'])
+                curl_cmd.extend(['-H', f'{key}: {value}'])
 
             if method == 'POST':
                 curl_cmd.extend(['-X', 'POST'])
                 if json_data:
-                    curl_cmd.extend(['--header', 'Content-Type: application/json'])
+                    curl_cmd.extend(['-H', 'Content-Type: application/json'])
                     curl_cmd.extend(['-d', json.dumps(json_data)])
 
             curl_cmd.append(url)
 
-            result = subprocess.run(curl_cmd, capture_output=True, text=True, timeout=45, check=False)
-
-            if result.returncode == 0 and result.stdout:
-                logging.info("Fetcher: Success with subprocess curl!")
-                return json.loads(result.stdout)
-            else:
-                logging.warning(f"Fetcher: Subprocess curl failed with return code {result.returncode}")
-                return None
-        except (subprocess.TimeoutExpired, json.JSONDecodeError, Exception) as e:
-            logging.warning(f"Fetcher: Subprocess curl exception: {str(e)[:150]}")
+            result = subprocess.run(curl_cmd, capture_output=True, text=True, timeout=45, check=True)
+            logging.info("Fetcher: Success with subprocess curl!")
+            return result.stdout
+        except (subprocess.CalledProcessError, subprocess.TimeoutExpired) as e:
+            logging.warning(f"Fetcher: Subprocess curl failed or timed out: {e}")
             return None
 
-    def request(self, method: str, url: str, headers: Optional[dict] = None, json_data: Optional[dict] = None) -> dict:
+    def request(self, method: str, url: str, headers: Optional[dict] = None, json_data: Optional[dict] = None, response_type: str = 'json') -> Union[dict, str]:
         """
-        Primary fetch method that orchestrates the waterfall logic.
+        Primary fetch method. Tries multiple strategies and returns the content
+        in the format specified by `response_type`.
         """
-        # Default headers if none provided
         final_headers = headers.copy() if headers else {}
         if 'User-Agent' not in final_headers:
             final_headers['User-Agent'] = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
 
-        # Waterfall through fetching methods
-        for fetch_method in [self._try_curl_cffi, self._try_requests_with_variations, self._try_subprocess_curl]:
-            result = fetch_method(method, url, final_headers, json_data)
-            if result:
-                return result
-            time.sleep(0.5)
+        # --- Waterfall Stage 1 & 2: Python Libraries ---
+        for fetch_method in [self._try_curl_cffi, self._try_requests]:
+            response = fetch_method(method, url, final_headers, json_data)
+            if response:
+                try:
+                    if response_type == 'json':
+                        return response.json()
+                    else:
+                        return response.text
+                except json.JSONDecodeError as e:
+                    logging.warning(f"Fetcher: Failed to decode {response_type} from {fetch_method.__name__}: {e}")
+                    continue # Try the next method
+
+        # --- Waterfall Stage 3: System Subprocess (already returns text) ---
+        text_response = self._try_subprocess_curl(method, url, final_headers, json_data)
+        if text_response:
+            if response_type == 'json':
+                try:
+                    return json.loads(text_response)
+                except json.JSONDecodeError as e:
+                     logging.error(f"Fetcher: Final method (subprocess) succeeded but failed to parse JSON: {e}")
+                     return {}
+            else:
+                return text_response
 
         logging.error(f"Fetcher: All methods failed for {method} {url}")
-        return {}
+        return {} if response_type == 'json' else ""
 
-    def get(self, url: str, headers: Optional[dict] = None) -> dict:
-        return self.request('GET', url, headers=headers)
+    def get(self, url: str, headers: Optional[dict] = None, response_type: str = 'json') -> Union[dict, str]:
+        return self.request('GET', url, headers=headers, response_type=response_type)
 
-    def post(self, url: str, headers: Optional[dict] = None, json_data: Optional[dict] = None) -> dict:
-        return self.request('POST', url, headers=headers, json_data=json_data)
+    def post(self, url: str, headers: Optional[dict] = None, json_data: Optional[dict] = None, response_type: str = 'json') -> Union[dict, str]:
+        return self.request('POST', url, headers=headers, json_data=json_data, response_type=response_type)
 
 
 class DataSourceOrchestrator:
@@ -145,10 +154,8 @@ class DataSourceOrchestrator:
         self.fetcher = DefensiveFetcher()
         self.db_session = session
         self.adapters: List[BaseAdapterV7] = [
+            SkySportsAdapter(self.fetcher),
             FanDuelApiAdapterV7(self.fetcher),
-            # TwinspiresModernAdapter(self.fetcher),
-            # BetfairModernAdapter(self.fetcher),
-            # RacingPostModernAdapter(self.fetcher),
         ]
 
     def get_races(self) -> tuple[list[Race], list[dict]]:
@@ -166,6 +173,7 @@ class DataSourceOrchestrator:
                 if races:
                     notes = f"Successfully parsed {len(races)} races."
                     logging.info(notes)
+                    all_races.extend(races) # Keep collecting races
                 else:
                     notes = "No upcoming races found on source."
                     logging.info(notes)
@@ -184,9 +192,9 @@ class DataSourceOrchestrator:
                 "last_run": datetime.now(timezone.utc).isoformat()
             })
 
-            if races:
-                all_races.extend(races)
-                break
+            # As per user request, don't break, let all adapters run
+            # if races:
+            #     break
 
         return all_races, statuses
 

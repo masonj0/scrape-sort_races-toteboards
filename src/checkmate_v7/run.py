@@ -18,21 +18,32 @@ def setup_logging():
     )
 
 def convert_race_to_schema(race: Race) -> RaceDataSchema:
-    """Converts the internal Race dataclass to the RaceDataSchema Pydantic model."""
-    horses = [
-        HorseSchema(
-            name=r.name,
-            odds=r.odds,
-            program_number=r.program_number,
-            jockey=r.jockey,
-            trainer=r.trainer
-        ) for r in race.runners
-    ]
+    """
+    Safely converts the internal Race dataclass to the RaceDataSchema Pydantic model.
+    Provides default values for fields that may be missing from various adapters.
+    """
+    horses = []
+    for r in race.runners:
+        # The analyzer requires odds, so skip runners without them.
+        if r.odds is None:
+            continue
+
+        horses.append(
+            HorseSchema(
+                name=r.name,
+                number=r.program_number,
+                jockey=r.jockey,
+                trainer=r.trainer,
+                odds=r.odds
+                # Other fields like id, morningLine, etc., will use Pydantic's default None
+            )
+        )
+
     return RaceDataSchema(
-        race_id=race.race_id,
-        track_name=race.track_name,
-        race_number=race.race_number,
-        post_time=race.post_time,
+        id=race.race_id,
+        track=race.track_name,
+        raceNumber=race.race_number,
+        postTime=race.post_time.isoformat() if race.post_time else None,
         horses=horses
     )
 

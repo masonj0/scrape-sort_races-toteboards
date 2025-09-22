@@ -34,7 +34,12 @@ class FanDuelApiAdapterV7(BaseAdapterV7):
         Fetches the entire racing schedule from the FanDuel GraphQL endpoint.
         """
         try:
-            response_data = self.fetcher.post(self.API_URL, json_data=self.RACING_SCHEDULE_QUERY, headers=self.HEADERS)
+            response_data = self.fetcher.post(
+                self.API_URL,
+                json_data=self.RACING_SCHEDULE_QUERY,
+                headers=self.HEADERS,
+                response_type='json'
+            )
             if not response_data:
                 logging.warning(f"{self.SOURCE_ID}: Did not receive a valid response from the API.")
                 return []

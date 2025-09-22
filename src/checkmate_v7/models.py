@@ -118,27 +118,27 @@ class TrifectaFactorsSchema(BaseModel):
     valueOdds: bool
 
 class HorseSchema(BaseModel):
-    id: str
+    id: Optional[str] = None
     name: str
-    number: int
-    jockey: str
-    trainer: str
-    odds: float
-    morningLine: float
-    speed: int
-    class_rating: int
-    form: str
-    lastRaced: str
+    number: Optional[int] = None
+    jockey: Optional[str] = None
+    trainer: Optional[str] = None
+    odds: Optional[float] = None
+    morningLine: Optional[float] = None
+    speed: Optional[int] = None
+    class_rating: Optional[int] = None
+    form: Optional[str] = None
+    lastRaced: Optional[str] = None
 
 class RaceDataSchema(BaseModel):
-    id: str
-    track: str
-    raceNumber: int
-    postTime: str
+    id: Optional[str] = None
+    track: Optional[str] = None
+    raceNumber: Optional[int] = None
+    postTime: Optional[str] = None
     horses: List[HorseSchema]
-    conditions: str
-    distance: str
-    surface: str
+    conditions: Optional[str] = None
+    distance: Optional[str] = None
+    surface: Optional[str] = None
     checkmateScore: Optional[float] = None
     qualified: Optional[bool] = None
     trifectaFactors: Optional[TrifectaFactorsSchema] = None
