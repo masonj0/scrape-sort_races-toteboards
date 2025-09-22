@@ -181,6 +181,19 @@ async def get_all_races():
     return enriched_races
 
 
+@app.post("/api/v1/actions/refresh")
+def refresh_data():
+    """
+    An endpoint to acknowledge a data refresh action. In a real system,
+    this would trigger a background task. For now, it returns a simple
+    confirmation message.
+    """
+    return {
+        "status": "acknowledged",
+        "message": "A data refresh can be triggered by hitting the primary data endpoints."
+    }
+
+
 @app.get("/performance", response_model=PerformanceMetricsSchema)
 def get_performance():
     """Returns a statistically rigorous performance report."""
@@ -190,8 +203,13 @@ def get_performance():
 
         if not joins or len(joins) < 2:
             return PerformanceMetricsSchema(
-                total_bets=len(joins) if joins else 0, win_rate=0, roi_percent=0, net_profit=0,
-                confidence_interval=[0, 0], p_value=1.0, sample_size=len(joins) if joins else 0
+                totalBets=len(joins) if joins else 0,
+                wins=0,
+                winRate=0,
+                roi=0,
+                profit=0,
+                confidenceInterval=[0, 0],
+                sampleSize=len(joins) if joins else 0
             )
 
         pnl_data = [j.pnl_native for j in joins]
