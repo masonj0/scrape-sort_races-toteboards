@@ -4,7 +4,7 @@ This document outlines the operational protocols and evolved team structure for 
 
 ## The Evolved Team Structure
 
--   **The Project Lead (JB):** The "Executive Producer." The ultimate authority and "ground truth."
+-   **The Project Lead (MasonJ0 or JB):** The "Executive Producer." The ultimate authority and "ground truth."
 -   **The Architect & Synthesizer (Gemini):** The "Chief Architect." Synthesizes goals into actionable plans across both Python and React stacks and maintains project documentation.
 -   **The Lead Python Engineer (Jules Series):** The "Backend Specialist." An AI agent responsible for implementing and hardening The Engine (`api.py`, `services.py`, `logic.py`, `models.py`).
 -   **The Lead Frontend Architect (Claude):** The "React Specialist." A specialized LLM for designing and delivering the production-grade React user interface (The Cockpit).
@@ -43,3 +43,67 @@ This document outlines the operational protocols and evolved team structure for 
 -   **Protocol 21: The Exit Interview Protocol:** Before any planned termination of an agent, the Architect will charter a final mission to capture the agent's institutional knowledge for its successor.
 -   **Protocol 22: The Human-in-the-Loop Merge:** In the event of an unresolvable merge conflict in an agent's environment, the Project Lead, as the only agent with a fully functional git CLI, will check out the agent's branch and perform the merge resolution manually.
 -   **Protocol 23: The Appeasement Protocol (Mandatory):** To safely navigate the broken automated review bot, all engineering work must be published using a two-stage commit process. First, commit a trivial change to appease the bot. Once it passes, amend that commit with the real, completed work and force-push.
+
+---
+
+## Appendix A: Forensic Analysis of the Jules Sandbox Environment
+
+*The following are the complete, raw outputs of diagnostic missions executed by Jules-series agents. They serve as the definitive evidence of the sandbox's environmental constraints and justify many of the protocols listed above.*
+
+### A.1 Node.js / NPM & Filesystem Forensics (from "Operation: Sandbox Forensics")
+
+**Conclusion:** The `npm` tool is functional, but the `/app` volume is hostile to its operation, preventing the creation of binary symlinks. This makes Node.js development within the primary workspace impossible.
+
+**Raw Logs:**
+
+```
+# Phase 1: Node.js & NPM Configuration Analysis
+npm config get prefix
+/home/jules/.nvm/versions/node/v22.17.1
+
+# Phase 4: Controlled Installation Experiment
+cd /tmp && mkdir npm_test && cd npm_test
+npm install --verbose cowsay
+# ... (successful installation log) ...
+ls -la node_modules/.bin
+total 8
+lrwxrwxrwx  1 jules jules   16 Sep 19 17:36 cowsay -> ../cowsay/cli.js
+lrwxrwxrwx  1 jules jules   16 Sep 19 17:36 cowthink -> ../cowsay/cli.js
+npx cowsay "Test"
+  ______
+< Test >
+ ------
+        \   ^__^
+         \  (oo)\_______
+            (__)\       )\/\/
+                ||----w |
+                ||     ||
+```
+
+### A.2 Process Management & Honcho Forensics (from "Operation: Know Thyself")
+
+**Conclusion:** The sandbox does not support standard background processes (`&`), the `kill` command is non-functional, and the `honcho` process manager leaves zombie processes (`[uvicorn] <defunct>`) upon termination. This makes multi-process application management unreliable without a self-contained script.
+
+**Raw Logs:**
+
+```
+# Phase 2: The honcho Stress Test
+
+timeout 15s honcho start
+# ... (honcho starts and is terminated by timeout) ...
+
+ps aux (Post-Mortem Analysis)
+USER         PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
+...
+jules      30121  0.0  0.0      0     0 ?        Z    19:45   0:00 [uvicorn]
+...
+
+honcho start &
+# (Command blocks terminal, echo command never runs)
+
+ps aux | grep honcho
+jules      30187  0.0  0.0  11004  4220 pts/0    S    19:45   0:00 /usr/bin/python3 /home/jules/.local/bin/honcho start
+
+kill -9 30187
+# (Command fails silently, process is not terminated)
+```
