@@ -20,6 +20,7 @@ lxml
 httpx
 aiohttp
 tenacity
+curl_cffi
 
 # Logging
 python-json-logger

@@ -1,0 +1,88 @@
+{
+    "data": {
+      "scheduleRaces": [
+        {
+          "id": "USA-FINGER_LAKES",
+          "races": [
+            {
+              "id": "66268",
+              "tvgRaceId": 12345,
+              "mtp": 8,
+              "number": "8",
+              "postTime": "2025-09-22T19:57:00Z",
+              "isGreyhound": false,
+              "location": {
+                "country": "USA",
+                "__typename": "Location"
+              },
+              "track": {
+                "id": "11",
+                "isFavorite": false,
+                "code": "FL",
+                "name": "Finger Lakes",
+                "perfAbbr": "FL",
+                "featured": true,
+                "hasWagersToday": true,
+                "__typename": "Track"
+              },
+              "highlighted": null,
+              "promos": [],
+              "type": {
+                "code": "Thoroughbred",
+                "__typename": "RaceType"
+              },
+              "status": {
+                "code": "O",
+                "__typename": "RaceStatus"
+              },
+              "video": {
+                "onTvg": true,
+                "onTvg2": false,
+                "__typename": "Video"
+              },
+              "__typename": "Race"
+            },
+            {
+                "id": "66269",
+                "tvgRaceId": 67890,
+                "mtp": 15,
+                "number": "9",
+                "postTime": "2025-09-22T20:25:00Z",
+                "isGreyhound": false,
+                "location": {
+                  "country": "USA",
+                  "__typename": "Location"
+                },
+                "track": {
+                  "id": "11",
+                  "isFavorite": false,
+                  "code": "FL",
+                  "name": "Finger Lakes",
+                  "perfAbbr": "FL",
+                  "featured": true,
+                  "hasWagersToday": true,
+                  "__typename": "Track"
+                },
+                "highlighted": null,
+                "promos": [],
+                "type": {
+                  "code": "Thoroughbred",
+                  "__typename": "RaceType"
+                },
+                "status": {
+                  "code": "O",
+                  "__typename": "RaceStatus"
+                },
+                "video": {
+                  "onTvg": true,
+                  "onTvg2": false,
+                  "__typename": "Video"
+                },
+                "__typename": "Race"
+              }
+          ],
+          "__typename": "Track"
+        }
+      ]
+    }
+  }

@@ -1,0 +1,43 @@
+{
+    "data": {
+      "races": [
+        {
+          "id": "66268",
+          "tvgRaceId": 12345,
+          "bettingInterests": [
+            {
+              "biNumber": "1",
+              "runners": [{ "horseName": "Bustin Stones", "jockey": "J. A. Gomez", "trainer": "Linda K. Dixon", "scratched": false }],
+              "currentOdds": { "numerator": 5, "denominator": 2 }
+            },
+            {
+                "biNumber": "2",
+                "runners": [{ "horseName": "Funny Cide", "jockey": "J. R. Valdivia, Jr.", "trainer": "Charlton Baker", "scratched": false }],
+                "currentOdds": { "numerator": 3, "denominator": 1 }
+            },
+            {
+                "biNumber": "3",
+                "runners": [{ "horseName": "Tiz the Law", "jockey": "H. A. Hernandez", "trainer": "Michael J. Ferraro", "scratched": false }],
+                "currentOdds": { "numerator": 9, "denominator": 2 }
+            },
+            {
+                "biNumber": "4",
+                "runners": [{ "horseName": "Effinex", "jockey": "J. L. Samuel", "trainer": "Chris J. Englehart", "scratched": true }],
+                "currentOdds": { "numerator": 10, "denominator": 1 }
+            },
+            {
+                "biNumber": "5",
+                "runners": [{ "horseName": "Saratoga Snacks", "jockey": "C. J. O'Brien", "trainer": "Jonathan B. Buckley", "scratched": false }],
+                "currentOdds": { "numerator": 15, "denominator": 1 }
+            },
+            {
+                "biNumber": "6",
+                "runners": [{ "horseName": "War of Thrones", "jockey": "A. Castillo", "trainer": "Ira S. Mason", "scratched": false }],
+                "currentOdds": { "numerator": 7, "denominator": 1 }
+            }
+          ]
+        }
+      ],
+      "racesBiPartial": []
+    }
+  }
