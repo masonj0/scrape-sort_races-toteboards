@@ -19,6 +19,7 @@ beautifulsoup4
 lxml
 httpx
 aiohttp
+tenacity
 
 # Logging
 python-json-logger
