@@ -1,108 +1,106 @@
+"""
+Checkmate V7: `run.py` - The "One-Shot" CLI Entrypoint
+"""
 import argparse
-import asyncio
 import json
 import logging
+from datetime import datetime
 
 from .services import DataSourceOrchestrator, get_db_session
 from .logic import TrifectaAnalyzer
-from .models import RaceDataSchema, HorseSchema
+from .models import Race, RaceDataSchema, HorseSchema
 
-# Configure basic logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+def setup_logging():
+    """Sets up basic logging for the CLI tool."""
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s - [%(levelname)s] - %(message)s",
+    )
 
-def format_as_text(races: list) -> str:
-    """Formats a list of qualified races into a human-readable string."""
-    if not races:
-        return "No qualified races found."
+def convert_race_to_schema(race: Race) -> RaceDataSchema:
+    """Converts the internal Race dataclass to the RaceDataSchema Pydantic model."""
+    horses = [
+        HorseSchema(
+            name=r.name,
+            odds=r.odds,
+            program_number=r.program_number,
+            jockey=r.jockey,
+            trainer=r.trainer
+        ) for r in race.runners
+    ]
+    return RaceDataSchema(
+        race_id=race.race_id,
+        track_name=race.track_name,
+        race_number=race.race_number,
+        post_time=race.post_time,
+        horses=horses
+    )
 
-    output = ["--- Qualified Races ---"]
-    for race in races:
-        output.append(
-            f"Track: {race['track']}, Race: {race['raceNumber']}, "
-            f"Score: {race['checkmateScore']}"
-        )
-    return "\n".join(output)
 
-async def main():
+def main():
     """
-    Main entry point for the Checkmate V7 CLI.
-    Orchestrates the fetching, analysis, and printing of race data.
+    Main execution function for the CLI.
+    Fetches live race data, analyzes it, and generates a tipsheet.
     """
-    parser = argparse.ArgumentParser(description="Checkmate V7 - Horse Racing Analysis Tool")
+    parser = argparse.ArgumentParser(description="Checkmate V7 - Jealousy Engine CLI")
     parser.add_argument(
-        '--output',
-        type=str,
-        choices=['json', 'text'],
-        default='text',
-        help='The output format (json or text).'
+        "--output",
+        choices=["json"],
+        default="json",
+        help="Specify the output format (only json is supported).",
     )
     args = parser.parse_args()
 
-    logging.info("Initializing services...")
+    setup_logging()
+    logging.info("--- Starting Checkmate V7 Showcase Run ---")
+
     session = None
     try:
+        logging.info("Initializing database session and orchestrator...")
         session = get_db_session()
         orchestrator = DataSourceOrchestrator(session)
         analyzer = TrifectaAnalyzer()
 
-        logging.info("Fetching race data from all sources...")
-        raw_races, _ = await orchestrator.get_races()
-        logging.info(f"Found {len(raw_races)} total races to analyze.")
+        logging.info("Fetching live race data...")
+        races, statuses = orchestrator.get_races()
+        logging.info(f"Orchestrator status: {statuses}")
 
-        qualified_races = []
-        logging.info("Analyzing races and filtering for qualified opportunities...")
-        for raw_race in raw_races:
-            # Map the simple `Race` object to the rich `RaceDataSchema`
-            horses_for_schema = [
-                HorseSchema(
-                    id=f"{raw_race.race_id}-{r.program_number}",
-                    name=r.name,
-                    number=r.program_number or 0,
-                    jockey=r.jockey or "N/A",
-                    trainer=r.trainer or "N/A",
-                    odds=r.odds or 0.0,
-                    morningLine=0.0,
-                    speed=0,
-                    class_rating=0,
-                    form="",
-                    lastRaced=""
-                ) for r in raw_race.runners
-            ]
-
-            race_data = RaceDataSchema(
-                id=raw_race.race_id,
-                track=raw_race.track_name,
-                raceNumber=raw_race.race_number or 0,
-                postTime=raw_race.post_time.isoformat() if raw_race.post_time else "",
-                horses=horses_for_schema,
-                conditions=raw_race.race_type or "Unknown",
-                distance="N/A",
-                surface="N/A"
-            )
-
-            # Use the TrifectaAnalyzer to score and qualify each race
-            analysis_result = analyzer.analyze_race(race_data)
-
-            if analysis_result["qualified"]:
-                # Add the analysis results to the schema object before appending
-                race_data.checkmateScore = analysis_result["checkmateScore"]
-                race_data.qualified = analysis_result["qualified"]
-                race_data.trifectaFactors = analysis_result["trifectaFactors"]
-                qualified_races.append(race_data.model_dump())
-
-        logging.info(f"Found {len(qualified_races)} qualified races.")
-
-        if args.output == 'json':
-            print(json.dumps(qualified_races, indent=2))
+        tipsheet = []
+        if not races:
+            logging.warning("No races were found by the orchestrator.")
         else:
-            print(format_as_text(qualified_races))
+            logging.info(f"Found {len(races)} races. Analyzing for Checkmate opportunities...")
+            for race in races:
+                race_schema = convert_race_to_schema(race)
+                analysis = analyzer.analyze_race(race_schema)
+
+                if analysis["qualified"]:
+                    logging.info(f"Checkmate QUALIFIED: {race.track_name} - Race {race.race_number} (Score: {analysis['checkmateScore']})")
+                    tipsheet.append({
+                        "trackName": race.track_name,
+                        "raceNumber": race.race_number,
+                        "postTime": race.post_time.isoformat() if race.post_time else None,
+                        "checkmateScore": analysis["checkmateScore"],
+                        "analysis": analysis,
+                        "runners": [r.model_dump() for r in race_schema.horses]
+                    })
+                else:
+                    logging.info(f"Checkmate SKIPPED: {race.track_name} - Race {race.race_number} (Score: {analysis['checkmateScore']})")
+
+        if args.output == "json":
+            output_filename = "tipsheet.json"
+            logging.info(f"Writing {len(tipsheet)} qualified races to {output_filename}...")
+            with open(output_filename, "w") as f:
+                json.dump(tipsheet, f, indent=2)
+            logging.info("Successfully generated tipsheet.")
 
     except Exception as e:
-        logging.error(f"An error occurred during the analysis pipeline: {e}", exc_info=True)
+        logging.error(f"An unexpected error occurred during the run: {e}", exc_info=True)
     finally:
         if session:
             session.close()
-        logging.info("Pipeline finished.")
+        logging.info("--- Checkmate V7 Showcase Run Finished ---")
+
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    main()
