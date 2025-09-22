@@ -39,7 +39,7 @@ def test_health_check_fully_mocked(mock_redis_from_url, mock_get_db):
     assert str(called_arg) == "SELECT 1"
     mock_redis_from_url.assert_called_once()
 
-@patch('src.checkmate_v7.services.get_db_session')
+@patch('src.checkmate_v7.api.get_db_session')
 def test_get_performance_empty(mock_get_db):
     # Mock the session to return an empty list for the query
     mock_session = MagicMock()
@@ -49,8 +49,8 @@ def test_get_performance_empty(mock_get_db):
     response = client.get("/performance")
     assert response.status_code == 200
     data = response.json()
-    assert data["total_bets"] == 0
-    assert data["sample_size"] == 0
+    assert data["totalBets"] == 0
+    assert data["sampleSize"] == 0
     mock_get_db.assert_called_once()
 
 from unittest.mock import patch, MagicMock, AsyncMock
