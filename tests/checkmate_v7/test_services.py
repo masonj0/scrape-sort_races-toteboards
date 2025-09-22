@@ -9,30 +9,58 @@ def mock_session():
     """Provides a mock database session."""
     return MagicMock()
 
+from src.checkmate_v7.models import Race
+
 @pytest.mark.anyio
-async def test_get_races_returns_status_with_notes(mock_session):
+@pytest.mark.parametrize(
+    "adapter_return_value, adapter_side_effect, expected_note, expected_status",
+    [
+        ([Race(race_id="r1", track_name="TrackA", runners=[])], None, "Successfully parsed 1 races.", "OK"),
+        ([], None, "No upcoming races found on source.", "OK"),
+        (None, ValueError("Test API Error"), "API Error: Test API Error", "ERROR"),
+    ],
+    ids=["success", "no_races", "error"]
+)
+async def test_get_races_returns_status_with_notes(
+    mock_session, adapter_return_value, adapter_side_effect, expected_note, expected_status
+):
     """
     SPEC: The status dictionary returned by get_races must contain a 'notes' field
-    with a human-readable description of the outcome.
+    with a human-readable description of the outcome for all scenarios.
     """
     # Arrange
     orchestrator = DataSourceOrchestrator(mock_session)
 
-    # Mock the adapter to simulate it finding no races
     mock_adapter_instance = MagicMock(spec=FanDuelApiAdapterV7)
-    mock_adapter_instance.fetch_races = AsyncMock(return_value=[])
-    mock_adapter_instance.__class__.__name__ = "FanDuelApiAdapterV7" # Set the name for the status dict
+    mock_adapter_instance.fetch_races = AsyncMock(
+        return_value=adapter_return_value,
+        side_effect=adapter_side_effect
+    )
+    mock_adapter_instance.__class__.__name__ = "MockAdapter"
 
-    # Replace the orchestrator's adapter list with our mock
-    orchestrator.adapters = [mock_adapter_instance]
+    # The orchestrator should break on the first success, so for the empty and error
+    # cases, we need a successful adapter to follow it.
+    mock_successful_adapter = MagicMock(spec=FanDuelApiAdapterV7)
+    mock_successful_adapter.fetch_races = AsyncMock(return_value=[Race(race_id="r2", track_name="TrackB", runners=[])])
+    mock_successful_adapter.__class__.__name__ = "SuccessAdapter"
+
+    if expected_status == "OK" and not adapter_return_value:
+        orchestrator.adapters = [mock_adapter_instance, mock_successful_adapter]
+    elif expected_status == "ERROR":
+        orchestrator.adapters = [mock_adapter_instance, mock_successful_adapter]
+    else:
+        orchestrator.adapters = [mock_adapter_instance]
+
 
     # Act
-    races, statuses = await orchestrator.get_races()
+    _, statuses = await orchestrator.get_races()
 
     # Assert
-    assert len(statuses) == 1
+    assert len(statuses) >= 1
     status = statuses[0]
 
-    # This assertion will fail until the 'notes' field is implemented
     assert "notes" in status
-    assert status["notes"] == "No upcoming races found on source."
+    assert status["notes"] == expected_note
+    assert status["status"] == expected_status
+    if expected_status == "ERROR":
+        assert status["error_message"] == "Test API Error"
