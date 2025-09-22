@@ -181,6 +181,19 @@ async def get_all_races():
     return enriched_races
 
 
+@app.post("/api/v1/actions/refresh")
+def refresh_data():
+    """
+    An endpoint to acknowledge a data refresh action. In a real system,
+    this would trigger a background task. For now, it returns a simple
+    confirmation message.
+    """
+    return {
+        "status": "acknowledged",
+        "message": "A data refresh can be triggered by hitting the primary data endpoints."
+    }
+
+
 @app.get("/performance", response_model=PerformanceMetricsSchema)
 def get_performance():
     """Returns a statistically rigorous performance report."""
