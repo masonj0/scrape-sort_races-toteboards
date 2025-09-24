@@ -35,6 +35,8 @@ rich
 dash
 dash-bootstrap-components
 requests
+tabulate
+colorama
 
 # Process Management
 honcho
