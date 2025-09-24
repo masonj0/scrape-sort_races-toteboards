@@ -21,14 +21,14 @@ class RacingPostModernAdapter(BaseAdapterV7):
     SOURCE_ID = "racingpost"
     BASE_URL = "https://www.racingpost.com"
 
-    async def fetch_races(self) -> List[Race]:
+    def fetch_races(self) -> List[Race]:
         """
         Fetches and parses races from the main Racing Post racecards page for today.
         """
         # Note: In a real-world scenario, we might need to handle date formatting
         # or different URLs for different regions.
         racecards_url = f"{self.BASE_URL}/racecards/"
-        html_content = await self.fetcher.fetch(racecards_url, response_type='text')
+        html_content = self.fetcher.fetch(racecards_url)
         if not html_content:
             return []
         return self._parse_races(html_content)

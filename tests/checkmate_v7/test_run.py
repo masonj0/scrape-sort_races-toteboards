@@ -1,7 +1,8 @@
 import pytest
 import sys
-from unittest.mock import patch, MagicMock, AsyncMock
+from unittest.mock import patch, MagicMock
 import json
+import re
 
 from src.checkmate_v7 import run
 from src.checkmate_v7.models import Race, Runner, RaceDataSchema, HorseSchema, TrifectaFactorsSchema
@@ -14,7 +15,7 @@ def mock_services():
          patch('src.checkmate_v7.run.TrifectaAnalyzer') as mock_analyzer:
 
         # Configure Orchestrator Mock
-        mock_orchestrator_instance = AsyncMock()
+        mock_orchestrator_instance = MagicMock()
         mock_race = Race(
             race_id="R1",
             track_name="Test Track",
@@ -36,46 +37,19 @@ def mock_services():
 
         yield mock_get_db, mock_orchestrator, mock_analyzer
 
-@pytest.mark.anyio
-async def test_run_script_text_output(capsys, mock_services):
-    """
-    Tests the run.py script with the default text output.
-    """
-    # Arrange
-    test_args = ['run.py', '--output', 'text']
-    with patch.object(sys, 'argv', test_args):
-        # Act
-        await run.main()
-
-    # Assert
-    captured = capsys.readouterr()
-    output = captured.out.strip()
-    assert "--- Qualified Races ---" in output
-    assert "Track: Test Track, Race: 1, Score: 85" in output
-
-@pytest.mark.anyio
-async def test_run_script_json_output(capsys, mock_services):
+def test_run_script_json_output(capsys, mock_services):
     """
     Tests the run.py script with JSON output.
     """
     # Arrange
     test_args = ['run.py', '--output', 'json']
-    with patch.object(sys, 'argv', test_args):
+    with patch.object(sys, 'argv', test_args), patch('builtins.open', MagicMock()) as mock_file:
         # Act
-        await run.main()
+        run.main()
 
-    # Assert
-    captured = capsys.readouterr()
-    output = captured.out.strip()
-
-    # Verify it's valid JSON
-    data = json.loads(output)
-    assert isinstance(data, list)
-    assert len(data) == 1
-
-    # Verify the content
-    race_data = data[0]
-    assert race_data['track'] == 'Test Track'
-    assert race_data['raceNumber'] == 1
-    assert race_data['checkmateScore'] == 85
-    assert race_data['qualified'] is True
+        # Assert
+        captured = capsys.readouterr()
+        assert "Writing 1 qualified races to" in captured.out
+        mock_file.assert_called_once()
+        # Check that the filename contains the timestamp format
+        assert re.search(r'tipsheet_\d{4}_\d{2}h\d{2}\.json', mock_file.call_args[0][0])

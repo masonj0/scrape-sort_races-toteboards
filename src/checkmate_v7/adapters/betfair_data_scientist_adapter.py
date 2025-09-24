@@ -19,12 +19,12 @@ class BetfairModernAdapter(BaseAdapterV7):
     SOURCE_ID = "betfair_data_scientist"
     BASE_URL = "https://betfair-data-supplier.herokuapp.com/api/widgets/iggy-joey/datasets"
 
-    async def fetch_races(self) -> List[Race]:
+    def fetch_races(self) -> List[Race]:
         """Fetches and parses data from the Betfair Data Scientist API."""
         today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
         url = f"{self.BASE_URL}/?date={today}&presenter=RatingsPresenter&csv=true"
 
-        csv_data = await self.fetcher.fetch(url, response_type='text')
+        csv_data = self.fetcher.fetch(url)
         if not csv_data:
             return []
         return self._parse_races(csv_data)

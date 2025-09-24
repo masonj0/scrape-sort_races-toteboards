@@ -53,12 +53,11 @@ def test_get_performance_empty(mock_get_db):
     assert data["sampleSize"] == 0
     mock_get_db.assert_called_once()
 
-from unittest.mock import patch, MagicMock, AsyncMock
+from unittest.mock import patch, MagicMock
 from src.checkmate_v7 import services
 from src.checkmate_v7.models import Race
 
-@pytest.mark.anyio
-async def test_data_source_orchestrator_v7():
+def test_data_source_orchestrator_v7():
     """
     Tests the new V7 DataSourceOrchestrator logic by mocking an adapter.
     """
@@ -68,21 +67,23 @@ async def test_data_source_orchestrator_v7():
     # Prepare mock race data
     mock_race = Race(race_id="test_race_1", track_name="Test Track", race_number=1, runners=[])
 
-    # Patch the fetch_races method of the first real adapter in the list
+    # Patch the fetch_races method of an adapter to control its output
     with patch(
-        'src.checkmate_v7.services.FanDuelApiAdapterV7.fetch_races',
-        new_callable=AsyncMock
+        'src.checkmate_v7.adapters.skysports.SkySportsAdapter.fetch_races',
+        new_callable=MagicMock
     ) as mock_fetch:
         mock_fetch.return_value = [mock_race]
 
         # Execute
-        races, statuses = await orchestrator.get_races()
+        races, statuses = orchestrator.get_races()
 
         # Assert
-        assert len(races) == 1
+        assert len(races) >= 1 # Can be more than one if other adapters run
         assert races[0].race_id == "test_race_1"
-        assert isinstance(statuses, list)
-        mock_fetch.assert_awaited_once()
+        assert len(statuses) > 0
+        # The first adapter in the list is SkySports
+        assert statuses[0]["adapter_id"] == "SkySportsAdapter"
+        assert statuses[0]["status"] == "OK"
 
 @patch('src.checkmate_v7.api.services.DataSourceOrchestrator')
 def test_get_all_races_endpoint(MockOrchestrator):
@@ -90,7 +91,7 @@ def test_get_all_races_endpoint(MockOrchestrator):
     Tests the /api/v1/races/all endpoint, mocking the data source.
     """
     # --- Mock Setup ---
-    mock_orchestrator_instance = AsyncMock()
+    mock_orchestrator_instance = MagicMock()
 
     # Configure the mock to return a list of simple Race objects
     from src.checkmate_v7.models import Race, Runner

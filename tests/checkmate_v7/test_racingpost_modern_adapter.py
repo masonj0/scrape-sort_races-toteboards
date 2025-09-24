@@ -1,6 +1,6 @@
 import pytest
 import os
-from unittest.mock import AsyncMock
+from unittest.mock import MagicMock
 
 from src.checkmate_v7.adapters.racingpost_adapter import RacingPostModernAdapter
 from src.checkmate_v7.base import DefensiveFetcher
@@ -10,7 +10,7 @@ from src.checkmate_v7.base import DefensiveFetcher
 @pytest.fixture
 def mock_fetcher():
     """Pytest fixture for a mock DefensiveFetcher."""
-    return AsyncMock(spec=DefensiveFetcher)
+    return MagicMock(spec=DefensiveFetcher)
 
 @pytest.fixture
 def adapter(mock_fetcher):
@@ -50,8 +50,7 @@ def test_parse_races(adapter, mock_html_data):
     assert race.runners[2].name == "Just a Horse"
     assert race.runners[2].program_number == 4
 
-@pytest.mark.anyio
-async def test_fetch_races_end_to_end(adapter, mock_fetcher, mock_html_data):
+def test_fetch_races_end_to_end(adapter, mock_fetcher, mock_html_data):
     """
     Tests the end-to-end flow of the fetch_races method, mocking the fetcher call.
     """
@@ -59,10 +58,10 @@ async def test_fetch_races_end_to_end(adapter, mock_fetcher, mock_html_data):
     mock_fetcher.fetch.return_value = mock_html_data
 
     # When
-    races = await adapter.fetch_races()
+    races = adapter.fetch_races()
 
     # Then
-    mock_fetcher.fetch.assert_called_once_with("https://www.racingpost.com/racecards/", response_type='text')
+    mock_fetcher.fetch.assert_called_once_with(f"{adapter.BASE_URL}/racecards/")
 
     assert len(races) == 1
     assert len(races[0].runners) == 3

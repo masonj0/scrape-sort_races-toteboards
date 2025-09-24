@@ -133,7 +133,7 @@ async def get_all_races():
 
     # 1. Fetch all raw race data
     # get_races now returns a tuple: (races, statuses)
-    raw_races, _ = await orchestrator.get_races()
+    raw_races, _ = orchestrator.get_races()
 
     enriched_races = []
     for raw_race in raw_races:
