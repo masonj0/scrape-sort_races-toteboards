@@ -61,7 +61,7 @@ def test_get_races_all_endpoint_handles_new_signature(mock_races, mock_statuses)
     with patch('src.checkmate_v7.api.services.DataSourceOrchestrator') as MockOrchestrator:
         mock_instance = MockOrchestrator.return_value
         # Mock get_races to return the new tuple format
-        mock_instance.get_races = AsyncMock(return_value=(mock_races, mock_statuses))
+        mock_instance.get_races.return_value = (mock_races, mock_statuses)
 
         response = client.get("/api/v1/races/all")
 

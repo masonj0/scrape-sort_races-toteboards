@@ -1,6 +1,6 @@
 import pytest
 import os
-from unittest.mock import AsyncMock
+from unittest.mock import MagicMock
 
 from src.checkmate_v7.adapters.betfair_data_scientist_adapter import BetfairModernAdapter
 from src.checkmate_v7.base import DefensiveFetcher
@@ -10,7 +10,7 @@ from src.checkmate_v7.base import DefensiveFetcher
 @pytest.fixture
 def mock_fetcher():
     """Pytest fixture for a mock DefensiveFetcher."""
-    return AsyncMock(spec=DefensiveFetcher)
+    return MagicMock(spec=DefensiveFetcher)
 
 @pytest.fixture
 def adapter(mock_fetcher):
@@ -59,8 +59,7 @@ def test_parse_races(adapter, mock_csv_data):
     assert race2.runners[1].name == "2002"
     assert race2.runners[1].odds == 4.5
 
-@pytest.mark.anyio
-async def test_fetch_races_end_to_end(adapter, mock_fetcher, mock_csv_data):
+def test_fetch_races_end_to_end(adapter, mock_fetcher, mock_csv_data):
     """
     Tests the end-to-end flow of the fetch_races method, mocking the fetcher call.
     """
@@ -68,7 +67,7 @@ async def test_fetch_races_end_to_end(adapter, mock_fetcher, mock_csv_data):
     mock_fetcher.fetch.return_value = mock_csv_data
 
     # When
-    races = await adapter.fetch_races()
+    races = adapter.fetch_races()
 
     # Then
     mock_fetcher.fetch.assert_called_once()

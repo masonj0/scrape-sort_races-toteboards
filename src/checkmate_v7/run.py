@@ -1,5 +1,5 @@
 """
-Checkmate V7: `run.py` - The "One-Shot" CLI Entrypoint
+Checkmate V7: run.py - The "One-Shot" CLI Entrypoint
 """
 import argparse
 import json
@@ -99,8 +99,10 @@ def main():
                     logging.info(f"Checkmate SKIPPED: {race.track_name} - Race {race.race_number} (Score: {analysis['checkmateScore']})")
 
         if args.output == "json":
-            output_filename = "tipsheet.json"
+            timestamp = datetime.now().strftime("%m%d_%Hh%M")
+            output_filename = f"tipsheet_{timestamp}.json"
             logging.info(f"Writing {len(tipsheet)} qualified races to {output_filename}...")
+            print(f"DEBUG: Writing {len(tipsheet)} qualified races to {output_filename}...") # DEBUG
             with open(output_filename, "w") as f:
                 json.dump(tipsheet, f, indent=2)
             logging.info("Successfully generated tipsheet.")
