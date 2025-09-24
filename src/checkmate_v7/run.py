@@ -4,6 +4,7 @@ Checkmate V7: `run.py` - The "One-Shot" CLI Entrypoint
 import argparse
 import json
 import logging
+import asyncio
 from datetime import datetime
 
 from .services import DataSourceOrchestrator, get_db_session
@@ -48,7 +49,7 @@ def convert_race_to_schema(race: Race) -> RaceDataSchema:
     )
 
 
-def main():
+async def main():
     """
     Main execution function for the CLI.
     Fetches live race data, analyzes it, and generates a tipsheet.
@@ -73,7 +74,7 @@ def main():
         analyzer = TrifectaAnalyzer()
 
         logging.info("Fetching live race data...")
-        races, statuses = orchestrator.get_races()
+        races, statuses = await orchestrator.get_races()
         logging.info(f"Orchestrator status: {statuses}")
 
         tipsheet = []
@@ -99,7 +100,8 @@ def main():
                     logging.info(f"Checkmate SKIPPED: {race.track_name} - Race {race.race_number} (Score: {analysis['checkmateScore']})")
 
         if args.output == "json":
-            output_filename = "tipsheet.json"
+            timestamp = datetime.now().strftime("%m%d_%H%M")
+            output_filename = f"tipsheet_{timestamp}.json"
             logging.info(f"Writing {len(tipsheet)} qualified races to {output_filename}...")
             with open(output_filename, "w") as f:
                 json.dump(tipsheet, f, indent=2)
@@ -114,4 +116,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())

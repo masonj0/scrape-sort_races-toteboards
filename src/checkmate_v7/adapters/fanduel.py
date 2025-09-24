@@ -60,40 +60,19 @@ class FanDuelApiAdapterV7(BaseAdapterV7):
         """
         all_races = []
         try:
-            schedule_days = response_data.get("data", {}).get("racingSchedule", {}).get("schedule", [])
-            for day in schedule_days:
-                for track in day.get("tracks", []):
-                    track_name = track.get("name")
-                    for race_info in track.get("races", []):
-
-                        runners = []
-                        for runner_info in race_info.get("runners", []):
-                            if not runner_info.get("scratched"):
-                                runner = Runner(
-                                    name=runner_info.get("runnerName"),
-                                    program_number=runner_info.get("runnerNumber"),
-                                    # Odds, Jockey, and Trainer are not available in this query
-                                    odds=None,
-                                    jockey=None,
-                                    trainer=None,
-                                )
-                                runners.append(runner)
-
-                        if not runners:
-                            continue
-
-                        race = Race(
-                            race_id=race_info.get("id"),
-                            track_name=track_name,
-                            race_number=race_info.get("raceNumber"),
-                            post_time=self._to_datetime(race_info.get("postTime")),
-                            # Race type and number of runners are not explicitly provided,
-                            # so we derive what we can.
-                            race_type="Thoroughbred", # Assumption
-                            number_of_runners=len(runners),
-                            runners=runners,
-                        )
-                        all_races.append(race)
+            schedule_races = response_data.get("data", {}).get("scheduleRaces", [])
+            for track_data in schedule_races:
+                for race_info in track_data.get("races", []):
+                    race = Race(
+                        race_id=race_info.get("id"),
+                        track_name=race_info.get("track", {}).get("name"),
+                        race_number=race_info.get("number"),
+                        post_time=self._to_datetime(race_info.get("postTime")),
+                        race_type="Thoroughbred", # Assumption
+                        number_of_runners=0, # Will be updated later
+                        runners=[],
+                    )
+                    all_races.append(race)
         except Exception as e:
             logging.error(f"{self.SOURCE_ID}: Failed during parsing of race data: {e}", exc_info=True)
             return []

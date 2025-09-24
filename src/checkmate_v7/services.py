@@ -29,6 +29,7 @@ from .models import AdapterStatusORM, PredictionORM, ResultORM, JoinORM, Base, R
 from .base import BaseAdapterV7
 from .adapters.fanduel import FanDuelApiAdapterV7
 from .adapters.skysports import SkySportsAdapter
+from .adapters.attheraces_adapter import AtTheRacesAdapter
 
 # --- Celery App Configuration ---
 celery_app = Celery('tasks', broker=config.REDIS_URL)
@@ -156,6 +157,7 @@ class DataSourceOrchestrator:
         self.adapters: List[BaseAdapterV7] = [
             SkySportsAdapter(self.fetcher),
             FanDuelApiAdapterV7(self.fetcher),
+            AtTheRacesAdapter(self.fetcher),
         ]
 
     def get_races(self) -> tuple[list[Race], list[dict]]:

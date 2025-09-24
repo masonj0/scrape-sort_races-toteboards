@@ -1,7 +1,8 @@
 import pytest
 import os
 from unittest.mock import AsyncMock
-from src.checkmate_v7.services import EquibaseAdapterV7, DefensiveFetcher
+from src.checkmate_v7.adapters.equibase_adapter import EquibaseAdapter
+from src.checkmate_v7.base import DefensiveFetcher
 from src.checkmate_v7.models import Race
 
 # Determine absolute paths to the fixture files

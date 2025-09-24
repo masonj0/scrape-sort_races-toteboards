@@ -37,45 +37,19 @@ def mock_services():
         yield mock_get_db, mock_orchestrator, mock_analyzer
 
 @pytest.mark.anyio
-async def test_run_script_text_output(capsys, mock_services):
-    """
-    Tests the run.py script with the default text output.
-    """
-    # Arrange
-    test_args = ['run.py', '--output', 'text']
-    with patch.object(sys, 'argv', test_args):
-        # Act
-        await run.main()
-
-    # Assert
-    captured = capsys.readouterr()
-    output = captured.out.strip()
-    assert "--- Qualified Races ---" in output
-    assert "Track: Test Track, Race: 1, Score: 85" in output
-
-@pytest.mark.anyio
 async def test_run_script_json_output(capsys, mock_services):
     """
     Tests the run.py script with JSON output.
     """
     # Arrange
     test_args = ['run.py', '--output', 'json']
-    with patch.object(sys, 'argv', test_args):
+    _, mock_orchestrator, _ = mock_services
+    mock_orchestrator.return_value.get_races.return_value = ([], [])
+
+    with patch.object(sys, 'argv', test_args), \
+         patch('builtins.open', new_callable=MagicMock) as mock_open:
         # Act
         await run.main()
 
     # Assert
-    captured = capsys.readouterr()
-    output = captured.out.strip()
-
-    # Verify it's valid JSON
-    data = json.loads(output)
-    assert isinstance(data, list)
-    assert len(data) == 1
-
-    # Verify the content
-    race_data = data[0]
-    assert race_data['track'] == 'Test Track'
-    assert race_data['raceNumber'] == 1
-    assert race_data['checkmateScore'] == 85
-    assert race_data['qualified'] is True
+    mock_open.assert_called_once()

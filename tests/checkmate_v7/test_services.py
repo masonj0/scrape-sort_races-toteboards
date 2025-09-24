@@ -19,7 +19,8 @@ def mock_session():
     ],
     ids=["success", "no_races", "error"]
 )
-def test_get_races_returns_status_with_notes(
+@pytest.mark.anyio
+async def test_get_races_returns_status_with_notes(
     mock_session, adapter_return_value, adapter_side_effect, expected_note, expected_status
 ):
     """
@@ -29,18 +30,17 @@ def test_get_races_returns_status_with_notes(
     # Arrange
     orchestrator = DataSourceOrchestrator(mock_session)
 
-    mock_adapter_instance = MagicMock(spec=FanDuelApiAdapterV7)
-    mock_adapter_instance.fetch_races = MagicMock(
-        return_value=adapter_return_value,
-        side_effect=adapter_side_effect
-    )
-    mock_adapter_instance.__class__.__name__ = "MockAdapter"
+    mock_adapter_instance = AsyncMock(spec=FanDuelApiAdapterV7)
+    mock_adapter_instance.fetch_races.return_value = adapter_return_value
+    mock_adapter_instance.fetch_races.side_effect = adapter_side_effect
+
+    mock_adapter_instance.SOURCE_ID = "MockAdapter"
 
     # The orchestrator should break on the first success, so for the empty and error
     # cases, we need a successful adapter to follow it.
-    mock_successful_adapter = MagicMock(spec=FanDuelApiAdapterV7)
-    mock_successful_adapter.fetch_races = MagicMock(return_value=[Race(race_id="r2", track_name="TrackB", runners=[])])
-    mock_successful_adapter.__class__.__name__ = "SuccessAdapter"
+    mock_successful_adapter = AsyncMock(spec=FanDuelApiAdapterV7)
+    mock_successful_adapter.fetch_races.return_value = [Race(race_id="r2", track_name="TrackB", runners=[])]
+    mock_successful_adapter.SOURCE_ID = "SuccessAdapter"
 
     if expected_status == "OK" and not adapter_return_value:
         orchestrator.adapters = [mock_adapter_instance, mock_successful_adapter]
@@ -51,7 +51,7 @@ def test_get_races_returns_status_with_notes(
 
 
     # Act
-    _, statuses = orchestrator.get_races()
+    _, statuses = await orchestrator.get_races()
 
     # Assert
     assert len(statuses) >= 1

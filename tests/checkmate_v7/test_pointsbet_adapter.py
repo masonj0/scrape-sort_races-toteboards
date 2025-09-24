@@ -2,7 +2,8 @@ import pytest
 import json
 import os
 from unittest.mock import AsyncMock
-from src.checkmate_v7.services import PointsBetAdapterV7, DefensiveFetcher
+from src.checkmate_v7.adapters.pointsbet_adapter import PointsBetAdapter
+from src.checkmate_v7.base import DefensiveFetcher
 
 # Determine the absolute path to the fixture file
 FIXTURE_PATH = os.path.join(os.path.dirname(__file__), 'fixtures', 'pointsbet_races.json')
