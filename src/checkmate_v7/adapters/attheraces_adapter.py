@@ -65,7 +65,7 @@ class AtTheRacesAdapter(BaseAdapterV7):
             html = self.fetcher.get(url, response_type='text')
             if html:
                 try:
-                    race = self._parse_single_race_detail(html, race_details)
+                    race = self.parse_single_race_detail(html, race_details)
                     if race:
                         all_races.append(race)
                 except Exception as e:
