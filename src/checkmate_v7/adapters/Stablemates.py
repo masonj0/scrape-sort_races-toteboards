@@ -1,9 +1,5 @@
 # src/checkmate_v7/adapters/Stablemates.py
 
-"""
-Stablemates.py - Development and Placeholder Adapters
-"""
-
 import logging
 from typing import List
 from bs4 import BeautifulSoup
@@ -11,7 +7,6 @@ from ..base import BaseAdapterV7
 from ..models import Race, Runner
 
 class EquibaseAdapter(BaseAdapterV7):
-    """PARTIAL: Equibase entries adapter. Lacks runner details."""
     SOURCE_ID = "equibase_partial"
     BASE_URL = "http://www.equibase.com"
 
@@ -21,7 +16,6 @@ class EquibaseAdapter(BaseAdapterV7):
         url = f"{self.BASE_URL}/entries/ENT_{date_str}.html?COUNTRY=USA"
         html = self.fetcher.get(url, response_type='text')
         if not html: return []
-
         soup = BeautifulSoup(html, 'html.parser')
         races = []
         for table in soup.find_all('table', summary=lambda s: s and s.startswith('Track Abbr:')):
@@ -34,7 +28,6 @@ class EquibaseAdapter(BaseAdapterV7):
         return races
 
 class RacingAndSportsAdapter(BaseAdapterV7):
-    """PLACEHOLDER: Racing & Sports API adapter."""
     SOURCE_ID = "racingandsports_placeholder"
     def fetch_races(self) -> List[Race]:
         logging.warning(f"{self.SOURCE_ID}: Placeholder adapter - returning empty race list.")

@@ -9,42 +9,37 @@ class DataSourceOrchestrator:
     def __init__(self, use_all_adapters=False):
         self.fetcher = DefensiveFetcher()
         if use_all_adapters:
-            self.adapters: List[BaseAdapterV7] = [Adapter(self.fetcher) for Adapter in (PRODUCTION_ADAPTERS + DEVELOPMENT_ADAPTERS)]
+            adapters_to_use = PRODUCTION_ADAPTERS + DEVELOPMENT_ADAPTERS
+            logging.info(f"Initializing orchestrator with ALL {len(adapters_to_use)} adapters.")
         else:
-            self.adapters: List[BaseAdapterV7] = [Adapter(self.fetcher) for Adapter in PRODUCTION_ADAPTERS]
+            adapters_to_use = PRODUCTION_ADAPTERS
+            logging.info(f"Initializing orchestrator with {len(adapters_to_use)} PRODUCTION adapters.")
+
+        self.adapters: List[BaseAdapterV7] = [Adapter(self.fetcher) for Adapter in adapters_to_use]
 
     def get_races(self) -> tuple[list[Race], list[dict]]:
         all_races, statuses = [], []
         for adapter in self.adapters:
-            adapter_id = adapter.SOURCE_ID
+            adapter_id = adapter.__class__.__name__
             races = []
             error_message = None
             status = "OK"
             notes = ""
-
             try:
                 races = adapter.fetch_races()
                 if races:
                     notes = f"Successfully parsed {len(races)} races."
-                    logging.info(notes)
-                    all_races.extend(races) # Keep collecting races
                 else:
                     notes = "No upcoming races found on source."
-                    logging.info(notes)
+                statuses.append({"adapter_id": adapter_id, "status": status, "races_found": len(races), "notes": notes, "error_message": None})
+                if races:
+                    all_races.extend(races)
             except Exception as e:
-                logging.error(f"Failed to fetch from {adapter_id}: {e}", exc_info=True)
+                logging.error(f"Adapter {adapter_id} failed: {e}", exc_info=True)
                 status = "ERROR"
                 error_message = str(e)
                 notes = f"API Error: {error_message}"
-
-            statuses.append({
-                "adapter_id": adapter_id,
-                "status": status,
-                "races_found": len(races),
-                "error_message": error_message,
-                "notes": notes,
-                "last_run": "2025-09-25T03:27:50.777296+00:00"
-            })
+                statuses.append({"adapter_id": adapter_id, "status": status, "error_message": error_message, "notes": notes, "races_found": 0})
         return all_races, statuses
 
 def get_db_session():

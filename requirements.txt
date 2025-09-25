@@ -3,6 +3,7 @@ fastapi
 uvicorn
 requests
 pydantic[dotenv]
+pydantic-settings
 pandas
 beautifulsoup4
 lxml
@@ -13,4 +14,3 @@ python-multipart
 curl-cffi
 colorama
 tabulate
-

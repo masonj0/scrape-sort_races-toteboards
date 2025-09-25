@@ -1,8 +1,9 @@
 # src/checkmate_v7/adapters/__init__.py
-from .AndWereOff import SkySportsAdapter, AtTheRacesAdapter, FanDuelApiAdapter, BetfairDataScientistAdapter
-from .Stablemates import EquibaseAdapter
 
-PRODUCTION_ADAPTERS = [SkySportsAdapter, AtTheRacesAdapter, FanDuelApiAdapter, BetfairDataScientistAdapter]
-DEVELOPMENT_ADAPTERS = [EquibaseAdapter]
+from .AndWereOff import SkySportsAdapter, AtTheRacesAdapter, BetfairDataScientistAdapter, FanDuelApiAdapter
+from .Stablemates import EquibaseAdapter, RacingAndSportsAdapter
+
+PRODUCTION_ADAPTERS = [SkySportsAdapter, AtTheRacesAdapter, BetfairDataScientistAdapter, FanDuelApiAdapter]
+DEVELOPMENT_ADAPTERS = [EquibaseAdapter, RacingAndSportsAdapter]
 
 __all__ = ['PRODUCTION_ADAPTERS', 'DEVELOPMENT_ADAPTERS']
