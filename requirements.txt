@@ -13,3 +13,4 @@ python-multipart
 curl-cffi
 colorama
 tabulate
+
