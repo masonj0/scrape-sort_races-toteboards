@@ -2,7 +2,7 @@ import pytest
 from unittest.mock import MagicMock
 
 from src.checkmate_v7.services import DataSourceOrchestrator
-from src.checkmate_v7.adapters.fanduel import FanDuelApiAdapterV7
+from src.checkmate_v7.adapters import PRODUCTION_ADAPTERS, DEVELOPMENT_ADAPTERS
 from src.checkmate_v7.models import Race
 
 @pytest.fixture
@@ -29,7 +29,7 @@ def test_get_races_returns_status_with_notes(
     # Arrange
     orchestrator = DataSourceOrchestrator(mock_session)
 
-    mock_adapter_instance = MagicMock(spec=FanDuelApiAdapterV7)
+    mock_adapter_instance = MagicMock(spec=PRODUCTION_ADAPTERS[0])
     mock_adapter_instance.fetch_races = MagicMock(
         return_value=adapter_return_value,
         side_effect=adapter_side_effect
@@ -38,7 +38,7 @@ def test_get_races_returns_status_with_notes(
 
     # The orchestrator should break on the first success, so for the empty and error
     # cases, we need a successful adapter to follow it.
-    mock_successful_adapter = MagicMock(spec=FanDuelApiAdapterV7)
+    mock_successful_adapter = MagicMock(spec=PRODUCTION_ADAPTERS[0])
     mock_successful_adapter.fetch_races = MagicMock(return_value=[Race(race_id="r2", track_name="TrackB", runners=[])])
     mock_successful_adapter.__class__.__name__ = "SuccessAdapter"
 
