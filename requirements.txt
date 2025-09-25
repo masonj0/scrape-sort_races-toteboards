@@ -1,40 +1,15 @@
-# Core application dependencies
-anyio
+# requirements.txt
 fastapi
-uvicorn[standard]
-pydantic
-celery
-
-# Database
-SQLAlchemy
-redis
-
-# Data analysis
+uvicorn
+requests
+pydantic[dotenv]
 pandas
-numpy
-scipy
-
-# Scraping
 beautifulsoup4
 lxml
-httpx
-aiohttp
-tenacity
-curl_cffi
-
-# Logging
-python-json-logger
-
-# Testing
-pytest
-pytest-asyncio
-trio
-rich
-
-# Dashboarding
-dash
-dash-bootstrap-components
-requests
-
-# Process Management
-honcho
+celery
+redis
+sqlalchemy
+python-multipart
+curl-cffi
+colorama
+tabulate

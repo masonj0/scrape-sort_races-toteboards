@@ -5,7 +5,8 @@ import asyncio
 
 # Import the app from the correct module
 from src.checkmate_v7.api import app
-from src.checkmate_v7.models import Race # For creating mock race objects
+from src.checkmate_v7.models import Race
+from src.checkmate_v7.adapters import PRODUCTION_ADAPTERS, DEVELOPMENT_ADAPTERS
 
 client = TestClient(app)
 
