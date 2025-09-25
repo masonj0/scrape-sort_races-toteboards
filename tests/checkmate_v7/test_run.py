@@ -6,7 +6,6 @@ import re
 
 from src.checkmate_v7 import run
 from src.checkmate_v7.models import Race, Runner, RaceDataSchema, HorseSchema, TrifectaFactorsSchema
-from src.checkmate_v7.adapters import PRODUCTION_ADAPTERS, DEVELOPMENT_ADAPTERS
 
 @pytest.fixture
 def mock_services():
