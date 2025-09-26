@@ -74,24 +74,56 @@ class AtTheRacesAdapter(BaseAdapterV7):
         return Race(race_id=f'{self.SOURCE_ID}_{details["url"].split("/")[-2]}_{details["url"].split("/")[-1]}', track_name=details['track'], runners=[r for r in runners if r.odds])
 
 class BetfairDataScientistAdapter(BaseAdapterV7):
+    """
+    Production adapter for Betfair Data Scientist API.
+    Fetches CSV data and converts to standardized Race objects.
+    """
     SOURCE_ID = "betfair_data_scientist"
     BASE_URL = "https://betfair-data-supplier.herokuapp.com/api/widgets/iggy-joey/datasets"
 
     def fetch_races(self) -> List[Race]:
+        """Fetches and parses data from the Betfair Data Scientist API."""
         today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
         url = f"{self.BASE_URL}/?date={today}&presenter=RatingsPresenter&csv=true"
+        logging.info(f"Fetching Betfair CSV data from: {url}")
+
         csv_data = self.fetcher.get(url, response_type='text')
-        if not csv_data: return []
+        if not csv_data:
+            logging.warning(f"{self.SOURCE_ID}: No CSV data returned.")
+            return []
+
+        return self._parse_races(csv_data)
+
+    def _parse_races(self, csv_content: str) -> List[Race]:
+        """Parses the CSV content from the API into a list of Race objects."""
         try:
-            df = pd.read_csv(StringIO(csv_data))
+            data = StringIO(csv_content)
+            df = pd.read_csv(data, dtype={"selection_id": str})
+            df.rename(columns={"meetings.races.runners.ratedPrice": "rating"}, inplace=True)
+            df = df[["market_id", "selection_id", "rating"]]
+
             races = {}
             for _, row in df.iterrows():
                 race_id = str(row["market_id"])
-                if race_id not in races: races[race_id] = Race(race_id=race_id, track_name="Betfair Exchange", runners=[])
-                races[race_id].runners.append(Runner(name=str(row["selection_id"]), odds=row["meetings.races.runners.ratedPrice"]))
+                if race_id not in races:
+                    races[race_id] = Race(
+                        race_id=race_id,
+                        track_name="Betfair Exchange",
+                        race_number=None, # Not available in this data source
+                        runners=[],
+                        source=self.SOURCE_ID
+                    )
+
+                runner = Runner(
+                    name=str(row["selection_id"]),
+                    program_number=None, # Not available in this data source
+                    odds=row["rating"],
+                )
+                races[race_id].runners.append(runner)
+
             return list(races.values())
         except Exception as e:
-            logging.error(f"{self.SOURCE_ID}: Failed to parse CSV: {e}")
+            logging.error(f"{self.SOURCE_ID}: Failed to parse CSV data: {e}", exc_info=True)
             return []
 
 class FanDuelApiAdapter(BaseAdapterV7):
