@@ -14,3 +14,11 @@ python-multipart
 curl-cffi
 colorama
 tabulate
+# Test dependencies discovered during run
+pytest
+httpx
+rich
+tenacity
+scipy
+python-json-logger
+trio
