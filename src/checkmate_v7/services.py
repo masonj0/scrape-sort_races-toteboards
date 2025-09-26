@@ -4,6 +4,7 @@ from typing import List
 from .base import BaseAdapterV7, DefensiveFetcher
 from .models import Race
 from .adapters import PRODUCTION_ADAPTERS, DEVELOPMENT_ADAPTERS
+from .database import get_db_session
 
 class DataSourceOrchestrator:
     def __init__(self, use_all_adapters=False):
@@ -41,13 +42,3 @@ class DataSourceOrchestrator:
                 notes = f"API Error: {error_message}"
                 statuses.append({"adapter_id": adapter_id, "status": status, "error_message": error_message, "notes": notes, "races_found": 0})
         return all_races, statuses
-
-def get_db_session():
-    from sqlalchemy import create_engine
-    from sqlalchemy.orm import sessionmaker
-    from . import config
-    from .models import Base
-    engine = create_engine(config.DATABASE_URL)
-    Base.metadata.create_all(bind=engine)
-    SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-    return SessionLocal()
