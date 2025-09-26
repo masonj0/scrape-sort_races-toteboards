@@ -1,3 +1,4 @@
+# src/checkmate_v7/base.py
 import logging
 import json
 import subprocess
