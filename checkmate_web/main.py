@@ -7,11 +7,18 @@ import json
 from datetime import datetime
 from typing import Dict, List
 import logging
+from pathlib import Path
 
-from engine import DataSourceOrchestrator, TrifectaAnalyzer, Settings, Race, RaceDataSchema, HorseSchema
+from .engine import DataSourceOrchestrator, TrifectaAnalyzer, Settings, Race, RaceDataSchema, HorseSchema
+
+# --- Path Setup ---
+# Ensures the script can be run from any directory
+APP_DIR = Path(__file__).parent
+STATIC_DIR = APP_DIR / "static"
+INDEX_HTML = STATIC_DIR / "index.html"
 
 app = FastAPI(title="Checkmate Live Racing Analysis")
-app.mount("/static", StaticFiles(directory="static"), name="static")
+app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
 CACHE = {
     "last_update": None, "races": [], "adapter_status": [],
@@ -55,7 +62,7 @@ async def startup_event():
 
 @app.get("/", response_class=HTMLResponse)
 async def serve_frontend():
-    with open("static/index.html", "r") as f: return HTMLResponse(content=f.read())
+    with open(INDEX_HTML, "r") as f: return HTMLResponse(content=f.read())
 
 @app.get("/api/status")
 async def get_system_status():
