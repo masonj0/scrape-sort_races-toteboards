@@ -1,11 +1,13 @@
 # src/checkmate_v7/settings.py
 from pydantic_settings import BaseSettings
 from pydantic import Field
+from typing import Optional
 
 class Settings(BaseSettings):
     DATABASE_URL: str = Field(default="sqlite:///./checkmate_v7.db")
     REDIS_URL: str = Field(default="redis://localhost:6379/0")
     LOG_LEVEL: str = Field(default="INFO")
+    ODDS_API_KEY: Optional[str] = Field(default=None, description="The API key for The Odds API.")
 
     # Set a more realistic qualification score
     QUALIFICATION_SCORE: float = Field(default=75.0, description="Minimum score to qualify.")

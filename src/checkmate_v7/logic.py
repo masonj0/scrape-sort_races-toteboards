@@ -1,67 +1,65 @@
-# src/checkmate_v7/logic.py
 from .models import RaceDataSchema
 from .settings import settings
 
 class TrifectaAnalyzer:
+    """The corrected analyzer, fully aligned with the settings module."""
+
     def analyze_race(self, race: RaceDataSchema) -> dict:
         score = 0
         reasons = []
         trifecta_factors = {}
 
         if not race.horses:
-            return {"qualified": False, "checkmateScore": 0, "reasons": ["No horses data."], "trifectaFactors": trifecta_factors}
+            return {"qualified": False, "checkmateScore": 0, "reasons": ["No horses data."], "trifectaFactors": {}}
 
         horses_with_odds = sorted([h for h in race.horses if h.odds], key=lambda h: h.odds)
+        num_runners = len(horses_with_odds)
 
-        # Field Size Check
-        field_size = len(horses_with_odds)
-        if 4 <= field_size <= 6:
-            field_size_points = 30
-            field_size_ok = True
-            field_size_reason = f"Optimal field size ({field_size} runners)"
-        elif 7 <= field_size <= 8:
-            field_size_points = 10
-            field_size_ok = True
-            field_size_reason = f"Acceptable field size ({field_size} runners)"
+        # Field Size Logic - SOURCED FROM SETTINGS
+        if settings.FIELD_SIZE_OPTIMAL_MIN <= num_runners <= settings.FIELD_SIZE_OPTIMAL_MAX:
+            points = settings.FIELD_SIZE_OPTIMAL_POINTS
+            ok = True
+            reason = f"Optimal field size ({num_runners} runners)"
+        elif settings.FIELD_SIZE_ACCEPTABLE_MIN <= num_runners <= settings.FIELD_SIZE_ACCEPTABLE_MAX:
+            points = settings.FIELD_SIZE_ACCEPTABLE_POINTS
+            ok = True
+            reason = f"Acceptable field size ({num_runners} runners)"
         else:
-            field_size_points = -20
-            field_size_ok = False
-            field_size_reason = f"Too much chaos ({field_size} runners)" if field_size > 8 else f"Field too small ({field_size} runners)"
-        score += field_size_points
-        reasons.append(field_size_reason)
-        trifecta_factors["fieldSize"] = {"points": field_size_points, "ok": field_size_ok, "reason": field_size_reason}
+            points = settings.FIELD_SIZE_PENALTY_POINTS
+            ok = False
+            reason = f"Field size not ideal ({num_runners} runners)"
+        score += points
+        reasons.append(reason)
+        trifecta_factors["fieldSize"] = {"points": points, "ok": ok, "reason": reason}
 
-
-        # Favorite and Contention Analysis
-        if len(horses_with_odds) >= 2:
+        # Favorite and Contention Analysis - SOURCED FROM SETTINGS
+        if num_runners >= 2:
             favorite, second_favorite = horses_with_odds[0], horses_with_odds[1]
-
-            fav_odds = favorite.odds
-            if fav_odds > 1.5:
-                fav_points = 25
-                fav_ok = True
-                fav_reason = f"Favorite odds are not too low ({fav_odds})"
+            if favorite.odds <= settings.MAX_FAV_ODDS:
+                points = settings.FAV_ODDS_POINTS
+                ok = True
+                reason = f"Favorite odds OK ({favorite.odds})"
             else:
-                fav_points = -50
-                fav_ok = False
-                fav_reason = f"Poor value favorite ({fav_odds})"
-            score += fav_points
-            reasons.append(fav_reason)
-            trifecta_factors["favoriteOdds"] = {"points": fav_points, "ok": fav_ok, "reason": fav_reason}
+                points = 0
+                ok = False
+                reason = f"Favorite odds too high ({favorite.odds})"
+            score += points
+            reasons.append(reason)
+            trifecta_factors["favoriteOdds"] = {"points": points, "ok": ok, "reason": reason}
 
-            sec_fav_odds = second_favorite.odds
-            if 3.0 <= sec_fav_odds <= 9.0:
-                sec_fav_points = 45
-                sec_fav_ok = True
-                sec_fav_reason = f"Second favorite in sweet spot ({sec_fav_odds})"
+            if second_favorite.odds >= settings.MIN_2ND_FAV_ODDS:
+                points = settings.SECOND_FAV_ODDS_POINTS
+                ok = True
+                reason = f"2nd Favorite odds OK ({second_favorite.odds})"
             else:
-                sec_fav_points = -15
-                sec_fav_ok = False
-                sec_fav_reason = f"Second favorite outside range ({sec_fav_odds})"
-            score += sec_fav_points
-            reasons.append(sec_fav_reason)
-            trifecta_factors["secondFavoriteOdds"] = {"points": sec_fav_points, "ok": sec_fav_ok, "reason": sec_fav_reason}
+                points = 0
+                ok = False
+                reason = f"2nd Favorite odds too low ({second_favorite.odds})"
+            score += points
+            reasons.append(reason)
+            trifecta_factors["secondFavoriteOdds"] = {"points": points, "ok": ok, "reason": reason}
         else:
             reasons.append("Not enough runners with odds for full analysis.")
 
-        return {"qualified": score >= 70, "checkmateScore": score, "reasons": reasons, "trifectaFactors": trifecta_factors}
+        # QUALIFICATION_SCORE SOURCED FROM SETTINGS
+        return {"qualified": score >= settings.QUALIFICATION_SCORE, "checkmateScore": score, "reasons": reasons, "trifectaFactors": trifecta_factors}
