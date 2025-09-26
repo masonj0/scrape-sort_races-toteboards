@@ -53,4 +53,4 @@ def test_fetch_races_end_to_end(adapter, mock_fetcher, mock_schedule_response):
     assert races[1].race_id == "66269"
     assert len(races[1].runners) == 7
     assert races[0].runners[0].name == "Strong Odor"
-    assert races[0].runners[0].program_number == "1"
+    assert races[0].runners[0].program_number == 1

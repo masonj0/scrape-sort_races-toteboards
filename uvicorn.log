@@ -1,0 +1,5 @@
+INFO:     Started server process [18341]
+INFO:     Waiting for application startup.
+ERROR:root:CRITICAL: curl GET failed for https://mobile-api.tvg.com/api/mobile/races/today. Details: Command '['curl', '-s', '-L', '--tlsv1.2', '--http1.1', 'https://mobile-api.tvg.com/api/mobile/races/today']' returned non-zero exit status 6.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
