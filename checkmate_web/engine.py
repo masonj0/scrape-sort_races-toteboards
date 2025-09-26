@@ -73,7 +73,6 @@ class DefensiveFetcher:
             except json.JSONDecodeError:
                 logging.warning(f"Failed to decode JSON from {url}")
                 return response_text # Return text as fallback
-
         except (subprocess.CalledProcessError, subprocess.TimeoutExpired) as e:
             logging.error(f"CRITICAL: curl GET failed for {url}. Details: {e}")
             return None

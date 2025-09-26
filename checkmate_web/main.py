@@ -101,3 +101,12 @@ async def update_settings(new_settings: Dict):
         return {"status": "settings_updated", "settings": settings.model_dump()}
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
+
+@app.get("/health")
+async def health_check():
+    return {
+        "status": "healthy",
+        "timestamp": datetime.now().isoformat(),
+        "adapters_count": len(orchestrator.adapters),
+        "last_successful_fetch": CACHE.get("last_update")
+    }
