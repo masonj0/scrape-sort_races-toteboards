@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkmate Live Racing Analysis</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div id="app">
+        <!-- Header -->
+        <header class="main-header">
+            <div class="header-content">
+                <h1><i class="fas fa-chess-queen"></i> Checkmate Racing</h1>
+                <div class="header-controls">
+                    <button id="refresh-btn" class="btn btn-primary">
+                        <i class="fas fa-sync"></i> Refresh Data
+                    </button>
+                    <button id="settings-btn" class="btn btn-secondary">
+                        <i class="fas fa-cog"></i> Settings
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Status Bar -->
+        <div id="status-bar" class="status-bar">
+            <div class="status-item">
+                <i class="fas fa-heartbeat"></i>
+                <span id="system-status">Connecting...</span>
+            </div>
+            <div class="status-item">
+                <i class="fas fa-clock"></i>
+                <span id="last-update">Never</span>
+            </div>
+            <div class="status-item">
+                <i class="fas fa-horse"></i>
+                <span id="races-count">0 races</span>
+            </div>
+            <div class="status-item qualified">
+                <i class="fas fa-star"></i>
+                <span id="qualified-count">0 qualified</span>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Tab Navigation -->
+            <nav class="tab-nav">
+                <button class="tab-btn active" data-tab="qualified">
+                    <i class="fas fa-star"></i> Qualified Races
+                </button>
+                <button class="tab-btn" data-tab="all">
+                    <i class="fas fa-list"></i> All Races
+                </button>
+                <button class="tab-btn" data-tab="adapters">
+                    <i class="fas fa-plug"></i> Data Sources
+                </button>
+            </nav>
+
+            <!-- Tab Content -->
+            <div id="qualified-tab" class="tab-content active">
+                <div class="section-header">
+                    <h2>Checkmate Qualified Opportunities</h2>
+                    <p>Races that meet our strategic criteria for trifecta betting</p>
+                </div>
+                <div id="qualified-races" class="races-grid">
+                    <div class="loading-placeholder">
+                        <i class="fas fa-spinner fa-spin"></i>
+                        <p>Analyzing live race data...</p>
+                    </div>
+                </div>
+            </div>
+
+            <div id="all-tab" class="tab-content">
+                <div class="section-header">
+                    <h2>All Available Races</h2>
+                    <p>Complete race data from all sources</p>
+                </div>
+                <div id="all-races" class="races-grid">
+                    <!-- Populated by JavaScript -->
+                </div>
+            </div>
+
+            <div id="adapters-tab" class="tab-content">
+                <div class="section-header">
+                    <h2>Data Source Status</h2>
+                    <p>Real-time status of racing data adapters</p>
+                </div>
+                <div id="adapter-status" class="adapter-grid">
+                    <!-- Populated by JavaScript -->
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settings-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Analysis Settings</h3>
+                <span class="close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="setting-group">
+                    <label for="qualification-score">Minimum Qualification Score</label>
+                    <input type="number" id="qualification-score" min="0" max="100" step="0.5">
+                </div>
+                <div class="setting-group">
+                    <label for="field-size-min">Optimal Field Size (Min)</label>
+                    <input type="number" id="field-size-min" min="2" max="20">
+                </div>
+                <div class="setting-group">
+                    <label for="field-size-max">Optimal Field Size (Max)</label>
+                    <input type="number" id="field-size-max" min="2" max="20">
+                </div>
+                <div class="setting-group">
+                    <label for="max-fav-odds">Maximum Favorite Odds</label>
+                    <input type="number" id="max-fav-odds" min="1" max="10" step="0.1">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="save-settings" class="btn btn-primary">Save Settings</button>
+                <button id="cancel-settings" class="btn btn-secondary">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>
