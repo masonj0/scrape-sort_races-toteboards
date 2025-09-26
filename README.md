@@ -1,87 +1,32 @@
-# A Hybrid Data Analysis System for Racing Analytics
+# Checkmate V7: The Live Cockpit
 
-This repository contains the source code for a sophisticated data analysis system for animal racing (e.g., horse, greyhound). The project serves as a case study in modern system architecture, demonstrating a clean separation of concerns between a data-processing backend and a rich user interface.
+This project is a real-time, web-based horse racing analysis engine. It leverages a powerful, battle-tested Python backend to fetch and analyze live data from multiple sources, exposing the results through a lightweight and elegant Vanilla JavaScript frontend.
 
-The system is designed to fetch data from various sources, apply custom analytical models, and track the historical performance of those models in a "closed-loop."
+---
 
-## Core Architectural Principles
+## Core Concept
 
-Our development is guided by four core principles to create a resilient, intelligent, and ethical analytical ecosystem.
+The architecture is a modern, two-stack system as defined in the `ARCHITECTURAL_MANDATE_V8.1.md`:
 
-1.  **Resilient & Human-like Data Fetching:** The system is designed for robust data acquisition, with a focus on resilient, multi-source fetching patterns and sophisticated error handling.
-2.  **Feedback-Driven Architecture:** This is a "closed-loop" learning system. It is architected to compare its own analysis against official results, enabling a feedback mechanism to measure and refine the performance of its analytical models over time.
-3.  **Hybrid Analytical Model:** The system combines traditional quantitative algorithms with other analytical techniques, creating a hybrid model for a more nuanced and robust analysis.
-4.  **Ethical Data Acquisition:** All data fetching is designed to operate within ethical boundaries, respecting data source policies and ensuring a reasonable, human-like access footprint.
-
-## System Architecture
-
-This project utilizes a two-stack architecture to leverage the best technology for each part of the system.
-
-### 1. Python Backend Engine
-
-A powerful, headless Python application that serves as the system's data and analysis core.
-
-*   **Technology:** FastAPI, SQLAlchemy, Pydantic
-*   **Responsibilities:**
-    *   Manages a modular system of data adapters for fetching information from numerous sources.
-    *   Performs complex data processing and normalization.
-    *   Runs a pluggable analysis engine to apply custom scoring algorithms.
-    *   Serves all processed data and analytical results via a versioned JSON API.
-
-### 2. React User Interface
-
-A modern, interactive web application that acts as the client for the Python backend.
-
-*   **Technology:** React, TypeScript
-*   **Responsibilities:**
-    *   Provides a rich user interface for visualizing data and analytical insights.
-    *   Consumes all data exclusively from the backend's JSON API.
-    *   Displays performance metrics and historical model performance.
+1.  **THE ENGINE (Python/FastAPI):** A powerful, headless data processing application that performs all heavy lifting and exposes its capabilities via a JSON API.
+2.  **THE COCKPIT (Vanilla JS):** A lightweight, single-page web application that serves as the project's primary user interface. It is a pure client of The Engine.
 
 ## Getting Started
 
-### Prerequisites
+The application is designed to be run as a local web server.
 
-*   Python 3.9+ and Pip
-*   Node.js and npm
-*   An active Python virtual environment is highly recommended.
-
-### Installation
-
-1.  **Clone the repository:**
+1.  **Install Dependencies:**
     ```bash
-    git clone https://github.com/masonj0/scrape-sort_races-toteboards.git
-    cd scrape-sort_races-toteboards
+    pip install -r checkmate_web/requirements.txt
     ```
-2.  **Install Backend Dependencies:**
+2.  **Run the Web Server:**
     ```bash
-    # From the root directory
-    cd src/checkmate_v7
-    pip install -r requirements.txt
+    cd checkmate_web
+    uvicorn main:app --reload
     ```
-3.  **Install Frontend Dependencies:**
-    ```bash
-    # (Instructions to be added once the frontend directory is established)
-    # cd ../../ui
-    # npm install
-    ```
+3.  **Access the Cockpit:**
+    Open a web browser and navigate to `http://127.0.0.1:8000`.
 
-## Usage
+## Project Status
 
-The system is run as two separate processes.
-
-1.  **Run the Backend API Server:**
-    *   Navigate to the `src/checkmate_v7` directory.
-    *   Start the FastAPI server using uvicorn:
-    ```bash
-    uvicorn api:app --reload
-    ```
-    The API will be available at `http://127.0.0.1:8000`.
-
-2.  **Run the Frontend Application:**
-    *   (Instructions to be added once the frontend is built.)
-    *   Typically, this will involve a command like `npm start` from the UI directory.
-
-## Current Status
-
-The backend API is functional and capable of serving analyzed race data. Active development is focused on building out the React user interface to visualize this data.
+The project is currently executing **Phase 1 of ROADMAP V6.0: "The Engine Room."** The immediate goal is to stand up the core FastAPI server and port our perfected portable engine logic into a modular, web-ready format.
