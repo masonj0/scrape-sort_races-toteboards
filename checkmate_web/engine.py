@@ -4,6 +4,7 @@
 import logging
 import json
 import subprocess
+import concurrent.futures
 from abc import ABC, abstractmethod
 from typing import List, Union, Optional, Dict
 from datetime import date, datetime
@@ -219,17 +220,30 @@ class DataSourceOrchestrator:
         self.fetcher = DefensiveFetcher()
         self.adapters: List[BaseAdapterV7] = [Adapter(self.fetcher) for Adapter in PRODUCTION_ADAPTERS]
 
+    def _fetch_from_adapter(self, adapter: BaseAdapterV7):
+        adapter_id = adapter.__class__.__name__
+        try:
+            races = adapter.fetch_races()
+            notes = f"Successfully parsed {len(races)} races." if races else "No upcoming races found."
+            status = {"adapter_id": adapter_id, "status": "OK", "races_found": len(races), "notes": notes, "error_message": None}
+            return races, status
+        except Exception as e:
+            error_message = str(e)
+            status = {"adapter_id": adapter_id, "status": "ERROR", "error_message": error_message, "races_found": 0}
+            return [], status
+
     def get_races(self) -> tuple[list[Race], list[dict]]:
         all_races, statuses = [], []
-        for adapter in self.adapters:
-            adapter_id = adapter.__class__.__name__
-            races, error_message, status, notes = [], None, "OK", ""
-            try:
-                races = adapter.fetch_races()
-                notes = f"Successfully parsed {len(races)} races." if races else "No upcoming races found."
-                statuses.append({"adapter_id": adapter_id, "status": status, "races_found": len(races), "notes": notes, "error_message": None})
-                if races: all_races.extend(races)
-            except Exception as e:
-                status, error_message = "ERROR", str(e)
-                statuses.append({"adapter_id": adapter_id, "status": status, "error_message": error_message, "races_found": 0})
+        with concurrent.futures.ThreadPoolExecutor(max_workers=len(self.adapters)) as executor:
+            future_to_adapter = {executor.submit(self._fetch_from_adapter, adapter): adapter for adapter in self.adapters}
+            for future in concurrent.futures.as_completed(future_to_adapter):
+                try:
+                    races, status = future.result()
+                    if races:
+                        all_races.extend(races)
+                    statuses.append(status)
+                except Exception as e:
+                    adapter = future_to_adapter[future]
+                    adapter_id = adapter.__class__.__name__
+                    statuses.append({"adapter_id": adapter_id, "status": "ERROR", "error_message": str(e), "races_found": 0})
         return all_races, statuses
