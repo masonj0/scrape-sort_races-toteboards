@@ -7,18 +7,11 @@ import json
 from datetime import datetime
 from typing import Dict, List
 import logging
-from pathlib import Path
 
-from .engine import DataSourceOrchestrator, TrifectaAnalyzer, Settings, Race, RaceDataSchema, HorseSchema
-
-# --- Path Setup ---
-# Ensures the script can be run from any directory
-APP_DIR = Path(__file__).parent
-STATIC_DIR = APP_DIR / "static"
-INDEX_HTML = STATIC_DIR / "index.html"
+from engine import DataSourceOrchestrator, TrifectaAnalyzer, Settings, Race, RaceDataSchema, HorseSchema
 
 app = FastAPI(title="Checkmate Live Racing Analysis")
-app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 CACHE = {
     "last_update": None, "races": [], "adapter_status": [],
@@ -43,6 +36,7 @@ async def fetch_and_analyze_races():
         analysis_results = []
         for race in raw_races:
             race_schema = convert_race_to_schema(race)
+            # Use the single, global settings instance for analysis
             analysis = analyzer.analyze_race(race_schema, settings)
             analysis_results.append({
                 "race_id": race.race_id, "track_name": race.track_name, "race_number": race.race_number,
@@ -62,11 +56,12 @@ async def startup_event():
 
 @app.get("/", response_class=HTMLResponse)
 async def serve_frontend():
-    with open(INDEX_HTML, "r") as f: return HTMLResponse(content=f.read())
+    with open("static/index.html", "r") as f: return HTMLResponse(content=f.read())
 
 @app.get("/api/status")
 async def get_system_status():
     return {
+        "status": "online",
         "is_fetching": CACHE["is_fetching"], "last_update": CACHE["last_update"],
         "races_count": len(CACHE["races"]),
         "qualified_count": len([r for r in CACHE["analysis_results"] if r["qualified"]])
@@ -96,8 +91,13 @@ async def get_settings():
     return settings.model_dump()
 
 @app.post("/api/settings")
-async def update_settings(new_settings: dict):
-    updated_fields = settings.model_copy(update=new_settings)
-    for key, value in updated_fields.model_dump().items():
-        setattr(settings, key, value)
-    return {"status": "settings_updated", "settings": settings.model_dump()}
+async def update_settings(new_settings: Dict):
+    try:
+        for key, value in new_settings.items():
+            if hasattr(settings, key.upper()):
+                setattr(settings, key.upper(), value)
+        # After updating settings, re-analyze existing data
+        asyncio.create_task(fetch_and_analyze_races())
+        return {"status": "settings_updated", "settings": settings.model_dump()}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
