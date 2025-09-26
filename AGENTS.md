@@ -107,3 +107,15 @@ jules      30187  0.0  0.0  11004  4220 pts/0    S    19:45   0:00 /usr/bin/pyth
 kill -9 30187
 # (Command fails silently, process is not terminated)
 ```
+
+---
+
+## Protocol 24: The "Dedicated Human Researcher" Test
+
+This protocol establishes the guiding ethical principle for all data collection and scraping activities.
+
+All data adapters must be designed to operate in a manner that respects the resources of the source. As a definitive test, all fetching patterns must adhere to the following principle:
+
+*If a single, dedicated human using standard browser developer tools could not plausibly achieve the adapter's data collection footprint in a reasonable amount of time, the adapter's methods are considered too aggressive and must be redesigned.*
+
+This encourages "human-like" fetching behavior (e.g., appropriate delays, non-parallel requests to a single source) and serves as our primary safeguard against violating a source's terms of service.
