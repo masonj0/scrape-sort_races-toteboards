@@ -1,11 +1,8 @@
 class CheckmateApp {
     constructor() {
         this.currentTab = 'qualified';
-        this.refreshInterval = null;
         this.isRefreshing = false;
-
         this.init();
-        this.startAutoRefresh();
     }
 
     init() {
@@ -15,75 +12,37 @@ class CheckmateApp {
 
     bindEvents() {
         document.querySelectorAll('.tab-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                this.switchTab(e.target.dataset.tab);
-            });
+            btn.addEventListener('click', (e) => this.switchTab(e.currentTarget.dataset.tab));
         });
-
-        document.getElementById('refresh-btn').addEventListener('click', () => {
-            this.refreshData(true); // Force refresh
-        });
-
-        document.getElementById('settings-btn').addEventListener('click', () => {
-            this.openSettingsModal();
-        });
-
-        document.querySelector('.close').addEventListener('click', () => {
-            this.closeSettingsModal();
-        });
-
-        document.getElementById('save-settings').addEventListener('click', () => {
-            this.saveSettings();
-        });
-
-        this.refreshInterval = setInterval(() => {
-            this.refreshData(false);
-        }, 300000);
+        document.getElementById('refresh-btn').addEventListener('click', () => this.refreshData(true));
+        // Modal events are for Phase 4
     }
 
     async loadInitialData() {
-        await this.updateSystemStatus();
-        await this.loadRaceData();
-        await this.loadAdapterStatus();
+        this.setLoading(true);
+        await Promise.all([
+            this.updateSystemStatus(),
+            this.loadRaceData(),
+            this.loadAdapterStatus()
+        ]);
+        this.setLoading(false);
     }
 
     async refreshData(isManual = false) {
-        if (this.isRefreshing) return;
+        // Full implementation in Phase 4
+        if (isManual) this.loadInitialData();
+    }
 
-        this.isRefreshing = true;
+    setLoading(isLoading) {
         const refreshBtn = document.getElementById('refresh-btn');
-        refreshBtn.disabled = true;
-        refreshBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Refreshing...';
-
-        try {
-            if (isManual) {
-                await fetch('/api/refresh', { method: 'POST' });
-                await new Promise(resolve => setTimeout(resolve, 2000));
-                await this.waitForRefreshComplete();
-            }
-
-            await this.loadInitialData();
-
-        } catch (error) {
-            console.error('Refresh failed:', error);
-            this.showNotification('Refresh failed. Please try again.', 'error');
-        } finally {
+        if (isLoading) {
+            this.isRefreshing = true;
+            refreshBtn.disabled = true;
+            refreshBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Refreshing...';
+        } else {
             this.isRefreshing = false;
             refreshBtn.disabled = false;
             refreshBtn.innerHTML = '<i class="fas fa-sync"></i> Refresh Data';
-        }
-    }
-
-    async waitForRefreshComplete() {
-        let attempts = 0;
-        const maxAttempts = 30; // 30 seconds timeout
-
-        while (attempts < maxAttempts) {
-            const status = await fetch('/api/status').then(r => r.json());
-            if (!status.is_fetching) break;
-
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            attempts++;
         }
     }
 
@@ -91,16 +50,11 @@ class CheckmateApp {
         try {
             const status = await fetch('/api/status').then(r => r.json());
             document.getElementById('system-status').textContent = 'Online';
-            document.getElementById('last-update').textContent =
-                status.last_update ? new Date(status.last_update).toLocaleTimeString() : 'Never';
-            document.getElementById('races-count').textContent =
-                `${status.races_count} races`;
-            document.getElementById('qualified-count').textContent =
-                `${status.qualified_count} qualified`;
-
+            document.getElementById('last-update').textContent = status.last_update ? new Date(status.last_update).toLocaleTimeString() : 'Never';
+            document.getElementById('races-count').textContent = `${status.races_count} races`;
+            document.getElementById('qualified-count').textContent = `${status.qualified_count} qualified`;
         } catch (error) {
-            console.error('Status update failed:', error);
-            document.getElementById('system-status').textContent = 'Error';
+            document.getElementById('system-status').textContent = 'Offline';
         }
     }
 
@@ -110,32 +64,36 @@ class CheckmateApp {
                 fetch('/api/races/qualified').then(r => r.json()),
                 fetch('/api/races/all').then(r => r.json())
             ]);
-
             this.renderQualifiedRaces(qualifiedData.qualified_races);
             this.renderAllRaces(allData.races);
-
         } catch (error) {
             console.error('Race data loading failed:', error);
-            this.showNotification('Failed to load race data', 'error');
         }
     }
 
-    renderQualifiedRaces(qualifiedRaces) {
+    renderQualifiedRaces(races) {
         const container = document.getElementById('qualified-races');
-
-        if (qualifiedRaces.length === 0) {
-            container.innerHTML = `
-                <div class="empty-state">
-                    <i class="fas fa-search"></i>
-                    <h3>No Qualified Races Found</h3>
-                    <p>No races currently meet the Checkmate criteria. Check back soon!</p>
-                </div>
-            `;
+        if (!races || races.length === 0) {
+            container.innerHTML = `<div class="empty-state"><i class="fas fa-search"></i><h3>No Qualified Races Found</h3><p>No races currently meet the Checkmate criteria.</p></div>`;
             return;
         }
+        container.innerHTML = races.map(race => this.createRaceCard(race)).join('');
+    }
 
-        container.innerHTML = qualifiedRaces.map(race => `
-            <div class="race-card qualified">
+    renderAllRaces(races) {
+        const container = document.getElementById('all-races');
+        if (!races || races.length === 0) {
+            container.innerHTML = `<div class="empty-state"><i class="fas fa-horse"></i><h3>No Race Data Available</h3><p>Could not fetch race data from any source.</p></div>`;
+            return;
+        }
+        const sorted = races.sort((a, b) => (b.qualified - a.qualified) || (b.checkmate_score - a.checkmate_score));
+        container.innerHTML = sorted.map(race => this.createRaceCard(race)).join('');
+    }
+
+    createRaceCard(race) {
+        const isQualified = race.qualified;
+        return `
+            <div class="race-card ${isQualified ? 'qualified' : 'not-qualified'}">
                 <div class="race-header">
                     <div class="track-info">
                         <h3>${race.track_name}</h3>
@@ -143,51 +101,29 @@ class CheckmateApp {
                         <span class="post-time">${this.formatPostTime(race.post_time)}</span>
                     </div>
                     <div class="checkmate-score">
-                        <div class="score-badge qualified">
-                            <i class="fas fa-star"></i>
+                        <div class="score-badge ${isQualified ? 'qualified' : 'not-qualified'}">
+                            <i class="fas ${isQualified ? 'fa-star' : 'fa-minus-circle'}"></i>
                             ${race.checkmate_score}
                         </div>
                     </div>
                 </div>
-
-                <div class="analysis-factors">
-                    ${this.renderTrifectaFactors(race.trifecta_factors)}
-                </div>
-
-                <div class="runners-preview">
-                    <h4><i class="fas fa-horse"></i> Runners (${race.runners.length})</h4>
-                    <div class="runners-grid">
-                        ${race.runners.slice(0, 6).map(runner => `
-                            <div class="runner-chip">
-                                <span class="runner-number">${runner.number || '?'}</span>
-                                <span class="runner-name">${runner.name}</span>
-                                <span class="runner-odds">${this.formatOdds(runner.odds)}</span>
-                            </div>
-                        `).join('')}
-                        ${race.runners.length > 6 ? `<div class="runner-chip more">+${race.runners.length - 6} more</div>` : ''}
-                    </div>
-                </div>
-
+                ${isQualified ? this.renderTrifectaFactors(race.trifecta_factors) : this.renderRunnersSummary(race)}
                 <div class="race-footer">
-                    <span class="source-badge">
-                        <i class="fas fa-database"></i>
-                        ${race.source || 'Unknown'}
-                    </span>
-                    <button class="btn btn-sm btn-outline" onclick="app.showRaceDetails('${race.race_id}')">
-                        View Details
-                    </button>
+                    <span class="source-badge"><i class="fas fa-database"></i> ${race.source || 'Unknown'}</span>
                 </div>
             </div>
-        `).join('');
+        `;
+    }
+
+    renderRunnersSummary(race) {
+        return `<div class="runners-summary"><span>${race.runners.length} runners</span></div>`;
     }
 
     renderTrifectaFactors(factors) {
         if (!factors) return '';
-
-        return Object.entries(factors).map(([key, factor]) => {
+        const factorsHtml = Object.entries(factors).map(([key, factor]) => {
             const icon = factor.ok ? 'fa-check-circle' : 'fa-times-circle';
             const status = factor.ok ? 'positive' : 'negative';
-
             return `
                 <div class="factor ${status}">
                     <i class="fas ${icon}"></i>
@@ -197,50 +133,7 @@ class CheckmateApp {
                 </div>
             `;
         }).join('');
-    }
-
-    renderAllRaces(allRaces) {
-        const container = document.getElementById('all-races');
-
-        if (allRaces.length === 0) {
-            container.innerHTML = `
-                <div class="empty-state">
-                    <i class="fas fa-horse"></i>
-                    <h3>No Race Data Available</h3>
-                    <p>Unable to fetch race data from any sources. Please check data source status.</p>
-                </div>
-            `;
-            return;
-        }
-
-        const sortedRaces = allRaces.sort((a, b) => {
-            if (a.qualified && !b.qualified) return -1;
-            if (!a.qualified && b.qualified) return 1;
-            return b.checkmate_score - a.checkmate_score;
-        });
-
-        container.innerHTML = sortedRaces.map(race => `
-            <div class="race-card ${race.qualified ? 'qualified' : 'not-qualified'}">
-                <div class="race-header">
-                    <div class="track-info">
-                        <h3>${race.track_name}</h3>
-                        <span class="race-number">Race ${race.race_number || 'TBD'}</span>
-                        <span class="post-time">${this.formatPostTime(race.post_time)}</span>
-                    </div>
-                    <div class="checkmate-score">
-                        <div class="score-badge ${race.qualified ? 'qualified' : 'not-qualified'}">
-                            ${race.qualified ? '<i class="fas fa-star"></i>' : '<i class="fas fa-minus-circle"></i>'}
-                            ${race.checkmate_score}
-                        </div>
-                    </div>
-                </div>
-
-                <div class="runners-summary">
-                    <span>${race.runners.length} runners</span>
-                    <span>Source: ${race.source || 'Unknown'}</span>
-                </div>
-            </div>
-        `).join('');
+        return `<div class="analysis-factors">${factorsHtml}</div>`;
     }
 
     async loadAdapterStatus() {
@@ -254,33 +147,23 @@ class CheckmateApp {
 
     renderAdapterStatus(adapters) {
         const container = document.getElementById('adapter-status');
-
-        container.innerHTML = adapters.map(adapter => `
-            <div class="adapter-card ${adapter.status.toLowerCase()}">
+        if (!adapters || adapters.length === 0) {
+             container.innerHTML = `<div class="empty-state"><i class="fas fa-plug"></i><h3>No Adapters Reported</h3><p>The engine did not report any adapter status.</p></div>`;
+             return;
+        }
+        container.innerHTML = adapters.map(adapter => {
+            const isOk = adapter.status === 'OK';
+            return `
+            <div class="adapter-card ${isOk ? 'ok' : 'error'}">
                 <div class="adapter-header">
                     <h3>${adapter.adapter_id}</h3>
-                    <div class="status-indicator ${adapter.status.toLowerCase()}">
-                        <i class="fas ${adapter.status === 'OK' ? 'fa-check-circle' : 'fa-exclamation-triangle'}"></i>
-                        ${adapter.status}
+                    <div class="status-indicator ${isOk ? 'ok' : 'error'}">
+                        <i class="fas ${isOk ? 'fa-check-circle' : 'fa-exclamation-triangle'}"></i> ${adapter.status}
                     </div>
                 </div>
-                <div class="adapter-stats">
-                    <div class="stat">
-                        <i class="fas fa-horse"></i>
-                        <span>${adapter.races_found} races found</span>
-                    </div>
-                </div>
-                <div class="adapter-notes">
-                    ${adapter.notes || 'No additional notes'}
-                </div>
-                ${adapter.error_message ? `
-                    <div class="error-message">
-                        <i class="fas fa-exclamation-circle"></i>
-                        ${adapter.error_message}
-                    </div>
-                ` : ''}
+                <div class="adapter-notes">${adapter.notes || (isOk ? 'No notes.' : adapter.error_message)}</div>
             </div>
-        `).join('');
+        `}).join('');
     }
 
     switchTab(tabName) {
@@ -293,75 +176,13 @@ class CheckmateApp {
 
     formatPostTime(postTime) {
         if (!postTime) return 'TBD';
-        const date = new Date(postTime);
-        return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    }
-
-    formatOdds(odds) {
-        if (!odds) return 'N/A';
-        return odds.toFixed(1);
+        return new Date(postTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     }
 
     humanizeFactorName(key) {
-        const names = {
-            'fieldSize': 'Field Size',
-            'favoriteOdds': 'Favorite Odds',
-            'secondFavoriteOdds': '2nd Favorite'
-        };
+        const names = { 'fieldSize': 'Field Size', 'favoriteOdds': 'Favorite Odds', 'secondFavoriteOdds': '2nd Favorite' };
         return names[key] || key;
-    }
-
-    async openSettingsModal() {
-        const settings = await fetch('/api/settings').then(r => r.json());
-        document.getElementById('qualification-score').value = settings.QUALIFICATION_SCORE;
-        document.getElementById('field-size-min').value = settings.FIELD_SIZE_OPTIMAL_MIN;
-        document.getElementById('field-size-max').value = settings.FIELD_SIZE_OPTIMAL_MAX;
-        document.getElementById('max-fav-odds').value = settings.MAX_FAV_ODDS;
-        document.getElementById('settings-modal').style.display = 'block';
-    }
-
-    closeSettingsModal() {
-        document.getElementById('settings-modal').style.display = 'none';
-    }
-
-    async saveSettings() {
-        const newSettings = {
-            QUALIFICATION_SCORE: parseFloat(document.getElementById('qualification-score').value),
-            FIELD_SIZE_OPTIMAL_MIN: parseInt(document.getElementById('field-size-min').value),
-            FIELD_SIZE_OPTIMAL_MAX: parseInt(document.getElementById('field-size-max').value),
-            MAX_FAV_ODDS: parseFloat(document.getElementById('max-fav-odds').value)
-        };
-
-        try {
-            await fetch('/api/settings', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(newSettings)
-            });
-            this.closeSettingsModal();
-            this.showNotification('Settings saved successfully!', 'success');
-            await this.refreshData(true);
-        } catch (error) {
-            console.error('Settings save failed:', error);
-            this.showNotification('Failed to save settings', 'error');
-        }
-    }
-
-    showNotification(message, type = 'info') {
-        const notification = document.createElement('div');
-        notification.className = `notification ${type}`;
-        notification.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check' : 'fa-times'}"></i> ${message}`;
-        document.body.appendChild(notification);
-        setTimeout(() => { notification.remove(); }, 3000);
-    }
-
-    startAutoRefresh() {
-        setInterval(() => {
-            this.updateSystemStatus();
-        }, 30000);
     }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-    window.app = new CheckmateApp();
-});
+document.addEventListener('DOMContentLoaded', () => { window.app = new CheckmateApp(); });
