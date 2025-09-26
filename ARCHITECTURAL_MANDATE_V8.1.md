@@ -25,7 +25,6 @@ The system is composed of two distinct, collaborating technology stacks:
 
 All implementation work must adhere to policies for Configuration via Environment, Comprehensive Structured Logging, and Graceful Error Handling.
 
-
 ---
 
 ## 2.0 Implementation Specification
@@ -38,4 +37,9 @@ The specifications for `models.py`, `logic.py`, `services.py`, and `api.py` rema
 ### 2.2 DEPRECATIONS
 
 The primary user interface is now the "Ultimate TUI" defined in `ROADMAP V5.0`. The previously planned React application, along with the original Python-based `dashboard.py`, are now **DEPRECATED** and will be archived.
+
+
+### 2.3 The Headless Monitor
+
+The `headless_monitor.py` remains a critical, first-class tool for developers and headless agents to monitor the status of The Engine's API. It is an essential part of the project's infrastructure and is not deprecated.
 
