@@ -1,4 +1,4 @@
-# ARCHITECTURAL MANDATE V8.0
+# ARCHITECTURAL MANDATE V8.1
 Project: Checkmate V3: The Hybrid System
 Status: LOCKED & FINAL
 Date: 2025-09-19
@@ -17,8 +17,7 @@ The system is now composed of two distinct, collaborating technology stacks:
     *   `services.py` - THE GATEWAY (Asynchronous I/O & Background Tasks)
     *   `api.py` - THE CONDUCTOR (Stateless HTTP Interface)
 
-2.  **THE COCKPIT (React Frontend):** A modern, production-grade web application that serves as the project's primary user interface. It is a pure client of The Engine.
-    *   `checkmate-v7-production.tsx` (and related React components) - THE FACE
+2.  **THE COCKPIT (User Interface):** The project's primary user interface. As of V8.1, this is implemented as a powerful, interactive Text User Interface (TUI) in the run.py script. It remains a pure client of The Engine.
 
 ### 1.2 Guiding Policies
 
