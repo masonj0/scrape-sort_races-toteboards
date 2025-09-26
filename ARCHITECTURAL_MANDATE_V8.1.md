@@ -11,6 +11,7 @@ This document is the final, locked architectural specification for the Checkmate
 
 The system is composed of two distinct, collaborating technology stacks:
 
+
 1.  **THE ENGINE (Python Backend):** A powerful, headless data processing and analysis application. Its sole purpose is to perform the heavy lifting and expose its capabilities via a JSON API.
     *   `models.py` - THE BLUEPRINT (Data Structures & Contracts)
     *   `logic.py` - THE BRAIN (Pure, Stateless Analysis)
@@ -19,9 +20,11 @@ The system is composed of two distinct, collaborating technology stacks:
 
 2.  **THE COCKPIT (User Interface):** The project's primary user interface. As of V8.1 and ROADMAP V5.0, this is implemented as a powerful, interactive Text User Interface (TUI) within the `run.py` script. It remains a pure client of The Engine.
 
+
 ### 1.2 Guiding Policies
 
 All implementation work must adhere to policies for Configuration via Environment, Comprehensive Structured Logging, and Graceful Error Handling.
+
 
 ---
 
@@ -29,8 +32,10 @@ All implementation work must adhere to policies for Configuration via Environmen
 
 ### 2.1 The Python Engine
 
+
 The specifications for `models.py`, `logic.py`, `services.py`, and `api.py` remain the canonical blueprint for the Python backend. Their primary role is to serve the Cockpit.
 
 ### 2.2 DEPRECATIONS
 
 The primary user interface is now the "Ultimate TUI" defined in `ROADMAP V5.0`. The previously planned React application, along with the original Python-based `dashboard.py`, are now **DEPRECATED** and will be archived.
+
