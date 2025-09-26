@@ -8,6 +8,7 @@ class CheckmateApp {
     init() {
         this.bindEvents();
         this.loadInitialData();
+        setInterval(() => this.updateSystemStatus(), 30000); // Auto-status update
     }
 
     bindEvents() {
@@ -15,7 +16,10 @@ class CheckmateApp {
             btn.addEventListener('click', (e) => this.switchTab(e.currentTarget.dataset.tab));
         });
         document.getElementById('refresh-btn').addEventListener('click', () => this.refreshData(true));
-        // Modal events are for Phase 4
+        document.getElementById('settings-btn').addEventListener('click', () => this.openSettingsModal());
+        document.querySelector('.close').addEventListener('click', () => this.closeSettingsModal());
+        document.getElementById('cancel-settings').addEventListener('click', () => this.closeSettingsModal());
+        document.getElementById('save-settings').addEventListener('click', () => this.saveSettings());
     }
 
     async loadInitialData() {
@@ -29,8 +33,32 @@ class CheckmateApp {
     }
 
     async refreshData(isManual = false) {
-        // Full implementation in Phase 4
-        if (isManual) this.loadInitialData();
+        if (this.isRefreshing) return;
+        this.setLoading(true);
+        try {
+            if (isManual) {
+                await fetch('/api/refresh', { method: 'POST' });
+                await new Promise(resolve => setTimeout(resolve, 1000)); // Give server a moment to start
+                await this.waitForRefreshComplete();
+            }
+            await this.loadInitialData();
+            if (isManual) this.showNotification('Data refreshed successfully!', 'success');
+        } catch (error) {
+            this.showNotification('Refresh failed. Please try again.', 'error');
+        } finally {
+            this.setLoading(false);
+        }
+    }
+
+    async waitForRefreshComplete() {
+        let attempts = 0;
+        const maxAttempts = 30; // 30-second timeout
+        while (attempts < maxAttempts) {
+            const status = await fetch('/api/status').then(r => r.json());
+            if (!status.is_fetching) return;
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            attempts++;
+        }
     }
 
     setLoading(isLoading) {
@@ -49,7 +77,7 @@ class CheckmateApp {
     async updateSystemStatus() {
         try {
             const status = await fetch('/api/status').then(r => r.json());
-            document.getElementById('system-status').textContent = 'Online';
+            document.getElementById('system-status').textContent = status.status === 'online' ? 'Online' : 'Offline';
             document.getElementById('last-update').textContent = status.last_update ? new Date(status.last_update).toLocaleTimeString() : 'Never';
             document.getElementById('races-count').textContent = `${status.races_count} races`;
             document.getElementById('qualified-count').textContent = `${status.qualified_count} qualified`;
@@ -182,6 +210,49 @@ class CheckmateApp {
     humanizeFactorName(key) {
         const names = { 'fieldSize': 'Field Size', 'favoriteOdds': 'Favorite Odds', 'secondFavoriteOdds': '2nd Favorite' };
         return names[key] || key;
+    }
+
+    async openSettingsModal() {
+        const settings = await fetch('/api/settings').then(r => r.json());
+        document.getElementById('qualification-score').value = settings.QUALIFICATION_SCORE;
+        document.getElementById('field-size-min').value = settings.FIELD_SIZE_OPTIMAL_MIN;
+        document.getElementById('field-size-max').value = settings.FIELD_SIZE_OPTIMAL_MAX;
+        document.getElementById('max-fav-odds').value = settings.MAX_FAV_ODDS;
+        document.getElementById('settings-modal').style.display = 'block';
+    }
+
+    closeSettingsModal() {
+        document.getElementById('settings-modal').style.display = 'none';
+    }
+
+    async saveSettings() {
+        const newSettings = {
+            QUALIFICATION_SCORE: parseFloat(document.getElementById('qualification-score').value),
+            FIELD_SIZE_OPTIMAL_MIN: parseInt(document.getElementById('field-size-min').value),
+            FIELD_SIZE_OPTIMAL_MAX: parseInt(document.getElementById('field-size-max').value),
+            MAX_FAV_ODDS: parseFloat(document.getElementById('max-fav-odds').value)
+        };
+
+        try {
+            await fetch('/api/settings', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(newSettings)
+            });
+            this.closeSettingsModal();
+            this.showNotification('Settings saved successfully!', 'success');
+            await this.refreshData(true);
+        } catch (error) {
+            this.showNotification('Failed to save settings', 'error');
+        }
+    }
+
+    showNotification(message, type = 'info') {
+        const notification = document.createElement('div');
+        notification.className = `notification ${type}`;
+        notification.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check' : 'fa-times'}"></i> ${message}`;
+        document.body.appendChild(notification);
+        setTimeout(() => { notification.remove(); }, 3000);
     }
 }
 
