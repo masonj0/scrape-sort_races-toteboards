@@ -112,3 +112,82 @@ class FanDuelApiAdapter(BaseAdapterV7):
                     all_races.append(Race(race_id=race_info.get("id"), track_name=track_name, race_number=int(race_info.get("raceNumber")), runners=runners))
         except Exception as e: logging.error(f"{self.SOURCE_ID}: Failed during parsing: {e}")
         return all_races
+
+class TVGAdapter(BaseAdapterV7):
+    """Adapter for the TVG.com mobile API."""
+    SOURCE_ID = "tvg"
+    BASE_URL = "https://mobile-api.tvg.com/api/mobile/races/today"
+
+    def fetch_races(self) -> List[Race]:
+        """Fetches today's races from the TVG mobile API."""
+        logging.info(f"Fetching races from {self.SOURCE_ID}")
+        response_data = self.fetcher.get(self.BASE_URL, response_type='json')
+
+        if not response_data or 'races' not in response_data:
+            logging.warning(f"{self.SOURCE_ID}: No 'races' key found in API response.")
+            return []
+
+        return self._parse_races(response_data['races'])
+
+    def _parse_races(self, races_data: List[Dict]) -> List[Race]:
+        """Parses the JSON race data into standardized Race objects."""
+        all_races = []
+        for race_info in races_data:
+            try:
+                runners = []
+                for runner_info in race_info.get('runners', []):
+                    if runner_info.get('scratched'):
+                        continue
+
+                    odds_val = self._parse_odds(runner_info.get('odds'))
+                    if odds_val is None:
+                        continue # Skip runners without valid odds
+
+                    runners.append(Runner(
+                        name=runner_info.get('horseName', 'Unknown Horse'),
+                        program_number=runner_info.get('programNumber'),
+                        odds=odds_val
+                    ))
+
+                if not runners:
+                    continue
+
+                post_time = self._parse_time(race_info.get('postTime'))
+
+                race = Race(
+                    race_id=f"tvg_{race_info.get('raceId')}",
+                    track_name=race_info.get('trackName', 'Unknown Track'),
+                    race_number=race_info.get('raceNumber'),
+                    post_time=post_time,
+                    runners=runners,
+                    number_of_runners=len(runners),
+                    source=self.SOURCE_ID
+                )
+                all_races.append(race)
+            except Exception as e:
+                logging.warning(f"Skipping malformed TVG race due to error: {e}")
+                continue
+        return all_races
+
+    def _parse_odds(self, odds_data: Optional[Dict]) -> Optional[float]:
+        """Parses the odds structure from the TVG API."""
+        if not odds_data or odds_data.get('morningLine') is None:
+            return None
+        try:
+            # TVG odds can be fractional "N/D" or decimal
+            odds_str = odds_data['morningLine']
+            if '/' in odds_str:
+                num, den = map(int, odds_str.split('/'))
+                return (num / den) + 1.0
+            return float(odds_str)
+        except (ValueError, TypeError, ZeroDivisionError):
+            return None
+
+    def _parse_time(self, time_str: Optional[str]) -> Optional[datetime]:
+        """Parses ISO 8601 timestamp."""
+        if not time_str: return None
+        try:
+            # Example: "2025-09-26T20:30:00Z"
+            return datetime.fromisoformat(time_str.replace('Z', '+00:00'))
+        except ValueError:
+            return None
