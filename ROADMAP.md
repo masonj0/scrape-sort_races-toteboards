@@ -8,7 +8,7 @@ Our "Impossible Dream" is no longer a CLI tool; it is the creation of the live, 
 
 ## Part 1: The Prime Directive
 
-The project's ultimate goal remains the same, but the vessel for its delivery is now the web application.
+The sole and exclusive goal of this project is to build and verify a single, specific betting angle. All development is in service of this focused goal.
 
 ### The Angle: The "Favorite to Place" Bet
 Our purpose is to identify "Checkmate" races and track the historical profitability of a wager that the favorite at post time will finish in either 1st or 2nd place.
