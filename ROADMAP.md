@@ -1,10 +1,12 @@
-# ROADMAP V5.0: The Ultimate Engine
+# ROADMAP V6.0: The Live Cockpit
 
-This document is the definitive strategic vision for Checkmate V7. It reflects a strategic pivot to a CLI-first approach, prioritizing foundational resilience and data quality over external UIs. Our "Impossible Dream" is to create the most powerful and elegant command-line racing analysis tool in existence.
+This document is the definitive strategic vision for Checkmate V7. It reflects a strategic breakthrough based on a new, achievable architectural blueprint for a real-time web application. This new roadmap obsoletes all previous versions.
+
+Our "Impossible Dream" is no longer a CLI tool; it is the creation of the live, interactive, and professional-grade web application defined in the `checkmate_web_app_pseudocode.md` artifact. This is the new North Star.
 
 ---
 
-## Part 1: The Prime Directive (The "Checkmate" Endgame)
+## Part 1: The Prime Directive
 
 The sole and exclusive goal of this project is to build and verify a single, specific betting angle. All development is in service of this focused goal.
 
@@ -12,29 +14,53 @@ The sole and exclusive goal of this project is to build and verify a single, spe
 Our purpose is to identify "Checkmate" races and track the historical profitability of a wager that the favorite at post time will finish in either 1st or 2nd place.
 
 ### The "Closed Loop" Architecture
-To achieve this, we will build a "Closed Loop" system with three core engines: Prediction, Historian, and Accountant.
+To achieve this, we will build a "Closed Loop" system with three core engines: Prediction, Historian, and Accountant. The new web application will serve as the primary interface for this entire system.
 
 ---
 
-## Part 2: The Tactical Plan (Phased Execution)
+## Part 2: The Tactical Plan (The Web App Campaign)
 
-### Phase 1: "The Fortress" (Immediate Priority)
-*   **Objective:** Achieve production-grade stability and performance for our core infrastructure.
-*   **Deliverables:**
-    *   **The Water Main:** Implement a singleton pattern with connection pooling for our database connections, making our application more performant and resilient.
-    *   **The Dojo:** Harden our test suite by creating `SampleAdapter` and `MockFailureAdapter` for fast, predictable, offline testing of our core orchestration logic.
+This plan is a direct, phased implementation of the `checkmate_web_app_pseudocode.md` blueprint.
 
-### Phase 2: "The Ultimate TUI" (The Re-imagined Dream)
-*   **Objective:** Evolve our successful "Polished Ticker" CLI into a truly interactive Text User Interface (TUI).
+### Phase 1: "The Engine Room" (Backend Foundation)
+*   **Objective:** To stand up the core FastAPI server and port our perfected portable engine logic into a modular, web-ready format.
 *   **Deliverables:**
-    *   **Interactive Mode:** A new `run.py --interactive` mode that allows for sorting, filtering, and deep-diving into race details directly from the terminal.
-    *   **Persistent State:** The ability to save and load analysis sessions.
+    1.  Create the new `checkmate_web/` project directory.
+    2.  Implement `main.py` with a basic FastAPI app.
+    3.  Implement a static file server to serve the (initially empty) `index.html`, `app.js`, and `style.css` files.
+    4.  Create `engine.py` and migrate the complete, battle-tested `DataSourceOrchestrator` and `TrifectaAnalyzer` classes from our `checkmate_engine.py` artifact into it.
+    5.  Establish the in-memory `CACHE` dictionary in `main.py` for global state management.
 
-### Phase 3: "The Historian" (Closing the Loop)
-*   **Objective:** Build the first half of our "Closed Loop" architecture.
+### Phase 2: "The API Surface" (Data Endpoints)
+*   **Objective:** To build and verify the complete set of read-only API endpoints that will power the frontend.
 *   **Deliverables:**
-    *   **Results Adapters:** A new class of adapters designed to fetch the official results of completed races.
-    *   **The Historian Engine:** A service that uses these adapters to populate our database with race outcomes, turning our predictions into auditable history.
+    1.  Implement the `/api/status` endpoint.
+    2.  Implement the `/api/adapters/status` endpoint.
+    3.  Implement the `/api/races/all` endpoint.
+    4.  Implement the `/api/races/qualified` endpoint.
+    5.  Implement the `startup_event` to perform an initial data fetch when the server starts.
+
+### Phase 3: "The Cockpit V1" (Visual Interface)
+*   **Objective:** To build the complete, non-interactive visual front-end of the application.
+*   **Deliverables:**
+    1.  Implement the full HTML structure in `static/index.html` as defined in the pseudocode.
+    2.  Implement the full, modern CSS in `static/style.css` to create the polished, professional look.
+    3.  In `static/app.js`, implement the JavaScript logic to:
+        *   Fetch data from all API endpoints on page load.
+        *   Dynamically render the Adapter Status grid.
+        *   Dynamically render the Race Cards for both the "Qualified" and "All Races" tabs.
+        *   Implement the tab-switching logic.
+
+### Phase 4: "The Live Engine" (Interactivity & Control)
+*   **Objective:** To make the application fully interactive and live.
+*   **Deliverables:**
+    1.  Implement the `POST /api/refresh` endpoint with background tasks in `main.py`.
+    2.  Implement the `GET` and `POST` endpoints for `/api/settings`.
+    3.  In `static/app.js`, implement the JavaScript logic for:
+        *   The "Refresh Data" button, including the polling mechanism to wait for completion.
+        *   The Settings Modal (opening, closing, populating with data).
+        *   The "Save Settings" functionality, which sends the updated configuration to the backend.
+        *   The auto-refresh timer to periodically update the system status.
 
 ---
 
@@ -103,6 +129,6 @@ A curated list of projects and resources to accelerate development.
 5.  **Web data scraping blog:** https://www.3idatascing.com/how-does-web-data-scraping-help-in-horse-racing-and-greyhound/
 6.  **Fawazk/Greyhoundscraper:** https://github.com/Fawazk/Greyhoundscraper
 7.  **Betfair Hub Models Scraping Tutorial:** https://betfair-datascientists.github.io/tutorials/How_to_Automate_3/
-8.  **scrapy-horse-racing:** https://github.com/chrismattmann/scrapy-horse-racing
+8.  **scrapy-horse-racing:** https://github.com/chrism-attmann/scrapy-horse-racing
 9.  **horse-racing-data:** https://github.com/jeffkub/horse-racing-data
 10. **Greyhound results scraping example:** https://stackoverflow.com/questions/77761268/...
