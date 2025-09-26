@@ -54,14 +54,26 @@ class RaceDataSchema(BaseModel):
 
 # --- Base Fetcher & Adapters ---
 class DefensiveFetcher:
-    def get(self, url: str, response_type: str = 'auto') -> Union[dict, str, None]:
+    def get(self, url: str, response_type: str = 'auto', headers: Optional[Dict[str, str]] = None) -> Union[dict, str, None]:
         try:
-            command = ["curl", "-s", "-L", "--tlsv1.2", "--http1.1", url]
+            command = ["curl", "-s", "-L", "--tlsv1.2", "--http1.1"]
+            if headers:
+                for key, value in headers.items():
+                    command.extend(["-H", f"{key}: {value}"])
+            command.append(url)
+
             result = subprocess.run(command, capture_output=True, text=True, check=True, timeout=15)
             response_text = result.stdout
-            if response_type == 'text': return response_text
-            try: return json.loads(response_text)
-            except json.JSONDecodeError: return response_text
+
+            if response_type == 'text':
+                return response_text
+
+            try:
+                return json.loads(response_text)
+            except json.JSONDecodeError:
+                logging.warning(f"Failed to decode JSON from {url}")
+                return response_text # Return text as fallback
+
         except (subprocess.CalledProcessError, subprocess.TimeoutExpired) as e:
             logging.error(f"CRITICAL: curl GET failed for {url}. Details: {e}")
             return None
@@ -108,6 +120,63 @@ class TVGAdapter(BaseAdapterV7):
             return (num / den) + 1.0
         except (ValueError, TypeError, ZeroDivisionError): return None
 
+class BetfairExchangeAdapter(BaseAdapterV7):
+    SOURCE_ID = "betfair_exchange"
+
+    def fetch_races(self) -> List[Race]:
+        races = []
+        endpoint = "https://ero.betfair.com/www/sports/exchange/readonly/v1/bymarket?alt=json&filter=canonical&maxResults=25&rollupLimit=2&types=EVENT,MARKET_DESCRIPTION,RUNNER_DESCRIPTION,RUNNER_EXCHANGE_PRICES_BEST,MARKET_STATE&marketProjection=EVENT,MARKET_START_TIME,RUNNER_DESCRIPTION&eventTypeIds=7"
+        try:
+            logging.info(f"Trying Betfair endpoint: {endpoint}")
+            data = self.fetcher.get(endpoint, response_type='json', headers={'Accept': 'application/json'})
+            if data:
+                parsed_races = self._parse_betfair_races(data)
+                if parsed_races:
+                    races.extend(parsed_races)
+                    logging.info(f"Betfair: Successfully parsed {len(parsed_races)} races")
+        except Exception as e:
+            logging.warning(f"Betfair endpoint failed: {e}")
+
+        for race in races:
+            race.source = self.SOURCE_ID
+        return races
+
+    def _parse_betfair_races(self, data: dict) -> List[Race]:
+        races = []
+        try:
+            event_nodes = data.get('eventTypes', [{}]).get('eventNodes', [])
+            for event_node in event_nodes:
+                event = event_node.get('event', {})
+                for market_node in event_node.get('marketNodes', []):
+                    market = market_node.get('market', {})
+                    if market.get('marketType', '') != 'WIN': continue
+                    runners = []
+                    for runner in market_node.get('runners', []):
+                        if runner.get('state', {}).get('status') != 'ACTIVE': continue
+                        odds = None
+                        if 'exchange' in runner:
+                            available_to_back = runner['exchange'].get('availableToBack', [])
+                            if available_to_back: odds = available_to_back.get('price')
+                        runners.append(Runner(name=runner.get('description', {}).get('runnerName', 'Unknown'), program_number=runner.get('sortPriority'), odds=odds))
+
+                    if len(runners) >= 3:
+                        start_time = None
+                        time_field = market.get('marketStartTime')
+                        if time_field:
+                            try: start_time = datetime.fromisoformat(time_field.replace('Z', '+00:00'))
+                            except: pass
+                        race = Race(
+                            race_id=f"betfair_{market.get('marketId', 'unknown')}",
+                            track_name=event.get('venue', 'Betfair Exchange'),
+                            post_time=start_time,
+                            race_number=int(event.get('eventName', '0').split('R')[-1]) if 'R' in event.get('eventName', '') else None,
+                            runners=runners
+                        )
+                        races.append(race)
+        except Exception as e:
+            logging.error(f"Error parsing Betfair data structure: {e}")
+        return races
+
 # --- Trifecta Analyzer ---
 class TrifectaAnalyzer:
     def analyze_race(self, race: RaceDataSchema, settings: Settings) -> dict:
@@ -144,7 +213,7 @@ class TrifectaAnalyzer:
         return {"qualified": score >= settings.QUALIFICATION_SCORE, "checkmateScore": score, "trifectaFactors": trifecta_factors}
 
 # --- Orchestrator ---
-PRODUCTION_ADAPTERS = [TVGAdapter]
+PRODUCTION_ADAPTERS = [TVGAdapter, BetfairExchangeAdapter]
 
 class DataSourceOrchestrator:
     def __init__(self):
