@@ -223,3 +223,96 @@ class TVGAdapter(BaseAdapterV7):
             return datetime.fromisoformat(time_str.replace('Z', '+00:00'))
         except ValueError:
             return None
+
+class BetfairExchangeAdapter(BaseAdapterV7):
+    """Adapter for the Betfair Exchange public API."""
+    SOURCE_ID = "betfair_exchange"
+    BASE_URL = "https://ero.betfair.com/www/sports/exchange/readonly/v1/bymarket"
+
+    def fetch_races(self) -> List[Race]:
+        """Fetches live racing markets from the Betfair Exchange."""
+        logging.info(f"Fetching races from {self.SOURCE_ID}")
+        params = {
+            'alt': 'json',
+            'marketProjection': 'COMPETITION,EVENT,EVENT_TYPE,RUNNER_DESCRIPTION,RUNNER_METADATA,MARKET_START_TIME',
+            'types': 'MARKET_STATE,MARKET_RATES,MARKET_DESCRIPTION,EVENT,RUNNER_DESCRIPTION,RUNNER_STATE,RUNNER_EXCHANGE_PRICES_BEST',
+            'filter': 'eventTypeIds:7', # EventTypeId 7 is Horse Racing
+        }
+        # The API uses query parameters, so we build the URL manually
+        param_string = '&'.join([f'{k}={v}' for k, v in params.items()])
+        full_url = f"{self.BASE_URL}?{param_string}"
+
+        response_data = self.fetcher.get(full_url, response_type='json')
+
+        if not response_data or 'eventTypes' not in response_data:
+            logging.warning(f"{self.SOURCE_ID}: No 'eventTypes' key found in API response.")
+            return []
+
+        return self._parse_races(response_data)
+
+    def _parse_races(self, data: Dict) -> List[Race]:
+        """Parses the complex JSON structure from the Betfair API."""
+        all_races = []
+        try:
+            # The data is nested deep within the response
+            event_types = data.get('eventTypes', [])
+            if not event_types: return []
+
+            horse_racing_events = event_types[0].get('eventNodes', [])
+
+            for event_node in horse_racing_events:
+                event = event_node.get('event', {})
+                market_nodes = event_node.get('marketNodes', [])
+
+                for market_node in market_nodes:
+                    market = market_node.get('market', {})
+                    if market.get('marketType') != 'WIN':
+                        continue
+
+                    runners = []
+                    for runner_data in market_node.get('runners', []):
+                        if runner_data.get('state', {}).get('status') != 'ACTIVE':
+                            continue
+
+                        # Extract best available odds
+                        odds = None
+                        available_to_back = runner_data.get('exchange', {}).get('availableToBack', [])
+                        if available_to_back:
+                            odds = available_to_back[0].get('price')
+
+                        if odds is None:
+                            continue
+
+                        runners.append(Runner(
+                            name=runner_data.get('description', {}).get('runnerName', 'Unknown Horse'),
+                            program_number=runner_data.get('sortPriority'),
+                            odds=float(odds)
+                        ))
+
+                    if not runners:
+                        continue
+
+                    post_time = self._parse_time(market.get('marketStartTime'))
+
+                    race = Race(
+                        race_id=f"bf_{market.get('marketId')}",
+                        track_name=event.get('venue', 'Betfair Track'),
+                        race_number=None, # Not easily available
+                        post_time=post_time,
+                        runners=runners,
+                        number_of_runners=len(runners),
+                        source=self.SOURCE_ID
+                    )
+                    all_races.append(race)
+        except Exception as e:
+            logging.error(f"Error parsing Betfair data structure: {e}", exc_info=True)
+        return all_races
+
+    def _parse_time(self, time_str: Optional[str]) -> Optional[datetime]:
+        """Parses ISO 8601 timestamp."""
+        if not time_str: return None
+        try:
+            # Example: "2025-09-26T20:30:00.000Z"
+            return datetime.fromisoformat(time_str.replace('Z', '+00:00'))
+        except ValueError:
+            return None
