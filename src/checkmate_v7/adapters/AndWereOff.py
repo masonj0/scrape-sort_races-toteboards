@@ -7,8 +7,9 @@ from typing import List, Optional, Dict
 from io import StringIO
 import pandas as pd
 from bs4 import BeautifulSoup
-from ..base import BaseAdapterV7
+from ..base import BaseAdapterV7, DefensiveFetcher
 from ..models import Race, Runner
+from ..settings import settings
 
 def _convert_odds_to_float(odds_str: Optional[str]) -> Optional[float]:
     if not odds_str or not isinstance(odds_str, str): return None
@@ -74,24 +75,56 @@ class AtTheRacesAdapter(BaseAdapterV7):
         return Race(race_id=f'{self.SOURCE_ID}_{details["url"].split("/")[-2]}_{details["url"].split("/")[-1]}', track_name=details['track'], runners=[r for r in runners if r.odds])
 
 class BetfairDataScientistAdapter(BaseAdapterV7):
+    """
+    Production adapter for Betfair Data Scientist API.
+    Fetches CSV data and converts to standardized Race objects.
+    """
     SOURCE_ID = "betfair_data_scientist"
     BASE_URL = "https://betfair-data-supplier.herokuapp.com/api/widgets/iggy-joey/datasets"
 
     def fetch_races(self) -> List[Race]:
+        """Fetches and parses data from the Betfair Data Scientist API."""
         today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
         url = f"{self.BASE_URL}/?date={today}&presenter=RatingsPresenter&csv=true"
+        logging.info(f"Fetching Betfair CSV data from: {url}")
+
         csv_data = self.fetcher.get(url, response_type='text')
-        if not csv_data: return []
+        if not csv_data:
+            logging.warning(f"{self.SOURCE_ID}: No CSV data returned.")
+            return []
+
+        return self._parse_races(csv_data)
+
+    def _parse_races(self, csv_content: str) -> List[Race]:
+        """Parses the CSV content from the API into a list of Race objects."""
         try:
-            df = pd.read_csv(StringIO(csv_data))
+            data = StringIO(csv_content)
+            df = pd.read_csv(data, dtype={"selection_id": str})
+            df.rename(columns={"meetings.races.runners.ratedPrice": "rating"}, inplace=True)
+            df = df[["market_id", "selection_id", "rating"]]
+
             races = {}
             for _, row in df.iterrows():
                 race_id = str(row["market_id"])
-                if race_id not in races: races[race_id] = Race(race_id=race_id, track_name="Betfair Exchange", runners=[])
-                races[race_id].runners.append(Runner(name=str(row["selection_id"]), odds=row["meetings.races.runners.ratedPrice"]))
+                if race_id not in races:
+                    races[race_id] = Race(
+                        race_id=race_id,
+                        track_name="Betfair Exchange",
+                        race_number=None, # Not available in this data source
+                        runners=[],
+                        source=self.SOURCE_ID
+                    )
+
+                runner = Runner(
+                    name=str(row["selection_id"]),
+                    program_number=None, # Not available in this data source
+                    odds=row["rating"],
+                )
+                races[race_id].runners.append(runner)
+
             return list(races.values())
         except Exception as e:
-            logging.error(f"{self.SOURCE_ID}: Failed to parse CSV: {e}")
+            logging.error(f"{self.SOURCE_ID}: Failed to parse CSV data: {e}", exc_info=True)
             return []
 
 class FanDuelApiAdapter(BaseAdapterV7):
@@ -112,3 +145,257 @@ class FanDuelApiAdapter(BaseAdapterV7):
                     all_races.append(Race(race_id=race_info.get("id"), track_name=track_name, race_number=int(race_info.get("raceNumber")), runners=runners))
         except Exception as e: logging.error(f"{self.SOURCE_ID}: Failed during parsing: {e}")
         return all_races
+
+class TVGAdapter(BaseAdapterV7):
+    """Adapter for the TVG.com mobile API."""
+    SOURCE_ID = "tvg"
+    BASE_URL = "https://mobile-api.tvg.com/api/mobile/races/today"
+
+    def fetch_races(self) -> List[Race]:
+        """Fetches today's races from the TVG mobile API."""
+        logging.info(f"Fetching races from {self.SOURCE_ID}")
+        response_data = self.fetcher.get(self.BASE_URL, response_type='json')
+
+        if not response_data or 'races' not in response_data:
+            logging.warning(f"{self.SOURCE_ID}: No 'races' key found in API response.")
+            return []
+
+        return self._parse_races(response_data['races'])
+
+    def _parse_races(self, races_data: List[Dict]) -> List[Race]:
+        """Parses the JSON race data into standardized Race objects."""
+        all_races = []
+        for race_info in races_data:
+            try:
+                runners = []
+                for runner_info in race_info.get('runners', []):
+                    if runner_info.get('scratched'):
+                        continue
+
+                    odds_val = self._parse_odds(runner_info.get('odds'))
+                    if odds_val is None:
+                        continue # Skip runners without valid odds
+
+                    runners.append(Runner(
+                        name=runner_info.get('horseName', 'Unknown Horse'),
+                        program_number=runner_info.get('programNumber'),
+                        odds=odds_val
+                    ))
+
+                if not runners:
+                    continue
+
+                post_time = self._parse_time(race_info.get('postTime'))
+
+                race = Race(
+                    race_id=f"tvg_{race_info.get('raceId')}",
+                    track_name=race_info.get('trackName', 'Unknown Track'),
+                    race_number=race_info.get('raceNumber'),
+                    post_time=post_time,
+                    runners=runners,
+                    number_of_runners=len(runners),
+                    source=self.SOURCE_ID
+                )
+                all_races.append(race)
+            except Exception as e:
+                logging.warning(f"Skipping malformed TVG race due to error: {e}")
+                continue
+        return all_races
+
+    def _parse_odds(self, odds_data: Optional[Dict]) -> Optional[float]:
+        """Parses the odds structure from the TVG API."""
+        if not odds_data or odds_data.get('morningLine') is None:
+            return None
+        try:
+            # TVG odds can be fractional "N/D" or decimal
+            odds_str = odds_data['morningLine']
+            if '/' in odds_str:
+                num, den = map(int, odds_str.split('/'))
+                return (num / den) + 1.0
+            return float(odds_str)
+        except (ValueError, TypeError, ZeroDivisionError):
+            return None
+
+    def _parse_time(self, time_str: Optional[str]) -> Optional[datetime]:
+        """Parses ISO 8601 timestamp."""
+        if not time_str: return None
+        try:
+            # Example: "2025-09-26T20:30:00Z"
+            return datetime.fromisoformat(time_str.replace('Z', '+00:00'))
+        except ValueError:
+            return None
+
+class OddsAPIAdapter(BaseAdapterV7):
+    """Adapter for the-odds-api.com, an odds aggregator."""
+    SOURCE_ID = "odds_api"
+    BASE_URL = "https://api.the-odds-api.com/v4/sports/horse-racing/odds"
+
+    def __init__(self, fetcher: DefensiveFetcher):
+        super().__init__(fetcher)
+        self.api_key = settings.ODDS_API_KEY
+        if not self.api_key:
+            logging.warning(f"{self.SOURCE_ID}: No API key provided. Adapter will be disabled.")
+
+    def fetch_races(self) -> List[Race]:
+        """Fetches races from The Odds API if an API key is configured."""
+        if not self.api_key:
+            return []
+
+        logging.info(f"Fetching races from {self.SOURCE_ID}")
+        params = {
+            'apiKey': self.api_key,
+            'regions': 'uk,us,au', # uk, us, eu, au
+            'markets': 'h2h', # h2h is win market
+            'oddsFormat': 'decimal',
+            'dateFormat': 'iso'
+        }
+        param_string = '&'.join([f'{k}={v}' for k, v in params.items()])
+        full_url = f"{self.BASE_URL}?{param_string}"
+
+        response_data = self.fetcher.get(full_url, response_type='json')
+
+        if not isinstance(response_data, list):
+            logging.warning(f"{self.SOURCE_ID}: API did not return a list of races. Check your API key and usage limits.")
+            return []
+
+        return self._parse_races(response_data)
+
+    def _parse_races(self, data: List[Dict]) -> List[Race]:
+        """Parses the JSON response from The Odds API."""
+        all_races = []
+        for race_data in data:
+            try:
+                bookmakers = race_data.get('bookmakers', [])
+                if not bookmakers: continue
+
+                # Find the bookmaker with the most complete market
+                best_market = max(bookmakers, key=lambda b: len(b.get('markets', [{}])[0].get('outcomes', [])), default={})
+                outcomes = best_market.get('markets', [{}])[0].get('outcomes', [])
+
+                runners = []
+                for runner_info in outcomes:
+                    odds = runner_info.get('price')
+                    if odds is None: continue
+                    runners.append(Runner(
+                        name=runner_info.get('name'),
+                        odds=float(odds)
+                    ))
+
+                if not runners: continue
+
+                post_time = self._parse_time(race_data.get('commence_time'))
+
+                race = Race(
+                    race_id=f"oddsapi_{race_data.get('id')}",
+                    track_name=race_data.get('sport_title', 'Unknown Track'),
+                    race_number=None, # Not provided
+                    post_time=post_time,
+                    runners=runners,
+                    number_of_runners=len(runners),
+                    source=self.SOURCE_ID
+                )
+                all_races.append(race)
+            except Exception as e:
+                logging.warning(f"Skipping malformed Odds-API race due to error: {e}")
+                continue
+        return all_races
+
+    def _parse_time(self, time_str: Optional[str]) -> Optional[datetime]:
+        if not time_str: return None
+        try:
+            return datetime.fromisoformat(time_str.replace('Z', '+00:00'))
+        except ValueError:
+            return None
+
+class BetfairExchangeAdapter(BaseAdapterV7):
+    """Adapter for the Betfair Exchange public API."""
+    SOURCE_ID = "betfair_exchange"
+    BASE_URL = "https://ero.betfair.com/www/sports/exchange/readonly/v1/bymarket"
+
+    def fetch_races(self) -> List[Race]:
+        """Fetches live racing markets from the Betfair Exchange."""
+        logging.info(f"Fetching races from {self.SOURCE_ID}")
+        params = {
+            'alt': 'json',
+            'marketProjection': 'COMPETITION,EVENT,EVENT_TYPE,RUNNER_DESCRIPTION,RUNNER_METADATA,MARKET_START_TIME',
+            'types': 'MARKET_STATE,MARKET_RATES,MARKET_DESCRIPTION,EVENT,RUNNER_DESCRIPTION,RUNNER_STATE,RUNNER_EXCHANGE_PRICES_BEST',
+            'filter': 'eventTypeIds:7', # EventTypeId 7 is Horse Racing
+        }
+        # The API uses query parameters, so we build the URL manually
+        param_string = '&'.join([f'{k}={v}' for k, v in params.items()])
+        full_url = f"{self.BASE_URL}?{param_string}"
+
+        response_data = self.fetcher.get(full_url, response_type='json')
+
+        if not response_data or 'eventTypes' not in response_data:
+            logging.warning(f"{self.SOURCE_ID}: No 'eventTypes' key found in API response.")
+            return []
+
+        return self._parse_races(response_data)
+
+    def _parse_races(self, data: Dict) -> List[Race]:
+        """Parses the complex JSON structure from the Betfair API."""
+        all_races = []
+        try:
+            # The data is nested deep within the response
+            event_types = data.get('eventTypes', [])
+            if not event_types: return []
+
+            horse_racing_events = event_types[0].get('eventNodes', [])
+
+            for event_node in horse_racing_events:
+                event = event_node.get('event', {})
+                market_nodes = event_node.get('marketNodes', [])
+
+                for market_node in market_nodes:
+                    market = market_node.get('market', {})
+                    if market.get('marketType') != 'WIN':
+                        continue
+
+                    runners = []
+                    for runner_data in market_node.get('runners', []):
+                        if runner_data.get('state', {}).get('status') != 'ACTIVE':
+                            continue
+
+                        # Extract best available odds
+                        odds = None
+                        available_to_back = runner_data.get('exchange', {}).get('availableToBack', [])
+                        if available_to_back:
+                            odds = available_to_back[0].get('price')
+
+                        if odds is None:
+                            continue
+
+                        runners.append(Runner(
+                            name=runner_data.get('description', {}).get('runnerName', 'Unknown Horse'),
+                            program_number=runner_data.get('sortPriority'),
+                            odds=float(odds)
+                        ))
+
+                    if not runners:
+                        continue
+
+                    post_time = self._parse_time(market.get('marketStartTime'))
+
+                    race = Race(
+                        race_id=f"bf_{market.get('marketId')}",
+                        track_name=event.get('venue', 'Betfair Track'),
+                        race_number=None, # Not easily available
+                        post_time=post_time,
+                        runners=runners,
+                        number_of_runners=len(runners),
+                        source=self.SOURCE_ID
+                    )
+                    all_races.append(race)
+        except Exception as e:
+            logging.error(f"Error parsing Betfair data structure: {e}", exc_info=True)
+        return all_races
+
+    def _parse_time(self, time_str: Optional[str]) -> Optional[datetime]:
+        """Parses ISO 8601 timestamp."""
+        if not time_str: return None
+        try:
+            # Example: "2025-09-26T20:30:00.000Z"
+            return datetime.fromisoformat(time_str.replace('Z', '+00:00'))
+        except ValueError:
+            return None
