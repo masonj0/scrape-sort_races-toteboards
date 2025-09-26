@@ -1,6 +1,6 @@
-# ROADMAP V4.0: The Checkmate Endgame
+# ROADMAP V5.0: The Ultimate Engine
 
-This document is the definitive strategic and tactical vision for the Checkmate V7 project. It fuses our high-level strategic purpose with a clear, phased execution plan.
+This document is the definitive strategic vision for Checkmate V7. It reflects a strategic pivot to a CLI-first approach, prioritizing foundational resilience and data quality over external UIs. Our "Impossible Dream" is to create the most powerful and elegant command-line racing analysis tool in existence.
 
 ---
 
@@ -9,35 +9,32 @@ This document is the definitive strategic and tactical vision for the Checkmate 
 The sole and exclusive goal of this project is to build and verify a single, specific betting angle. All development is in service of this focused goal.
 
 ### The Angle: The "Favorite to Place" Bet
-Our purpose is to identify "Checkmate" races that meet our dynamic, odds-based criteria, and then to track the historical profitability of a single bet within those races: a wager that the favorite at post time will finish in either 1st or 2nd place.
+Our purpose is to identify "Checkmate" races and track the historical profitability of a wager that the favorite at post time will finish in either 1st or 2nd place.
 
 ### The "Closed Loop" Architecture
-To achieve this, we will build a "Closed Loop" system with three core engines:
-1.  **The Prediction Engine:** Our live monitor (the current `checkmate_v7` application) that finds and logs pre-race opportunities.
-2.  **The Historian Engine:** A new class of adapters that fetches official race results and payout values.
-3.  **The Accountant Engine:** An analytical process that joins predictions with results to calculate the long-term ROI of our strategy.
+To achieve this, we will build a "Closed Loop" system with three core engines: Prediction, Historian, and Accountant.
 
 ---
 
 ## Part 2: The Tactical Plan (Phased Execution)
 
-### Phase 1: "The Grand Fleet" (Immediate Priority)
-*   **Objective:** Achieve data dominance by integrating our backlog of proven, high-value adapters.
+### Phase 1: "The Fortress" (Immediate Priority)
+*   **Objective:** Achieve production-grade stability and performance for our core infrastructure.
 *   **Deliverables:**
-    *   Refactor and integrate the `TVGAdapter`.
-    *   Refactor and integrate the `BetfairExchangeAdapter`.
-    *   Refactor and integrate the `OddsAPIAdapter`.
+    *   **The Water Main:** Implement a singleton pattern with connection pooling for our database connections, making our application more performant and resilient.
+    *   **The Dojo:** Harden our test suite by creating `SampleAdapter` and `MockFailureAdapter` for fast, predictable, offline testing of our core orchestration logic.
 
-### Phase 2: "The Cockpit & The Crier" (The User Experience)
-*   **Objective:** Build the first tangible, user-facing manifestations of our "Impossible Dream."
+### Phase 2: "The Ultimate TUI" (The Re-imagined Dream)
+*   **Objective:** Evolve our successful "Polished Ticker" CLI into a truly interactive Text User Interface (TUI).
 *   **Deliverables:**
-    *   **The Cockpit:** A V1 React-based dashboard.
-    *   **The Crier:** A V1 `SlackAlerter`.
+    *   **Interactive Mode:** A new `run.py --interactive` mode that allows for sorting, filtering, and deep-diving into race details directly from the terminal.
+    *   **Persistent State:** The ability to save and load analysis sessions.
 
-### Phase 3: "The Dojo" (The Quality Gate)
-*   **Objective:** Harden our test suite and accelerate development.
+### Phase 3: "The Historian" (Closing the Loop)
+*   **Objective:** Build the first half of our "Closed Loop" architecture.
 *   **Deliverables:**
-    *   Create and integrate `SampleAdapter` and `MockFailureAdapter` for testing.
+    *   **Results Adapters:** A new class of adapters designed to fetch the official results of completed races.
+    *   **The Historian Engine:** A service that uses these adapters to populate our database with race outcomes, turning our predictions into auditable history.
 
 ---
 
