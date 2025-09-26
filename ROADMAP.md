@@ -22,6 +22,7 @@ To achieve this, we will build a "Closed Loop" system with three core engines:
 ## Part 2: The Tactical Plan (Phased Execution)
 
 ### Phase 1: "The Grand Fleet" (Immediate Priority)
+
 *   **Objective:** Achieve data dominance by integrating our backlog of proven, high-value adapters.
 *   **Deliverables:**
     *   Refactor and integrate the `TVGAdapter`.
