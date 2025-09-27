@@ -1,1 +1,2 @@
-jsahdflkjhs
+pydantic
+pywin32
