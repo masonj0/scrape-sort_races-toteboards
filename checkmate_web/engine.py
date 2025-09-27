@@ -1,5 +1,5 @@
 # engine.py
-# Ported and modularized from the self-contained checkmate_engine.py
+# Upgraded with Pydantic Settings and Concurrent Fetching
 
 import logging
 import json
@@ -12,7 +12,7 @@ from pydantic_settings import BaseSettings
 from pydantic import BaseModel, Field
 from bs4 import BeautifulSoup
 
-# --- Settings ---
+# --- Professional Settings Management ---
 class Settings(BaseSettings):
     QUALIFICATION_SCORE: float = Field(default=75.0)
     FIELD_SIZE_OPTIMAL_MIN: int = Field(default=4)
@@ -197,16 +197,16 @@ class TrifectaAnalyzer:
         if num_runners >= 2:
             fav, sec_fav = horses_with_odds[0], horses_with_odds[1]
             if fav.odds <= settings.MAX_FAV_ODDS:
-                points, ok, reason = settings.FAV_ODDS_POINTS, True, f"Favorite odds OK ({fav.odds})"
+                points, ok, reason = settings.FAV_ODDS_POINTS, True, f"Favorite odds OK ({fav.odds:.2f})"
             else:
-                points, ok, reason = 0, False, f"Favorite odds too high ({fav.odds})"
+                points, ok, reason = 0, False, f"Favorite odds too high ({fav.odds:.2f})"
             score += points
             trifecta_factors["favoriteOdds"] = {"points": points, "ok": ok, "reason": reason}
 
             if sec_fav.odds >= settings.MIN_2ND_FAV_ODDS:
-                points, ok, reason = settings.SECOND_FAV_ODDS_POINTS, True, f"2nd Favorite OK ({sec_fav.odds})"
+                points, ok, reason = settings.SECOND_FAV_ODDS_POINTS, True, f"2nd Favorite OK ({sec_fav.odds:.2f})"
             else:
-                points, ok, reason = 0, False, f"2nd Favorite odds too low ({sec_fav.odds})"
+                points, ok, reason = 0, False, f"2nd Favorite odds too low ({sec_fav.odds:.2f})"
             score += points
             trifecta_factors["secondFavoriteOdds"] = {"points": points, "ok": ok, "reason": reason}
 
