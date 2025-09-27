@@ -68,7 +68,6 @@ class RaceResult(BaseModel):
     results: List[RunnerResult]
     source: str
 
-
 # --- Base Fetcher & Adapters ---
 class DefensiveFetcher:
     def get(self, url: str, response_type: str = 'auto', headers: Optional[Dict[str, str]] = None) -> Union[dict, str, None]:
@@ -101,11 +100,16 @@ class BaseAdapterV7(ABC):
     def fetch_races(self) -> List[Race]:
         raise NotImplementedError
 
+class BaseResultsAdapterV1(ABC):
+    def __init__(self, defensive_fetcher: DefensiveFetcher):
+        self.fetcher = defensive_fetcher
+    @abstractmethod
+    def fetch_results(self) -> List[RaceResult]:
+        raise NotImplementedError
+
 def _convert_odds_to_float(odds_str: Optional[Union[str, float]]) -> Optional[float]:
-    if isinstance(odds_str, float):
-        return odds_str
-    if not odds_str or not isinstance(odds_str, str):
-        return None
+    if isinstance(odds_str, float): return odds_str
+    if not odds_str or not isinstance(odds_str, str): return None
     odds_str = odds_str.strip().upper()
     if odds_str in ['SP', 'SCRATCHED']: return None
     if odds_str in ['EVS', 'EVENS']: return 2.0
@@ -117,6 +121,7 @@ def _convert_odds_to_float(odds_str: Optional[Union[str, float]]) -> Optional[fl
     try: return float(odds_str)
     except (ValueError, TypeError): return None
 
+# # --- Race Data Adapters ---
 class TVGAdapter(BaseAdapterV7):
     SOURCE_ID = "tvg"
     BASE_URL = "https://mobile-api.tvg.com/api/mobile/races/today"
@@ -137,7 +142,8 @@ class TVGAdapter(BaseAdapterV7):
         try:
             num, den = map(int, odds_data['morningLine'].split('/'))
             return (num / den) + 1.0
-        except (Value9 rror, TypeError, ZeroDivisionError): return None
+        except (ValueError, TypeError, ZeroDivisionError): return None
+
 
 class BetfairExchangeAdapter(BaseAdapterV7):
     SOURCE_ID = "betfair_exchange"
@@ -171,16 +177,15 @@ class BetfairExchangeAdapter(BaseAdapterV7):
                         odds = None
                         if 'exchange' in runner:
                             available_to_back = runner['exchange'].get('availableToBack', [])
-                            if available_to_back: odds = available_to_back.get('price')
+                            if available_to_back: odds = available_to_back[0].get('price')
                         runners.append(Runner(name=runner.get('description', {}).get('runnerName', 'Unknown'), program_number=runner.get('sortPriority'), odds=odds))
-
                     if len(runners) >= 3:
                         start_time = None
                         time_field = market.get('marketStartTime')
                         if time_field:
                             try: start_time = datetime.fromisoformat(time_field.replace('Z', '+00:00'))
                             except: pass
-                         race = Race(race_id=f"betfair_{market.get('marketId', 'unknown')}", track_name=event.get('venue', 'Betfair Exchange'), post_time=start_time, race_number=int(event.get('eventName', '0').split('R')[-1]) if 'R' in event.get('eventName', '') else None, runners=runners)
+                        race = Race(race_id=f"betfair_{market.get('marketId', 'unknown')}", track_name=event.get('venue', 'Betfair Exchange'), post_time=start_time, race_number=int(event.get('eventName', '0').split('R')[-1]) if 'R' in event.get('eventName', '') else None, runners=runners)
                         races.append(race)
         except Exception as e: logging.error(f"Error parsing Betfair data structure: {e}")
         return races
@@ -228,6 +233,44 @@ class PointsBetAdapter(BaseAdapterV7):
                 continue
         return races
 
+# --- NEW: Race Results Adapters ---
+class TVGResultsAdapter(BaseResultsAdapterV1):
+    SOURCE_ID = "tvg_results"
+    BASE_URL = "https://mobile-api.tvg.com/api/mobile/results/today"
+
+    def fetch_results(self) -> List[RaceResult]:
+        response_data = self.fetcher.get(self.BASE_URL, response_type='json')
+        if not response_data or 'results' not in response_data:
+            return []
+
+        all_results = []
+        for result_info in response_data['results']:
+            try:
+                runner_results = []
+                for runner_data in result_info.get('runners', []):
+                    if not runner_data.get('finishPosition'): continue
+                    runner_results.append(RunnerResult(
+                        name=runner_data.get('horseName', 'Unknown'),
+                        finishing_position=runner_data['finishPosition'],
+                        program_number=runner_data.get('programNumber'),
+                        odds=_convert_odds_to_float(runner_data.get('winOdds', {}).get('decimal'))
+                    ))
+
+                if not runner_results: continue
+
+                all_results.append(RaceResult(
+                    race_id=f"tvg_{result_info.get('raceId')}",
+                    track_name=result_info.get('trackName', 'Unknown Track'),
+                    race_number=result_info.get('raceNumber'),
+                    race_date=date.today(),
+                    results=runner_results,
+                    source=self.SOURCE_ID
+                ))
+            except Exception as e:
+                logging.warning(f"Skipping malformed TVG result: {e}")
+                continue
+        return all_results
+
 # --- Trifecta Analyzer ---
 class TrifectaAnalyzer:
     def analyze_race(self, race: RaceDataSchema, settings: Settings) -> dict:
@@ -263,9 +306,9 @@ class TrifectaAnalyzer:
 
         return {"qualified": score >= settings.QUALIFICATION_SCORE, "checkmateScore": score, "trifectaFactors": trifecta_factors}
 
-# --- Orchestrator ---
- 
+# --- Orchestrators ---
 PRODUCTION_ADAPTERS = [TVGAdapter, BetfairExchangeAdapter, PointsBetAdapter]
+RESULTS_ADAPTERS = [TVGResultsAdapter]
 
 class DataSourceOrchestrator:
     def __init__(self):
@@ -299,4 +342,32 @@ class DataSourceOrchestrator:
                     adapter_id = adapter.__class__.__name__
                     statuses.append({"adapter_id": adapter_id, "status": "ERROR", "error_message": str(e), "races_found": 0})
         return all_races, statuses
-  
+class ResultsOrchestrator:
+    def __init__(self):
+        self.fetcher = DefensiveFetcher()
+        self.adapters: List[BaseResultsAdapterV1] = [Adapter(self.fetcher) for Adapter in RESULTS_ADAPTERS]
+
+    def _fetch_from_adapter(self, adapter: BaseResultsAdapterV1):
+        adapter_id = adapter.__class__.__name__
+        try:
+            results = adapter.fetch_results()
+            notes = f"Successfully parsed {len(results)} results." if results else "No results found."
+            status = {"adapter_id": adapter_id, "status": "OK", "results_found": len(results), "notes": notes}
+            return results, status
+        except Exception as e:
+            status = {"adapter_id": adapter_id, "status": "ERROR", "error_message": str(e), "results_found": 0}
+            return [], status
+
+    def get_results(self) -> tuple[list[RaceResult], list[dict]]:
+        all_results, statuses = [], []
+        with concurrent.futures.ThreadPoolExecutor(max_workers=len(self.adapters)) as executor:
+            future_to_adapter = {executor.submit(self._fetch_from_adapter, adapter): adapter for adapter in self.adapters}
+            for future in concurrent.futures.as_completed(future_to_adapter):
+                try:
+                    results, status = future.result()
+                    if results: all_results.extend(results)
+                    statuses.append(status)
+                except Exception as e:
+                    adapter_id = future_to_adapter[future].__class__.__name__
+                    statuses.append({"adapter_id": adapter_id, "status": "ERROR", "error_message": str(e), "results_found": 0})
+        return all_results, statuses
