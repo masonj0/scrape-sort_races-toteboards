@@ -1,0 +1,17 @@
+--- STDOUT ---
+
+--- STDERR ---
+2025-09-27 19:04:33,148 - DemonstrationScript - INFO - Instantiating CheckmateBackgroundService...
+2025-09-27 19:04:33,149 - DatabaseHandler - INFO - Database schemas applied successfully from /app/shared_database/schema.sql and /app/shared_database/web_schema.sql.
+2025-09-27 19:04:33,151 - DemonstrationScript - INFO - Service instantiated. Starting one-shot data collection and analysis cycle.
+2025-09-27 19:04:33,221 - root - ERROR - CRITICAL: curl GET failed for https://mobile-api.tvg.com/api/mobile/races/today. Details: Command '['curl', '-s', '-L', '--tlsv1.2', '--http1.1', 'https://mobile-api.tvg.com/api/mobile/races/today']' returned non-zero exit status 6.
+2025-09-27 19:04:33,221 - root - WARNING - TVGAdapter received invalid or non-dict data: <class 'NoneType'>
+2025-09-27 19:04:33,279 - root - WARNING - Failed to decode JSON from https://ero.betfair.com/www/sports/exchange/readonly/v1/bymarket?alt=json&filter=canonical&maxResults=25&rollupLimit=2&types=EVENT,MARKET_DESCRIPTION,RUNNER_DESCRIPTION,RUNNER_EXCHANGE_PRICES_BEST,MARKET_STATE&marketProjection=EVENT,MARKET_START_TIME,RUNNER_DESCRIPTION&eventTypeIds=7, returning raw text.
+2025-09-27 19:04:33,279 - root - WARNING - BetfairExchangeAdapter received invalid or non-dict data: <class 'str'>
+2025-09-27 19:04:33,416 - root - WARNING - Failed to decode JSON from https://api.nj.pointsbet.com/api/v2/sports/horse-racing/events/upcoming?page=1, returning raw text.
+2025-09-27 19:04:33,416 - root - WARNING - PointsBetAdapter received invalid or non-dict data: <class 'str'>
+2025-09-27 19:04:33,417 - DataSourceOrchestrator - INFO - Orchestrator fetched a total of 0 races from 3 adapters.
+2025-09-27 19:04:33,417 - DemonstrationScript - INFO - Rust analysis was not performed or failed. Falling back to Python analyzer.
+2025-09-27 19:04:33,417 - CheckmateBackgroundService - INFO - Performing analysis with internal Python engine.
+2025-09-27 19:04:33,417 - DemonstrationScript - WARNING - No races were analyzed. Database will not be updated.
+2025-09-27 19:04:33,417 - DemonstrationScript - INFO - Demonstration cycle complete.

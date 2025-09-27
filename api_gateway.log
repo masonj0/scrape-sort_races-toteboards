@@ -1,0 +1,13 @@
+Attempting to connect to database at: /app/shared_database/races.db
+Database connection successful.
+Error: listen EADDRINUSE: address already in use 0.0.0.0:8080
+    at Server.setupListenHandle [as _listen2] (node:net:1940:16)
+    at listenInCluster (node:net:1997:12)
+    at Server.listen (node:net:2102:7)
+    at startServer (/app/web_platform/api_gateway/src/server.ts:98:14) {
+  code: 'EADDRINUSE',
+  errno: -98,
+  syscall: 'listen',
+  address: '0.0.0.0',
+  port: 8080
+}
