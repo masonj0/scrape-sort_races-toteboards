@@ -205,3 +205,92 @@ body {
 .notification { position: fixed; bottom: 20px; right: 20px; padding: 1rem 1.5rem; border-radius: 0.5rem; color: white; box-shadow: var(--shadow-lg); z-index: 2000; }
 .notification.success { background-color: var(--success-color); }
 .notification.error { background-color: var(--danger-color); }
+
+/* ENHANCED ADAPTER DASHBOARD STYLES */
+.adapter-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1.5rem;
+}
+
+.adapter-card {
+    background: var(--surface);
+    border-radius: 0.5rem;
+    box-shadow: var(--shadow);
+    border-left: 5px solid;
+    display: flex;
+    flex-direction: column;
+}
+
+.adapter-card.ok { border-left-color: var(--success-color); }
+.adapter-card.error { border-left-color: var(--danger-color); }
+
+.adapter-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    background-color: var(--background);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.adapter-header h3 {
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.status-indicator { font-weight: 700; }
+.status-indicator.ok { color: var(--success-color); }
+.status-indicator.error { color: var(--danger-color); }
+
+.adapter-body {
+    padding: 1rem;
+    flex-grow: 1;
+}
+
+.adapter-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.stat-item {
+    background: var(--background);
+    padding: 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.9rem;
+}
+
+.stat-item span {
+    font-weight: 600;
+    color: var(--primary-color);
+}
+
+.adapter-notes p {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+.error-details {
+    background: #fef2f2;
+    color: #991b1b;
+    padding: 0.75rem;
+    border-radius: 0.25rem;
+    font-size: 0.85rem;
+    margin-top: 1rem;
+    white-space: pre-wrap;
+    word-break: break-all;
+}
+
+.adapter-footer {
+    padding: 0.5rem 1rem;
+    background: var(--background);
+    border-top: 1px solid var(--border-color);
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    text-align: right;
+}
