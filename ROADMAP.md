@@ -1,105 +1,66 @@
-# Paddock Parser V3: Grand Unified Roadmap
+# ROADMAP V6.0: The Live Cockpit
 
-This document represents the definitive strategic, architectural, and tactical vision for the Paddock Parser project. It synthesizes our proven V2 accomplishments with the recovered "V3" philosophical pillars and the extensive backlog of our more mature predecessors.
+This document is the definitive strategic vision for Checkmate V7. It reflects a strategic breakthrough based on a new, achievable architectural blueprint for a real-time web application. This new roadmap obsoletes all previous versions.
 
----
-
-## Part 1: The V3 Strategic Pillars (Our Philosophy)
-
-Our future development is guided by four core principles to create a resilient, intelligent, and ethical analytical ecosystem.
-
-*   **On Defense (Mimicking Human Behavior):** Evolve our fetching patterns to introduce sophisticated randomness—"chaos"—to break predictable patterns and more closely mimic the erratic behavior of a real human researcher.
-
-*   **On Architecture (The Intelligent Ecosystem):** Evolve our linear pipeline into a cyclical, learning-based model. This includes a **"Contextualize"** stage (for external data like weather) and a **"Feedback"** loop where real race results are used to continuously improve our scoring models.
-
-*   **On AI Integration (The Hybrid Approach):** Pioneer a hybrid model where LLMs perform **"Dynamic Factor Weighting."** The LLM will analyze qualitative data (pundit commentary, news) to provide a signal that dynamically adjusts the weights in our quantitative scoring engine.
-
-*   **On Ethics (The "Dedicated Human Researcher" Test):** Formally adopt the principle of **"resilient data access."** If a single, dedicated human using browser developer tools could not plausibly achieve our data collection footprint, our methods are too aggressive.
+Our "Impossible Dream" is no longer a CLI tool; it is the creation of the live, interactive, and professional-grade web application defined in the `checkmate_web_app_pseudocode.md` artifact. This is the new North Star.
 
 ---
 
-## Part 2: The V3 Tactical Roadmap (Our Work)
+## Part 1: The Prime Directive
 
-This section outlines the next generation of features, building upon our stable V2 foundation and guided by the architectural successes of our predecessors.
+The sole and exclusive goal of this project is to build and verify a single, specific betting angle. All development is in service of this focused goal.
 
-### Tier 1: Immediate Architectural Evolution
-*   **API-First Data Sourcing:** Prioritize the implementation of adapters for API-based sources (e.g., "Racing & Sports," "Sporting Life") over HTML scraping.
-*   **Advanced Weighted Scoring:** Evolve the `RaceScorer` into a sophisticated, weighted algorithm, drawing inspiration from the `SCORER_WEIGHTS` in the recovered `config_settings.json`.
-*   **Superior Configuration Model:** Refactor our configuration from simple constants to a more flexible, script-based model to manage sources, caching, and HTTP settings.
-
-### Tier 2: Advanced Scraping & Resilience
-*   **Playwright Bootstrap Integration:** Implement headless browsers for critical, JavaScript-heavy sites.
-*   **Mobile App API Reverse Engineering:** A research task to investigate simpler, less protected mobile APIs for key targets.
-
----
-
-## Part 3: The V2 "Golden Branch" (Our Foundation)
-
-This section documents the verified, completed features that form the stable foundation for our V3 evolution, categorized by our four architectural pillars.
-
-### The Brain (Scoring & Analysis)
-*   **Enlightened Scorer:** A dynamic, multi-factor scoring engine (`RaceScorer` in `scorer.py`). It uses a "Trifecta of Factors" (field size, favorite's odds, and contention) and a user-configurable weighting system in `config.py` to produce a transparent, detailed score for each race.
-*   **Backtesting Engine:** A `Backtester` module for scientifically validating scoring models against historical data.
-
-### The Guardian (Data Integrity & Persistence)
-*   **Data Persistence:** A `DatabaseManager` using SQLite provides the project with long-term memory.
-*   **Data Deduplication:** `SmartMerge` logic fuses data from multiple sources into a single, authoritative record.
-
-### The Template (Data Acquisition & Resilience)
-*   **Dual-Track Data Acquisition:** A new, two-pronged strategy for data collection.
-    *   **API-First (The Diplomat):** Prioritizes clean, structured data from GraphQL and other web APIs (e.g., FanDuel).
-    *   **Resilient Scraping (The Soldier):** A robust `fetcher.py` module with `tenacity`-based retries, exponential backoff, and User-Agent rotation for gracefully handling traditional HTML scraping.
-*   **Expanded Adapter Fleet:** A vast suite of resurrected and V3-modernized adapters, including premier API-driven sources (**Racing Post, FanDuel**) and comprehensive HTML scrapers (**Timeform, Equibase**), providing extensive data coverage.
-
-### The Face (User Experience & Delivery)
-*   **Rich Terminal User Interface (TUI):** An enhanced, `rich`-powered interactive display for running reports.
-*   **High Roller Report:** A one-click, user-defined value report in the TUI.
-*   **Web Service API:** A FastAPI service with JSON and CSV exports.
-
----
-
-## Part 4: The "Checkmate" Endgame (September 2025)
-
-After achieving a stable V4 architecture and a powerful, multi-source data pipeline, the project has received its final, unifying Prime Directive from its solitary, final customer. The sole and exclusive goal of the "Modern Renaissance" is now to build and verify a single, specific betting angle.
-
-### The Prime Directive: The "Favorite to Place" Angle
-
-The application's purpose is to identify "Checkmate" races that meet a dynamic, odds-based criteria, and then to track the historical profitability of a single, specific bet within those races: the **"Favorite to Place"** bet (a wager that the favorite at post time will finish in either 1st or 2nd place).
-
-All future development will be in service of this single, laser-focused goal.
+### The Angle: The "Favorite to Place" Bet
+Our purpose is to identify "Checkmate" races and track the historical profitability of a wager that the favorite at post time will finish in either 1st or 2nd place.
 
 ### The "Closed Loop" Architecture
-
-To achieve this, the project will be evolved into a "Closed Loop" analytical system with three core engines:
-
-1.  **The Prediction Engine:** A live monitor that uses our V3 adapters to find pre-race "Checkmate" opportunities and logs them to a permanent database.
-
-2.  **The Historian Engine:** A new class of results-focused adapters designed for one purpose: to fetch the official results of a completed race and, crucially, to extract the specific **payout value** for the favorite's "Place" finish.
-
-3.  **The Accountant Engine:** A final, analytical process that joins the predictions with the results to calculate the precise, long-term **Return on Investment (ROI)** of the "Favorite to Place" strategy. The final output will be a cumulative P/L graph, which will serve as the project's ultimate report card.
+To achieve this, we will build a "Closed Loop" system with three core engines: Prediction, Historian, and Accountant. The new web application will serve as the primary interface for this entire system.
 
 ---
 
-## Part 5: The New Reality: The Hybrid System
+## Part 2: The Tactical Plan (The Web App Campaign)
 
-The project's architecture has been formalized into two distinct but connected systems:
+This plan is a direct, phased implementation of the `checkmate_web_app_pseudocode.md` blueprint.
 
-*   **The Engine (Python Backend):** A powerful, headless API server responsible for all data acquisition, analysis, and persistence. Its features are documented under the V2 "Golden Branch" section.
-*   **The Cockpit (React Frontend):** A production-grade React application that serves as the project's primary user interface. It is the definitive "Face" of the system.
+### Phase 1: "The Engine Room" (Backend Foundation)
+*   **Objective:** To stand up the core FastAPI server and port our perfected portable engine logic into a modular, web-ready format.
+*   **Deliverables:**
+    1.  Create the new `checkmate_web/` project directory.
+    2.  Implement `main.py` with a basic FastAPI app.
+    3.  Implement a static file server to serve the (initially empty) `index.html`, `app.js`, and `style.css` files.
+    4.  Create `engine.py` and migrate the complete, battle-tested `DataSourceOrchestrator` and `TrifectaAnalyzer` classes from our `checkmate_engine.py` artifact into it.
+    5.  Establish the in-memory `CACHE` dictionary in `main.py` for global state management.
 
----
+### Phase 2: "The API Surface" (Data Endpoints)
+*   **Objective:** To build and verify the complete set of read-only API endpoints that will power the frontend.
+*   **Deliverables:**
+    1.  Implement the `/api/status` endpoint.
+    2.  Implement the `/api/adapters/status` endpoint.
+    3.  Implement the `/api/races/all` endpoint.
+    4.  Implement the `/api/races/qualified` endpoint.
+    5.  Implement the `startup_event` to perform an initial data fetch when the server starts.
 
-## Part 6: The "Symbiosis" Endgame (September 2025)
+### Phase 3: "The Cockpit V1" (Visual Interface)
+*   **Objective:** To build the complete, non-interactive visual front-end of the application.
+*   **Deliverables:**
+    1.  Implement the full HTML structure in `static/index.html` as defined in the pseudocode.
+    2.  Implement the full, modern CSS in `static/style.css` to create the polished, professional look.
+    3.  In `static/app.js`, implement the JavaScript logic to:
+        *   Fetch data from all API endpoints on page load.
+        *   Dynamically render the Adapter Status grid.
+        *   Dynamically render the Race Cards for both the "Qualified" and "All Races" tabs.
+        *   Implement the tab-switching logic.
 
-The "Checkmate" Endgame has evolved. The new Prime Directive is to achieve a perfect, seamless integration between our powerful Python Engine and our beautiful React Cockpit.
-
-### The New Prime Directive: "Operation: Symbiosis"
-
-The application's purpose is to connect the live, analytical data from the Python backend to the React frontend, creating a single, cohesive, and powerful user experience. All future development will be in service of this integration.
-
-### The "Closed Loop" Architecture
-
-The three engines (Prediction, Historian, Accountant) will be implemented within the Python backend. The React frontend will provide the interface for visualizing the data from these engines, including the cumulative P/L graph which remains the project's ultimate report card.
+### Phase 4: "The Live Engine" (Interactivity & Control)
+*   **Objective:** To make the application fully interactive and live.
+*   **Deliverables:**
+    1.  Implement the `POST /api/refresh` endpoint with background tasks in `main.py`.
+    2.  Implement the `GET` and `POST` endpoints for `/api/settings`.
+    3.  In `static/app.js`, implement the JavaScript logic for:
+        *   The "Refresh Data" button, including the polling mechanism to wait for completion.
+        *   The Settings Modal (opening, closing, populating with data).
+        *   The "Save Settings" functionality, which sends the updated configuration to the backend.
+        *   The auto-refresh timer to periodically update the system status.
 
 ---
 
@@ -168,6 +129,6 @@ A curated list of projects and resources to accelerate development.
 5.  **Web data scraping blog:** https://www.3idatascing.com/how-does-web-data-scraping-help-in-horse-racing-and-greyhound/
 6.  **Fawazk/Greyhoundscraper:** https://github.com/Fawazk/Greyhoundscraper
 7.  **Betfair Hub Models Scraping Tutorial:** https://betfair-datascientists.github.io/tutorials/How_to_Automate_3/
-8.  **scrapy-horse-racing:** https://github.com/chrismattmann/scrapy-horse-racing
+8.  **scrapy-horse-racing:** https://github.com/chrism-attmann/scrapy-horse-racing
 9.  **horse-racing-data:** https://github.com/jeffkub/horse-racing-data
 10. **Greyhound results scraping example:** https://stackoverflow.com/questions/77761268/...
