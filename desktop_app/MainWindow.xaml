@@ -1,0 +1,50 @@
+<!-- desktop_app/MainWindow.xaml -->
+<Window x:Class="desktop_app.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:viewModels="clr-namespace:desktop_app.ViewModels"
+        xmlns:models="clr-namespace:desktop_app.Models"
+        Title="Checkmate V8 - Command Deck" Height="800" Width="1200">
+    <Window.DataContext>
+        <viewModels:MainViewModel/>
+    </Window.DataContext>
+    <TabControl>
+        <TabItem Header="🔥 Qualified Races">
+            <ListView ItemsSource="{Binding QualifiedRaces}" Background="#2D2D30" HorizontalContentAlignment="Stretch">
+                <ListView.ItemTemplate>
+                    <DataTemplate DataType="{x:Type models:DisplayRace}">
+                        <Border Margin="5" Padding="15" CornerRadius="8" Background="#1E1E1E">
+                            <Border.Effect>
+                                <DropShadowEffect Color="{Binding ScoreGradient.Color}" ShadowDepth="0" BlurRadius="10"/>
+                            </Border.Effect>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                    <TextBlock Text="{Binding DisplayTitle}" FontSize="20" FontWeight="Bold" Foreground="White"/>
+                                    <TextBlock Text="{Binding PostTimeCountdown}" FontSize="14" Foreground="LightGray"/>
+                                </StackPanel>
+                                <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="20,0,0,0">
+                                    <TextBlock Text="{Binding CheckmateScore, StringFormat={}{0:F1}}" FontSize="32" FontWeight="Bold" Foreground="{Binding ScoreGradient}" HorizontalAlignment="Center"/>
+                                    <TextBlock Text="SCORE" FontSize="12" Foreground="Gray" HorizontalAlignment="Center"/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+        </TabItem>
+        <TabItem Header="📊 Data Sources">
+            <DataGrid ItemsSource="{Binding AdapterStatuses}" AutoGenerateColumns="False" IsReadOnly="True">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Adapter" Binding="{Binding AdapterName}" Width="*"/>
+                    <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="Auto"/>
+                    <DataGridTextColumn Header="Last Run" Binding="{Binding LastRunFormatted}" Width="Auto"/>
+                    <DataGridTextColumn Header="Races Found" Binding="{Binding RacesFound}" Width="Auto"/>
+                </DataGrid.Columns>
+            </DataGrid>
+        </TabItem>
+    </TabControl>
+</Window>

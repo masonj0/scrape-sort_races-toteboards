@@ -1,32 +1,31 @@
-# Checkmate V7: The Live Cockpit
+# Checkmate V8: The Tri-Brid Trading Deck
 
-This project is a real-time, web-based horse racing analysis engine. It leverages a powerful, battle-tested Python backend to fetch and analyze live data from multiple sources, exposing the results through a lightweight and elegant Vanilla JavaScript frontend.
+A high-performance, tri-brid data analysis platform for real-time horse racing analysis, architected for a single-user Windows desktop environment.
 
 ---
 
-## Core Concept
+## Architecture: The Tri-Brid System
 
-The architecture is a modern, two-stack system as defined in the `ARCHITECTURAL_MANDATE_V8.1.md`:
+This project leverages a unique three-part architecture to maximize performance, reliability, and user experience.
 
-1.  **THE ENGINE (Python/FastAPI):** A powerful, headless data processing application that performs all heavy lifting and exposes its capabilities via a JSON API.
-2.  **THE COCKPIT (Vanilla JS):** A lightweight, single-page web application that serves as the project's primary user interface. It is a pure client of The Engine.
+```
+[ PYTHON SERVICE ]      [ RUST ENGINE ]      [ C# DESKTOP APP ]
+ (Collection)           (Analysis)           (Display)
+       |                      |                      |
+       +----------------------+----------------------+\
+                              |
+                     [ SQLite DATABASE ]
+                          (The Bridge)
+```
 
-## Getting Started
+1.  **The Collection Corps (Python Service):** A robust, silent Windows service responsible for all data collection. It uses a fleet of concurrent adapters to fetch data from numerous sources, analyzes it, and writes the final, clean results to a central SQLite database.
 
-The application is designed to be run as a local web server.
+2.  **The Analysis Core (Rust Engine):** A compiled, memory-safe, hyper-performance library for all heavy computational tasks. It will be called by the C# application to perform instantaneous re-analysis, filtering, and eventually, machine learning inference.
 
-1.  **Install Dependencies:**
-    ```bash
-    pip install -r checkmate_web/requirements.txt
-    ```
-2.  **Run the Web Server:**
-    ```bash
-    cd checkmate_web
-    uvicorn main:app --reload
-    ```
-3.  **Access the Cockpit:**
-    Open a web browser and navigate to `http://127.0.0.1:8000`.
+3.  **The Command Deck (C# Desktop App):** A rich, native Windows desktop application for all display and user interaction. It reads pre-analyzed data from the SQLite database with near-zero latency, providing a fluid, real-time user experience.
 
 ## Project Status
 
-The project is currently executing **Phase 1 of ROADMAP V6.0: "The Engine Room."** The immediate goal is to stand up the core FastAPI server and port our perfected portable engine logic into a modular, web-ready format.
+-   **[COMPLETED]** Phase 1: The Collection Corps (Python Service)
+-   **[PENDING]** Phase 2: The Analysis Core (Rust Engine)
+-   **[PENDING]** Phase 3: The Command Deck (C# Desktop App)
