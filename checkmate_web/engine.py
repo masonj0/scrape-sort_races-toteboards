@@ -5,6 +5,7 @@ import logging
 import json
 import subprocess
 import concurrent.futures
+import time
 from abc import ABC, abstractmethod
 from typing import List, Union, Optional, Dict
 from datetime import date, datetime, timedelta
@@ -316,7 +317,7 @@ class TrifectaAnalyzer:
 
         return {"qualified": score >= settings.QUALIFICATION_SCORE, "checkmateScore": score, "trifectaFactors": trifecta_factors}
 
-# --- Orchestrators with ENHANCED LOGGING ---
+# --- Orchestrators with ENHANCED STATUS REPORTING ---
 PRODUCTION_ADAPTERS = [TVGAdapter, BetfairExchangeAdapter, PointsBetAdapter]
 RESULTS_ADAPTERS = [TVGResultsAdapter]
 
@@ -329,15 +330,33 @@ class DataSourceOrchestrator:
     def _fetch_from_adapter(self, adapter: BaseAdapterV7):
         adapter_id = adapter.__class__.__name__
         self.logger.info(f"Fetching upcoming races from {adapter_id}...")
+        start_time = time.monotonic()
         try:
             races = adapter.fetch_races()
-            notes = f"Successfully parsed {len(races)} races." if races else "No upcoming races found."
-            status = {"adapter_id": adapter_id, "status": "OK", "races_found": len(races), "notes": notes, "error_message": None}
-            self.logger.info(f"Successfully fetched from {adapter_id}. Found {len(races)} races.")
+            end_time = time.monotonic()
+            status = {
+                "adapter_id": adapter_id,
+                "status": "OK",
+                "races_found": len(races),
+                "notes": f"Successfully parsed {len(races)} races.",
+                "error_message": None,
+                "response_time": end_time - start_time,
+                "timestamp": datetime.now().isoformat()
+            }
+            self.logger.info(f"Success from {adapter_id} in {status['response_time']:.2f}s. Found {len(races)} races.")
             return races, status
         except Exception as e:
+            end_time = time.monotonic()
             self.logger.error(f"Error fetching from {adapter_id}: {e}", exc_info=True)
-            status = {"adapter_id": adapter_id, "status": "ERROR", "error_message": str(e), "races_found": 0}
+            status = {
+                "adapter_id": adapter_id,
+                "status": "ERROR",
+                "races_found": 0,
+                "notes": "An exception occurred during fetch.",
+                "error_message": str(e),
+                "response_time": end_time - start_time,
+                "timestamp": datetime.now().isoformat()
+            }
             return [], status
 
     def get_races(self) -> tuple[list[Race], list[dict]]:
@@ -365,15 +384,33 @@ class ResultsOrchestrator:
     def _fetch_from_adapter(self, adapter: BaseResultsAdapterV1):
         adapter_id = adapter.__class__.__name__
         self.logger.info(f"Fetching race results from {adapter_id}...")
+        start_time = time.monotonic()
         try:
             results = adapter.fetch_results()
-            notes = f"Successfully parsed {len(results)} results." if results else "No results found."
-            status = {"adapter_id": adapter_id, "status": "OK", "results_found": len(results), "notes": notes}
-            self.logger.info(f"Successfully fetched from {adapter_id}. Found {len(results)} results.")
+            end_time = time.monotonic()
+            status = {
+                "adapter_id": adapter_id,
+                "status": "OK",
+                "results_found": len(results),
+                "notes": f"Successfully parsed {len(results)} results.",
+                "error_message": None,
+                "response_time": end_time - start_time,
+                "timestamp": datetime.now().isoformat()
+            }
+            self.logger.info(f"Success from {adapter_id} in {status['response_time']:.2f}s. Found {len(results)} results.")
             return results, status
         except Exception as e:
+            end_time = time.monotonic()
             self.logger.error(f"Error fetching results from {adapter_id}: {e}", exc_info=True)
-            status = {"adapter_id": adapter_id, "status": "ERROR", "error_message": str(e), "results_found": 0}
+            status = {
+                "adapter_id": adapter_id,
+                "status": "ERROR",
+                "results_found": 0,
+                "notes": "An exception occurred during fetch.",
+                "error_message": str(e),
+                "response_time": end_time - start_time,
+                "timestamp": datetime.now().isoformat()
+            }
             return [], status
 
     def get_results(self) -> tuple[list[RaceResult], list[dict]]:

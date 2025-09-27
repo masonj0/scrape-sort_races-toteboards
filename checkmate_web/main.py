@@ -8,17 +8,22 @@ import asyncio
 import json
 from datetime import datetime
 from typing import Dict, List
-import logging # Ensure logging is imported
+import logging
+from pathlib import Path
 
 # Import the new setup_logging function
 from engine import (DataSourceOrchestrator, TrifectaAnalyzer, Settings,
                     Race, RaceDataSchema, HorseSchema, setup_logging)
 
+# --- Path Setup ---
+# Ensures the script can be run from any directory
+APP_DIR = Path(__file__).parent
+STATIC_DIR = APP_DIR / "static"
+INDEX_HTML = STATIC_DIR / "index.html"
+
 # --- FastAPI App Setup ---
 app = FastAPI(title="Checkmate Live Racing Analysis")
-app.mount("/static", StaticFiles(directory="static"), name="static")
-
-# ... (CORS middleware would go here if it were active)
+app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
 # --- Global State ---
 CACHE = {
@@ -37,15 +42,15 @@ def convert_race_to_schema(race: Race) -> RaceDataSchema:
 async def fetch_and_analyze_races():
     if CACHE["is_fetching"]: return
     CACHE["is_fetching"] = True
+    logging.info("Initiating data refresh and analysis cycle...")
     try:
         raw_races, adapter_statuses = orchestrator.get_races()
         CACHE["races"] = raw_races
-        CACHE["adapter_status"] = adapter_statuses
+        CACHE["adapter_status"] = adapter_statuses # Now contains richer data
 
         analysis_results = []
         for race in raw_races:
             race_schema = convert_race_to_schema(race)
-            # Use the single, global settings instance for analysis
             analysis = analyzer.analyze_race(race_schema, settings)
             analysis_results.append({
                 "race_id": race.race_id, "track_name": race.track_name, "race_number": race.race_number,
@@ -56,6 +61,7 @@ async def fetch_and_analyze_races():
             })
         CACHE["analysis_results"] = analysis_results
         CACHE["last_update"] = datetime.now().isoformat()
+        logging.info(f"Data refresh complete. Found {len(raw_races)} races. Last update: {CACHE['last_update']}")
     finally:
         CACHE["is_fetching"] = False
 
@@ -70,7 +76,7 @@ async def startup_event():
 # --- API Endpoints ---
 @app.get("/", response_class=HTMLResponse)
 async def serve_frontend():
-    with open("static/index.html", "r") as f: return HTMLResponse(content=f.read())
+    with open(INDEX_HTML, "r") as f: return HTMLResponse(content=f.read())
 
 @app.get("/api/status")
 async def get_system_status():
