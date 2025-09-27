@@ -1,32 +1,19 @@
-# Checkmate V7: The Live Cockpit
+# Checkmate V8: Windows Hybrid Architecture
 
-This project is a real-time, web-based horse racing analysis engine. It leverages a powerful, battle-tested Python backend to fetch and analyze live data from multiple sources, exposing the results through a lightweight and elegant Vanilla JavaScript frontend.
+This project is a high-performance, single-user desktop application for real-time horse racing analysis. It uses a hybrid architecture to maximize performance and reliability.
 
----
+## Architecture
 
-## Core Concept
+- **Python Backend Service:** A silent Windows service responsible for all data collection, web scraping, and API integration. It writes clean, structured data to a local SQLite database.
+- **C# Desktop Application:** A rich, native Windows desktop application for all analysis, display, and user interaction. It reads data from the SQLite database with near-zero latency, providing an instantaneous user experience.
 
-The architecture is a modern, two-stack system as defined in the `ARCHITECTURAL_MANDATE_V8.1.md`:
+## File Structure
 
-1.  **THE ENGINE (Python/FastAPI):** A powerful, headless data processing application that performs all heavy lifting and exposes its capabilities via a JSON API.
-2.  **THE COCKPIT (Vanilla JS):** A lightweight, single-page web application that serves as the project's primary user interface. It is a pure client of The Engine.
-
-## Getting Started
-
-The application is designed to be run as a local web server.
-
-1.  **Install Dependencies:**
-    ```bash
-    pip install -r checkmate_web/requirements.txt
-    ```
-2.  **Run the Web Server:**
-    ```bash
-    cd checkmate_web
-    uvicorn main:app --reload
-    ```
-3.  **Access the Cockpit:**
-    Open a web browser and navigate to `http://127.0.0.1:8000`.
-
-## Project Status
-
-The project is currently executing **Phase 1 of ROADMAP V6.0: "The Engine Room."** The immediate goal is to stand up the core FastAPI server and port our perfected portable engine logic into a modular, web-ready format.
+```
+/ (Repo Root)
+├── python_service/         # The complete Python backend
+│   ├── service.py
+│   ├── engine.py
+│   └── requirements.txt
+└── README.md
+```
