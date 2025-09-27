@@ -33,4 +33,5 @@ CREATE TABLE events (
     timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
     payload TEXT
 );
+
 ```

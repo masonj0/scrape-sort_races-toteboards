@@ -107,3 +107,4 @@ class TrifectaAnalyzer:
         race.checkmate_score = 50.0 # Dummy score
         race.is_qualified = race.checkmate_score >= settings.QUALIFICATION_SCORE
         return race
+
