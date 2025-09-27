@@ -1,32 +1,36 @@
-# Checkmate V7: The Live Cockpit
+# Checkmate V8: Windows Hybrid Architecture (Hardened)
 
-This project is a real-time, web-based horse racing analysis engine. It leverages a powerful, battle-tested Python backend to fetch and analyze live data from multiple sources, exposing the results through a lightweight and elegant Vanilla JavaScript frontend.
+This project is a high-performance desktop application for real-time horse racing analysis, built on a hardened, reliable hybrid architecture.
 
----
+## Core Principles
 
-## Core Concept
+1.  **Reliable Trigger:** Communication between the Python backend and C# frontend is handled via a database `events` table, not an unreliable file watcher.
+2.  **Engine Does the Thinking:** The Python service performs all heavy computation (fetching, parsing, scoring). The C# app is a pure, high-speed display client for pre-calculated results.
+3.  **Assume Failure:** All components are built with resilience, including database retry logic, full asynchronicity, and structured logging.
 
-The architecture is a modern, two-stack system as defined in the `ARCHITECTURAL_MANDATE_V8.1.md`:
+## Architecture
 
-1.  **THE ENGINE (Python/FastAPI):** A powerful, headless data processing application that performs all heavy lifting and exposes its capabilities via a JSON API.
-2.  **THE COCKPIT (Vanilla JS):** A lightweight, single-page web application that serves as the project's primary user interface. It is a pure client of The Engine.
+- **Python Backend Service:** A silent service for data collection and analysis. It writes fully analyzed results (including scores) to a local SQLite database.
+- **C# Desktop Application:** A native Windows app for ultra-fast display of pre-calculated data.
 
-## Getting Started
+## Database Schema
 
-The application is designed to be run as a local web server.
+```sql
+CREATE TABLE live_races (
+    race_id TEXT PRIMARY KEY,
+    track_name TEXT,
+    post_time DATETIME,
+    source TEXT,
+    checkmate_score REAL, -- Pre-calculated by Python
+    qualified INTEGER,    -- Pre-calculated by Python
+    data_json TEXT,
+    updated_at DATETIME
+);
 
-1.  **Install Dependencies:**
-    ```bash
-    pip install -r checkmate_web/requirements.txt
-    ```
-2.  **Run the Web Server:**
-    ```bash
-    cd checkmate_web
-    uvicorn main:app --reload
-    ```
-3.  **Access the Cockpit:**
-    Open a web browser and navigate to `http://127.0.0.1:8000`.
-
-## Project Status
-
-The project is currently executing **Phase 1 of ROADMAP V6.0: "The Engine Room."** The immediate goal is to stand up the core FastAPI server and port our perfected portable engine logic into a modular, web-ready format.
+CREATE TABLE events (
+    event_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    event_type TEXT NOT NULL,
+    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+    payload TEXT
+);
+```
