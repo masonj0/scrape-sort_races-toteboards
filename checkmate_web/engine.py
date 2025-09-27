@@ -1,5 +1,5 @@
 # engine.py
-# Upgraded with Pydantic Settings and Concurrent Fetching
+# Upgraded with Historian Schema for Race Results
 
 import logging
 import json
@@ -7,7 +7,7 @@ import subprocess
 import concurrent.futures
 from abc import ABC, abstractmethod
 from typing import List, Union, Optional, Dict
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from pydantic_settings import BaseSettings
 from pydantic import BaseModel, Field
 from bs4 import BeautifulSoup
@@ -53,6 +53,22 @@ class RaceDataSchema(BaseModel):
     postTime: Optional[str] = None
     horses: List[HorseSchema]
 
+# --- New Historian Schema ---
+class RunnerResult(BaseModel):
+    name: str
+    finishing_position: int
+    program_number: Optional[int] = None
+    odds: Optional[float] = None
+
+class RaceResult(BaseModel):
+    race_id: str
+    track_name: str
+    race_number: int
+    race_date: date
+    results: List[RunnerResult]
+    source: str
+
+
 # --- Base Fetcher & Adapters ---
 class DefensiveFetcher:
     def get(self, url: str, response_type: str = 'auto', headers: Optional[Dict[str, str]] = None) -> Union[dict, str, None]:
@@ -85,8 +101,11 @@ class BaseAdapterV7(ABC):
     def fetch_races(self) -> List[Race]:
         raise NotImplementedError
 
-def _convert_odds_to_float(odds_str: Optional[str]) -> Optional[float]:
-    if not odds_str or not isinstance(odds_str, str): return None
+def _convert_odds_to_float(odds_str: Optional[Union[str, float]]) -> Optional[float]:
+    if isinstance(odds_str, float):
+        return odds_str
+    if not odds_str or not isinstance(odds_str, str):
+        return None
     odds_str = odds_str.strip().upper()
     if odds_str in ['SP', 'SCRATCHED']: return None
     if odds_str in ['EVS', 'EVENS']: return 2.0
@@ -118,7 +137,7 @@ class TVGAdapter(BaseAdapterV7):
         try:
             num, den = map(int, odds_data['morningLine'].split('/'))
             return (num / den) + 1.0
-        except (ValueError, TypeError, ZeroDivisionError): return None
+        except (Value9 rror, TypeError, ZeroDivisionError): return None
 
 class BetfairExchangeAdapter(BaseAdapterV7):
     SOURCE_ID = "betfair_exchange"
@@ -127,18 +146,14 @@ class BetfairExchangeAdapter(BaseAdapterV7):
         races = []
         endpoint = "https://ero.betfair.com/www/sports/exchange/readonly/v1/bymarket?alt=json&filter=canonical&maxResults=25&rollupLimit=2&types=EVENT,MARKET_DESCRIPTION,RUNNER_DESCRIPTION,RUNNER_EXCHANGE_PRICES_BEST,MARKET_STATE&marketProjection=EVENT,MARKET_START_TIME,RUNNER_DESCRIPTION&eventTypeIds=7"
         try:
-            logging.info(f"Trying Betfair endpoint: {endpoint}")
             data = self.fetcher.get(endpoint, response_type='json', headers={'Accept': 'application/json'})
             if data:
                 parsed_races = self._parse_betfair_races(data)
                 if parsed_races:
                     races.extend(parsed_races)
-                    logging.info(f"Betfair: Successfully parsed {len(parsed_races)} races")
         except Exception as e:
             logging.warning(f"Betfair endpoint failed: {e}")
-
-        for race in races:
-            race.source = self.SOURCE_ID
+        for race in races: race.source = self.SOURCE_ID
         return races
 
     def _parse_betfair_races(self, data: dict) -> List[Race]:
@@ -165,16 +180,52 @@ class BetfairExchangeAdapter(BaseAdapterV7):
                         if time_field:
                             try: start_time = datetime.fromisoformat(time_field.replace('Z', '+00:00'))
                             except: pass
-                        race = Race(
-                            race_id=f"betfair_{market.get('marketId', 'unknown')}",
-                            track_name=event.get('venue', 'Betfair Exchange'),
-                            post_time=start_time,
-                            race_number=int(event.get('eventName', '0').split('R')[-1]) if 'R' in event.get('eventName', '') else None,
-                            runners=runners
-                        )
+                         race = Race(race_id=f"betfair_{market.get('marketId', 'unknown')}", track_name=event.get('venue', 'Betfair Exchange'), post_time=start_time, race_number=int(event.get('eventName', '0').split('R')[-1]) if 'R' in event.get('eventName', '') else None, runners=runners)
                         races.append(race)
-        except Exception as e:
-            logging.error(f"Error parsing Betfair data structure: {e}")
+        except Exception as e: logging.error(f"Error parsing Betfair data structure: {e}")
+        return races
+
+class PointsBetAdapter(BaseAdapterV7):
+    SOURCE_ID = "pointsbet"
+    BASE_URL = "https://api.nj.pointsbet.com/api/v2/sports/horse-racing/events/upcoming?page=1"
+
+    def fetch_races(self) -> List[Race]:
+        response_data = self.fetcher.get(self.BASE_URL, response_type='json')
+        if not response_data or not response_data.get('events'):
+            return []
+
+        races = []
+        for event in response_data['events']:
+            try:
+                if not event.get('winPlaceOddsAvailable'):
+                    continue
+
+                runners = []
+                for outcome in event.get('fixedPrice', {}).get('outcomes', []):
+                    if outcome.get('outcomeType') != 'Win':
+                        continue
+                    runners.append(Runner(
+                        name=outcome.get('name', 'Unknown'),
+                        odds=_convert_odds_to_float(outcome.get('price'))
+                    ))
+
+                if len(runners) < 3:
+                    continue
+
+                start_time = datetime.fromisoformat(event['startsAt'].replace('Z', '+00:00')) if event.get('startsAt') else None
+
+                race = Race(
+                    race_id=f"pointsbet_{event.get('key', 'unknown')}",
+                    track_name=event.get('competitionName', 'Unknown Track'),
+                    race_number=event.get('eventNumber'),
+                    post_time=start_time,
+                    runners=runners,
+                    source=self.SOURCE_ID
+                )
+                races.append(race)
+            except Exception as e:
+                logging.warning(f"Skipping malformed PointsBet event: {e}")
+                continue
         return races
 
 # --- Trifecta Analyzer ---
@@ -213,7 +264,8 @@ class TrifectaAnalyzer:
         return {"qualified": score >= settings.QUALIFICATION_SCORE, "checkmateScore": score, "trifectaFactors": trifecta_factors}
 
 # --- Orchestrator ---
-PRODUCTION_ADAPTERS = [TVGAdapter, BetfairExchangeAdapter]
+ 
+PRODUCTION_ADAPTERS = [TVGAdapter, BetfairExchangeAdapter, PointsBetAdapter]
 
 class DataSourceOrchestrator:
     def __init__(self):
@@ -247,3 +299,4 @@ class DataSourceOrchestrator:
                     adapter_id = adapter.__class__.__name__
                     statuses.append({"adapter_id": adapter_id, "status": "ERROR", "error_message": str(e), "races_found": 0})
         return all_races, statuses
+  
