@@ -1,5 +1,5 @@
 # engine.py
-# Upgraded with Pydantic Settings, Concurrent Fetching, and PointsBet Adapter
+# Upgraded with Historian Schema for Race Results
 
 import logging
 import json
@@ -52,6 +52,21 @@ class RaceDataSchema(BaseModel):
     raceNumber: Optional[int] = None
     postTime: Optional[str] = None
     horses: List[HorseSchema]
+
+# --- New Historian Schema ---
+class RunnerResult(BaseModel):
+    name: str
+    finishing_position: int
+    program_number: Optional[int] = None
+    odds: Optional[float] = None
+
+class RaceResult(BaseModel):
+    race_id: str
+    track_name: str
+    race_number: int
+    race_date: date
+    results: List[RunnerResult]
+    source: str
 
 # --- Base Fetcher & Adapters ---
 class DefensiveFetcher:
