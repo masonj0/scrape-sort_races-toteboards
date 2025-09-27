@@ -34,8 +34,7 @@ settings = Settings()
 orchestrator = DataSourceOrchestrator()
 analyzer = TrifectaAnalyzer()
 
-# --- Core Functions ---
-def convert_race_to_schema(race: Race) -> RaceDataSchema:
+# --- Core Functions ---def convert_race_to_schema(race: Race) -> RaceDataSchema:
     horses = [HorseSchema(name=r.name, number=r.program_number, odds=r.odds) for r in race.runners if r.odds is not None]
     return RaceDataSchema(id=race.race_id, track=race.track_name, raceNumber=race.race_number, postTime=race.post_time.isoformat() if race.post_time else None, horses=horses)
 
