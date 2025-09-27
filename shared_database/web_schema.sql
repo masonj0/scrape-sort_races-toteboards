@@ -20,3 +20,11 @@ CREATE TABLE web_alerts (
     alert_type TEXT, -- 'high_score', 'custom'
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
+
+-- RELIABLE TRIGGER TABLE FOR REAL-TIME WEB UPDATES
+CREATE TABLE events (
+    event_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    event_type TEXT NOT NULL,
+    payload TEXT,
+    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+);
