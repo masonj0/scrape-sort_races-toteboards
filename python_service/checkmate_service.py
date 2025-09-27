@@ -23,18 +23,24 @@ class DatabaseHandler:
 
     def _setup_database(self):
         try:
-            # Construct a robust path to the schema file
+            # Construct robust paths to both schema files
             base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
             schema_path = os.path.join(base_dir, 'shared_database', 'schema.sql')
+            web_schema_path = os.path.join(base_dir, 'shared_database', 'web_schema.sql')
+
             with open(schema_path, 'r') as f:
                 schema = f.read()
+            with open(web_schema_path, 'r') as f:
+                web_schema = f.read()
+
             with self._get_connection() as conn:
                 cursor = conn.cursor()
                 cursor.executescript(schema)
+                cursor.executescript(web_schema)
                 conn.commit()
-            self.logger.info(f"Database schema applied successfully from {schema_path}.")
+            self.logger.info(f"Database schemas applied successfully from {schema_path} and {web_schema_path}.")
         except Exception as e:
-            self.logger.critical(f"FATAL: Could not set up database from schema file: {e}", exc_info=True)
+            self.logger.critical(f"FATAL: Could not set up database from schema files: {e}", exc_info=True)
             raise
 
     def update_races_and_status(self, races: List[Race], statuses: List[dict]):
@@ -58,6 +64,12 @@ class DatabaseHandler:
                     status.get('adapter_id'), status.get('status'), status.get('timestamp'),
                     status.get('races_found'), status.get('error_message'), int(status.get('response_time', 0) * 1000)
                 ))
+
+            # Fire the reliable trigger for the web API if new data was processed
+            if races or statuses:
+                cursor.execute("INSERT INTO events (event_type, payload) VALUES (?, ?)",
+                               ('RACES_UPDATED', json.dumps({'race_count': len(races)})))
+
             conn.commit()
         self.logger.info(f"Database updated with {len(races)} races and {len(statuses)} adapter statuses.")
 

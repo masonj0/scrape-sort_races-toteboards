@@ -1,6 +1,4 @@
 # main.py
-# Upgraded to activate centralized logging on startup
-
 from fastapi import FastAPI, HTTPException, BackgroundTasks
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse
@@ -9,23 +7,12 @@ import json
 from datetime import datetime
 from typing import Dict, List
 import logging
-from pathlib import Path
 
-# Import the new setup_logging function
-from engine import (DataSourceOrchestrator, TrifectaAnalyzer, Settings,
-                    Race, RaceDataSchema, HorseSchema, setup_logging)
+from engine import DataSourceOrchestrator, TrifectaAnalyzer, Settings, Race, RaceDataSchema, HorseSchema
 
-# --- Path Setup ---
-# Ensures the script can be run from any directory
-APP_DIR = Path(__file__).parent
-STATIC_DIR = APP_DIR / "static"
-INDEX_HTML = STATIC_DIR / "index.html"
-
-# --- FastAPI App Setup ---
 app = FastAPI(title="Checkmate Live Racing Analysis")
-app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
-# --- Global State ---
 CACHE = {
     "last_update": None, "races": [], "adapter_status": [],
     "analysis_results": [], "is_fetching": False
@@ -34,22 +21,22 @@ settings = Settings()
 orchestrator = DataSourceOrchestrator()
 analyzer = TrifectaAnalyzer()
 
-# --- Core Functions ---def convert_race_to_schema(race: Race) -> RaceDataSchema:
+def convert_race_to_schema(race: Race) -> RaceDataSchema:
     horses = [HorseSchema(name=r.name, number=r.program_number, odds=r.odds) for r in race.runners if r.odds is not None]
     return RaceDataSchema(id=race.race_id, track=race.track_name, raceNumber=race.race_number, postTime=race.post_time.isoformat() if race.post_time else None, horses=horses)
 
 async def fetch_and_analyze_races():
     if CACHE["is_fetching"]: return
     CACHE["is_fetching"] = True
-    logging.info("Initiating data refresh and analysis cycle...")
     try:
         raw_races, adapter_statuses = orchestrator.get_races()
         CACHE["races"] = raw_races
-        CACHE["adapter_status"] = adapter_statuses # Now contains richer data
+        CACHE["adapter_status"] = adapter_statuses
 
         analysis_results = []
         for race in raw_races:
             race_schema = convert_race_to_schema(race)
+            # Use the single, global settings instance for analysis
             analysis = analyzer.analyze_race(race_schema, settings)
             analysis_results.append({
                 "race_id": race.race_id, "track_name": race.track_name, "race_number": race.race_number,
@@ -60,22 +47,16 @@ async def fetch_and_analyze_races():
             })
         CACHE["analysis_results"] = analysis_results
         CACHE["last_update"] = datetime.now().isoformat()
-        logging.info(f"Data refresh complete. Found {len(raw_races)} races. Last update: {CACHE['last_update']}")
     finally:
         CACHE["is_fetching"] = False
 
-# --- Application Events ---
 @app.on_event("startup")
 async def startup_event():
-    """On startup, configure logging and fetch initial data."""
-    setup_logging() # ACTIVATE THE CONTROL TOWER
-    logging.info("Checkmate Live Cockpit server starting up...")
     asyncio.create_task(fetch_and_analyze_races())
 
-# --- API Endpoints ---
 @app.get("/", response_class=HTMLResponse)
 async def serve_frontend():
-    with open(INDEX_HTML, "r") as f: return HTMLResponse(content=f.read())
+    with open("static/index.html", "r") as f: return HTMLResponse(content=f.read())
 
 @app.get("/api/status")
 async def get_system_status():
