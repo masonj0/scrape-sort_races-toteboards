@@ -170,6 +170,7 @@ class CheckmateApp {
             this.renderAdapterStatus(data.adapters);
         } catch (error) {
             console.error('Adapter status loading failed:', error);
+            document.getElementById('adapter-status').innerHTML = `<div class="empty-state error"><i class="fas fa-broadcast-tower"></i><h3>Connection Failure</h3><p>Could not load adapter status from the server.</p></div>`;
         }
     }
 
@@ -181,15 +182,34 @@ class CheckmateApp {
         }
         container.innerHTML = adapters.map(adapter => {
             const isOk = adapter.status === 'OK';
+            const responseTime = adapter.response_time ? `${adapter.response_time.toFixed(2)}s` : 'N/A';
+            const lastUpdate = adapter.timestamp ? new Date(adapter.timestamp).toLocaleTimeString() : 'N/A';
+
             return `
             <div class="adapter-card ${isOk ? 'ok' : 'error'}">
                 <div class="adapter-header">
-                    <h3>${adapter.adapter_id}</h3>
+                    <h3><i class="fas fa-satellite-dish"></i> ${adapter.adapter_id}</h3>
                     <div class="status-indicator ${isOk ? 'ok' : 'error'}">
                         <i class="fas ${isOk ? 'fa-check-circle' : 'fa-exclamation-triangle'}"></i> ${adapter.status}
                     </div>
                 </div>
-                <div class="adapter-notes">${adapter.notes || (isOk ? 'No notes.' : adapter.error_message)}</div>
+                <div class="adapter-body">
+                    <div class="adapter-stats">
+                        <div class="stat-item"><strong>Races Found:</strong> <span>${adapter.races_found !== undefined ? adapter.races_found : adapter.results_found}</span></div>
+                        <div class="stat-item"><strong>Response Time:</strong> <span>${responseTime}</span></div>
+                    </div>
+                    <div class="adapter-notes">
+                        <p>${adapter.notes || 'No notes available.'}</p>
+                    </div>
+                    ${!isOk && adapter.error_message ? `
+                    <div class="error-details">
+                        <strong>Error:</strong> ${adapter.error_message}
+                    </div>
+                    ` : ''}
+                </div>
+                <div class="adapter-footer">
+                    <span>Last Update: ${lastUpdate}</span>
+                </div>
             </div>
         `}).join('');
     }
