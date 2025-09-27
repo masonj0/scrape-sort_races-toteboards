@@ -41,5 +41,5 @@ def test_fetch_races_end_to_end(adapter, mock_fetcher, mock_csv_data):
     assert len(races[0].runners) == 3
     assert races[1].race_id == "1.456"
     assert len(races[1].runners) == 2
-    assert races[0].runners[0].name == "1001.0"
+    assert races[0].runners[0].name == "1001"
     assert races[0].runners[0].odds == 1.5
