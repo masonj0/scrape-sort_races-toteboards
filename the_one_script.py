@@ -60,7 +60,20 @@ class DatabaseHandler:
         return sqlite3.connect(self.db_path, timeout=10)
 
     def _setup_database(self):
-        schema = """CREATE TABLE IF NOT EXISTS live_races (race_id TEXT PRIMARY KEY, track_name TEXT NOT NULL, race_number INTEGER, post_time DATETIME, raw_data_json TEXT, checkmate_score REAL NOT NULL, qualified BOOLEAN NOT NULL, trifecta_factors_json TEXT, updated_at DATETIME DEFAULT CURRENT_TIMESTAMP); CREATE INDEX IF NOT EXISTS idx_races_qualified_score ON live_races(qualified, checkmate_score DESC);"""
+        schema = """
+        CREATE TABLE IF NOT EXISTS live_races (
+            race_id TEXT PRIMARY KEY,
+            track_name TEXT NOT NULL,
+            race_number INTEGER,
+            post_time DATETIME,
+            raw_data_json TEXT,
+            checkmate_score REAL NOT NULL,
+            qualified BOOLEAN NOT NULL,
+            trifecta_factors_json TEXT,
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        );
+        CREATE INDEX IF NOT EXISTS idx_races_qualified_score ON live_races(qualified, checkmate_score DESC);
+        """
         try:
             with self._get_connection() as conn:
                 conn.executescript(schema)
@@ -147,7 +160,7 @@ class EnhancedBetfairAdapter(BaseAdapterV8):
         if not data: return []
         races = []
         try:
-            event_nodes = data.get('eventTypes', [{}]).get('eventNodes', [])
+            event_nodes = data.get('eventTypes', [{}])[0].get('eventNodes', [])
             for event_node in event_nodes[:3]:
                 event = event_node.get('event', {})
                 for market_node in event_node.get('marketNodes', []):
@@ -159,7 +172,7 @@ class EnhancedBetfairAdapter(BaseAdapterV8):
                             odds = None
                             if 'exchange' in runner:
                                 available_to_back = runner['exchange'].get('availableToBack', [])
-                                if available_to_back: odds = available_to_back.get('price')
+                                if available_to_back: odds = available_to_back[0].get('price')
                             if odds: runners.append(Runner(name=runner.get('description', {}).get('runnerName', 'Unknown'), odds=odds))
                     if len(runners) >= 3:
                         races.append(Race(race_id=f"betfair_{market.get('marketId', 'unknown')}", track_name=event.get('venue', 'Betfair Exchange'), runners=runners, source=self.SOURCE_ID))
@@ -197,7 +210,7 @@ class EnhancedTrifectaAnalyzer:
         else: p, ok, r = self.settings.FIELD_SIZE_PENALTY_POINTS, False, f"Field size not ideal ({num_runners})"
         score += p; factors["fieldSize"] = {"points": p, "ok": ok, "reason": r}
         if num_runners >= 2:
-            fav, sec_fav = horses_with_odds, horses_with_odds
+            fav, sec_fav = horses_with_odds[0], horses_with_odds[1]
             if fav.odds <= self.settings.MAX_FAV_ODDS: p, ok, r = self.settings.FAV_ODDS_POINTS, True, f"Favorite odds OK ({fav.odds:.2f})"
             else: p, ok, r = 0, False, f"Favorite odds too high ({fav.odds:.2f})"
             score += p; factors["favoriteOdds"] = {"points": p, "ok": ok, "reason": r}
