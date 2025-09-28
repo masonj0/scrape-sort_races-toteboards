@@ -1,5 +1,5 @@
 # checkmate_service.py
-# The main service runner, upgraded to the final Endgame architecture.
+# The restored, correct, and complete version of the main service runner.
 
 import time
 import logging
@@ -8,7 +8,7 @@ import json
 import os
 import threading
 from datetime import datetime
-from .engine import SuperchargedOrchestrator, EnhancedTrifectaAnalyzer, Settings, Race
+from engine import SuperchargedOrchestrator, EnhancedTrifectaAnalyzer, Settings, Race
 from typing import List
 
 class DatabaseHandler:
@@ -22,7 +22,6 @@ class DatabaseHandler:
 
     def _setup_database(self):
         try:
-            # Construct robust paths to both schema files
             base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
             schema_path = os.path.join(base_dir, 'shared_database', 'schema.sql')
             web_schema_path = os.path.join(base_dir, 'shared_database', 'web_schema.sql')
@@ -37,7 +36,7 @@ class DatabaseHandler:
                 cursor.executescript(schema)
                 cursor.executescript(web_schema)
                 conn.commit()
-            self.logger.info(f"Database schemas applied successfully from {schema_path} and {web_schema_path}.")
+            self.logger.info(f"Database schemas applied successfully.")
         except Exception as e:
             self.logger.critical(f"FATAL: Could not set up database from schema files: {e}", exc_info=True)
             raise
@@ -66,7 +65,7 @@ class DatabaseHandler:
 
             if races or statuses:
                 cursor.execute("INSERT INTO events (event_type, payload) VALUES (?, ?)",
-                               ('RACES_UPDATED', json.dumps({'race_count': len(races)})))
+                             ('RACES_UPDATED', json.dumps({'race_count': len(races)})))
 
             conn.commit()
         self.logger.info(f"Database updated with {len(races)} races and {len(statuses)} adapter statuses.")
@@ -74,14 +73,15 @@ class DatabaseHandler:
 class CheckmateBackgroundService:
     def __init__(self):
         self.settings = Settings()
-        self.db_handler = DatabaseHandler(os.path.join(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')), "shared_database", "races.db"))
+        db_path = os.path.join(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')), "shared_database", "races.db")
+        self.db_handler = DatabaseHandler(db_path)
         self.orchestrator = SuperchargedOrchestrator(self.settings)
         self.analyzer = EnhancedTrifectaAnalyzer(self.settings)
         self.stop_event = threading.Event()
         self.logger = logging.getLogger(self.__class__.__name__)
 
     def run_continuously(self, interval_seconds: int = 60):
-        self.logger.info("Supercharged background service starting continuous run.")
+        self.logger.info("Antifragile Collector Service starting continuous run.")
         while not self.stop_event.is_set():
             self.logger.info("Starting advanced data collection and analysis cycle.")
             try:
@@ -90,50 +90,7 @@ class CheckmateBackgroundService:
                 self.db_handler.update_races_and_status(analyzed_races, statuses)
             except Exception as e:
                 self.logger.critical(f"FATAL error in main service loop: {e}", exc_info=True)
-
             self.stop_event.wait(interval_seconds)
- 
-                    res = results_map[race.race_id]
-                    race.checkmate_score = res.get('checkmate_score')
-                    race.is_qualified = res.get('qualified')
-                    race.trifecta_factors_json = json.dumps(res.get('trifecta_factors'))
-            return races
-        except FileNotFoundError:
-            self.logger.warning("Rust engine not found. Falling back to Python analyzer.")
-            return None
-        except (subprocess.CalledProcessError, json.JSONDecodeError, subprocess.TimeoutExpired) as e:
-            self.logger.error(f"Rust engine execution failed: {e}. Falling back to Python analyzer.")
-            return None
-
-    def _analyze_with_python(self, races: List[Race]) -> List[Race]:
-        self.logger.info("Performing analysis with internal Python engine.")
-        return [self.python_analyzer.analyze_race(race, self.settings) for race in races]
-
-    def run_continuously(self, interval_seconds: int = 60):
-        self.logger.info("Background service thread starting continuous run.")
-
-        while not self.stop_event.is_set():
-            try:
-                self.logger.info("Starting data collection and analysis cycle.")
-                races, statuses = self.orchestrator.get_races()
-
-                analyzed_races = None
-                if os.path.exists(self.rust_engine_path):
-                    analyzed_races = self._analyze_with_rust(races)
-
-                if analyzed_races is None: # Fallback condition
-                    analyzed_races = self._analyze_with_python(races)
-
-                if analyzed_races: # Ensure we have something to update
-                    self.db_handler.update_races_and_status(analyzed_races, statuses)
-
-            except Exception as e:
-                self.logger.critical(f"Unhandled exception in service loop: {e}", exc_info=True)
-
-            self.logger.info(f"Cycle complete. Sleeping for {interval_seconds} seconds.")
-            self.stop_event.wait(interval_seconds)
-        self.logger.info("Background service run loop has terminated.")
- 
 
     def start(self):
         self.stop_event.clear()
