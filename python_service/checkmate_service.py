@@ -1,5 +1,5 @@
 # checkmate_service.py
-# The restored, correct version of the main service runner.
+# The restored, correct, and complete version of the main service runner.
 
 import time
 import logging
@@ -40,8 +40,33 @@ class DatabaseHandler:
             raise
 
     def update_races_and_status(self, races: List[Race], statuses: List[dict]):
-        # ... (full implementation from previous directives)
-        pass
+        with self._get_connection() as conn:
+            cursor = conn.cursor()
+            for race in races:
+                cursor.execute("""
+                    INSERT OR REPLACE INTO live_races
+                    (race_id, track_name, race_number, post_time, raw_data_json, checkmate_score, qualified, trifecta_factors_json, updated_at)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """, (
+                    race.race_id, race.track_name, race.race_number, race.post_time,
+                    race.model_dump_json(), race.checkmate_score, race.is_qualified,
+                    race.trifecta_factors_json, datetime.now()
+                ))
+            for status in statuses:
+                cursor.execute("""
+                    INSERT OR REPLACE INTO adapter_status (adapter_name, status, last_run, races_found, error_message, execution_time_ms)
+                    VALUES (?, ?, ?, ?, ?, ?)
+                """, (
+                    status.get('adapter_id'), status.get('status'), status.get('timestamp'),
+                    status.get('races_found'), status.get('error_message'), int(status.get('response_time', 0) * 1000)
+                ))
+
+            if races or statuses:
+                cursor.execute("INSERT INTO events (event_type, payload) VALUES (?, ?)",
+                             ('RACES_UPDATED', json.dumps({'race_count': len(races)})))
+
+            conn.commit()
+        self.logger.info(f"Database updated with {len(races)} races and {len(statuses)} adapter statuses.")
 
 class CheckmateBackgroundService:
     def __init__(self):
