@@ -92,10 +92,18 @@ class CheckmateBackgroundService:
 
     def _analyze_with_rust(self, races: List[Race]) -> List[Race]:
         self.logger.info(f"Attempting analysis with Rust engine at: {self.rust_engine_path}")
+
+        # FIX: Convert to the simplified format Rust expects
+        simplified_races = [{
+            "race_id": race.race_id,
+            "runners": [{"name": r.name, "odds": r.odds} for r in race.runners]
+        } for race in races]
+
         request_payload = {
-            "races": [race.model_dump() for race in races],
+            "races": simplified_races,
             "settings": self.settings.model_dump()
         }
+
         try:
             result = subprocess.run(
                 [self.rust_engine_path, "--analyze"],

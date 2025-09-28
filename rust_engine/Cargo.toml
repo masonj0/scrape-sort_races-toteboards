@@ -3,10 +3,16 @@ name = "checkmate_engine"
 version = "1.0.0"
 edition = "2021"
 
+[[bin]]
+name = "checkmate_engine"
+path = "src/main.rs"
+
+[lib]
+name = "checkmate_engine_lib"
+path = "src/lib.rs"
+crate-type = ["cdylib"]
+
 [dependencies]
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
-rayon = "1.7"        # Parallel processing
-
-[lib]
-crate-type = ["cdylib"]  # For C# FFI binding
+rayon = "1.7"
