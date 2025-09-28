@@ -1,15 +1,14 @@
 # checkmate_service.py
-# Upgraded with the Rust Interface and a robust fallback system.
+# The main service runner, upgraded to the final Endgame architecture.
 
 import time
 import logging
 import sqlite3
 import json
 import os
-import subprocess
 import threading
 from datetime import datetime
-from .engine import DataSourceOrchestrator, TrifectaAnalyzer, Settings, Race
+from .engine import SuperchargedOrchestrator, EnhancedTrifectaAnalyzer, Settings, Race
 from typing import List
 
 class DatabaseHandler:
@@ -65,7 +64,6 @@ class DatabaseHandler:
                     status.get('races_found'), status.get('error_message'), int(status.get('response_time', 0) * 1000)
                 ))
 
-            # Fire the reliable trigger for the web API if new data was processed
             if races or statuses:
                 cursor.execute("INSERT INTO events (event_type, payload) VALUES (?, ?)",
                                ('RACES_UPDATED', json.dumps({'race_count': len(races)})))
@@ -75,50 +73,26 @@ class DatabaseHandler:
 
 class CheckmateBackgroundService:
     def __init__(self):
-        # Path definitions
-        self.base_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
-        self.db_path = os.path.join(self.base_path, "shared_database", "races.db")
-        self.rust_engine_path = os.path.join(self.base_path, "rust_engine", "checkmate_engine.exe")
-
-        # Core components
-        self.db_handler = DatabaseHandler(self.db_path)
-        self.orchestrator = DataSourceOrchestrator()
-        self.python_analyzer = TrifectaAnalyzer()
         self.settings = Settings()
-
-        # Service control
+        self.db_handler = DatabaseHandler(os.path.join(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')), "shared_database", "races.db"))
+        self.orchestrator = SuperchargedOrchestrator(self.settings)
+        self.analyzer = EnhancedTrifectaAnalyzer(self.settings)
         self.stop_event = threading.Event()
         self.logger = logging.getLogger(self.__class__.__name__)
 
-    def _analyze_with_rust(self, races: List[Race]) -> List[Race]:
-        self.logger.info(f"Attempting analysis with Rust engine at: {self.rust_engine_path}")
+    def run_continuously(self, interval_seconds: int = 60):
+        self.logger.info("Supercharged background service starting continuous run.")
+        while not self.stop_event.is_set():
+            self.logger.info("Starting advanced data collection and analysis cycle.")
+            try:
+                races, statuses = self.orchestrator.get_races_parallel()
+                analyzed_races = [self.analyzer.analyze_race_advanced(race) for race in races]
+                self.db_handler.update_races_and_status(analyzed_races, statuses)
+            except Exception as e:
+                self.logger.critical(f"FATAL error in main service loop: {e}", exc_info=True)
 
-        # FIX: Convert to the simplified format Rust expects
-        simplified_races = [{
-            "race_id": race.race_id,
-            "runners": [{"name": r.name, "odds": r.odds} for r in race.runners]
-        } for race in races]
-
-        request_payload = {
-            "races": simplified_races,
-            "settings": self.settings.model_dump()
-        }
-
-        try:
-            result = subprocess.run(
-                [self.rust_engine_path, "--analyze"],
-                input=json.dumps(request_payload, default=str),
-                text=True,
-                capture_output=True,
-                check=True,
-                timeout=10
-            )
-            response = json.loads(result.stdout)
-            self.logger.info(f"Rust analysis successful. Processed {len(races)} races in {response.get('processing_time_ms')}ms.")
-
-            results_map = {res['race_id']: res for res in response.get('results', [])}
-            for race in races:
-                if race.race_id in results_map:
+            self.stop_event.wait(interval_seconds)
+ 
                     res = results_map[race.race_id]
                     race.checkmate_score = res.get('checkmate_score')
                     race.is_qualified = res.get('qualified')
@@ -159,6 +133,7 @@ class CheckmateBackgroundService:
             self.logger.info(f"Cycle complete. Sleeping for {interval_seconds} seconds.")
             self.stop_event.wait(interval_seconds)
         self.logger.info("Background service run loop has terminated.")
+ 
 
     def start(self):
         self.stop_event.clear()

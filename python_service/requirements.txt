@@ -1,4 +1,13 @@
+# Core Dependencies
 pydantic
 pydantic-settings
 beautifulsoup4
 lxml
+
+# Windows Service
+pywin32
+
+# Enhancements for Supercharged Engine
+cachetools # For in-memory caching in adapters
+requests   # A more robust HTTP client for certain integrations
+
