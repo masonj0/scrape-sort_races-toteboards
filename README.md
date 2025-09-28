@@ -29,4 +29,4 @@ The application is designed to be run as a local web server.
 
 ## Project Status
 
-The project is currently executing **Phase 1 of ROADMAP V6.0: "The Engine Room."** The immediate goal is to stand up the core FastAPI server and port our perfected portable engine logic into a modular, web-ready format.
+This repository currently contains the complete, functional code for the Python Service, the Rust Engine, and the foundational skeleton for the TypeScript Web Platform.

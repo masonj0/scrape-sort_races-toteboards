@@ -134,8 +134,19 @@ fn analyze_single_race(race: &RaceData, settings: &AnalysisSettings) -> Analysis
 #[no_mangle]
 pub extern "C" fn analyze_races_ffi(input_json_ptr: *const c_char) -> *mut c_char {
     let result = panic::catch_unwind(|| {
-        let input_json = unsafe { CStr::from_ptr(input_json_ptr).to_str().unwrap() };
-        let request: RaceAnalysisRequest = serde_json::from_str(input_json).unwrap();
+        // FIX: Safely handle C string conversion
+        let c_str = unsafe { CStr::from_ptr(input_json_ptr) };
+        let input_json = match c_str.to_str() {
+            Ok(s) => s,
+            Err(_) => { return std::ptr::null_mut(); } // Return null on UTF-8 error
+        };
+
+        // FIX: Safely handle JSON deserialization
+        let request: RaceAnalysisRequest = match serde_json::from_str(input_json) {
+            Ok(req) => req,
+            Err(_) => { return std::ptr::null_mut(); } // Return null on JSON error
+        };
+
         let start_time = std::time::Instant::now();
 
         let results: Vec<AnalysisResult> = request.races.par_iter()
@@ -147,7 +158,12 @@ pub extern "C" fn analyze_races_ffi(input_json_ptr: *const c_char) -> *mut c_cha
             processing_time_ms: start_time.elapsed().as_millis(),
         };
 
-        let response_json = serde_json::to_string(&response).unwrap();
+        // FIX: Safely handle JSON serialization
+        let response_json = match serde_json::to_string(&response) {
+            Ok(json) => json,
+            Err(_) => { return std::ptr::null_mut(); }
+        };
+
         CString::new(response_json).unwrap().into_raw()
     });
 
@@ -158,7 +174,7 @@ pub extern "C" fn analyze_races_ffi(input_json_ptr: *const c_char) -> *mut c_cha
 }
 
 #[no_mangle]
-pub extern "C" fn free_rust_string(ptr: *mut c_char) {
+pub extern "C" fn deallocate_rust_string(ptr: *mut c_char) {
     if ptr.is_null() { return; }
     unsafe {
         let _ = CString::from_raw(ptr);

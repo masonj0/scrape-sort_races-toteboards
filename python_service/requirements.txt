@@ -1,12 +1,10 @@
-# Core Dependencies
-pydantic
-pydantic-settings
-beautifulsoup4
-lxml
+# Core Dependencies (Pinned)
+pydantic>=2.0.0,<3.0.0
+pydantic-settings>=2.0.0,<3.0.0
+beautifulsoup4>=4.12.0,<5.0.0
+lxml>=4.9.0,<6.0.0
+cachetools>=5.0.0,<6.0.0
+requests>=2.25.0,<3.0.0
 
-# Windows Service (Not applicable in this environment)
-# pywin32
-
-# NEW: Resilience & Performance Enhancements
-cachetools  # For sophisticated in-memory caching
-requests    # For fallback HTTP client patterns
+# Windows Service (Pinned)
+# pywin32==306
