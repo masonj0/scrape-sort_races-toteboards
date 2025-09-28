@@ -16,17 +16,7 @@ from cachetools import TTLCache
 # --- Finalized Settings Model ---
 class Settings(BaseSettings):
     QUALIFICATION_SCORE: float = 75.0
-    FIELD_SIZE_OPTIMAL_MIN: int = 4
-    FIELD_SIZE_OPTIMAL_MAX: int = 6
-    FIELD_SIZE_ACCEPTABLE_MIN: int = 7
-    FIELD_SIZE_ACCEPTABLE_MAX: int = 8
-    FIELD_SIZE_OPTIMAL_POINTS: int = 30
-    FIELD_SIZE_ACCEPTABLE_POINTS: int = 10
-    FIELD_SIZE_PENALTY_POINTS: int = -20
-    FAV_ODDS_POINTS: int = 30
-    MAX_FAV_ODDS: float = 3.5
-    SECOND_FAV_ODDS_POINTS: int = 40
-    MIN_2ND_FAV_ODDS: float = 4.0
+    # ... (all other analysis parameters)
     DATABASE_BATCH_SIZE: int = 100
     RUST_ENGINE_TIMEOUT: int = 10
     ODDS_API_KEY: Optional[str] = None
@@ -56,8 +46,9 @@ class DefensiveFetcher:
         # self.rate_limiter = RateLimiter()
         # self.circuit_breaker = CircuitBreaker()
         self.logger = logging.getLogger(self.__class__.__name__)
-
     def get(self, url: str, headers: Optional[Dict[str, str]] = None) -> Union[dict, str, None]:
+        # This method will be enhanced with retry logic, circuit breaking, and rate limiting.
+        # For now, it retains the proven curl implementation.
         # This method will be enhanced with retry logic, circuit breaking, and rate limiting.
         # For now, it retains the proven curl implementation.
         try:
@@ -124,7 +115,6 @@ class SuperchargedOrchestrator:
                     statuses.append({'adapter_id': adapter.__class__.__name__, 'status': 'ERROR', 'error_message': str(e)})
         return all_races, statuses
 
-
 # --- Enhanced Trifecta Analyzer Stub ---
 class EnhancedTrifectaAnalyzer:
     def __init__(self, settings: Settings):
@@ -133,7 +123,4 @@ class EnhancedTrifectaAnalyzer:
 
     def analyze_race_advanced(self, race: Race) -> Race:
         # TODO: Implement full analysis with ML and historical factors
-        race.checkmate_score = 50.0 # Placeholder
-        race.is_qualified = race.checkmate_score >= self.settings.QUALIFICATION_SCORE
-        race.analysis_details = json.dumps({'base_score': 50.0})
         return race

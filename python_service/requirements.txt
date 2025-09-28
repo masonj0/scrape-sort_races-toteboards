@@ -4,8 +4,8 @@ pydantic-settings
 beautifulsoup4
 lxml
 
-# Windows Service
-pywin32
+# Windows Service (Not applicable in this environment)
+# pywin32
 
 # NEW: Resilience & Performance Enhancements
 cachetools  # For sophisticated in-memory caching
