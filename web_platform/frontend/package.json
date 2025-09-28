@@ -1,0 +1,21 @@
+{
+  "name": "checkmate-web-platform",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start"
+  },
+  "dependencies": {
+    "next": "14.0.0",
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
+    "typescript": "5.2.0",
+    "@tanstack/react-query": "^5.0.0",
+    "socket.io-client": "^4.7.0",
+    "recharts": "^2.8.0",
+    "framer-motion": "^10.16.0",
+    "tailwindcss": "^3.3.0"
+  }
+}
