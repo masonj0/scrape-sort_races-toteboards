@@ -36,6 +36,7 @@ class Race(BaseModel):
     checkmate_score: Optional[float] = None
     is_qualified: Optional[bool] = None
     analysis_details: Optional[str] = None
+    trifecta_factors_json: Optional[str] = None
 
 # --- Resilient Fetcher ---
 class DefensiveFetcher:
@@ -127,6 +128,7 @@ class SuperchargedOrchestrator:
     def get_races_parallel(self) -> tuple[list[Race], list[dict]]:
         # ... (implementation to be filled in next directive)
         return [], []
+
 
 # --- Enhanced Trifecta Analyzer Stub ---
 class EnhancedTrifectaAnalyzer:

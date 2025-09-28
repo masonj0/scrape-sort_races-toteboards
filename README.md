@@ -1,21 +1,32 @@
-# Checkmate V8: The Quad-Hybrid Architecture
+# Checkmate V7: The Live Cockpit
 
-A professional-grade, multi-platform data analysis system for real-time horse racing. This project utilizes a unique four-part architecture to achieve hyper-performance, robustness, and ubiquitous access.
+This project is a real-time, web-based horse racing analysis engine. It leverages a powerful, battle-tested Python backend to fetch and analyze live data from multiple sources, exposing the results through a lightweight and elegant Vanilla JavaScript frontend.
 
 ---
 
-## Architecture: The Quad-Hybrid System
+## Core Concept
 
-1.  **🐍 The Collection Corps (Python Service):** A robust Windows service for all data collection and orchestration.
-2.  **🦀 The Analysis Core (Rust Engine):** A compiled, memory-safe, parallel-processing library for all heavy computation, providing a 50-100x performance increase.
-3.  **🌐 The Digital Front (TypeScript Web Platform):** A modern, real-time web application for browser-based, multi-user, and mobile access.
-4.  **🖥️ The Command Deck (C# Desktop App):** A native Windows desktop application for power-user features and deep system integration.
+The architecture is a modern, two-stack system as defined in the `ARCHITECTURAL_MANDATE_V8.1.md`:
+
+1.  **THE ENGINE (Python/FastAPI):** A powerful, headless data processing application that performs all heavy lifting and exposes its capabilities via a JSON API.
+2.  **THE COCKPIT (Vanilla JS):** A lightweight, single-page web application that serves as the project's primary user interface. It is a pure client of The Engine.
+
+## Getting Started
+
+The application is designed to be run as a local web server.
+
+1.  **Install Dependencies:**
+    ```bash
+    pip install -r checkmate_web/requirements.txt
+    ```
+2.  **Run the Web Server:**
+    ```bash
+    cd checkmate_web
+    uvicorn main:app --reload
+    ```
+3.  **Access the Cockpit:**
+    Open a web browser and navigate to `http://127.0.0.1:8000`.
 
 ## Project Status
 
--   ✅ **Phase 1: The Collection Corps (Python Service)** - COMPLETED (Production Grade)
--   ✅ **Phase 2: The Analysis Core (Rust Engine)** - COMPLETED (Production Grade)
--   ⚠️ **Phase 3: The Digital Front (TypeScript Web Platform)** - IN PROGRESS
--   ❌ **Phase 4: The Command Deck (C# Desktop App)** - FUTURE ENHANCEMENT
-
-This repository currently contains the complete, functional code for the Python Service, the Rust Engine, and the foundational skeleton for the TypeScript Web Platform.
+The project is currently executing **Phase 1 of ROADMAP V6.0: "The Engine Room."** The immediate goal is to stand up the core FastAPI server and port our perfected portable engine logic into a modular, web-ready format.
