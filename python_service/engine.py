@@ -16,17 +16,6 @@ from cachetools import TTLCache
 # --- Finalized Settings Model ---
 class Settings(BaseSettings):
     QUALIFICATION_SCORE: float = 75.0
-    FIELD_SIZE_OPTIMAL_MIN: int = 4
-    FIELD_SIZE_OPTIMAL_MAX: int = 6
-    FIELD_SIZE_ACCEPTABLE_MIN: int = 7
-    FIELD_SIZE_ACCEPTABLE_MAX: int = 8
-    FIELD_SIZE_OPTIMAL_POINTS: int = 30
-    FIELD_SIZE_ACCEPTABLE_POINTS: int = 10
-    FIELD_SIZE_PENALTY_POINTS: int = -20
-    FAV_ODDS_POINTS: int = 30
-    MAX_FAV_ODDS: float = 3.5
-    SECOND_FAV_ODDS_POINTS: int = 40
-    MIN_2ND_FAV_ODDS: float = 4.0
     DATABASE_BATCH_SIZE: int = 100
     RUST_ENGINE_TIMEOUT: int = 10
     ODDS_API_KEY: Optional[str] = None
@@ -46,6 +35,7 @@ class Race(BaseModel):
     data_quality_score: Optional[float] = None
     checkmate_score: Optional[float] = None
     is_qualified: Optional[bool] = None
+    analysis_details: Optional[str] = None
     trifecta_factors_json: Optional[str] = None
     analysis_details: Optional[str] = None
 
