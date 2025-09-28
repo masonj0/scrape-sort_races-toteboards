@@ -7,7 +7,6 @@ lxml
 # Windows Service
 pywin32
 
-# Enhancements for Supercharged Engine
-cachetools # For in-memory caching in adapters
-requests   # A more robust HTTP client for certain integrations
-
+# NEW: Resilience & Performance Enhancements
+cachetools  # For sophisticated in-memory caching
+requests    # For fallback HTTP client patterns
