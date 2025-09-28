@@ -1,5 +1,4 @@
 pydantic
 pydantic-settings
-pywin32
 beautifulsoup4
 lxml

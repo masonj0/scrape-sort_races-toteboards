@@ -9,7 +9,7 @@ import os
 import subprocess
 import threading
 from datetime import datetime
-from engine import DataSourceOrchestrator, TrifectaAnalyzer, Settings, Race
+from .engine import DataSourceOrchestrator, TrifectaAnalyzer, Settings, Race
 from typing import List
 
 class DatabaseHandler:

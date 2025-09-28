@@ -1,5 +1,5 @@
 -- OPTIMIZED DATABASE SCHEMA FOR HYBRID ARCHITECTURE
-CREATE TABLE live_races (
+CREATE TABLE IF NOT EXISTS live_races (
     race_id TEXT PRIMARY KEY,
     track_name TEXT NOT NULL,
     race_number INTEGER,
@@ -11,7 +11,7 @@ CREATE TABLE live_races (
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE adapter_status (
+CREATE TABLE IF NOT EXISTS adapter_status (
     adapter_name TEXT PRIMARY KEY,
     status TEXT NOT NULL,         -- 'OK', 'ERROR', 'WARNING'
     last_run DATETIME NOT NULL,
@@ -22,10 +22,10 @@ CREATE TABLE adapter_status (
 );
 
 -- PERFORMANCE INDEXES
-CREATE INDEX idx_races_qualified_score ON live_races(qualified, checkmate_score DESC, post_time);
+CREATE INDEX IF NOT EXISTS idx_races_qualified_score ON live_races(qualified, checkmate_score DESC, post_time);
 
 -- CLEANUP TRIGGER (AUTOMATIC OLD DATA REMOVAL)
-CREATE TRIGGER cleanup_old_races
+CREATE TRIGGER IF NOT EXISTS cleanup_old_races
 AFTER INSERT ON live_races
 BEGIN
     DELETE FROM live_races

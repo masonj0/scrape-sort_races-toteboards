@@ -1,5 +1,6 @@
 # engine.py
 # The complete, battle-tested Python engine for the Trading Deck.
+# Hardened adapters to be resilient against non-JSON API responses.
 
 import logging
 import json
@@ -63,7 +64,7 @@ class DefensiveFetcher:
             try:
                 return json.loads(response_text)
             except json.JSONDecodeError:
-                logging.warning(f"Failed to decode JSON from {url}")
+                logging.warning(f"Failed to decode JSON from {url}, returning raw text.")
                 return response_text # Return text as fallback
         except (subprocess.CalledProcessError, subprocess.TimeoutExpired) as e:
             logging.error(f"CRITICAL: curl GET failed for {url}. Details: {e}")
@@ -94,7 +95,9 @@ class TVGAdapter(BaseAdapterV7):
     BASE_URL = "https://mobile-api.tvg.com/api/mobile/races/today"
     def fetch_races(self) -> List[Race]:
         response_data = self.fetcher.get(self.BASE_URL, response_type='json')
-        if not response_data or 'races' not in response_data: return []
+        if not isinstance(response_data, dict) or 'races' not in response_data:
+            logging.warning(f"TVGAdapter received invalid or non-dict data: {type(response_data)}")
+            return []
         all_races = []
         for race_info in response_data.get('races', []):
             try:
@@ -118,9 +121,11 @@ class BetfairExchangeAdapter(BaseAdapterV7):
         endpoint = "https://ero.betfair.com/www/sports/exchange/readonly/v1/bymarket?alt=json&filter=canonical&maxResults=25&rollupLimit=2&types=EVENT,MARKET_DESCRIPTION,RUNNER_DESCRIPTION,RUNNER_EXCHANGE_PRICES_BEST,MARKET_STATE&marketProjection=EVENT,MARKET_START_TIME,RUNNER_DESCRIPTION&eventTypeIds=7"
         try:
             data = self.fetcher.get(endpoint, response_type='json', headers={'Accept': 'application/json'})
-            if data:
-                parsed_races = self._parse_betfair_races(data)
-                if parsed_races: races.extend(parsed_races)
+            if not isinstance(data, dict):
+                logging.warning(f"BetfairExchangeAdapter received invalid or non-dict data: {type(data)}")
+                return []
+            parsed_races = self._parse_betfair_races(data)
+            if parsed_races: races.extend(parsed_races)
         except Exception as e: logging.warning(f"Betfair endpoint failed: {e}")
         for race in races: race.source = self.SOURCE_ID
         return races
@@ -157,7 +162,9 @@ class PointsBetAdapter(BaseAdapterV7):
     BASE_URL = "https://api.nj.pointsbet.com/api/v2/sports/horse-racing/events/upcoming?page=1"
     def fetch_races(self) -> List[Race]:
         response_data = self.fetcher.get(self.BASE_URL, response_type='json')
-        if not response_data or not response_data.get('events'): return []
+        if not isinstance(response_data, dict) or not response_data.get('events'):
+            logging.warning(f"PointsBetAdapter received invalid or non-dict data: {type(response_data)}")
+            return []
         races = []
         for event in response_data['events']:
             try:
