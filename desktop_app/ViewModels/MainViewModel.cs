@@ -47,6 +47,5 @@ namespace CheckmateDeck.ViewModels
         }
 
         public event PropertyChangedEventHandler? PropertyChanged;
- 
     }
 }
