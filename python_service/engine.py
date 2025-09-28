@@ -29,7 +29,14 @@ class Runner(BaseModel):
 class Race(BaseModel):
     race_id: str
     track_name: str
-    # ... (all other race fields)
+    race_number: Optional[int] = None
+    post_time: Optional[datetime] = None
+    runners: List[Runner]
+    source: Optional[str] = None
+    checkmate_score: Optional[float] = None
+    is_qualified: Optional[bool] = None
+    trifecta_factors_json: Optional[str] = None
+    analysis_details: Optional[str] = None # For advanced analysis
     data_quality_score: Optional[float] = None
 
 # --- Resilient Fetcher ---
@@ -39,12 +46,29 @@ class DefensiveFetcher:
         # self.rate_limiter = RateLimiter()
         # self.circuit_breaker = CircuitBreaker()
         self.logger = logging.getLogger(self.__class__.__name__)
-
     def get(self, url: str, headers: Optional[Dict[str, str]] = None) -> Union[dict, str, None]:
         # This method will be enhanced with retry logic, circuit breaking, and rate limiting.
         # For now, it retains the proven curl implementation.
-        # ... (current robust curl implementation)
-        pass
+        # This method will be enhanced with retry logic, circuit breaking, and rate limiting.
+        # For now, it retains the proven curl implementation.
+        try:
+            command = ["curl", "-s", "-L", "--tlsv1.2", "--http1.1"]
+            if headers:
+                for key, value in headers.items():
+                    command.extend(["-H", f"{key}: {value}"])
+            command.append(url)
+
+            result = subprocess.run(command, capture_output=True, text=True, check=True, timeout=15)
+            response_text = result.stdout
+
+            try:
+                return json.loads(response_text)
+            except json.JSONDecodeError:
+                logging.warning(f"Failed to decode JSON from {url}, returning raw text.")
+                return response_text # Return text as fallback
+        except (subprocess.CalledProcessError, subprocess.TimeoutExpired) as e:
+            logging.error(f"CRITICAL: curl GET failed for {url}. Details: {e}")
+            return None
 
 # --- Enhanced Adapters ---
 class BaseAdapterV8(ABC):
@@ -75,8 +99,21 @@ class SuperchargedOrchestrator:
 
     def get_races_parallel(self) -> tuple[list[Race], list[dict]]:
         # This method will be enhanced with full performance monitoring and data validation.
-        # ... (current concurrent fetching logic remains the foundation)
-        pass
+        # For now, it implements the core concurrent fetching logic
+        all_races, statuses = [], []
+        with concurrent.futures.ThreadPoolExecutor(max_workers=len(self.adapters)) as executor:
+            future_to_adapter = {executor.submit(adapter.fetch_races): adapter for adapter in self.adapters}
+            for future in concurrent.futures.as_completed(future_to_adapter):
+                adapter = future_to_adapter[future]
+                try:
+                    races = future.result()
+                    all_races.extend(races)
+                    # Create a basic status receipt for now
+                    statuses.append({'adapter_id': adapter.__class__.__name__, 'status': 'OK', 'races_found': len(races)})
+                except Exception as e:
+                    self.logger.error(f"Adapter {adapter.__class__.__name__} failed: {e}", exc_info=True)
+                    statuses.append({'adapter_id': adapter.__class__.__name__, 'status': 'ERROR', 'error_message': str(e)})
+        return all_races, statuses
 
 # --- Enhanced Trifecta Analyzer Stub ---
 class EnhancedTrifectaAnalyzer:
