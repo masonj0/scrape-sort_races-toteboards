@@ -1,67 +1,43 @@
 // web_platform/frontend/src/hooks/useRealTimeRaces.ts
 'use client';
-
 import { useState, useEffect } from 'react';
 import { io, Socket } from 'socket.io-client';
 
-const API_URL = 'http://localhost:8080';
+// NEW: Define the structure for a single analysis factor
+export interface FactorResult {
+  points: number;
+  ok: boolean;
+  reason: string;
+}
 
 export interface QualifiedRace {
   race_id: string;
   track_name: string;
   race_number: number;
-  post_time: string; // ISO string format
+  post_time: string;
   checkmate_score: number;
-  trifecta_factors_json: string;
-  updated_at: string;
+  // NEW: Add the trifecta factors to the type definition
+  trifecta_factors: Record<string, FactorResult>;
 }
 
-export const useRealTimeRaces = () => {
+export const useRealTimeRaces = (apiUrl: string = 'ws://localhost:8080') => {
   const [races, setRaces] = useState<QualifiedRace[]>([]);
   const [isConnected, setIsConnected] = useState(false);
 
   useEffect(() => {
-    // 1. Fetch initial data via REST API
-    const fetchInitialData = async () => {
-      try {
-        const response = await fetch(`${API_URL}/api/races/qualified`);
-        if (response.ok) {
-          const initialRaces = await response.json();
-          setRaces(initialRaces);
-        } else {
-          console.error('Failed to fetch initial race data');
-        }
-      } catch (error) {
-        console.error('Error fetching initial data:', error);
-      }
-    };
+    const socket: Socket = io(apiUrl);
 
-    fetchInitialData();
-
-    // 2. Connect to WebSocket for real-time updates
-    const socket: Socket = io(API_URL);
-
-    socket.on('connect', () => {
-      console.log('Socket.IO connected successfully.');
-      setIsConnected(true);
-    });
-
-    socket.on('disconnect', () => {
-      console.log('Socket.IO disconnected.');
-      setIsConnected(false);
-    });
+    socket.on('connect', () => setIsConnected(true));
+    socket.on('disconnect', () => setIsConnected(false));
 
     socket.on('race_update', (updatedRaces: QualifiedRace[]) => {
-      console.log('Received race_update event with', updatedRaces.length, 'races.');
-      setRaces(updatedRaces);
+      setRaces(updatedRaces.sort((a, b) => b.checkmate_score - a.checkmate_score));
     });
 
-    // 3. Cleanup on component unmount
     return () => {
-      console.log('Disconnecting Socket.IO...');
       socket.disconnect();
     };
-  }, []); // Empty dependency array ensures this runs only once on mount
+  }, [apiUrl]);
 
   return { races, isConnected };
 };

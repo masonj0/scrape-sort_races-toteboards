@@ -3,6 +3,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { QualifiedRace } from '../hooks/useRealTimeRaces';
 import { ScoreBadge } from './ScoreBadge';
+import { TrifectaFactors } from './TrifectaFactors'; // Import the new component
 
 const getScoreColorClass = (score: number) => {
   if (score >= 90) return 'border-l-yellow-400';
@@ -27,7 +28,8 @@ export const RaceCard: React.FC<{ race: QualifiedRace }> = ({ race }) => {
         </div>
         <ScoreBadge score={race.checkmate_score} />
       </div>
-      {/* Future TrifectaFactors component will go here */}
+      {/* Replace the placeholder comment with our new component */}
+      <TrifectaFactors factors={race.trifecta_factors} />
     </motion.div>
   );
 };
