@@ -3,10 +3,12 @@ name = "checkmate_engine"
 version = "1.0.0"
 edition = "2021"
 
+# NEW: Define the binary target
 [[bin]]
 name = "checkmate_engine"
 path = "src/main.rs"
 
+# Define the library target
 [lib]
 name = "checkmate_engine_lib"
 path = "src/lib.rs"
