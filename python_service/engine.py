@@ -36,6 +36,7 @@ class Race(BaseModel):
     checkmate_score: Optional[float] = None
     is_qualified: Optional[bool] = None
     analysis_details: Optional[str] = None
+    trifecta_factors_json: Optional[str] = None
 
 # --- Resilient Fetcher ---
 class DefensiveFetcher:
