@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:viewModels="clr-namespace:CheckmateDeck.ViewModels"
         mc:Ignorable="d"
-        Title="Checkmate V8 - Command Deck" Height="800" Width="1200" Background="#1E1E1E">
+         Title="Checkmate V8 - Command Deck" Height="800" Width="1200" Background="#1E1E1E">
     <Window.DataContext>
         <viewModels:MainViewModel/>
     </Window.DataContext>
@@ -42,4 +42,5 @@
             </DataGrid>
         </TabItem>
     </TabControl>
+ 
 </Window>
