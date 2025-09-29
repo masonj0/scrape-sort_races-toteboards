@@ -18,8 +18,10 @@ Setup:
 3. Run: streamlit run the_one_script.py
 """
 
-import asyncio
-import streamlit as st
+import logging
+import json
+import subprocess
+import concurrent.futures
 import time
 import os
 import json
@@ -422,4 +424,58 @@ def main():
         st_autorefresh(interval=refresh_sec * 1000, key="autorefresh")
 
 if __name__ == "__main__":
-    main()
+    logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    print("="*60)
+    print("👑 THE SOVEREIGN SCRIPT - CHECKMATE V8 DIAGNOSTIC TOOL 👑")
+    print("="*60)
+    print("Architecture: Complete tri-hybrid pipeline demonstration")
+    print("Purpose: Validate data flow and analysis engine")
+    print("="*60)
+
+    print("\n[1/4] 🔧 INITIALIZING COMPONENTS...")
+    config = configparser.ConfigParser()
+    config.read('config.ini')
+
+    print(f"  ├─ Qualification Score: {config.getfloat('analysis', 'qualification_score')}")
+    orchestrator = SuperchargedOrchestrator(config)
+    analyzer = EnhancedTrifectaAnalyzer(config)
+    db_handler = DatabaseHandler(':memory:')
+    print("✅ Components Initialized (using in-memory database for diagnostic)")
+
+    print("\n[2/4] 🌐 FETCHING LIVE DATA...")
+    start_time = time.time()
+    live_races = orchestrator.get_races_parallel()
+    fetch_time = time.time() - start_time
+    print(f"✅ Fetched {len(live_races)} races in {fetch_time:.2f}s")
+    if live_races:
+        sources = {}
+        for race in live_races: sources[race.source or 'unknown'] = sources.get(race.source or 'unknown', 0) + 1
+        for source, count in sources.items(): print(f"    ├─ {source}: {count} races")
+    else: print("  ⚠️  No races fetched - check network connectivity and API endpoints")
+
+    print("\n[3/4] 🧠 ANALYZING RACES...")
+    start_time = time.time()
+    analyzed_races = [analyzer.analyze_race(race) for race in live_races]
+    analysis_time = time.time() - start_time
+    qualified_races = [r for r in analyzed_races if r.is_qualified]
+    print(f"✅ Analysis complete in {analysis_time:.2f}s")
+    print(f"  📈 Analysis Results:")
+    print(f"    ├─ Total Races: {len(analyzed_races)}")
+    print(f"    ├─ Qualified (≥{config.getfloat('analysis', 'qualification_score')}): {len(qualified_races)}")
+
+    if qualified_races:
+        print("\n  🏆 TOP QUALIFIED RACES:")
+        for i, race in enumerate(sorted(qualified_races, key=lambda r: r.checkmate_score or 0, reverse=True)[:3]):
+            factors = json.loads(race.trifecta_factors_json) if race.trifecta_factors_json else {}
+            print(f"    {i+1}. {race.track_name} R{race.race_number} - Score: {race.checkmate_score:.1f}")
+            for factor_name, factor_data in factors.items():
+                status = "✅" if factor_data.get('ok') else "❌"
+                print(f"       {status} {factor_data.get('reason', 'N/A')} ({factor_data.get('points', 0):+}pts)")
+
+    print("\n[4/4] 💾 DATABASE OPERATIONS...")
+    db_handler.update_races(analyzed_races)
+    print(f"✅ Database update complete")
+
+    print("\n" + "="*60)
+    print("👑 SOVEREIGN SCRIPT EXECUTION COMPLETE 👑")
+    print("="*60)
