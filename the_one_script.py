@@ -2,6 +2,21 @@
 """
 # The Sovereign Script (Diagnostic V9)
 # A single, self-contained artifact for diagnostics and demonstration of the complete Python data pipeline.
+
+# VERSION 8.1 - THE 10/10 MANDATE
+# - Corrected TrifectaAnalyzer logic.
+# - Implemented non-blocking Streamlit refresh.
+# - Hardened DefensiveFetcher with persistent client and non-JSON handling.
+# - Implemented robust database safety with explicit columns and date handling.
+# - Corrected concurrency hygiene for the background service.
+# - Implemented robust data deduplication logic.
+# - Added production-grade logging and settings validation.
+
+Setup:
+1. pip install -r requirements.txt
+2. Create .env with: RACING_API_KEY="your_key" (optional)
+3. Run: streamlit run the_one_script.py
+ 
 """
 
 import logging
