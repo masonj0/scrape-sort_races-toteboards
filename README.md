@@ -1,21 +1,48 @@
-# Checkmate V8: The Quad-Hybrid Architecture
+# Checkmate V8: The Sovereign Script
 
-A professional-grade, multi-platform data analysis system for real-time horse racing. This project utilizes a unique four-part architecture to achieve hyper-performance, robustness, and ubiquitous access.
+This repository contains the complete source code for Checkmate V8, a professional-grade horse racing analysis application. The project's current form is a single, self-contained Streamlit application that handles data collection, analysis, and a real-time user interface.
 
 ---
 
-## Architecture: The Quad-Hybrid System
+## 🚀 Quick Start
 
-1.  **🐍 The Collection Corps (Python Service):** A robust Windows service for all data collection and orchestration.
-2.  **🦀 The Analysis Core (Rust Engine):** A compiled, memory-safe, parallel-processing library for all heavy computation, providing a 50-100x performance increase.
-3.  **🌐 The Digital Front (TypeScript Web Platform):** A modern, real-time web application for browser-based, multi-user, and mobile access.
-4.  **🖥️ The Command Deck (C# Desktop App):** A native Windows desktop application for power-user features and deep system integration.
+The application is designed for simplicity and immediate use.
 
-## Project Status
+**Prerequisites:**
+*   Python 3.10+
+*   An installation of R (for future analytics features)
 
--   ✅ **Phase 1: The Collection Corps (Python Service)** - COMPLETED (Production Grade)
--   ✅ **Phase 2: The Analysis Core (Rust Engine)** - COMPLETED (Production Grade)
--   ⚠️ **Phase 3: The Digital Front (TypeScript Web Platform)** - IN PROGRESS
--   ❌ **Phase 4: The Command Deck (C# Desktop App)** - FUTURE ENHANCEMENT
+**Installation:**
+1.  Clone this repository.
+2.  Install the required Python packages:
+    ```bash
+    pip install -r requirements.txt
+    ```
 
-This repository currently contains the complete, functional code for the Python Service, the Rust Engine, and the foundational skeleton for the TypeScript Web Platform.
+**Running the Application:**
+The application is `checkmate_app.py`. To run it, use the following command in your terminal:
+```bash
+streamlit run checkmate_app.py
+```
+This will start the application and open it in your default web browser.
+
+---
+
+## 🏛️ Project Architecture
+
+The project has evolved into a state of "Sovereign Simplicity." The core of the application is **`checkmate_app.py`**, which handles:
+*   **Data Collection:** A multi-adapter system for fetching race data from various sources.
+*   **Analysis Engine:** A rule-based "Trifecta Analyzer" to score races.
+*   **User Interface:** A real-time dashboard built with Streamlit.
+
+## 🗺️ Strategic Roadmap
+
+With the core application perfected, the project is focused on two primary expansion campaigns:
+
+1.  **The Campaign for Advanced Analytics:** Integrating a **PostgreSQL** data warehouse and an **R**-based statistical modeling engine to transform the application into a predictive powerhouse.
+
+2.  **The Familiar Frontend:** Developing a **Microsoft Excel**-based interface to make the system's data accessible to a wider audience.
+
+## 🗃️ Digital Attic (R&D History)
+
+This project has a rich development history. Obsolete components, architectural parables (such as the previous "Quad-Hybrid" model), and legacy scripts are preserved in the `/attic` directory for R&D and historical purposes.
