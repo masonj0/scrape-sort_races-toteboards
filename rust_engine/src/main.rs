@@ -3,8 +3,16 @@ use std::env;
 use std::io::{self, Read};
 use checkmate_engine::{RaceAnalysisRequest, RaceAnalysisResponse, analyze_single_race_advanced}; // Assuming these are in lib.rs
 use rayon::prelude::*;
+use num_cpus;
 
 fn main() {
+    // --- DYNAMIC THREAD POOL CONFIGURATION ---
+    // This should be done once at the very start of the program.
+    rayon::ThreadPoolBuilder::new()
+        .num_threads(num_cpus::get()) // Sets thread count to the number of logical CPUs
+        .build_global()
+        .unwrap(); // This unwrap is acceptable on startup; if it fails, the app can't run.
+
     let args: Vec<String> = env::args().collect();
     let command = args.get(1).map(|s| s.as_str());
 
@@ -18,21 +26,23 @@ fn main() {
 
 fn cli_analysis_mode() {
     let mut input = String::new();
-    io::stdin().read_to_string(&mut input).expect("Failed to read from stdin");
+    if let Err(e) = io::stdin().read_to_string(&mut input) {
+        eprintln!("[ERROR] Failed to read from stdin: {}", e);
+        std::process::exit(1);
+    }
 
-    let request: RaceAnalysisRequest = serde_json::from_str(&input)
-        .expect("Failed to parse JSON input");
-
-    let results: Vec<_> = request.races.par_iter()
-        .map(|race| analyze_single_race_advanced(race, &request.settings))
-        .collect();
-
-    let response = RaceAnalysisResponse {
-        results,
-        // ... other metadata from V8 spec
-    };
-
-    println!("{}", serde_json::to_string_pretty(&response).unwrap());
+    // Call the core logic and handle the Result
+    match run_analysis_from_json(&input) {
+        Ok(response) => {
+            // Using unwrap here is acceptable for a CLI tool's final output.
+            // A failure to serialize a valid response struct is a critical, unrecoverable bug.
+            println!("{}", serde_json::to_string_pretty(&response).unwrap());
+        }
+        Err(e) => {
+            eprintln!("[ERROR] Analysis failed: {}", e);
+            std::process::exit(1);
+        }
+    }
 }
 
 fn benchmark_mode() {
