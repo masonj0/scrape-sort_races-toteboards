@@ -1,0 +1,4 @@
+{
+    "filepath": "./src/checkmate_v7/adapters/__init__.py",
+    "content": "# src/checkmate_v7/adapters/__init__.py\n\nfrom .AndWereOff import SkySportsAdapter, AtTheRacesAdapter, BetfairDataScientistAdapter, FanDuelApiAdapter, TVGAdapter, BetfairExchangeAdapter, OddsAPIAdapter\nfrom .Stablemates import EquibaseAdapter, RacingAndSportsAdapter\n\nPRODUCTION_ADAPTERS = [SkySportsAdapter, AtTheRacesAdapter, BetfairDataScientistAdapter, FanDuelApiAdapter, TVGAdapter, BetfairExchangeAdapter, OddsAPIAdapter]\nDEVELOPMENT_ADAPTERS = [EquibaseAdapter, RacingAndSportsAdapter]\n\n__all__ = ['PRODUCTION_ADAPTERS', 'DEVELOPMENT_ADAPTERS']"
+}
