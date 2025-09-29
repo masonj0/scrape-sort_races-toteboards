@@ -18,3 +18,10 @@ crate-type = ["cdylib"]
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 rayon = "1.7"
+
+[profile.release]
+lto = true              # Enable Link-Time Optimization
+codegen-units = 1       # Reduce parallelism for better optimization
+panic = "abort"         # Abort on panic for smaller binary size
+opt-level = 3           # Maximum optimization level
+strip = true            # Strip symbols from the binary
