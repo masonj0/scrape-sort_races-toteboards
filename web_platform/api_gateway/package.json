@@ -1,26 +1,21 @@
 {
-  "name": "checkmate-api-gateway",
+  "name": "api_gateway",
   "version": "1.0.0",
+  "description": "API Gateway for the Checkmate Web Platform",
   "main": "dist/server.js",
   "scripts": {
     "start": "ts-node src/server.ts",
     "build": "tsc",
-    "dev": "nodemon src/server.ts"
+    "serve": "node dist/server.js"
   },
   "dependencies": {
-    "express": "^4.18.2",
-    "socket.io": "^4.7.2",
-    "sqlite3": "^5.1.6",
-    "sqlite": "^5.0.1",
-    "cors": "^2.8.5",
-    "helmet": "^7.0.0",
-    "express-rate-limit": "^7.1.0"
+    "express": "^4.17.1",
+    "dotenv": "^16.3.1"
   },
   "devDependencies": {
-    "typescript": "^5.2.2",
-    "ts-node": "^10.9.1",
-    "@types/express": "^4.17.18",
-    "@types/cors": "^2.8.14",
-    "nodemon": "^3.0.0"
+    "@types/express": "^4.17.13",
+    "@types/node": "^16.11.7",
+    "ts-node": "^10.4.0",
+    "typescript": "^4.4.4"
   }
 }
