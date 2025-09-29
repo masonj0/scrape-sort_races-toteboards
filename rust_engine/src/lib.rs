@@ -6,6 +6,7 @@ use std::collections::HashMap;
 use std::ffi::{CStr, CString};
 use std::os::raw::c_char;
 use std::panic;
+use anyhow::{anyhow, Result};
 
 // --- Data Structures for Serialization (JSON) ---
 
@@ -80,7 +81,21 @@ pub struct RaceAnalysisResponse {
 
 // --- Core Analysis Logic ---
 
-fn analyze_single_race(race: &RaceData, settings: &AnalysisSettings) -> AnalysisResult {
+fn calculate_odds_spread(runners: &[&Runner]) -> f64 {
+    if runners.len() < 2 { return 0.0; }
+    let fav_odds = runners[0].odds.unwrap_or(1.0);
+    let sec_fav_odds = runners[1].odds.unwrap_or(1.0);
+    sec_fav_odds - fav_odds
+}
+
+fn analyze_odds_spread(spread: f64) -> f64 {
+    // Example logic: A tight spread might indicate a competitive, unpredictable race.
+    if spread < 1.5 { -10.0 }
+    else if spread > 4.0 { 15.0 }
+    else { 5.0 }
+}
+
+pub fn analyze_single_race_advanced(race: &RaceData, settings: &AnalysisSettings) -> AnalysisResult {
     let mut score = 0.0;
     let mut factors = HashMap::new();
 
@@ -119,6 +134,17 @@ fn analyze_single_race(race: &RaceData, settings: &AnalysisSettings) -> Analysis
         };
         score += sec_fav_odds_result.points;
         factors.insert("secondFavoriteOdds".to_string(), sec_fav_odds_result);
+
+        // Odds Spread Analysis
+        let odds_spread = calculate_odds_spread(&horses_with_odds);
+        let spread_analysis_points = analyze_odds_spread(odds_spread);
+        let odds_spread_result = FactorResult {
+            points: spread_analysis_points,
+            ok: spread_analysis_points >= 0.0, // Consider non-negative as OK
+            reason: format!("Odds spread analysis ({:.2})", odds_spread),
+        };
+        score += odds_spread_result.points;
+        factors.insert("oddsSpread".to_string(), odds_spread_result);
     }
 
     AnalysisResult {
@@ -129,54 +155,91 @@ fn analyze_single_race(race: &RaceData, settings: &AnalysisSettings) -> Analysis
     }
 }
 
+// --- Benchmark Helpers ---
+
+pub fn generate_benchmark_races(count: usize) -> Vec<RaceData> {
+    (0..count).map(|i| {
+        let runners = (0..8).map(|j| {
+            Runner {
+                name: format!("Horse {}", j + 1),
+                odds: Some(2.0 + j as f64),
+            }
+        }).collect();
+
+        RaceData {
+            race_id: format!("benchmark_{}", i),
+            runners,
+        }
+    }).collect()
+}
+
+pub fn create_default_settings() -> AnalysisSettings {
+    AnalysisSettings {
+        qualification_score: 75.0,
+        field_size_optimal_min: 4,
+        field_size_optimal_max: 6,
+        field_size_acceptable_min: 7,
+        field_size_acceptable_max: 8,
+        field_size_optimal_points: 30.0,
+        field_size_acceptable_points: 10.0,
+        field_size_penalty_points: -20.0,
+        fav_odds_points: 30.0,
+        max_fav_odds: 3.5,
+        second_fav_odds_points: 40.0,
+        min_2nd_fav_odds: 4.0,
+    }
+}
+
 // --- FFI (Foreign Function Interface) for Python/C# ---
 
+pub fn run_analysis_from_json(json_input: &str) -> Result<RaceAnalysisResponse> {
+    let request: RaceAnalysisRequest = serde_json::from_str(json_input)
+        .map_err(|e| anyhow!("Failed to parse input JSON: {}", e))?;
+
+    let start_time = std::time::Instant::now();
+    let results: Vec<AnalysisResult> = request.races
+        .par_iter()
+        .map(|race| analyze_single_race_advanced(race, &request.settings))
+        .collect();
+
+    let response = RaceAnalysisResponse {
+        results,
+        processing_time_ms: start_time.elapsed().as_millis(),
+    };
+
+    Ok(response)
+}
+
 #[no_mangle]
-pub extern "C" fn analyze_races_ffi(input_json_ptr: *const c_char) -> *mut c_char {
-    let result = panic::catch_unwind(|| {
-        // FIX: Safely handle C string conversion
-        let c_str = unsafe { CStr::from_ptr(input_json_ptr) };
-        let input_json = match c_str.to_str() {
-            Ok(s) => s,
-            Err(_) => { return std::ptr::null_mut(); } // Return null on UTF-8 error
-        };
+pub extern "C" fn analyze_races_ffi_v2(input_json_ptr: *const c_char) -> *mut c_char {
+    // Safely handle C string conversion
+    let input_c_str = unsafe { CStr::from_ptr(input_json_ptr) };
+    let input_str = match input_c_str.to_str() {
+        Ok(s) => s,
+        Err(_) => {
+            let error_json = r#"{"error": "Invalid UTF-8 in input string."}"#;
+            return CString::new(error_json).unwrap().into_raw();
+        }
+    };
 
-        // FIX: Safely handle JSON deserialization
-        let request: RaceAnalysisRequest = match serde_json::from_str(input_json) {
-            Ok(req) => req,
-            Err(_) => { return std::ptr::null_mut(); } // Return null on JSON error
-        };
-
-        let start_time = std::time::Instant::now();
-
-        let results: Vec<AnalysisResult> = request.races.par_iter()
-            .map(|race| analyze_single_race(race, &request.settings))
-            .collect();
-
-        let response = RaceAnalysisResponse {
-            results,
-            processing_time_ms: start_time.elapsed().as_millis(),
-        };
-
-        // FIX: Safely handle JSON serialization
-        let response_json = match serde_json::to_string(&response) {
-            Ok(json) => json,
-            Err(_) => { return std::ptr::null_mut(); }
-        };
-
-        CString::new(response_json).unwrap().into_raw()
-    });
-
-    match result {
-        Ok(ptr) => ptr,
-        Err(_) => std::ptr::null_mut(),
+    // Call the core logic and handle the Result
+    match run_analysis_from_json(input_str) {
+        Ok(response) => {
+            let response_json = serde_json::to_string(&response).unwrap_or_else(|_| {
+                r#"{"error": "Failed to serialize successful response."}"#.to_string()
+            });
+            CString::new(response_json).unwrap().into_raw()
+        }
+        Err(e) => {
+            let error_json = format!(r#"{{"error": "Analysis failed: {}"}}"#, e.to_string().replace('"', "'"));
+            CString::new(error_json).unwrap().into_raw()
+        }
     }
 }
 
 #[no_mangle]
-pub extern "C" fn deallocate_rust_string(ptr: *mut c_char) {
-    if ptr.is_null() { return; }
-    unsafe {
-        let _ = CString::from_raw(ptr);
+pub extern "C" fn free_string_ffi(s: *mut c_char) {
+    if !s.is_null() {
+        unsafe { CString::from_raw(s) };
     }
 }
