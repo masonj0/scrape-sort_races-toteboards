@@ -248,6 +248,7 @@ class BackgroundService:
     def __init__(self, settings: Settings, db: DatabaseManager):
         self.settings, self.db = settings, db
         self.orchestrator, self.analyzer = DataSourceOrchestrator(settings), TrifectaAnalyzer()
+        self.postgres_etl = PostgresETL()
         self.running, self.thread = False, None
 
     def start(self):
@@ -266,8 +267,14 @@ class BackgroundService:
             while self.running:
                 try:
                     races = loop.run_until_complete(self.orchestrator.get_races())
-                    analyzed = [self.analyzer.analyze_race(r, self.settings) for r in races]
-                    self.db.save_races(analyzed)
+                    analyzed_races = [self.analyzer.analyze_race(r, self.settings) for r in races]
+
+                    # Save to local SQLite for UI
+                    self.db.save_races(analyzed_races)
+
+                    # Load into PostgreSQL Data Warehouse
+                    self.postgres_etl.process_and_load(analyzed_races)
+
                     if time.time() - last_cleanup > 86400: self.db.cleanup_old(); last_cleanup = time.time()
                 except Exception as e: logging.exception(f"Background error: {e}")
                 for _ in range(60): # Check stop signal every second
@@ -344,6 +351,74 @@ class R_Analytics_Bridge:
             if os.path.exists(temp_csv_path):
                 os.remove(temp_csv_path)
                 logging.info(f"Cleaned up temporary file: {temp_csv_path}")
+
+from sqlalchemy import create_engine, text
+
+class PostgresETL:
+    def __init__(self):
+        db_url = os.getenv("POSTGRES_URL", "postgresql://user:password@localhost:5432/checkmate_db")
+        self.engine = create_engine(db_url)
+        self.logger = logging.getLogger(self.__class__.__name__)
+        self._setup_database()
+
+    def _setup_database(self):
+        try:
+            with self.engine.connect() as conn:
+                with open("pg_schemas/historical_races.sql", "r") as f:
+                    conn.execute(text(f.read()))
+                with open("pg_schemas/quarantine_races.sql", "r") as f:
+                    conn.execute(text(f.read()))
+                conn.commit()
+            self.logger.info("PostgreSQL schemas verified/created successfully.")
+        except Exception as e:
+            self.logger.critical(f"FATAL: Could not set up PostgreSQL database: {e}", exc_info=True)
+            raise
+
+    def process_and_load(self, analyzed_races: List[Race]):
+        valid_for_historical = []
+        quarantined = []
+
+        for race in analyzed_races:
+            errors = []
+            if not race.track_name: errors.append("Missing track_name")
+            if race.race_number is None: errors.append("Missing race_number")
+            if race.post_time is None: errors.append("Missing post_time")
+
+            if not errors:
+                valid_for_historical.append({
+                    "race_id": race.race_id,
+                    "track_name": race.track_name,
+                    "race_number": race.race_number,
+                    "post_time": race.post_time,
+                    "source": race.source,
+                    "runners_data": json.dumps([r.model_dump() for r in race.runners]),
+                    "checkmate_score": race.checkmate_score,
+                    "is_qualified": race.is_qualified,
+                })
+            else:
+                quarantined.append({
+                    "race_id": race.race_id,
+                    "track_name": race.track_name,
+                    "source": race.source,
+                    "raw_data_json": race.model_dump_json(),
+                    "quarantine_reason": ", ".join(errors),
+                })
+        
+        if valid_for_historical:
+            try:
+                df = pd.DataFrame(valid_for_historical)
+                df.to_sql('historical_races', self.engine, if_exists='append', index=False)
+                self.logger.info(f"Successfully loaded {len(df)} races into historical_races.")
+            except Exception as e:
+                self.logger.error(f"Failed to load data into historical_races: {e}", exc_info=True)
+
+        if quarantined:
+            try:
+                df_q = pd.DataFrame(quarantined)
+                df_q.to_sql('quarantine_races', self.engine, if_exists='append', index=False)
+                self.logger.warning(f"Quarantined {len(df_q)} races for manual review.")
+            except Exception as e:
+                self.logger.error(f"Failed to load data into quarantine_races: {e}", exc_info=True)
 
 # --- 9. STREAMLIT DASHBOARD ---
 
