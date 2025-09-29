@@ -1,24 +1,5 @@
-# requirements.txt
-fastapi
-uvicorn
-requests
-pydantic[dotenv]
-pydantic-settings
-pandas
-beautifulsoup4
-lxml
-celery
-redis
-sqlalchemy
-python-multipart
-curl-cffi
-colorama
-tabulate
-# Test dependencies discovered during run
-pytest
-httpx
-rich
-tenacity
-scipy
-python-json-logger
-trio
+streamlit==1.37.1
+pydantic==2.8.2
+pydantic-settings==2.4.0
+httpx==0.27.0
+python-dotenv==1.0.1
