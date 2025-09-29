@@ -6,9 +6,6 @@
         xmlns:viewModels="clr-namespace:CheckmateDeck.ViewModels"
         mc:Ignorable="d"
         Title="Checkmate V8 - Command Deck" Height="800" Width="1200" Background="#1E1E1E">
-    <Window.DataContext>
-        <viewModels:MainViewModel/>
-    </Window.DataContext>
     <TabControl>
         <TabItem Header="🔥 Qualified Races">
             <ListView ItemsSource="{Binding QualifiedRaces}" Background="#2D2D30" HorizontalContentAlignment="Stretch">
