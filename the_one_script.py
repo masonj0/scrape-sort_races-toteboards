@@ -2,21 +2,6 @@
 """
 # The Sovereign Script (Diagnostic V9)
 # A single, self-contained artifact for diagnostics and demonstration of the complete Python data pipeline.
-
-# VERSION 8.1 - THE 10/10 MANDATE
-# - Corrected TrifectaAnalyzer logic.
-# - Implemented non-blocking Streamlit refresh.
-# - Hardened DefensiveFetcher with persistent client and non-JSON handling.
-# - Implemented robust database safety with explicit columns and date handling.
-# - Corrected concurrency hygiene for the background service.
-# - Implemented robust data deduplication logic.
-# - Added production-grade logging and settings validation.
-
-Setup:
-1. pip install -r requirements.txt
-2. Create .env with: RACING_API_KEY="your_key" (optional)
-3. Run: streamlit run the_one_script.py
- 
 """
 
 import logging
@@ -25,28 +10,15 @@ import subprocess
 import concurrent.futures
 import time
 import sqlite3
+from collections import defaultdict
 from abc import ABC, abstractmethod
 from typing import List, Optional, Union, Dict
 from datetime import datetime
+import configparser
 from pydantic import BaseModel, Field
-from pydantic_settings import BaseSettings
 from cachetools import TTLCache
 
-# --- 1. SETTINGS & MODELS ---
-
-class Settings(BaseSettings):
-    QUALIFICATION_SCORE: float = 75.0
-    FIELD_SIZE_OPTIMAL_MIN: int = 4
-    FIELD_SIZE_OPTIMAL_MAX: int = 6
-    FIELD_SIZE_ACCEPTABLE_MIN: int = 7
-    FIELD_SIZE_ACCEPTABLE_MAX: int = 8
-    FIELD_SIZE_OPTIMAL_POINTS: int = 30
-    FIELD_SIZE_ACCEPTABLE_POINTS: int = 10
-    FIELD_SIZE_PENALTY_POINTS: int = -20
-    FAV_ODDS_POINTS: int = 30
-    MAX_FAV_ODDS: float = 3.5
-    SECOND_FAV_ODDS_POINTS: int = 40
-    MIN_2ND_FAV_ODDS: float = 4.0
+# --- 1. MODELS ---
 
 class Runner(BaseModel):
     name: str
@@ -116,48 +88,102 @@ class DatabaseHandler:
 # --- 3. CORE ENGINE ---
 
 class DefensiveFetcher:
-    def get(self, url: str, headers: Optional[Dict[str, str]] = None) -> Union[dict, str, None]:
-        try:
-            command = ["curl", "-s", "-L", "--tlsv1.2", "--http1.1"]
-            if headers: [command.extend(["-H", f"{k}: {v}"]) for k, v in headers.items()]
-            command.append(url)
-            result = subprocess.run(command, capture_output=True, text=True, check=True, timeout=15)
-            response_text = result.stdout
-            try: return json.loads(response_text)
-            except json.JSONDecodeError: return response_text
-        except (subprocess.CalledProcessError, subprocess.TimeoutExpired) as e:
-            logging.error(f"CRITICAL: curl GET failed for {url}. Details: {e}")
+    def __init__(self, max_retries=3, initial_backoff=1):
+        self._max_retries = max_retries
+        self._initial_backoff = initial_backoff
+        self._circuit_breaker = defaultdict(lambda: {'failures': 0, 'is_open': False, 'open_until': 0})
+
+    def _is_breaker_open(self, domain):
+        breaker = self._circuit_breaker[domain]
+        if breaker['is_open'] and time.time() < breaker['open_until']:
+            return True
+        elif breaker['is_open']: # Reset if timeout has passed
+            breaker['is_open'] = False
+            breaker['failures'] = 0
+        return False
+
+    def _trip_breaker(self, domain):
+        breaker = self._circuit_breaker[domain]
+        breaker['failures'] += 1
+        if breaker['failures'] >= 5: # Trip after 5 consecutive failures
+            breaker['is_open'] = True
+            breaker['open_until'] = time.time() + 60 # Open for 60 seconds
+
+    def get(self, url, headers=None, timeout=15):
+        domain = url.split('/')[2]
+        if self._is_breaker_open(domain):
+            print(f"[WARN] Circuit breaker is open for {domain}. Skipping request.")
             return None
 
+        for attempt in range(self._max_retries):
+            try:
+                command = ["curl", "-s", "-L", "--max-time", str(timeout)]
+                if headers:
+                    for key, value in headers.items():
+                        command.extend(["-H", f"{key}: {value}"])
+                command.append(url)
+
+                result = subprocess.run(command, capture_output=True, text=True, check=True, timeout=timeout)
+                # Reset failure count on success
+                self._circuit_breaker[domain]['failures'] = 0
+                return json.loads(result.stdout) # Assuming JSON response
+            except (subprocess.CalledProcessError, subprocess.TimeoutExpired, json.JSONDecodeError) as e:
+                print(f"[ERROR] Attempt {attempt + 1} for {url} failed: {e}")
+                if attempt == self._max_retries - 1: # Last attempt
+                    self._trip_breaker(domain)
+                    return None
+                time.sleep(self._initial_backoff * (2 ** attempt)) # Exponential backoff
+        return None
+
 class BaseAdapterV8(ABC):
-    def __init__(self, fetcher: DefensiveFetcher, settings: Settings):
-        self.fetcher, self.settings = fetcher, settings
+    def __init__(self, fetcher: DefensiveFetcher, config):
+        self.fetcher, self.config = fetcher, config
         self.cache = TTLCache(maxsize=100, ttl=300)
         self.logger = logging.getLogger(self.__class__.__name__)
     @abstractmethod
     def fetch_races(self) -> List[Race]: raise NotImplementedError
 
 class EnhancedTVGAdapter(BaseAdapterV8):
+    NAME = "TVG"
     SOURCE_ID = "tvg"
     BASE_URL = "https://mobile-api.tvg.com/api/mobile/races/today"
     def fetch_races(self) -> List[Race]:
         cache_key = f"tvg_races_{datetime.now().hour}"
         if cache_key in self.cache: return self.cache[cache_key]
+
         response_data = self.fetcher.get(self.BASE_URL)
         if not response_data or 'races' not in response_data: return []
-        all_races = []
-        for race_info in response_data.get('races', []):
+        
+        validated_races = []
+        for race_data in response_data.get('races', []):
             try:
-                runners = []
-                for r in race_info.get('runners', []):
+                transformed_runners = []
+                for r in race_data.get('runners', []):
                     if not r.get('scratched') and r.get('odds'):
                         odds = self._parse_odds(r.get('odds'))
-                        if odds: runners.append(Runner(name=r.get('horseName', 'N/A'), odds=odds))
-                if len(runners) >= 3:
-                    all_races.append(Race(race_id=f"tvg_{race_info.get('raceId')}", track_name=race_info.get('trackName', 'N/A'), race_number=race_info.get('raceNumber'), post_time=self._parse_datetime(race_info.get('postTime')), runners=runners, source=self.SOURCE_ID))
-            except Exception as e: self.logger.warning(f"Skipping malformed TVG race: {e}")
-        self.cache[cache_key] = all_races
-        return all_races
+                        if odds:
+                            transformed_runners.append({
+                                'name': r.get('horseName', 'N/A'),
+                                'odds': odds
+                            })
+
+                if len(transformed_runners) < 3:
+                    continue
+
+                transformed_race = {
+                    'race_id': f"tvg_{race_data.get('raceId')}",
+                    'track_name': race_data.get('trackName', 'N/A'),
+                    'race_number': race_data.get('raceNumber'),
+                    'post_time': self._parse_datetime(race_data.get('postTime')),
+                    'runners': transformed_runners,
+                    'source': self.SOURCE_ID
+                }
+                validated_races.append(Race.parse_obj(transformed_race))
+            except Exception as e:
+                self.logger.warning(f"[VALIDATION_ERROR] Skipping malformed TVG race: {e}")
+
+        self.cache[cache_key] = validated_races
+        return validated_races
     def _parse_odds(self, odds_data) -> Optional[float]:
         if not odds_data or odds_data.get('morningLine') is None: return None
         try: num, den = map(int, odds_data['morningLine'].split('/')); return (num / den) + 1.0
@@ -168,12 +194,14 @@ class EnhancedTVGAdapter(BaseAdapterV8):
         except: return None
 
 class EnhancedBetfairAdapter(BaseAdapterV8):
+    NAME = "Betfair"
     SOURCE_ID = "betfair_exchange"
     BASE_URL = "https://ero.betfair.com/www/sports/exchange/readonly/v1/bymarket?alt=json&filter=canonical&maxResults=10&eventTypeIds=7"
     def fetch_races(self) -> List[Race]:
         data = self.fetcher.get(self.BASE_URL, headers={'Accept': 'application/json'})
         if not data: return []
-        races = []
+
+        validated_races = []
         try:
             event_nodes = data.get('eventTypes', [{}])[0].get('eventNodes', [])
             for event_node in event_nodes[:3]:
@@ -181,59 +209,110 @@ class EnhancedBetfairAdapter(BaseAdapterV8):
                 for market_node in event_node.get('marketNodes', []):
                     market = market_node.get('market', {})
                     if market.get('marketType') != 'WIN': continue
-                    runners = []
+
+                    transformed_runners = []
                     for runner in market_node.get('runners', []):
                         if runner.get('state', {}).get('status') == 'ACTIVE':
                             odds = None
                             if 'exchange' in runner:
                                 available_to_back = runner['exchange'].get('availableToBack', [])
                                 if available_to_back: odds = available_to_back[0].get('price')
-                            if odds: runners.append(Runner(name=runner.get('description', {}).get('runnerName', 'Unknown'), odds=odds))
-                    if len(runners) >= 3:
-                        races.append(Race(race_id=f"betfair_{market.get('marketId', 'unknown')}", track_name=event.get('venue', 'Betfair Exchange'), runners=runners, source=self.SOURCE_ID))
-        except Exception as e: self.logger.error(f"Error parsing Betfair data: {e}")
-        return races
+                            if odds:
+                                transformed_runners.append({
+                                    'name': runner.get('description', {}).get('runnerName', 'Unknown'),
+                                    'odds': odds
+                                })
+
+                    if len(transformed_runners) >= 3:
+                        try:
+                            transformed_race = {
+                                'race_id': f"betfair_{market.get('marketId', 'unknown')}",
+                                'track_name': event.get('venue', 'Betfair Exchange'),
+                                'runners': transformed_runners,
+                                'source': self.SOURCE_ID
+                                # Note: Betfair API doesn't provide race_number or post_time in this endpoint
+                            }
+                            validated_races.append(Race.parse_obj(transformed_race))
+                        except Exception as e:
+                            self.logger.warning(f"[VALIDATION_ERROR] Skipping malformed Betfair race: {e}")
+
+        except Exception as e:
+            self.logger.error(f"Error parsing Betfair data: {e}")
+            
+        return validated_races
 
 PRODUCTION_ADAPTERS = [EnhancedTVGAdapter, EnhancedBetfairAdapter]
 
 class SuperchargedOrchestrator:
-    def __init__(self, settings: Settings):
+    def __init__(self, config):
         self.fetcher = DefensiveFetcher()
-        self.settings = settings
-        self.adapters = [Adapter(self.fetcher, self.settings) for Adapter in PRODUCTION_ADAPTERS]
+        self.config = config
+        self.adapters = [Adapter(self.fetcher, self.config) for Adapter in PRODUCTION_ADAPTERS]
         self.logger = logging.getLogger(self.__class__.__name__)
+
     def get_races_parallel(self) -> List[Race]:
         all_races = []
         with concurrent.futures.ThreadPoolExecutor(max_workers=len(self.adapters)) as executor:
             future_to_adapter = {executor.submit(adapter.fetch_races): adapter for adapter in self.adapters}
+
             for future in concurrent.futures.as_completed(future_to_adapter):
+                adapter = future_to_adapter[future]
                 try:
                     races = future.result()
-                    if races: all_races.extend(races)
-                except Exception as e: self.logger.error(f"Adapter {future_to_adapter[future].__class__.__name__} failed: {e}", exc_info=True)
-        return all_races
+                    if races:
+                        self.logger.info(f"Adapter '{adapter.NAME}' successfully fetched {len(races)} races.")
+                        all_races.extend(races)
+                    else:
+                        self.logger.warning(f"Adapter '{adapter.NAME}' returned no races.")
+                except Exception as e:
+                    self.logger.critical(f"Adapter '{adapter.NAME}' failed during execution: {e}", exc_info=True)
+
+        return self._post_process(all_races)
+
+    def _post_process(self, races: List[Race]) -> List[Race]:
+        # Deduplicate races based on a unique identifier
+        processed = {race.race_id: race for race in races}.values()
+        return list(processed)
 
 class EnhancedTrifectaAnalyzer:
-    def __init__(self, settings: Settings):
-        self.settings = settings
+    def __init__(self, config):
+        self.config = config['analysis']
+
     def analyze_race(self, race: Race) -> Race:
         score, factors = 0.0, {}
         horses_with_odds = sorted([r for r in race.runners if r.odds], key=lambda h: h.odds)
         num_runners = len(horses_with_odds)
-        if self.settings.FIELD_SIZE_OPTIMAL_MIN <= num_runners <= self.settings.FIELD_SIZE_OPTIMAL_MAX: p, ok, r = self.settings.FIELD_SIZE_OPTIMAL_POINTS, True, f"Optimal field size ({num_runners})"
-        elif self.settings.FIELD_SIZE_ACCEPTABLE_MIN <= num_runners <= self.settings.FIELD_SIZE_ACCEPTABLE_MAX: p, ok, r = self.settings.FIELD_SIZE_ACCEPTABLE_POINTS, True, f"Acceptable field size ({num_runners})"
-        else: p, ok, r = self.settings.FIELD_SIZE_PENALTY_POINTS, False, f"Field size not ideal ({num_runners})"
+
+        # Get values from config
+        field_size_optimal_min = self.config.getint('field_size_optimal_min')
+        field_size_optimal_max = self.config.getint('field_size_optimal_max')
+        field_size_acceptable_min = self.config.getint('field_size_acceptable_min')
+        field_size_acceptable_max = self.config.getint('field_size_acceptable_max')
+        field_size_optimal_points = self.config.getfloat('field_size_optimal_points')
+        field_size_acceptable_points = self.config.getfloat('field_size_acceptable_points')
+        field_size_penalty_points = self.config.getfloat('field_size_penalty_points')
+        max_fav_odds = self.config.getfloat('max_fav_odds')
+        fav_odds_points = self.config.getfloat('fav_odds_points')
+        min_2nd_fav_odds = self.config.getfloat('min_2nd_fav_odds')
+        second_fav_odds_points = self.config.getfloat('second_fav_odds_points')
+        qualification_score = self.config.getfloat('qualification_score')
+
+        if field_size_optimal_min <= num_runners <= field_size_optimal_max: p, ok, r = field_size_optimal_points, True, f"Optimal field size ({num_runners})"
+        elif field_size_acceptable_min <= num_runners <= field_size_acceptable_max: p, ok, r = field_size_acceptable_points, True, f"Acceptable field size ({num_runners})"
+        else: p, ok, r = field_size_penalty_points, False, f"Field size not ideal ({num_runners})"
         score += p; factors["fieldSize"] = {"points": p, "ok": ok, "reason": r}
+
         if num_runners >= 2:
             fav, sec_fav = horses_with_odds[0], horses_with_odds[1]
-            if fav.odds <= self.settings.MAX_FAV_ODDS: p, ok, r = self.settings.FAV_ODDS_POINTS, True, f"Favorite odds OK ({fav.odds:.2f})"
+            if fav.odds <= max_fav_odds: p, ok, r = fav_odds_points, True, f"Favorite odds OK ({fav.odds:.2f})"
             else: p, ok, r = 0, False, f"Favorite odds too high ({fav.odds:.2f})"
             score += p; factors["favoriteOdds"] = {"points": p, "ok": ok, "reason": r}
-            if sec_fav.odds >= self.settings.MIN_2ND_FAV_ODDS: p, ok, r = self.settings.SECOND_FAV_ODDS_POINTS, True, f"2nd Favorite OK ({sec_fav.odds:.2f})"
+            if sec_fav.odds >= min_2nd_fav_odds: p, ok, r = second_fav_odds_points, True, f"2nd Favorite OK ({sec_fav.odds:.2f})"
             else: p, ok, r = 0, False, f"2nd Favorite odds too low ({sec_fav.odds:.2f})"
             score += p; factors["secondFavoriteOdds"] = {"points": p, "ok": ok, "reason": r}
+
         race.checkmate_score = score
-        race.is_qualified = score >= self.settings.QUALIFICATION_SCORE
+        race.is_qualified = score >= qualification_score
         race.trifecta_factors_json = json.dumps(factors)
         return race
 
@@ -249,10 +328,12 @@ if __name__ == "__main__":
     print("="*60)
 
     print("\n[1/4] 🔧 INITIALIZING COMPONENTS...")
-    settings = Settings()
-    print(f"  ├─ Qualification Score: {settings.QUALIFICATION_SCORE}")
-    orchestrator = SuperchargedOrchestrator(settings)
-    analyzer = EnhancedTrifectaAnalyzer(settings)
+    config = configparser.ConfigParser()
+    config.read('config.ini')
+
+    print(f"  ├─ Qualification Score: {config.getfloat('analysis', 'qualification_score')}")
+    orchestrator = SuperchargedOrchestrator(config)
+    analyzer = EnhancedTrifectaAnalyzer(config)
     db_handler = DatabaseHandler(':memory:')
     print("✅ Components Initialized (using in-memory database for diagnostic)")
 
@@ -275,7 +356,7 @@ if __name__ == "__main__":
     print(f"✅ Analysis complete in {analysis_time:.2f}s")
     print(f"  📈 Analysis Results:")
     print(f"    ├─ Total Races: {len(analyzed_races)}")
-    print(f"    ├─ Qualified (≥{settings.QUALIFICATION_SCORE}): {len(qualified_races)}")
+    print(f"    ├─ Qualified (≥{config.getfloat('analysis', 'qualification_score')}): {len(qualified_races)}")
 
     if qualified_races:
         print("\n  🏆 TOP QUALIFIED RACES:")
