@@ -16,6 +16,7 @@ Setup:
 1. pip install -r requirements.txt
 2. Create .env with: RACING_API_KEY="your_key" (optional)
 3. Run: streamlit run the_one_script.py
+ 
 """
 
 import logging
@@ -46,7 +47,6 @@ class Settings(BaseSettings):
     MAX_FAV_ODDS: float = 3.5
     SECOND_FAV_ODDS_POINTS: int = 40
     MIN_2ND_FAV_ODDS: float = 4.0
-
 
 class Runner(BaseModel):
     name: str
