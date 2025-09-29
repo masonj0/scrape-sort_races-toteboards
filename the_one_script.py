@@ -36,6 +36,7 @@ from pydantic_settings import BaseSettings
 import pandas as pd
 import tempfile
 import subprocess
+from tenacity import retry, stop_after_attempt, wait_exponential, RetryError
 
 
 # --- 1. LOGGING & SETTINGS ---
@@ -98,7 +99,9 @@ class DefensiveFetcher:
         self.failure_counts[domain] = 0
         return False
 
-    def record_success(self, domain: str): self.failure_counts[domain] = 0
+    def record_success(self, domain: str):
+        self.failure_counts[domain] = 0
+
     def record_failure(self, domain: str):
         self.failure_counts[domain] = self.failure_counts.get(domain, 0) + 1
         self.last_failure_time[domain] = time.time()
@@ -108,23 +111,36 @@ class DefensiveFetcher:
         from urllib.parse import urlparse
         return urlparse(url).netloc
 
+    @retry(
+        stop=stop_after_attempt(3),
+        wait=wait_exponential(multiplier=1, min=2, max=10),
+        reraise=True
+    )
+    async def _make_request(self, url: str, headers: Optional[Dict[str, str]] = None) -> Dict[str, Any]:
+        """A single, decorated attempt to make an async network request."""
+        logging.info(f"Attempting request for {url}...")
+        response = await self._client.get(url, headers=headers or {})
+        response.raise_for_status()
+        return response.json()
+
     async def get(self, url: str, headers: Optional[Dict[str, str]] = None) -> Optional[Dict[str, Any]]:
         domain = self.get_domain(url)
         if self.is_circuit_breaker_open(domain):
-            logging.warning(f"Circuit breaker open for {domain}")
+            logging.warning(f"Circuit breaker is open for {domain}. Skipping request.")
             return None
-        for attempt in range(3):
-            try:
-                response = await self._client.get(url, headers=headers or {})
-                response.raise_for_status()
-                self.record_success(domain)
-                return response.json()
-            except (httpx.HTTPError, json.JSONDecodeError) as e:
-                wait = (2 ** attempt) + (0.1 * attempt)
-                logging.warning(f"HTTP/JSON failure from {domain} (attempt {attempt+1}): {e}. Backing off {wait:.1f}s")
-                if attempt == 2: self.record_failure(domain)
-                await asyncio.sleep(wait)
-        return None
+
+        try:
+            response = await self._make_request(url, headers=headers)
+            self.record_success(domain)
+            return response
+        except RetryError as e:
+            logging.critical(f"All retry attempts failed for {url}. Last error: {e}")
+            self.record_failure(domain)
+            return None
+        except Exception as e:
+            logging.critical(f"A non-retryable error occurred for {url}: {e}")
+            self.record_failure(domain)
+            return None
 
 # --- 4. DATA SOURCE ADAPTERS ---
 class BaseAdapter(ABC):
