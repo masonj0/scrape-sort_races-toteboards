@@ -21,3 +21,25 @@ paddock_parser_predict = "paddock_parser.entry_points:run_prediction_engine"
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+# ==============================================================================
+# == Ruff Linter and Formatter Configuration
+# ==============================================================================
+# This is the single source of truth for all Python code style and quality rules.
+# Run with `ruff check .` and `ruff format .`
+# ==============================================================================
+
+[tool.ruff]
+# Allow files to be skipped if they are in a .gitignore file
+respect-gitignore = true
+
+[tool.ruff.lint]
+# A sensible default set of rules, including the most common flake8 rules.
+select = ["E", "F", "W", "I", "B"]
+ignore = []
+
+[tool.ruff.format]
+# Use single quotes for strings where possible.
+quote-style = "single"
+# Like Black, indent with spaces, rather than tabs.
+indent-style = "space"
