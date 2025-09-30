@@ -10,73 +10,42 @@
 .
 ├── .env
 ├── ARCHITECTURAL_MANDATE.md
+├── HISTORY.md
 ├── README.md
 ├── STATUS.md
-├── desktop_app
+├── build_python_service.py
+├── pyproject.toml
+├── desktop_app/
 │   ├── App.xaml
 │   ├── App.xaml.cs
 │   ├── CheckmateDeck.csproj
-│   ├── Models
-│   │   ├── AdapterStatusDisplay.cs
-│   │   └── DisplayRace.cs
-│   ├── Services
-│   │   ├── DatabaseService.cs
-│   │   └── IDatabaseService.cs
-│   ├── ViewModels
-│   │   └── MainViewModel.cs
-│   ├── Views
-│   │   ├── MainWindow.xaml
-│   │   └── MainWindow.xaml.cs
-│   └── app_config.json
-├── python_service
+│   ├── Models/
+│   ├── Services/
+│   ├── ViewModels/
+│   └── Views/
+├── python_service/
 │   ├── __init__.py
+│   ├── adapters/
 │   ├── checkmate_service.py
+│   ├── engine.py
+│   ├── main.py
 │   ├── requirements.txt
 │   └── windows_service_wrapper.py
-├── rust_engine
+├── rust_engine/
 │   ├── Cargo.lock
 │   ├── Cargo.toml
-│   └── src
-│       ├── ffi.rs
-│       ├── lib.rs
-│       └── main.rs
+│   └── src/
 ├── setup_windows.bat
-├── shared_database
+├── shared_database/
 │   ├── schema.sql
 │   └── web_schema.sql
-├── vba_source
+├── vba_source/
 │   ├── Module_Charts.bas
 │   ├── Module_DB.bas
 │   └── Module_UI.bas
-└── web_platform
-    ├── api_gateway
-    │   ├── .env
-    │   ├── package-lock.json
-    │   ├── package.json
-    │   ├── src
-    │   │   ├── server.ts
-    │   │   └── services
-    │   │       └── DatabaseService.ts
-    │   └── tsconfig.json
-    └── frontend
-        ├── app
-        │   ├── globals.css
-        │   ├── layout.tsx
-        │   └── page.tsx
-        ├── package-lock.json
-        ├── package.json
-        ├── postcss.config.js
-        ├── src
-        │   ├── components
-        │   │   ├── LiveRaceDashboard.tsx
-        │   │   ├── RaceCard.tsx
-        │   │   ├── ScoreBadge.tsx
-        │   │   └── TrifectaFactors.tsx
-        │   ├── hooks
-        │   │   └── useRealTimeRaces.ts
-        │   └── types
-        │       └── racing.ts
-        └── tailwind.config.ts
+└── web_platform/
+    ├── api_gateway/
+    └── frontend/
 ```
 
 ---
@@ -86,8 +55,11 @@
 ### Root
 https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/main/.env
 https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/main/ARCHITECTURAL_MANDATE.md
+https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/main/HISTORY.md
 https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/main/README.md
 https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/main/STATUS.md
+https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/main/build_python_service.py
+https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/main/pyproject.toml
 https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/main/setup_windows.bat
 
 ### C# Command Deck (`desktop_app`)
@@ -106,12 +78,21 @@ https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/main/desk
 ### Python Collection Corps (`python_service`)
 https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/main/python_service/__init__.py
 https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/main/python_service/checkmate_service.py
+https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/main/python_service/engine.py
+https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/main/python_service/main.py
 https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/main/python_service/requirements.txt
 https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/main/python_service/windows_service_wrapper.py
+https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/main/python_service/adapters/__init__.py
+https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/main/python_service/adapters/base.py
+https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/main/python_service/adapters/betfair_adapter.py
+https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/main/python_service/adapters/pointsbet_adapter.py
+https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/main/python_service/adapters/tvg_adapter.py
+https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/main/python_service/adapters/utils.py
 
 ### Rust Analysis Core (`rust_engine`)
 https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/main/rust_engine/Cargo.lock
 https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/main/rust_engine/Cargo.toml
+https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/main/rust_engine/benches/analysis_benchmark.rs
 https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/main/rust_engine/src/ffi.rs
 https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/main/rust_engine/src/lib.rs
 https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/main/rust_engine/src/main.rs

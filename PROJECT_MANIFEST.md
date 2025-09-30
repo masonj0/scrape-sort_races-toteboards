@@ -8,8 +8,11 @@
 
 *   `.env`: **CORE** - Centralized configuration for all platforms.
 *   `ARCHITECTURAL_MANDATE.md`: **CORE** - The project's strategic blueprint.
+*   `HISTORY.md`: **CORE** - The project's official, running log of major events.
 *   `README.md`: **CORE** - The primary entry point for new developers.
 *   `STATUS.md`: **CORE** - The live status report for the project.
+*   `build_python_service.py`: **CORE** - Build script for the Python service.
+*   `pyproject.toml`: **CORE** - Configuration for Python tooling (Ruff).
 *   `desktop_app/`: **CORE** - The C# Command Deck.
 *   `python_service/`: **CORE** - The Python Collection Corps.
 *   `rust_engine/`: **CORE** - The Rust Analysis Core.
@@ -22,6 +25,7 @@
 
 ## LEGACY & HISTORICAL ARTIFACTS (To Be Archived)
 
+*   All other files and directories not listed in CORE are considered LEGACY and are candidates for archival in the next phase of "The Great Simplification."
 *   `.env.example`: **LEGACY** - Superseded by the live `.env` file.
 *   `.gitignore`: **LEGACY** - Likely out of date; needs to be reviewed and consolidated.
 *   `AGENTS.md`: **LEGACY** - Historical agent protocols.
