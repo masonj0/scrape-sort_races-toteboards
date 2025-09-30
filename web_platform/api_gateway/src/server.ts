@@ -1,21 +1,40 @@
-import dotenv from 'dotenv';
-dotenv.config(); // Load environment variables from .env file
-
 import express from 'express';
-import raceRoutes from './routes/races';
+import http from 'http';
+import { Server } from 'socket.io';
+import cors from 'cors';
+import { DatabaseService } from './services/DatabaseService';
+import raceRoutes from './routes/races'; // Assuming this provides REST as well
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const server = http.createServer(app);
+const io = new Server(server, {
+  cors: { origin: "*", methods: ["GET", "POST"] }
+});
+const dbService = new DatabaseService();
 
+app.use(cors());
 app.use(express.json());
-
-// Mount the race routes
 app.use('/api', raceRoutes);
 
-app.get('/', (req, res) => {
-  res.send('Checkmate API Gateway is running.');
+// --- Real-time WebSocket Logic ---
+io.on('connection', (socket) => {
+  console.log('A client connected to the WebSocket.');
+  socket.on('disconnect', () => {
+    console.log('A client disconnected.');
+  });
 });
 
-app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
+// Poll the database for changes and emit updates to all clients
+setInterval(async () => {
+  try {
+    const qualifiedRaces = await dbService.getQualifiedRaces();
+    io.emit('races:updated', qualifiedRaces);
+  } catch (error) {
+    console.error('Error polling for database updates:', error);
+  }
+}, 5000); // Poll every 5 seconds
+
+const PORT = process.env.PORT || 8080;
+server.listen(PORT, () => {
+  console.log(`API Gateway and WebSocket server running on port ${PORT}`);
 });
