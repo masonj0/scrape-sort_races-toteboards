@@ -22,24 +22,26 @@ class DatabaseHandler:
 
     def _setup_database(self):
         try:
-            # Construct robust paths to both schema files
+            # Correctly resolve paths from the service's location
             base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
             schema_path = os.path.join(base_dir, 'shared_database', 'schema.sql')
             web_schema_path = os.path.join(base_dir, 'shared_database', 'web_schema.sql')
 
+            # Read both schema files
             with open(schema_path, 'r') as f:
                 schema = f.read()
             with open(web_schema_path, 'r') as f:
                 web_schema = f.read()
 
+            # Apply both schemas in a single transaction
             with self._get_connection() as conn:
                 cursor = conn.cursor()
                 cursor.executescript(schema)
                 cursor.executescript(web_schema)
                 conn.commit()
-            self.logger.info(f"Database schemas applied successfully from {schema_path} and {web_schema_path}.")
+            self.logger.info("CRITICAL SUCCESS: All database schemas (base + web) applied successfully.")
         except Exception as e:
-            self.logger.critical(f"FATAL: Could not set up database from schema files: {e}", exc_info=True)
+            self.logger.critical(f"FATAL: Database setup failed. Other platforms will fail. Error: {e}", exc_info=True)
             raise
 
     def update_races_and_status(self, races: List[Race], statuses: List[dict]):
