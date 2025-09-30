@@ -5,22 +5,38 @@ using System.IO;
 using System.Text.Json;
 using System.Threading.Tasks;
 using CheckmateDeck.Models;
+using Microsoft.Extensions.Logging;
 
 namespace CheckmateDeck.Services
 {
     public class DatabaseService : IDatabaseService
     {
         private readonly string _connectionString;
+        private readonly ILogger<DatabaseService> _logger;
 
-        public DatabaseService()
+        public DatabaseService(ILogger<DatabaseService> logger)
         {
-            // A simple config loader. Can be replaced with a more robust library later.
-            string configJson = File.ReadAllText("app_config.json");
-            using (JsonDocument configDoc = JsonDocument.Parse(configJson))
+            _logger = logger;
+            try
             {
-                string relativeDbPath = configDoc.RootElement.GetProperty("DatabasePath").GetString();
-                string absoluteDbPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, relativeDbPath);
-                _connectionString = $"Data Source={absoluteDbPath};Version=3;Read Only=True;";
+                string dbPath = Environment.GetEnvironmentVariable("CHECKMATE_DB_PATH");
+                if (string.IsNullOrEmpty(dbPath))
+                {
+                    throw new InvalidOperationException("CRITICAL: CHECKMATE_DB_PATH environment variable is not set.");
+                }
+
+                if (!File.Exists(dbPath))
+                {
+                    _logger.LogWarning("Database file does not exist at the path specified by CHECKMATE_DB_PATH: {Path}", dbPath);
+                }
+
+                _connectionString = $"Data Source={dbPath};Version=3;Read Only=True;";
+                _logger.LogInformation("DatabaseService initialized with path from environment variable.");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogCritical(ex, "Failed to initialize DatabaseService from environment variable.");
+                throw;
             }
         }
 
