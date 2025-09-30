@@ -1,35 +1,30 @@
+// RaceCard.tsx - FINAL, DYNAMIC VERSION
 'use client';
 import React from 'react';
-import { motion } from 'framer-motion';
-import { QualifiedRace } from '../hooks/useRealTimeRaces';
 import { ScoreBadge } from './ScoreBadge';
-import { TrifectaFactors } from './TrifectaFactors'; // Import the new component
+import { TrifectaFactors } from './TrifectaFactors';
+import { Race } from '../types/racing';
 
-const getScoreColorClass = (score: number) => {
-  if (score >= 90) return 'border-l-yellow-400';
-  if (score >= 80) return 'border-l-orange-500';
-  return 'border-l-sky-500';
-};
+interface RaceCardProps {
+  race: Race;
+}
 
-export const RaceCard: React.FC<{ race: QualifiedRace }> = ({ race }) => {
+export function RaceCard({ race }: RaceCardProps) {
+  const postTime = new Date(race.post_time).toLocaleTimeString('en-US', {
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+
   return (
-    <motion.div
-      layout
-      initial={{ opacity: 0, scale: 0.9 }}
-      animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.9 }}
-      transition={{ duration: 0.35, type: 'spring' }}
-      className={`rounded-lg border-l-4 ${getScoreColorClass(race.checkmate_score)} bg-slate-800/50 p-5 shadow-xl backdrop-blur-sm`}
-    >
-      <div className="flex justify-between items-start">
+    <div className="border p-4 rounded-lg shadow-md bg-white hover:shadow-lg transition-shadow duration-200">
+      <div className="flex justify-between items-start mb-2">
         <div>
-          <h3 className="text-xl font-semibold text-white">{race.track_name} R{race.race_number}</h3>
-          <p className="text-slate-400">Post: {new Date(race.post_time).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</p>
+          <h3 className="font-bold text-lg">{race.track_name} - Race {race.race_number}</h3>
+          <p className="text-sm text-gray-600">Post Time: {postTime}</p>
         </div>
         <ScoreBadge score={race.checkmate_score} />
       </div>
-      {/* Replace the placeholder comment with our new component */}
-      <TrifectaFactors factors={race.trifecta_factors} />
-    </motion.div>
+      <TrifectaFactors factorsJson={race.trifecta_factors_json} />
+    </div>
   );
-};
+}

@@ -1,29 +1,38 @@
+// TrifectaFactors.tsx - FINAL, DYNAMIC VERSION
 'use client';
 import React from 'react';
-import { FactorResult } from '../hooks/useRealTimeRaces';
 
-const factorNameMapping: Record<string, string> = {
-    fieldSize: 'Field Size',
-    favoriteOdds: 'Favorite Odds',
-    secondFavoriteOdds: '2nd Favorite Odds'
-};
+interface TrifectaFactorsProps {
+  factorsJson: string | null;
+}
 
-export const TrifectaFactors: React.FC<{ factors: Record<string, FactorResult> }> = ({ factors }) => {
-    if (!factors) return null;
+export function TrifectaFactors({ factorsJson }: TrifectaFactorsProps) {
+  if (!factorsJson) {
+    return <div className="text-sm text-gray-500">No analysis factors available.</div>;
+  }
+
+  try {
+    const factors = JSON.parse(factorsJson);
+    const positiveFactors = Object.entries(factors).filter(([key, value]: [string, any]) => value.ok);
+
+    if (positiveFactors.length === 0) {
+      return <div className="text-sm text-gray-500">No positive factors identified.</div>;
+    }
 
     return (
-        <div className="mt-4 pt-4 border-t border-slate-700/50 space-y-2">
-            {Object.entries(factors).map(([key, factor]) => (
-                <div key={key} className="flex justify-between items-center text-sm">
-                    <div className="flex items-center space-x-2">
-                        <span className={`w-2 h-2 rounded-full ${factor.ok ? 'bg-green-400' : 'bg-red-400'}`}></span>
-                        <span className="text-slate-400">{factorNameMapping[key] || key}</span>
-                    </div>
-                    <span className="font-mono font-semibold text-white">
-                        {factor.points > 0 ? '+' : ''}{factor.points.toFixed(0)}
-                    </span>
-                </div>
-            ))}
-        </div>
+      <div className="mt-2 text-xs">
+        <h4 className="font-semibold mb-1">Key Factors:</h4>
+        <ul className="list-disc list-inside space-y-1">
+          {positiveFactors.map(([key, value]: [string, any]) => (
+            <li key={key} className="text-gray-700">
+              <span className="font-medium text-green-600">✓</span> {value.reason} ({value.points > 0 ? `+${value.points}` : value.points} pts)
+            </li>
+          ))}
+        </ul>
+      </div>
     );
-};
+  } catch (error) {
+    console.error("Failed to parse trifecta factors:", error);
+    return <div className="text-sm text-red-500">Error displaying analysis factors.</div>;
+  }
+}

@@ -1,47 +1,46 @@
+// LiveRaceDashboard.tsx - FINAL, DYNAMIC VERSION
 'use client';
 import React from 'react';
 import { useRealTimeRaces } from '../hooks/useRealTimeRaces';
+import { RaceCard } from './RaceCard';
+import { Race } from '../types/racing';
 
 export function LiveRaceDashboard() {
   const { races, isConnected } = useRealTimeRaces();
 
   return (
-    <div className="p-4">
-      <h1 className="text-2xl font-bold mb-4">Live Race Dashboard</h1>
-      <div className="mb-4">
-        Connection Status: {isConnected ? <span className="text-green-500">Connected</span> : <span className="text-red-500">Disconnected</span>}
-      </div>
-
-      {!isConnected && <p>Connecting to the live data feed...</p>}
-
-      {isConnected && races.length === 0 && (
-        <p>Connected, waiting for race data...</p>
-      )}
-
-      {isConnected && races.length > 0 && (
-        <div className="overflow-x-auto">
-          <table className="min-w-full bg-white">
-            <thead>
-              <tr>
-                <th className="py-2 px-4 border-b">Track</th>
-                <th className="py-2 px-4 border-b">Race #</th>
-                <th className="py-2 px-4 border-b">Post Time</th>
-                <th className="py-2 px-4 border-b">Score</th>
-              </tr>
-            </thead>
-            <tbody>
-              {races.map((race) => (
-                <tr key={race.race_id}>
-                  <td className="py-2 px-4 border-b">{race.track_name}</td>
-                  <td className="py-2 px-4 border-b">{race.race_number}</td>
-                  <td className="py-2 px-4 border-b">{new Date(race.post_time).toLocaleTimeString()}</td>
-                  <td className="py-2 px-4 border-b font-bold">{race.checkmate_score.toFixed(2)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+    <div className="p-4 md:p-6 bg-gray-100 min-h-screen">
+      <div className="max-w-7xl mx-auto">
+        <div className="flex justify-between items-center mb-4">
+          <h1 className="text-3xl font-bold text-gray-800">Live Race Dashboard</h1>
+          <div className="text-sm font-medium">
+            Status: {isConnected ?
+              <span className="text-green-600">● Connected</span> :
+              <span className="text-red-600">● Disconnected</span>}
+          </div>
         </div>
-      )}
+
+        {!isConnected && (
+          <div className="text-center p-8 bg-white rounded-lg shadow-md">
+            <p className="text-gray-600">Connecting to the live data feed...</p>
+          </div>
+        )}
+
+        {isConnected && races.length === 0 && (
+          <div className="text-center p-8 bg-white rounded-lg shadow-md">
+            <p className="text-gray-600">Connected. Waiting for the first set of qualified race data...</p>
+            <p className="text-xs text-gray-400 mt-2">This may take a moment. Ensure the Python service is running.</p>
+          </div>
+        )}
+
+        {isConnected && races.length > 0 && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {(races as Race[]).map((race) => (
+              <RaceCard key={race.race_id} race={race} />
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
