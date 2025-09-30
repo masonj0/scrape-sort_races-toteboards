@@ -2,15 +2,34 @@ Option Explicit
 
 ' ==============================================================================
 ' == Checkmate V8 - Excel VBA Database Module
+' == This module now reads the database path from the CHECKMATE_DB_PATH
+' == environment variable, establishing a single source of truth.
 ' ==============================================================================
 
-' --- CONFIGURATION PROTOCOL NOTE ---
-' The DB_PATH is a fixed path for simplicity. A more robust solution
-' would read this path from an external configuration file.
-'
-Private Const DB_PATH As String = "C:\YourProjectPath\shared_database\races.db"
-Private Const ODBC_DRIVER As String = "SQLite3-64 ODBC Driver"
-
 Public Function GetDatabaseConnection() As ADODB.Connection
-    ' Implementation as defined in the sanctioned proposal...
+    On Error GoTo ErrorHandler
+
+    Dim dbPath As String
+    dbPath = Environ("CHECKMATE_DB_PATH")
+
+    If dbPath = "" Then
+        MsgBox "CRITICAL ERROR: The CHECKMATE_DB_PATH environment variable is not set." & vbCrLf & vbCrLf & _
+               "Please ensure the .env file is configured and the Python service has been run at least once.", vbCritical, "Configuration Error"
+        Set GetDatabaseConnection = Nothing
+        Exit Function
+    End If
+
+    Dim conn As ADODB.Connection
+    Set conn = New ADODB.Connection
+
+    Dim connStr As String
+    connStr = "Driver={SQLite3 ODBC Driver};Database=" & dbPath & ";SyncPragma=NORMAL;"
+
+    conn.Open connStr
+    Set GetDatabaseConnection = conn
+    Exit Function
+
+ErrorHandler:
+    MsgBox "Failed to connect to database: " & Err.Description, vbCritical, "Database Connection Failed"
+    Set GetDatabaseConnection = Nothing
 End Function

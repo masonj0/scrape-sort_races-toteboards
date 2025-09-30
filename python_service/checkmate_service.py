@@ -75,12 +75,25 @@ class DatabaseHandler:
 
 class CheckmateBackgroundService:
     def __init__(self):
+        self.logger = logging.getLogger(self.__class__.__name__)
+        from dotenv import load_dotenv
+
+        dotenv_path = os.path.join(os.path.dirname(__file__), '..', '.env')
+        load_dotenv(dotenv_path=dotenv_path)
+
+        db_path = os.getenv("CHECKMATE_DB_PATH")
+        if not db_path:
+            self.logger.critical("FATAL: CHECKMATE_DB_PATH environment variable not set. Service cannot start.")
+            raise ValueError("CHECKMATE_DB_PATH is not configured.")
+
+        self.logger.info(f"Database path loaded from environment: {db_path}")
+
         self.settings = Settings()
-        self.db_handler = DatabaseHandler(os.path.join(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')), "shared_database", "races.db"))
+        self.db_handler = DatabaseHandler(db_path)
         self.orchestrator = SuperchargedOrchestrator(self.settings)
         self.analyzer = EnhancedTrifectaAnalyzer(self.settings)
         self.stop_event = threading.Event()
-        self.logger = logging.getLogger(self.__class__.__name__)
+        self.rust_engine_path = os.path.join(os.path.dirname(__file__), '..', 'rust_engine', 'target', 'release', 'checkmate_engine.exe')
 
     def run_continuously(self, interval_seconds: int = 60):
         self.logger.info("Supercharged background service starting continuous run.")
