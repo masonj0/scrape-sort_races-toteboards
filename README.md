@@ -1,21 +1,33 @@
-# Checkmate V8: The Quad-Hybrid Architecture
+# Checkmate V8: The Quad-Hybrid Racing Analysis Platform
 
-A professional-grade, multi-platform data analysis system for real-time horse racing. This project utilizes a unique four-part architecture to achieve hyper-performance, robustness, and ubiquitous access.
+This repository contains the complete source code for Checkmate V8, a professional-grade, multi-language horse racing analysis platform.
 
 ---
 
-## Architecture: The Quad-Hybrid System
+## 🏛️ Project Architecture
 
-1.  **🐍 The Collection Corps (Python Service):** A robust Windows service for all data collection and orchestration.
-2.  **🦀 The Analysis Core (Rust Engine):** A compiled, memory-safe, parallel-processing library for all heavy computation, providing a 50-100x performance increase.
-3.  **🌐 The Digital Front (TypeScript Web Platform):** A modern, real-time web application for browser-based, multi-user, and mobile access.
-4.  **🖥️ The Command Deck (C# Desktop App):** A native Windows desktop application for power-user features and deep system integration.
+The project is a **Penta-Hybrid** system designed for performance and flexibility:
 
-## Project Status
+*   **🐍 Python Service:** Handles data collection and orchestration.
+*   **🦀 Rust Engine:** High-performance computational analysis.
+*   **🖥️ C# Desktop App:** A native Windows "Command Deck" for power users.
+*   **🌐 TypeScript Web Platform:** A modern, real-time "Live Cockpit."
+*   **📊 Excel VBA Frontend:** A familiar interface for analysis and manual data stewardship.
 
--   ✅ **Phase 1: The Collection Corps (Python Service)** - COMPLETED (Production Grade)
--   ✅ **Phase 2: The Analysis Core (Rust Engine)** - COMPLETED (Production Grade)
--   ⚠️ **Phase 3: The Digital Front (TypeScript Web Platform)** - IN PROGRESS
--   ❌ **Phase 4: The Command Deck (C# Desktop App)** - FUTURE ENHANCEMENT
+All components are decoupled via a shared **SQLite database**.
 
-This repository currently contains the complete, functional code for the Python Service, the Rust Engine, and the foundational skeleton for the TypeScript Web Platform.
+---
+## 🚀 Quick Start (Python Service)
+
+**Running the Service:**
+The primary entry point for the Python service is `python_service/main.py`. From the project root, run:
+```bash
+python -m python_service.main
+```
+
+**Building the Executable:**
+A build script is provided to create a standalone Windows executable of the Python service.
+```bash
+python build_python_service.py
+```
+The output will be located in the `dist/` directory.
