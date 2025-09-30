@@ -1,4 +1,4 @@
-# Checkmate V8: The Quad-Hybrid Racing Analysis Platform
+# Checkmate V8: The Penta-Hybrid Racing Analysis Platform
 
 This repository contains the complete source code for Checkmate V8, a professional-grade, multi-language horse racing analysis platform.
 
@@ -6,7 +6,7 @@ This repository contains the complete source code for Checkmate V8, a profession
 
 ## 🏛️ Project Architecture
 
-The project is a **Penta-Hybrid** system designed for performance and flexibility:
+The project is a **Penta-Hybrid** system designed for performance, flexibility, and a rich user experience. Each component has a specialized role:
 
 *   **🐍 Python Service:** Handles data collection and orchestration.
 *   **🦀 Rust Engine:** High-performance computational analysis.
@@ -14,20 +14,8 @@ The project is a **Penta-Hybrid** system designed for performance and flexibilit
 *   **🌐 TypeScript Web Platform:** A modern, real-time "Live Cockpit."
 *   **📊 Excel VBA Frontend:** A familiar interface for analysis and manual data stewardship.
 
-All components are decoupled via a shared **SQLite database**.
+All components are decoupled and communicate via a shared **SQLite database**.
 
 ---
-## 🚀 Quick Start (Python Service)
 
-**Running the Service:**
-The primary entry point for the Python service is `python_service/main.py`. From the project root, run:
-```bash
-python -m python_service.main
-```
-
-**Building the Executable:**
-A build script is provided to create a standalone Windows executable of the Python service.
-```bash
-python build_python_service.py
-```
-The output will be located in the `dist/` directory.
+(Rest of README.md contents...)
