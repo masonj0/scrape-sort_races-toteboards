@@ -14,38 +14,16 @@
 ├── README.md
 ├── STATUS.md
 ├── build_python_service.py
+├── launcher.py
 ├── pyproject.toml
-├── desktop_app/
-│   ├── App.xaml
-│   ├── App.xaml.cs
-│   ├── CheckmateDeck.csproj
-│   ├── Models/
-│   ├── Services/
-│   ├── ViewModels/
-│   └── Views/
-├── python_service/
-│   ├── __init__.py
-│   ├── adapters/
-│   ├── checkmate_service.py
-│   ├── engine.py
-│   ├── main.py
-│   ├── requirements.txt
-│   └── windows_service_wrapper.py
-├── rust_engine/
-│   ├── Cargo.lock
-│   ├── Cargo.toml
-│   └── src/
 ├── setup_windows.bat
+├── tipsheet_generator.py
+├── desktop_app/
+├── python_service/
+├── rust_engine/
 ├── shared_database/
-│   ├── schema.sql
-│   └── web_schema.sql
 ├── vba_source/
-│   ├── Module_Charts.bas
-│   ├── Module_DB.bas
-│   └── Module_UI.bas
 └── web_platform/
-    ├── api_gateway/
-    └── frontend/
 ```
 
 ---
@@ -59,8 +37,10 @@ https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/main/HIST
 https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/main/README.md
 https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/main/STATUS.md
 https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/main/build_python_service.py
+https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/main/launcher.py
 https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/main/pyproject.toml
 https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/main/setup_windows.bat
+https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/main/tipsheet_generator.py
 
 ### C# Command Deck (`desktop_app`)
 https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/main/desktop_app/App.xaml

@@ -48,7 +48,14 @@ namespace CheckmateDeck.Services
                 await using (var connection = new SQLiteConnection(_connectionString))
                 {
                     await connection.OpenAsync();
-                    var command = new SQLiteCommand("SELECT race_id, track_name, race_number, post_time, checkmate_score FROM qualified_races ORDER BY post_time ASC", connection);
+                    // CRITICAL FIX: Query 'live_races' table directly with a WHERE clause.
+                    var command = new SQLiteCommand(@"
+                        SELECT race_id, track_name, race_number, post_time, checkmate_score
+                        FROM live_races
+                        WHERE qualified = 1
+                        ORDER BY checkmate_score DESC, post_time ASC",
+                        connection);
+
                     await using (var reader = await command.ExecuteReaderAsync())
                     {
                         while (await reader.ReadAsync())
@@ -65,10 +72,9 @@ namespace CheckmateDeck.Services
                     }
                 }
             }
-            catch (Exception ex) // Catch SQLiteException or base Exception
+            catch (Exception ex)
             {
-                // Replace with a proper logging mechanism
-                Console.WriteLine($"[ERROR] Failed to get qualified races: {ex.Message}");
+                _logger.LogError(ex, "Failed to get qualified races from database.");
             }
             return races;
         }
