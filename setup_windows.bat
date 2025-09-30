@@ -1,53 +1,70 @@
-@echo off
-setlocal
+@ECHO OFF
+SETLOCAL
 
-echo =================================================
-echo  Checkmate V7 Windows Setup
-echo =================================================
-echo.
+:: ==============================================================================
+:: == Checkmate V8: Penta-Hybrid Environment Setup & Verification Script
+:: ==============================================================================
 
-REM Check for Python
-echo Checking for Python 3.10+...
-python --version >nul 2>nul
-if %errorlevel% neq 0 (
-    echo [ERROR] Python is not installed or not in your PATH.
-    echo Please install Python 3.10 or higher and ensure it's added to your PATH.
-    goto :eof
-)
+ECHO.
+ECHO [SETUP] Starting Checkmate V8 Environment Verification...
+ECHO ==========================================================
 
-for /f "tokens=2" %%i in ('python --version') do set PYTHON_VERSION=%%i
-echo Found Python version: %PYTHON_VERSION%
-echo.
+:check_python
+ECHO.
+ECHO [1/4] Verifying Python and installing dependencies...
+WHERE python >nul 2>nul
+IF %ERRORLEVEL% NEQ 0 (ECHO [ERROR] Python not found. Please install Python 3.10+ & GOTO :error)
 
-REM Check if venv already exists
-if exist venv (
-    echo Virtual environment 'venv' already exists. Skipping creation.
-) else (
-    echo Creating Python virtual environment in '.\venv\'...
-    python -m venv venv
-    if %errorlevel% neq 0 (
-        echo [ERROR] Failed to create virtual environment.
-        goto :eof
-    )
-    echo Virtual environment created successfully.
-)
-echo.
+CALL pip install -r python_service\requirements.txt
+IF %ERRORLEVEL% NEQ 0 (ECHO [ERROR] Failed to install Python dependencies. & GOTO :error)
+ECHO [SUCCESS] Python dependencies installed.
 
-REM Activate venv and install requirements
-echo Activating virtual environment and installing dependencies from requirements.txt...
-call venv\Scripts\activate.bat
-pip install -r requirements.txt
-if %errorlevel% neq 0 (
-    echo [ERROR] Failed to install dependencies. Please check requirements.txt and your internet connection.
-    goto :eof
-)
-echo.
+:check_rust
+ECHO.
+ECHO [2/4] Verifying Rust and Cargo...
+WHERE cargo >nul 2>nul
+IF %ERRORLEVEL% NEQ 0 (ECHO [ERROR] Cargo not found. Please install the Rust toolchain. & GOTO :error)
+ECHO [SUCCESS] Rust toolchain is installed.
 
-echo =================================================
-echo  Setup Complete!
-echo =================================================
-echo You can now run 'launch_checkmate.bat' to start the application.
-echo.
+:check_dotnet
+ECHO.
+ECHO [3/4] Verifying .NET SDK...
+WHERE dotnet >nul 2>nul
+IF %ERRORLEVEL% NEQ 0 (ECHO [ERROR] .NET SDK not found. Please install the .NET 6.0 SDK or newer. & GOTO :error)
+ECHO [SUCCESS] .NET SDK is installed.
 
-endlocal
-pause
+:check_node
+ECHO.
+ECHO [4/4] Verifying Node.js and installing dependencies...
+WHERE npm >nul 2>nul
+IF %ERRORLEVEL% NEQ 0 (ECHO [ERROR] NPM not found. Please install Node.js. & GOTO :error)
+
+CALL npm --prefix web_platform\api_gateway install
+IF %ERRORLEVEL% NEQ 0 GOTO :error
+CALL npm --prefix web_platform\frontend install
+IF %ERRORLEVEL% NEQ 0 GOTO :error
+ECHO [SUCCESS] TypeScript dependencies installed.
+
+:verify_ruff
+ECHO.
+ECHO [VERIFY] Verifying Python code quality with Ruff...
+WHERE ruff >nul 2>nul
+IF %ERRORLEVEL% NEQ 0 (ECHO [ERROR] Ruff not found. Please ensure it was in requirements. & GOTO :error)
+CALL ruff check .
+ECHO [SUCCESS] Ruff code quality check complete.
+
+ECHO.
+ECHO ==========================================================
+ECHO [SUCCESS] All Checkmate V8 environment dependencies are present and configured!
+ECHO ==========================================================
+GOTO :eof
+
+:error
+ECHO.
+ECHO ==========================================================
+ECHO [FAILURE] Environment setup failed. Please correct the errors above and re-run.
+ECHO ==========================================================
+EXIT /B 1
+
+:eof
+ENDLOCAL
