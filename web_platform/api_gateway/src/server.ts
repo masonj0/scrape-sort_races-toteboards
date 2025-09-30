@@ -36,7 +36,7 @@ class DatabaseService {
   private dbPath: string;
 
   constructor() {
-    this.dbPath = path.join(__dirname, '..', '..', '..', 'shared_database', 'races.db');
+    this.dbPath = process.env.CHECKMATE_DB_PATH || path.join(__dirname, '..', '..', '..', 'shared_database', 'races.db');
   }
 
   async connect(): Promise<void> {
