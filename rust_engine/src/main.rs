@@ -1,65 +1,207 @@
-// In rust_engine/src/main.rs
+// main.rs - CLI interface for the Rust analysis engine
+// Supports both stdin/stdout JSON and file-based processing
+
+use std::io::{self, Read, Write};
 use std::env;
-use std::io::{self, Read};
-use checkmate_engine::{RaceAnalysisRequest, RaceAnalysisResponse, analyze_single_race_advanced}; // Assuming these are in lib.rs
+use std::fs;
+use std::time::Instant;
 use rayon::prelude::*;
-use num_cpus;
+use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
+
+// Re-use data structures from lib.rs
+#[derive(Serialize, Deserialize, Debug)]
+pub struct Runner {
+    pub name: String,
+    pub odds: Option<f64>,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct RaceData {
+    pub race_id: String,
+    pub runners: Vec<Runner>,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct AnalysisSettings {
+    #[serde(rename = "QUALIFICATION_SCORE")]
+    pub qualification_score: f64,
+    #[serde(rename = "FIELD_SIZE_OPTIMAL_MIN")]
+    pub field_size_optimal_min: usize,
+    #[serde(rename = "FIELD_SIZE_OPTIMAL_MAX")]
+    pub field_size_optimal_max: usize,
+    #[serde(rename = "FIELD_SIZE_ACCEPTABLE_MIN")]
+    pub field_size_acceptable_min: usize,
+    #[serde(rename = "FIELD_SIZE_ACCEPTABLE_MAX")]
+    pub field_size_acceptable_max: usize,
+    #[serde(rename = "FIELD_SIZE_OPTIMAL_POINTS")]
+    pub field_size_optimal_points: f64,
+    #[serde(rename = "FIELD_SIZE_ACCEPTABLE_POINTS")]
+    pub field_size_acceptable_points: f64,
+    #[serde(rename = "FIELD_SIZE_PENALTY_POINTS")]
+    pub field_size_penalty_points: f64,
+    #[serde(rename = "FAV_ODDS_POINTS")]
+    pub fav_odds_points: f64,
+    #[serde(rename = "MAX_FAV_ODDS")]
+    pub max_fav_odds: f64,
+    #[serde(rename = "SECOND_FAV_ODDS_POINTS")]
+    pub second_fav_odds_points: f64,
+    #[serde(rename = "MIN_2ND_FAV_ODDS")]
+    pub min_2nd_fav_odds: f64,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct RaceAnalysisRequest {
+    pub races: Vec<RaceData>,
+    pub settings: AnalysisSettings,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct FactorResult {
+    pub points: f64,
+    pub ok: bool,
+    pub reason: String,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct AnalysisResult {
+    pub race_id: String,
+    pub checkmate_score: f64,
+    pub qualified: bool,
+    pub trifecta_factors: HashMap<String, FactorResult>,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct RaceAnalysisResponse {
+    pub results: Vec<AnalysisResult>,
+    pub processing_time_ms: u128,
+}
+
+// Core analysis logic (same as lib.rs)
+fn analyze_single_race(race: &RaceData, settings: &AnalysisSettings) -> AnalysisResult {
+    let mut score = 0.0;
+    let mut factors = HashMap::new();
+
+    let mut horses_with_odds: Vec<&Runner> = race.runners.iter()
+        .filter(|r| r.odds.is_some())
+        .collect();
+    horses_with_odds.sort_by(|a, b| {
+        a.odds.unwrap().partial_cmp(&b.odds.unwrap()).unwrap()
+    });
+    let num_runners = horses_with_odds.len();
+
+    // Field Size Analysis
+    let field_size_result = if (settings.field_size_optimal_min..=settings.field_size_optimal_max)
+        .contains(&num_runners) {
+        FactorResult {
+            points: settings.field_size_optimal_points,
+            ok: true,
+            reason: format!("Optimal field size ({})", num_runners),
+        }
+    } else if (settings.field_size_acceptable_min..=settings.field_size_acceptable_max)
+        .contains(&num_runners) {
+        FactorResult {
+            points: settings.field_size_acceptable_points,
+            ok: true,
+            reason: format!("Acceptable field size ({})", num_runners),
+        }
+    } else {
+        FactorResult {
+            points: settings.field_size_penalty_points,
+            ok: false,
+            reason: format!("Field size not ideal ({})", num_runners),
+        }
+    };
+    score += field_size_result.points;
+    factors.insert("fieldSize".to_string(), field_size_result);
+
+    // Odds Analysis
+    if num_runners >= 2 {
+        let fav_odds = horses_with_odds[0].odds.unwrap();
+        let sec_fav_odds = horses_with_odds[1].odds.unwrap();
+
+        let fav_odds_result = if fav_odds <= settings.max_fav_odds {
+            FactorResult {
+                points: settings.fav_odds_points,
+                ok: true,
+                reason: format!("Favorite odds OK ({:.2})", fav_odds),
+            }
+        } else {
+            FactorResult {
+                points: 0.0,
+                ok: false,
+                reason: format!("Favorite odds too high ({:.2})", fav_odds),
+            }
+        };
+        score += fav_odds_result.points;
+        factors.insert("favoriteOdds".to_string(), fav_odds_result);
+
+        let sec_fav_odds_result = if sec_fav_odds >= settings.min_2nd_fav_odds {
+            FactorResult {
+                points: settings.second_fav_odds_points,
+                ok: true,
+                reason: format!("2nd Favorite OK ({:.2})", sec_fav_odds),
+            }
+        } else {
+            FactorResult {
+                points: 0.0,
+                ok: false,
+                reason: format!("2nd Favorite odds too low ({:.2})", sec_fav_odds),
+            }
+        };
+        score += sec_fav_odds_result.points;
+        factors.insert("secondFavoriteOdds".to_string(), sec_fav_odds_result);
+    }
+
+    AnalysisResult {
+        race_id: race.race_id.clone(),
+        checkmate_score: score,
+        qualified: score >= settings.qualification_score,
+        trifecta_factors: factors,
+    }
+}
 
 fn main() {
-    // --- DYNAMIC THREAD POOL CONFIGURATION ---
-    // This should be done once at the very start of the program.
-    rayon::ThreadPoolBuilder::new()
-        .num_threads(num_cpus::get()) // Sets thread count to the number of logical CPUs
-        .build_global()
-        .unwrap(); // This unwrap is acceptable on startup; if it fails, the app can't run.
-
     let args: Vec<String> = env::args().collect();
-    let command = args.get(1).map(|s| s.as_str());
 
-    match command {
-        Some("--analyze") => cli_analysis_mode(),
-        Some("--benchmark") => benchmark_mode(),
-        // Some("--server") => server_mode(), // Future placeholder
-        Some("--help") | _ => print_help(),
-    }
-}
+    if args.len() > 1 && args[1] == "--analyze" {
+        let mut input = String::new();
+        io::stdin()
+            .read_to_string(&mut input)
+            .expect("Failed to read from stdin");
 
-fn cli_analysis_mode() {
-    let mut input = String::new();
-    if let Err(e) = io::stdin().read_to_string(&mut input) {
-        eprintln!("[ERROR] Failed to read from stdin: {}", e);
-        std::process::exit(1);
-    }
+        let request: RaceAnalysisRequest = match serde_json::from_str(&input) {
+            Ok(req) => req,
+            Err(e) => {
+                eprintln!("ERROR: Failed to parse JSON input: {}", e);
+                std::process::exit(1);
+            }
+        };
 
-    // Call the core logic and handle the Result
-    match run_analysis_from_json(&input) {
-        Ok(response) => {
-            // Using unwrap here is acceptable for a CLI tool's final output.
-            // A failure to serialize a valid response struct is a critical, unrecoverable bug.
-            println!("{}", serde_json::to_string_pretty(&response).unwrap());
+        let start_time = Instant::now();
+        let results: Vec<AnalysisResult> = request
+            .races
+            .par_iter()
+            .map(|race| analyze_single_race(race, &request.settings))
+            .collect();
+
+        let response = RaceAnalysisResponse {
+            results,
+            processing_time_ms: start_time.elapsed().as_millis(),
+        };
+
+        match serde_json::to_string(&response) {
+            Ok(json) => println!("{}", json),
+            Err(e) => {
+                eprintln!("ERROR: Failed to serialize response: {}", e);
+                std::process::exit(1);
+            }
         }
-        Err(e) => {
-            eprintln!("[ERROR] Analysis failed: {}", e);
-            std::process::exit(1);
-        }
+    } else {
+        println!("Checkmate Rust Analysis Engine");
+        println!("Usage:");
+        println!("  checkmate_engine --analyze < input.json > output.json");
+        println!("\nExpects JSON input with structure:");
+        println!(r#"{{\n  "races": [{{ "race_id": "...", "runners": [...] }}],\n  "settings": {{ ... }}\n}}"#);
     }
-}
-
-fn benchmark_mode() {
-    println!("🚀 Checkmate Rust Engine Benchmark Mode");
-    // Implementation as per the V8 spec:
-    // 1. Generate 1000 test races.
-    // 2. Run analysis serially and time it.
-    // 3. Run analysis in parallel and time it.
-    // 4. Print speedup factor and other metrics.
-    println!("Benchmark feature not yet fully implemented.");
-}
-
-fn print_help() {
-    println!("Checkmate Rust Analysis Engine");
-    println!("Usage: checkmate_engine [COMMAND]");
-    println!("\nCommands:");
-    println!("  --analyze      Accepts JSON from stdin for analysis.");
-    println!("  --benchmark    Runs a performance benchmark.");
-    println!("  --help         Displays this help message.");
 }
