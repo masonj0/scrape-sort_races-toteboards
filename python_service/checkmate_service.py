@@ -22,24 +22,26 @@ class DatabaseHandler:
 
     def _setup_database(self):
         try:
-            # Construct robust paths to both schema files
+            # Correctly resolve paths from the service's location
             base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
             schema_path = os.path.join(base_dir, 'shared_database', 'schema.sql')
             web_schema_path = os.path.join(base_dir, 'shared_database', 'web_schema.sql')
 
+            # Read both schema files
             with open(schema_path, 'r') as f:
                 schema = f.read()
             with open(web_schema_path, 'r') as f:
                 web_schema = f.read()
 
+            # Apply both schemas in a single transaction
             with self._get_connection() as conn:
                 cursor = conn.cursor()
                 cursor.executescript(schema)
                 cursor.executescript(web_schema)
                 conn.commit()
-            self.logger.info(f"Database schemas applied successfully from {schema_path} and {web_schema_path}.")
+            self.logger.info("CRITICAL SUCCESS: All database schemas (base + web) applied successfully.")
         except Exception as e:
-            self.logger.critical(f"FATAL: Could not set up database from schema files: {e}", exc_info=True)
+            self.logger.critical(f"FATAL: Database setup failed. Other platforms will fail. Error: {e}", exc_info=True)
             raise
 
     def update_races_and_status(self, races: List[Race], statuses: List[dict]):
@@ -73,12 +75,25 @@ class DatabaseHandler:
 
 class CheckmateBackgroundService:
     def __init__(self):
+        self.logger = logging.getLogger(self.__class__.__name__)
+        from dotenv import load_dotenv
+
+        dotenv_path = os.path.join(os.path.dirname(__file__), '..', '.env')
+        load_dotenv(dotenv_path=dotenv_path)
+
+        db_path = os.getenv("CHECKMATE_DB_PATH")
+        if not db_path:
+            self.logger.critical("FATAL: CHECKMATE_DB_PATH environment variable not set. Service cannot start.")
+            raise ValueError("CHECKMATE_DB_PATH is not configured.")
+
+        self.logger.info(f"Database path loaded from environment: {db_path}")
+
         self.settings = Settings()
-        self.db_handler = DatabaseHandler(os.path.join(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')), "shared_database", "races.db"))
+        self.db_handler = DatabaseHandler(db_path)
         self.orchestrator = SuperchargedOrchestrator(self.settings)
         self.analyzer = EnhancedTrifectaAnalyzer(self.settings)
         self.stop_event = threading.Event()
-        self.logger = logging.getLogger(self.__class__.__name__)
+        self.rust_engine_path = os.path.join(os.path.dirname(__file__), '..', 'rust_engine', 'target', 'release', 'checkmate_engine.exe')
 
     def run_continuously(self, interval_seconds: int = 60):
         self.logger.info("Supercharged background service starting continuous run.")
