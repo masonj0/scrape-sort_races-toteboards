@@ -31,3 +31,17 @@ BEGIN
     DELETE FROM live_races
     WHERE post_time < datetime('now', '-4 hours');
 END;
+
+-- Add the qualified_races view that C# and Excel expect
+CREATE VIEW IF NOT EXISTS qualified_races AS
+SELECT
+    race_id,
+    track_name,
+    race_number,
+    post_time,
+    checkmate_score,
+    qualified,
+    trifecta_factors_json
+FROM live_races
+WHERE qualified = 1
+ORDER BY checkmate_score DESC, post_time ASC;
