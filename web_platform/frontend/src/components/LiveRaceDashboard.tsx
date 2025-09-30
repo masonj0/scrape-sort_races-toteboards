@@ -1,40 +1,47 @@
 'use client';
 import React from 'react';
-import { AnimatePresence } from 'framer-motion';
 import { useRealTimeRaces } from '../hooks/useRealTimeRaces';
-import { RaceCard } from './RaceCard';
 
-export const LiveRaceDashboard: React.FC = () => {
+export function LiveRaceDashboard() {
   const { races, isConnected } = useRealTimeRaces();
 
   return (
-    <div className="min-h-screen bg-slate-900 text-white font-sans">
-      <header className="bg-slate-800/70 backdrop-blur-md sticky top-0 z-50 border-b border-slate-700 p-4 shadow-lg">
-        <div className="flex justify-between items-center max-w-7xl mx-auto">
-          <h1 className="text-2xl font-bold tracking-tighter">Checkmate Live</h1>
-          <div className="flex items-center space-x-3">
-            <div className={`w-3 h-3 rounded-full transition-colors ${isConnected ? 'bg-green-400 animate-pulse' : 'bg-red-500'}`}></div>
-            <span className="text-sm font-medium text-slate-300">{isConnected ? 'LIVE' : 'CONNECTING...'}</span>
-          </div>
-        </div>
-      </header>
+    <div className="p-4">
+      <h1 className="text-2xl font-bold mb-4">Live Race Dashboard</h1>
+      <div className="mb-4">
+        Connection Status: {isConnected ? <span className="text-green-500">Connected</span> : <span className="text-red-500">Disconnected</span>}
+      </div>
 
-      <main className="p-4 md:p-6 max-w-7xl mx-auto">
-        <AnimatePresence>
-          {races.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      {!isConnected && <p>Connecting to the live data feed...</p>}
+
+      {isConnected && races.length === 0 && (
+        <p>Connected, waiting for race data...</p>
+      )}
+
+      {isConnected && races.length > 0 && (
+        <div className="overflow-x-auto">
+          <table className="min-w-full bg-white">
+            <thead>
+              <tr>
+                <th className="py-2 px-4 border-b">Track</th>
+                <th className="py-2 px-4 border-b">Race #</th>
+                <th className="py-2 px-4 border-b">Post Time</th>
+                <th className="py-2 px-4 border-b">Score</th>
+              </tr>
+            </thead>
+            <tbody>
               {races.map((race) => (
-                <RaceCard key={race.race_id} race={race} />
+                <tr key={race.race_id}>
+                  <td className="py-2 px-4 border-b">{race.track_name}</td>
+                  <td className="py-2 px-4 border-b">{race.race_number}</td>
+                  <td className="py-2 px-4 border-b">{new Date(race.post_time).toLocaleTimeString()}</td>
+                  <td className="py-2 px-4 border-b font-bold">{race.checkmate_score.toFixed(2)}</td>
+                </tr>
               ))}
-            </div>
-          ) : (
-            <div className="text-center mt-24 text-slate-500">
-              <p className="text-3xl font-semibold">Awaiting Data...</p>
-              <p className="mt-2\">No qualified races found. The system is actively monitoring all sources.</p>
-            </div>
-          )}
-        </AnimatePresence>
-      </main>
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
-};
+}
