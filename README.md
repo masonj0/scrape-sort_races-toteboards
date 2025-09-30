@@ -8,8 +8,8 @@ This repository contains the complete source code for Checkmate V8, a profession
 
 The project is a **Penta-Hybrid** system designed for performance, flexibility, and a rich user experience. Each component has a specialized role:
 
-*   **🐍 Python Service:** Handles data collection and orchestration.
-*   **🦀 Rust Engine:** High-performance computational analysis.
+*   **🐍 Python Service:** The core data collection and analysis engine.
+*   **🦀 Rust Engine:** High-performance computational analysis for the Python service.
 *   **🖥️ C# Desktop App:** A native Windows "Command Deck" for power users.
 *   **🌐 TypeScript Web Platform:** A modern, real-time "Live Cockpit."
 *   **📊 Excel VBA Frontend:** A familiar interface for analysis and manual data stewardship.
@@ -17,5 +17,32 @@ The project is a **Penta-Hybrid** system designed for performance, flexibility, 
 All components are decoupled and communicate via a shared **SQLite database**.
 
 ---
+## 🚀 Quick Start
 
-(Rest of README.md contents...)
+There are two primary ways to run the system:
+
+### 1. The Master Launcher (Recommended)
+
+The `launcher.py` script orchestrates all components of the Penta-Hybrid system.
+
+```bash
+# From the project root:
+python launcher.py
+```
+
+### 2. Standalone Tipsheet Generator
+
+To run only the lightweight, integrated tipsheet generator:
+
+```bash
+# From the project root:
+python tipsheet_generator.py
+```
+
+### Environment Setup
+
+Before the first run, prepare your Windows environment by running the setup script:
+
+```batch
+setup_windows.bat
+```
