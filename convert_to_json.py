@@ -5,6 +5,10 @@ import sys
 def convert_file_to_json(filepath):
     """Reads a file and converts its content to a JSON structure, preserving directory structure."""
     try:
+        if not os.path.exists(filepath):
+            print(f"Warning: File not found, skipping: {filepath}", file=sys.stderr)
+            return
+
         # Normalize path to use forward slashes for consistency
         normalized_filepath = filepath.replace("\\", "/")
 
@@ -17,12 +21,11 @@ def convert_file_to_json(filepath):
         }
 
         # Create the output path in the ReviewableJSON directory, preserving the original path
-        # Remove './' prefix if it exists
         if normalized_filepath.startswith('./'):
             normalized_filepath = normalized_filepath[2:]
 
         output_dir = os.path.join("ReviewableJSON", os.path.dirname(normalized_filepath))
-        if output_dir: # Only create directory if it's not the root
+        if output_dir:
             os.makedirs(output_dir, exist_ok=True)
 
         output_filename = os.path.basename(normalized_filepath) + ".json"
@@ -37,12 +40,62 @@ def convert_file_to_json(filepath):
         print(f"Error converting {filepath}: {e}", file=sys.stderr)
 
 if __name__ == "__main__":
-    # Walk through the directory tree and convert all .py files
-    for root, dirs, files in os.walk("."):
-        # Exclude specified directories from the walk
-        dirs[:] = [d for d in dirs if d not in ['venv', '.venv', 'ReviewableJSON', '.git', '__pycache__']]
+    # This list is a direct reflection of the final manifest for the Council of AI Superbrains.
+    # It includes all CORE and specified LEGACY files.
+    files_to_convert = [
+        # CORE Documentation
+        "README.md",
+        "ARCHITECTURAL_MANDATE.md",
 
-        for file in files:
-            if file.endswith(".py"):
-                filepath = os.path.join(root, file)
-                convert_file_to_json(filepath)
+        # CORE Frontend
+        "web_platform/frontend/src/app/page.tsx",
+
+        # CORE Backend
+        "python_service/api.py",
+        "python_service/engine.py",
+        "python_service/adapters/__init__.py",
+        "python_service/adapters/base.py",
+        "python_service/adapters/betfair_adapter.py",
+        "python_service/adapters/pointsbet_adapter.py",
+        "python_service/adapters/tvg_adapter.py",
+        "python_service/adapters/utils.py",
+        "python_service/requirements.txt",
+
+        # LEGACY Adapters (src/checkmate_v7)
+        "src/checkmate_v7/adapters/AndWereOff.py",
+        "src/checkmate_v7/adapters/Stablemates.py",
+        "src/checkmate_v7/adapters/utils.py",
+
+        # LEGACY Adapters (src/paddock_parser)
+        "src/paddock_parser/adapters/atg_adapter.py",
+        "src/paddock_parser/adapters/attheraces_adapter.py",
+        "src/paddock_parser/adapters/betfair_data_scientist_adapter.py",
+        "src/paddock_parser/adapters/equibase_adapter.py",
+        "src/paddock_parser/adapters/fanduel_graphql_adapter.py",
+        "src/paddock_parser/adapters/greyhound_recorder.py",
+        "src/paddock_parser/adapters/pointsbet_adapter.py",
+        "src/paddock_parser/adapters/racingandsports_adapter.py",
+        "src/paddock_parser/adapters/racingpost_adapter.py",
+        "src/paddock_parser/adapters/ras_adapter.py",
+        "src/paddock_parser/adapters/skysports_adapter.py",
+        "src/paddock_parser/adapters/timeform_adapter.py",
+        "src/paddock_parser/adapters/twinspires_adapter.py",
+        "src/paddock_parser/adapters/utils.py",
+
+        # LEGACY Reviews
+        "ReviewableJSON/attheraces_adapter.py.json",
+        "ReviewableJSON/betfair_data_scientist_adapter.py.json",
+        "ReviewableJSON/equibase.py.json",
+        "ReviewableJSON/equibase_adapter.py.json",
+        "ReviewableJSON/fanduel_graphql_adapter.py.json",
+        "ReviewableJSON/greyhound_recorder.py.json",
+        "ReviewableJSON/racingandsports_adapter.py.json",
+        "ReviewableJSON/racingpost_adapter.py.json",
+        "ReviewableJSON/skysports_adapter.py.json",
+        "ReviewableJSON/timeform_adapter.py.json"
+    ]
+
+    print("Starting conversion based on the final manifest...")
+    for filepath in files_to_convert:
+        convert_file_to_json(filepath)
+    print("Conversion process complete.")

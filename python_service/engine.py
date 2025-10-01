@@ -154,8 +154,13 @@ class BetfairExchangeAdapter(BaseAdapterV7):
                     if market.get('marketType', '') != 'WIN': continue
                     runners = [Runner(name=r.get('description', {}).get('runnerName', 'Unknown'), odds=r.get('exchange', {}).get('availableToBack', [{}])[0].get('price')) for r in market_node.get('runners', []) if r.get('state', {}).get('status') == 'ACTIVE']
                     if len(runners) < 3: continue
-                    race_number = None; event_name = event.get('eventName', '');
-                    if 'R' in event_name: try: race_number = int(event_name.split('R')[-1]); except (ValueError, IndexError): pass
+                    race_number = None
+                    event_name = event.get('eventName', '')
+                    if 'R' in event_name:
+                        try:
+                            race_number = int(event_name.split('R')[-1])
+                        except (ValueError, IndexError):
+                            pass
                     races.append(Race(race_id=f"betfair_{market.get('marketId', 'unknown')}", track_name=event.get('venue', 'Betfair Exchange'), post_time=safe_parse_datetime(market.get('marketStartTime')), race_number=race_number, runners=runners, source=self.SOURCE_ID))
         except Exception as e: self.logger.error(f"Error parsing Betfair data: {e}", exc_info=True)
         return races
