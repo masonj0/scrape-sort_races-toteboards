@@ -1,30 +1,26 @@
-# Checkmate V8: Project Manifest
+# Checkmate V8: Project Manifest (Final)
 
-**Purpose:** To categorize all top-level files and directories, distinguishing between the active **CORE** system and **LEGACY** components slated for archival.
+**Purpose:** To categorize all files, distinguishing between the active **CORE** system and **LEGACY** components.
 
 ---
 
-## CORE ARCHITECTURE (Penta-Hybrid)
+## CORE ARCHITECTURE (Ultimate Solo)
 
-*   `.env`: **CORE** - Centralized configuration for all platforms.
-*   `ARCHITECTURAL_MANDATE.md`: **CORE** - The project's strategic blueprint.
-*   `HISTORY.md`: **CORE** - The project's official, running log of major events.
-*   `README.md`: **CORE** - The primary entry point for new developers.
-*   `STATUS.md`: **CORE** - The live status report for the project.
-*   `build_python_service.py`: **CORE** - Deprecated build script, to be replaced by a launcher build script.
-*   `launcher.py`: **CORE** - The new master orchestrator for the entire system.
-*   `pyproject.toml`: **CORE** - Configuration for Python tooling (Ruff).
-*   `tipsheet_generator.py`: **CORE** - The production-ready, standalone tipsheet generator.
-*   `desktop_app/`: **CORE** - The C# Command Deck.
-*   `python_service/`: **CORE** - The Python Collection Corps.
-*   `rust_engine/`: **CORE** - The Rust Analysis Core.
-*   `setup_windows.bat`: **CORE** - The environment setup script.
-*   `shared_database/`: **CORE** - The central SQLite database schemas.
-*   `vba_source/`: **CORE** - The source code for the Excel Familiar Frontend.
-*   `web_platform/`: **CORE** - The TypeScript Live Cockpit.
+*   `.env`: **CORE** - Centralized configuration.
+*   `ARCHITECTURAL_MANDATE.md`: **CORE** - The project's final strategic blueprint.
+*   `README.md`: **CORE** - The primary entry point.
+*   `STATUS.md`: **CORE** - The final status report.
+*   `python_service/`: **CORE** - The full-power Python Backend.
+*   `setup_windows.bat`: **CORE** - The environment setup script for the CORE architecture.
+*   `web_platform/frontend/`: **CORE** - The Ultimate TypeScript Frontend.
 
 ---
 
 ## LEGACY & HISTORICAL ARTIFACTS
 
-*   All other files and directories not listed in CORE are considered LEGACY and are candidates for archival in the next phase of "The Great Simplification."
+*   `desktop_app/`: **LEGACY** - The C# Command Deck.
+*   `rust_engine/`: **LEGACY** - The Rust Analysis Core.
+*   `vba_source/`: **LEGACY** - The Excel Familiar Frontend.
+*   `launcher.py`: **LEGACY** - The orchestrator for the deprecated Penta-Hybrid system.
+*   `shared_database/`: **LEGACY** - The SQLite schemas for the deprecated Penta-Hybrid system.
+*   All other files and directories not listed in CORE are considered **LEGACY** R&D assets.
