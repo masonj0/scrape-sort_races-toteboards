@@ -10,9 +10,9 @@ path = "src/main.rs"
 
 # Define the library target
 [lib]
-name = "checkmate_engine"
+name = "checkmate_engine_lib"
 path = "src/lib.rs"
-crate-type = ["cdylib", "rlib"]
+crate-type = ["cdylib"]
 
 [dependencies]
 serde = { version = "1.0", features = ["derive"] }

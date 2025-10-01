@@ -92,10 +92,10 @@ fn analyze_odds_spread(spread: f64) -> f64 {
     // Example logic: A tight spread might indicate a competitive, unpredictable race.
     if spread < 1.5 { -10.0 }
     else if spread > 4.0 { 15.0 }
-    else { 0.0 }
+    else { 5.0 }
 }
 
-pub fn analyze_single_race(race: &RaceData, settings: &AnalysisSettings) -> AnalysisResult {
+pub fn analyze_single_race_advanced(race: &RaceData, settings: &AnalysisSettings) -> AnalysisResult {
     let mut score = 0.0;
     let mut factors = HashMap::new();
 
@@ -199,7 +199,7 @@ pub fn run_analysis_from_json(json_input: &str) -> Result<RaceAnalysisResponse> 
     let start_time = std::time::Instant::now();
     let results: Vec<AnalysisResult> = request.races
         .par_iter()
-        .map(|race| analyze_single_race(race, &request.settings))
+        .map(|race| analyze_single_race_advanced(race, &request.settings))
         .collect();
 
     let response = RaceAnalysisResponse {
