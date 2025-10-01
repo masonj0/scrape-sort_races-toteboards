@@ -1,39 +1,34 @@
-# Checkmate Ultimate Solo (Global Dominance Edition)
+# Checkmate Ultimate Solo
 
-This repository contains the Checkmate Ultimate Solo project, a global, multi-source horse racing analysis tool.
+This repository contains the Checkmate Ultimate Solo project, a streamlined, high-performance horse racing analysis tool.
 
 ---
 
 ## 🚀 Quick Start
 
-### 1. Configure Your Environment
-
-Edit the `.env` file in the project root and add your API key for the `RacingAndSports` adapter if you have one.
-
-### 2. Run the Full-Power Python Backend
-
+### 1. Start the Python Backend
+Open a terminal in the project root:
 ```bash
-# From the project root, navigate to the service directory
+# Navigate to the service directory
 cd python_service
 
-# Install all dependencies
+# Install/update dependencies
 pip install -r requirements.txt
 
-# Run the full-power API service
+# Run the API service
 python api.py
 ```
 
-### 3. Run the Ultimate TypeScript Frontend
-
+### 2. Start the TypeScript Frontend (in a new terminal)
+Open a second terminal in the project root:
 ```bash
-# From the project root, navigate to the frontend directory
+# Navigate to the frontend directory
 cd web_platform/frontend
 
-# Install dependencies
+# Install/update dependencies
 npm install
-
-# Run the development server
 npm run dev
 ```
 
-Navigate to `http://localhost:3000` to witness global data dominance.
+### 3. Open Your Browser
+Navigate to `http://localhost:3000`. The UI should now connect to the backend and display live data.
