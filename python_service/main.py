@@ -1,32 +1,46 @@
-import time
+# python_service/main.py
+# ==============================================================================
+# Checkmate Ultimate Solo - Fortified Python Backend
+# ==============================================================================
+
+from flask import Flask, jsonify
+from flask_cors import CORS
+from engine import DataSourceOrchestrator, TrifectaAnalyzer, Settings
 import logging
-from checkmate_service import CheckmateBackgroundService
 
-def main():
-    """
-    Main entry point for the Checkmate Python Service executable.
-    """
-    logging.basicConfig(level=logging.INFO,
-                        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+# --- Initialization ---
+app = Flask(__name__)
+CORS(app) # Enable CORS for the React frontend
 
-    logger = logging.getLogger(__name__)
-    logger.info("Initializing Checkmate Python Service...")
+logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] %(name)s: %(message)s')
 
+# Initialize our battle-tested CORE components
+orchestrator = DataSourceOrchestrator()
+analyzer = TrifectaAnalyzer()
+settings = Settings()
+
+# --- API Endpoints ---
+@app.route('/api/races/live', methods=['GET'])
+def get_live_races():
+    """Fetches, analyzes, and returns live race data in the format expected by the Ultimate frontend."""
+    logging.info("Request received for /api/races/live")
     try:
-        service = CheckmateBackgroundService()
-        service.start()
-        logger.info("Service started successfully. Running indefinitely...")
-
-        # Keep the main thread alive to allow the background service to run.
-        while True:
-            time.sleep(3600)  # Sleep for an hour at a time.
-
-    except ValueError as e:
-        logger.critical(f"Configuration error: {e}")
+        all_races, _ = orchestrator.get_races()
+        analyzed_races = [analyzer.analyze_race(race, settings) for race in all_races]
+        races_dict = [race.model_dump() for race in analyzed_races]
+        logging.info(f"Successfully processed and returning {len(races_dict)} races.")
+        return jsonify(races_dict)
     except Exception as e:
-        logger.critical(f"A fatal error occurred: {e}", exc_info=True)
-    finally:
-        logger.info("Checkmate Python Service is shutting down.")
+        logging.critical(f"FATAL error in get_live_races: {e}", exc_info=True)
+        return jsonify({"error": "An internal server error occurred."}), 500
 
-if __name__ == "__main__":
-    main()
+@app.route('/api/health', methods=['GET'])
+def health_check():
+    """Provides a basic health check."""
+    return jsonify({'status': 'healthy'})
+
+# --- Main Execution ---
+if __name__ == '__main__':
+    print("Starting Checkmate Ultimate Solo Backend on http://localhost:8000")
+    from waitress import serve
+    serve(app, host="0.0.0.0", port=8000)
