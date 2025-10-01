@@ -9,23 +9,37 @@ from .utils import parse_odds
 
 class PointsBetAdapter(BaseAdapterV7):
     """
-    Adapter for the PointsBet API.
+    Adapter for the PointsBet API, enhanced for multi-sport coverage.
     """
     SOURCE_ID = "pointsbet"
-    BASE_URL = "https://api.nj.pointsbet.com/api/v2/sports/horse-racing/events/upcoming?page=1"
+    API_TEMPLATE = "https://api.nj.pointsbet.com/api/v2/sports/{sport}/events/upcoming?page=1"
+    SPORTS = ["horse-racing", "harness-racing", "greyhound-racing"]
 
     def fetch_races(self) -> List[Race]:
         """
-        Fetches race data from the PointsBet API and transforms it into the
-        standardized Race model.
+        Fetches race data for all configured sports from the PointsBet API.
         """
-        response_data = self.fetcher.get(self.BASE_URL)
-        if not isinstance(response_data, dict) or not response_data.get('events'):
-            logging.warning(f"PointsBetAdapter received invalid or non-dict data: {type(response_data)}")
-            return []
+        self.logger.info("Fetching from PointsBet for all T/H/G sports...")
+        all_races = []
+        for sport in self.SPORTS:
+            url = self.API_TEMPLATE.format(sport=sport)
+            response_data = self.fetcher.get(url)
+            if not response_data or not isinstance(response_data, dict):
+                self.logger.warning(f"Invalid response from PointsBet for sport: {sport}")
+                continue
 
+            parsed_races = self._parse_events(response_data.get('events', []), sport)
+            all_races.extend(parsed_races)
+
+        self.logger.info(f"Successfully fetched {len(all_races)} total races from PointsBet.")
+        return all_races
+
+    def _parse_events(self, events: List[dict], sport_name: str) -> List[Race]:
+        """
+        Parses a list of event dictionaries from the API response into Race objects.
+        """
         races = []
-        for event in response_data['events']:
+        for event in events:
             try:
                 if not event.get('winPlaceOddsAvailable'):
                     continue
@@ -33,7 +47,6 @@ class PointsBetAdapter(BaseAdapterV7):
                 runners = []
                 for outcome in event.get('fixedPrice', {}).get('outcomes', []):
                     if outcome.get('outcomeType') == 'Win':
-                        # Use the centralized utility to parse odds
                         odds = parse_odds(outcome.get('price'))
                         if odds < 999.0:
                             runners.append(Runner(name=outcome.get('name', 'Unknown'), odds=odds))
@@ -50,11 +63,11 @@ class PointsBetAdapter(BaseAdapterV7):
                         race_number=event.get('eventNumber'),
                         post_time=start_time,
                         runners=runners,
-                        source=self.SOURCE_ID
+                        source=self.SOURCE_ID,
+                        race_type=sport_name
                     )
                 )
             except (KeyError, TypeError) as e:
-                logging.warning(f"Skipping malformed PointsBet event: {e}")
+                self.logger.warning(f"Skipping malformed PointsBet event for sport {sport_name}: {e}")
                 continue
-
         return races
