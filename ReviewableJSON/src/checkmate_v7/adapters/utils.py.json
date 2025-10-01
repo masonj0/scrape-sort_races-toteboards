@@ -1,4 +1,4 @@
 {
-    "filepath": "./src/checkmate_v7/adapters/utils.py",
+    "filepath": "src/checkmate_v7/adapters/utils.py",
     "content": "def _convert_odds_to_float(odds_str: str) -> float:\n    \"\"\"Converts odds string to a float. Handles 'EVS' and fractions.\"\"\"\n    if isinstance(odds_str, str):\n        odds_str = odds_str.strip().upper()\n        if odds_str == 'EVS':\n            return 2.0\n        if '/' in odds_str:\n            try:\n                num, den = map(int, odds_str.split('/'))\n                return (num / den) + 1.0\n            except (ValueError, ZeroDivisionError):\n                return float('inf')\n    return float('inf')\n"
 }

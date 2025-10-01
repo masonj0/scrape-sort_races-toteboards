@@ -1,48 +1,39 @@
-# Checkmate V8: The Penta-Hybrid Racing Analysis Platform
+# Checkmate Ultimate Solo (Global Dominance Edition)
 
-This repository contains the complete source code for Checkmate V8, a professional-grade, multi-language horse racing analysis platform.
-
----
-
-## 🏛️ Project Architecture
-
-The project is a **Penta-Hybrid** system designed for performance, flexibility, and a rich user experience. Each component has a specialized role:
-
-*   **🐍 Python Service:** The core data collection and analysis engine.
-*   **🦀 Rust Engine:** High-performance computational analysis for the Python service.
-*   **🖥️ C# Desktop App:** A native Windows "Command Deck" for power users.
-*   **🌐 TypeScript Web Platform:** A modern, real-time "Live Cockpit."
-*   **📊 Excel VBA Frontend:** A familiar interface for analysis and manual data stewardship.
-
-All components are decoupled and communicate via a shared **SQLite database**.
+This repository contains the Checkmate Ultimate Solo project, a global, multi-source horse racing analysis tool.
 
 ---
+
 ## 🚀 Quick Start
 
-There are two primary ways to run the system:
+### 1. Configure Your Environment
 
-### 1. The Master Launcher (Recommended)
+Edit the `.env` file in the project root and add your API key for the `RacingAndSports` adapter if you have one.
 
-The `launcher.py` script orchestrates all components of the Penta-Hybrid system.
-
-```bash
-# From the project root:
-python launcher.py
-```
-
-### 2. Standalone Tipsheet Generator
-
-To run only the lightweight, integrated tipsheet generator:
+### 2. Run the Full-Power Python Backend
 
 ```bash
-# From the project root:
-python tipsheet_generator.py
+# From the project root, navigate to the service directory
+cd python_service
+
+# Install all dependencies
+pip install -r requirements.txt
+
+# Run the full-power API service
+python api.py
 ```
 
-### Environment Setup
+### 3. Run the Ultimate TypeScript Frontend
 
-Before the first run, prepare your Windows environment by running the setup script:
+```bash
+# From the project root, navigate to the frontend directory
+cd web_platform/frontend
 
-```batch
-setup_windows.bat
+# Install dependencies
+npm install
+
+# Run the development server
+npm run dev
 ```
+
+Navigate to `http://localhost:3000` to witness global data dominance.

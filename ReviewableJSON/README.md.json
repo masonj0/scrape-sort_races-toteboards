@@ -1,0 +1,4 @@
+{
+    "filepath": "README.md",
+    "content": "# Checkmate Ultimate Solo (Global Dominance Edition)\n\nThis repository contains the Checkmate Ultimate Solo project, a global, multi-source horse racing analysis tool.\n\n---\n\n## \ud83d\ude80 Quick Start\n\n### 1. Configure Your Environment\n\nEdit the `.env` file in the project root and add your API key for the `RacingAndSports` adapter if you have one.\n\n### 2. Run the Full-Power Python Backend\n\n```bash\n# From the project root, navigate to the service directory\ncd python_service\n\n# Install all dependencies\npip install -r requirements.txt\n\n# Run the full-power API service\npython api.py\n```\n\n### 3. Run the Ultimate TypeScript Frontend\n\n```bash\n# From the project root, navigate to the frontend directory\ncd web_platform/frontend\n\n# Install dependencies\nnpm install\n\n# Run the development server\nnpm run dev\n```\n\nNavigate to `http://localhost:3000` to witness global data dominance."
+}
