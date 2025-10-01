@@ -1,19 +1,14 @@
-# Checkmate V8: The Penta-Hybrid Architecture Mandate
+# Checkmate: The Solo Solution Mandate
 
 ## 1.0 Prime Directive
-This document outlines the official, sanctioned architecture for the Checkmate V8 Racing Analysis Platform.
+This document outlines the official, sanctioned architecture for the Checkmate project. The previous Penta-Hybrid architecture is now deprecated and archived as a valuable R&D asset.
 
-## 2.0 The Five Pillars of the Architecture
+## 2.0 The New Architecture: The Pragmatic Hybrid
+Our architecture is now a simple, powerful, two-pillar system designed for rapid iteration, maintainability, and direct value delivery for a solo user.
 
-1.  **The Collection Corps (Python Service):** The headless engine responsible for all data collection, orchestration, and scheduling.
-2.  **The Analysis Core (Rust Engine):** The high-performance computational engine for all intensive analysis.
-3.  **The Digital Front (TypeScript Web Platform):** A modern, real-time, browser-based user interface.
-4.  **The Command Deck (C# Desktop App):** A native Windows desktop application for power users.
-5.  **The Familiar Frontend (Excel VBA):** A zero-friction bridge for users who live in Excel, providing direct data access and analysis capabilities.
+1.  **🐍 The Python Backend:** A lightweight Flask (or FastAPI) service responsible for all data collection via the proven adapter pattern. It exposes a single, simple JSON API endpoint.
 
-## 3.0 Strategic Development Order
+2.  **🌐 The TypeScript Frontend:** A single, superior React component (`Checkmate Solo`) that provides the entire user experience in a modern, real-time dashboard.
 
-1.  ✅ SOLIDIFY THE CORE: Python Service + Rust Engine + SQLite Bridge (COMPLETE)
-2.  ⚠️ BUILD THE DIGITAL FRONT: TypeScript Web Platform (IN PROGRESS)
-3.  ✅ BUILD THE COMMAND DECK: C# Desktop Application (COMPLETE)
-4.  ✅ BUILD THE FAMILIAR FRONTEND: Excel VBA Interface (COMPLETE)
+## 3.0 The Central Hub
+Communication is a simple, stateless HTTP request/response cycle. The complexity of a shared, persistent database is eliminated for this architecture.
