@@ -27,8 +27,6 @@ cd web_platform/frontend
 
 # Install/update dependencies
 npm install
-
-# Run the development server
 npm run dev
 ```
 
