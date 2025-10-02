@@ -1,61 +1,59 @@
 # python_service/adapters/betfair_adapter.py
 
 import os
-from .base import BaseAdapter
-from ..models import RaceData, RunnerData
-from typing import List, Dict, Any
-from datetime import datetime, timezone
+import requests
+import logging
+from datetime import datetime, timedelta
 
-class BetfairAdapter(BaseAdapter):
-    """Adapter for the Betfair Exchange API, inspired by the Data Scientist adapter."""
-    SOURCE_ID = "betfair_exchange"
-    BASE_URL = "https://api.betfair.com/exchange/betting/json-rpc/v1"
+class BetfairAdapter:
+    def __init__(self):
+        self.logger = logging.getLogger(self.__class__.__name__)
+        self.base_url = "https://api.betfair.com/exchange/betting/rest/v1.0/"
+        self.auth_url = "https://identitysso.betfair.com/api/login"
+        self.app_key = os.getenv('BETFAIR_APP_KEY')
+        self.username = os.getenv('BETFAIR_USERNAME')
+        self.password = os.getenv('BETFAIR_PASSWORD')
+        self.session_token = None
+        self.token_expires_at = None
 
-    def __init__(self, fetcher):
-        super().__init__(fetcher)
-        self.app_key = os.getenv("BETFAIR_APP_KEY")
-        self.session_token = os.getenv("BETFAIR_SESSION_TOKEN")
+    def _authenticate(self):
+        """Authenticate with Betfair API and get a session token."""
+        if not all([self.app_key, self.username, self.password]):
+            self.logger.warning("Betfair credentials not fully configured. Skipping auth.")
+            return False
 
-    def fetch_races(self) -> List[RaceData]:
-        if not self.app_key or not self.session_token:
-            self.logger.warning(f"API keys for {self.SOURCE_ID} not configured. Skipping.")
-            return []
+        headers = {'X-Application': self.app_key, 'Content-Type': 'application/x-www-form-urlencoded'}
+        payload = f'username={self.username}&password={self.password}'
 
-        self.logger.info(f"Fetching market catalogues from {self.SOURCE_ID}")
-        headers = {
-            "X-Application": self.app_key,
-            "X-Authentication": self.session_token,
-            "Content-Type": "application/json"
-        }
-        payload = {
-            "jsonrpc": "2.0",
-            "method": "SportsAPING/v1.0/listMarketCatalogue",
-            "params": {
-                "filter": {"eventTypeIds": ["7"], "marketTypeCodes": ["WIN"]},
-                "maxResults": 100,
-                "marketProjection": ["EVENT", "RUNNER_DESCRIPTION"]
-            },
-            "id": 1
-        }
+        try:
+            response = requests.post(self.auth_url, headers=headers, data=payload, timeout=10)
+            response.raise_for_status()
+            data = response.json()
+            if data.get('status') == 'SUCCESS':
+                self.session_token = data.get('token')
+                self.token_expires_at = datetime.now() + timedelta(hours=4)
+                self.logger.info("Successfully authenticated with Betfair.")
+                return True
+            else:
+                self.logger.error(f"Betfair authentication failed: {data.get('error')}")
+                return False
+        except requests.RequestException as e:
+            self.logger.error(f"Error during Betfair authentication: {e}")
+            return False
 
-        response_data = self.fetcher.post(self.BASE_URL, headers=headers, json=payload)
-        if not response_data or "result" not in response_data:
-            self.logger.error("Invalid or empty response from Betfair API.")
-            return []
+    def _ensure_authenticated(self):
+        """Check token validity and refresh if needed."""
+        if not self.session_token or datetime.now() >= self.token_expires_at:
+            self.logger.info("Betfair session token expired or missing. Re-authenticating...")
+            return self._authenticate()
+        return True
 
-        races = []
-        for market in response_data["result"]:
-            try:
-                runners = [RunnerData(name=r['runnerName'], odds=None) for r in market.get('runners', [])]
-                # Note: This endpoint does not provide live odds. A second call to listMarketBook would be needed.
-                races.append(RaceData(
-                    race_id=f"bf_{market['marketId']}",
-                    track_name=market.get('event', {}).get('venue', 'Unknown Track'),
-                    post_time=datetime.fromisoformat(market['marketStartTime'].replace('Z', '+00:00')),
-                    runners=runners,
-                    source=self.SOURCE_ID
-                ))
-            except (KeyError, TypeError) as e:
-                self.logger.warning(f"Skipping malformed Betfair market: {e}")
+    def fetch_races(self):
+        """Fetch races from Betfair."""
+        if not self._ensure_authenticated():
+            return [] # Cannot proceed without authentication
 
-        return races
+        # Placeholder for actual race fetching logic
+        # This part would use the session_token to make authenticated calls
+        self.logger.info("Betfair adapter is authenticated and would fetch races here.")
+        return [] # Returning empty list until race fetch logic is implemented
