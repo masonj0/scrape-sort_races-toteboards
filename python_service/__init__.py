@@ -1,1 +1,1 @@
-# This file makes the python_service directory a Python package.
+# This file makes the python_service directory a proper Python package.

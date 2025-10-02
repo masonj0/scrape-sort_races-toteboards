@@ -1,0 +1,4 @@
+{
+    "filepath": "python_service/models.py",
+    "content": "# python_service/models.py\n\nfrom pydantic import BaseModel\nfrom typing import List, Optional, Dict\nfrom datetime import datetime\n\nclass RunnerData(BaseModel):\n    name: str\n    odds: Optional[float] = None\n\nclass RaceData(BaseModel):\n    race_id: str\n    track_name: str\n    race_number: Optional[int] = None # Some sources may not provide this\n    post_time: datetime\n    runners: List[RunnerData]\n    source: str\n\nclass FormattedRace(BaseModel):\n    race_id: str\n    track: str\n    race: Optional[int]\n    time: str\n    runners: List[Dict[str, str]]\n\nclass APIResponse(BaseModel):\n    success: bool\n    data: Optional[List[FormattedRace]] = None\n    error: Optional[str] = None"
+}
