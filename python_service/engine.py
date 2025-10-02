@@ -3,6 +3,7 @@
 import logging
 from datetime import datetime, timedelta
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from typing import Dict, Any
 
 # Assuming adapters are in their own files now
 from .adapters.betfair_adapter import BetfairAdapter
@@ -43,6 +44,7 @@ class EngineManager:
 
         self.logger.info("Fetching fresh race data in parallel...")
         all_races = []
+        races_by_adapter = {}
         with ThreadPoolExecutor(max_workers=len(self._adapters)) as executor:
             future_to_adapter = {executor.submit(adapter.fetch_races): name for name, adapter in self._adapters.items()}
             for future in as_completed(future_to_adapter):
@@ -51,9 +53,23 @@ class EngineManager:
                     races = future.result(timeout=15) # 15-second timeout per adapter
                     if races:
                         all_races.extend(races)
+                    races_by_adapter[adapter_name] = races if races else []
                     self.logger.info(f"{adapter_name} fetched {len(races) if races else 0} races.")
                 except Exception as e:
                     self.logger.error(f"Adapter {adapter_name} failed during fetch: {e}")
+                    # Ensure we still record that this adapter was tried and failed
+                    races_by_adapter[adapter_name] = []
+
+        # NEW: Funnel Vision Statistics
+        funnel_stats = {
+            'races_fetched_by_source': {name: len(races) for name, races in races_by_adapter.items()},
+            'total_races_fetched': sum(len(races) for races in races_by_adapter.values()),
+            # Placeholder for future filtering steps
+            'races_after_deduplication': len(all_races),
+            'races_after_scoring': 0, # To be implemented
+            'qualified_races': 0 # To be implemented
+        }
+        self._cache['funnel_stats'] = (funnel_stats, datetime.now())
 
         self._cache[cache_key] = (all_races, datetime.now())
         return all_races
@@ -86,3 +102,10 @@ class EngineManager:
             return False
         _, timestamp = self._cache[key]
         return (datetime.now() - timestamp) < self._cache_ttl
+
+    def get_funnel_statistics(self) -> Dict[str, Any]:
+        """Provides a statistical summary of the last data collection funnel."""
+        cache_key = "funnel_stats"
+        if self._is_cache_valid(cache_key):
+            return self._cache[cache_key][0]
+        return {"status": "stale", "message": "Funnel data is being generated."}

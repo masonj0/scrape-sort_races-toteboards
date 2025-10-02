@@ -7,41 +7,44 @@
 ## 1.0 CORE Architecture (JSON Backups)
 
 ### Python Backend
-https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/api.py.json
-https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/engine.py.json
-https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/models.py.json
-https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/adapters/__init__.py.json
-https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/adapters/base.py.json
-https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/adapters/utils.py.json
-https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/adapters/betfair_adapter.py.json
-https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/adapters/pointsbet_adapter.py.json
-https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/adapters/racing_and_sports_adapter.py.json
-https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/adapters/tvg_adapter.py.json
+https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/ReviewableJSON/python_service/api.py.json
+https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/ReviewableJSON/python_service/engine.py.json
+https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/ReviewableJSON/python_service/models.py.json
+https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/ReviewableJSON/python_service/adapters/__init__.py.json
+https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/ReviewableJSON/python_service/adapters/base.py.json
+https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/ReviewableJSON/python_service/adapters/utils.py.json
+https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/ReviewableJSON/python_service/adapters/betfair_adapter.py.json
+https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/ReviewableJSON/python_service/adapters/pointsbet_adapter.py.json
+https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/ReviewableJSON/python_service/adapters/racing_and_sports_adapter.py.json
+https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/ReviewableJSON/python_service/adapters/tvg_adapter.py.json
 
 ### TypeScript Frontend
-https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/web_platform/frontend/package.json.json
-https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/web_platform/frontend/package-lock.json.json
-https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/web_platform/frontend/tailwind.config.ts.json
-https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/web_platform/frontend/tsconfig.json.json
-https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/web_platform/frontend/src/app/page.tsx.json
+https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/ReviewableJSON/web_platform/frontend/package.json.json
+https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/ReviewableJSON/web_platform/frontend/package-lock.json.json
+https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/ReviewableJSON/web_platform/frontend/next.config.mjs.json
+https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/ReviewableJSON/web_platform/frontend/tailwind.config.ts.json
+https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/ReviewableJSON/web_platform/frontend/tsconfig.json.json
+https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/ReviewableJSON/web_platform/frontend/src/app/page.tsx.json
+https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/ReviewableJSON/web_platform/frontend/src/app/layout.tsx.json
+https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/ReviewableJSON/web_platform/frontend/src/app/globals.css.json
 
 ---
 
 ## 2.0 Operational & Tooling (JSON Backups)
 
 ### Project Tooling
-https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/.gitignore.json
-https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/convert_to_json.py.json
+https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/ReviewableJSON/.gitignore.json
+https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/ReviewableJSON/convert_to_json.py.json
 
 ### Environment & Setup
-https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/setup_windows.bat.json
-https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/.env.json
-https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/requirements.txt.json
+https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/ReviewableJSON/setup_windows.bat.json
+https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/ReviewableJSON/.env.json
+https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/ReviewableJSON/python_service/requirements.txt.json
 
 ### Strategic Blueprints
-https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/README.md.json
-https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/ARCHITECTURAL_MANDATE.md.json
-https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/HISTORY.md.json
-https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/STATUS.md.json
-https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/WISDOM.md.json
-https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/PROJECT_MANIFEST.md.json
+https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/ReviewableJSON/README.md.json
+https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/ReviewableJSON/ARCHITECTURAL_MANDATE.md.json
+https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/ReviewableJSON/HISTORY.md.json
+https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/ReviewableJSON/STATUS.md.json
+https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/ReviewableJSON/WISDOM.md.json
+https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/ReviewableJSON/PROJECT_MANIFEST.md.json
