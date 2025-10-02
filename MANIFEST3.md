@@ -20,6 +20,7 @@
 *   `STATUS.md` - The last official status report.
 *   `WISDOM.md` - The operational protocol for AI agents.
 *   `PROJECT_MANIFEST.md` - The original legacy manifest.
+*   `ARCHITECTURAL_PARABLES.md` - A curated collection of salvaged strategic blueprints.
 
 ---
 
@@ -28,6 +29,7 @@
 ### Project Tooling
 https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/.gitignore
 https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/convert_to_json.py
+
 
 ### Environment & Setup
 https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/setup_windows.bat
@@ -41,3 +43,4 @@ https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/head
 https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/STATUS.md
 https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/WISDOM.md
 https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/PROJECT_MANIFEST.md
+https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/ARCHITECTURAL_PARABLES.md

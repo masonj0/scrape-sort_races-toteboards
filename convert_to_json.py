@@ -1,93 +1,84 @@
-# convert_to_json.py
-
 import json
 import os
-import re
 import sys
-from multiprocessing import Process, Queue
 
-# --- Configuration ---
-MANIFEST_FILES = ['MANIFEST2.md', 'MANIFEST3.md']
-OUTPUT_DIR = 'ReviewableJSON'
-FILE_PROCESSING_TIMEOUT = 10  # Seconds to wait before killing a hung file read
-
-# --- Core Functions ---
-def parse_manifest_for_links(manifest_path):
-    """Parses a manifest file to extract raw GitHub file links."""
-    if not os.path.exists(manifest_path):
-        return []
-    with open(manifest_path, 'r', encoding='utf-8') as f:
-        content = f.read()
-    return re.findall(r'(https://raw\.githubusercontent\.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/[-/\w\.]+)', content)
-
-def _sandboxed_file_read(file_path, q):
-    """This function runs in a separate process to read a file."""
+def convert_file_to_json(filepath):
+    """Reads a file and converts its content to a JSON structure, preserving directory structure."""
     try:
-        with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
+        if not os.path.exists(filepath):
+            print(f"Warning: File not found, skipping: {filepath}", file=sys.stderr)
+            return
+
+        # Normalize path to use forward slashes for consistency
+        normalized_filepath = filepath.replace("\\", "/")
+
+        with open(filepath, 'r', encoding='utf-8', errors='ignore') as f:
             content = f.read()
-        q.put({"file_path": file_path, "content": content})
+
+        json_data = {
+            "filepath": normalized_filepath,
+            "content": content
+        }
+
+        # Create the output path in the ReviewableJSON directory, preserving the original path
+        if normalized_filepath.startswith('./'):
+            normalized_filepath = normalized_filepath[2:]
+
+        output_dir = os.path.join("ReviewableJSON", os.path.dirname(normalized_filepath))
+        if output_dir:
+            os.makedirs(output_dir, exist_ok=True)
+
+        output_filename = os.path.basename(normalized_filepath) + ".json"
+        output_path = os.path.join(output_dir, output_filename)
+
+        with open(output_path, 'w', encoding='utf-8') as f:
+            json.dump(json_data, f, indent=4)
+
+        print(f"Successfully converted {filepath} to {output_path}")
+
     except Exception as e:
-        q.put({"error": str(e)})
-
-def convert_file_to_json_sandboxed(file_path):
-    """Reads a file in a sandboxed process with a timeout."""
-    q = Queue()
-    p = Process(target=_sandboxed_file_read, args=(file_path, q))
-    p.start()
-    p.join(timeout=FILE_PROCESSING_TIMEOUT)
-
-    if p.is_alive():
-        p.terminate()
-        p.join() # Ensure termination is complete
-        return {"error": f"Timeout: File processing took longer than {FILE_PROCESSING_TIMEOUT} seconds."}
-
-    if not q.empty():
-        return q.get()
-    return {"error": "Unknown error in sandboxed read process."}
-
-# --- Main Orchestrator ---
-def main():
-    print(f"\n{'='*60}\nStarting IRONCLAD JSON backup process...\n{'='*60}")
-    os.makedirs(OUTPUT_DIR, exist_ok=True)
-
-    all_links = []
-    for manifest in MANIFEST_FILES:
-        print(f"--> Parsing manifest: {manifest}")
-        links = parse_manifest_for_links(manifest)
-        all_links.extend(links)
-        print(f"    --> Found {len(links)} links.")
-
-    if not all_links:
-        print("\n[FATAL] No links found in any manifest. Aborting.")
-        return
-
-    print(f"\nFound a total of {len(all_links)} unique files to process.")
-    processed_count, failed_count = 0, 0
-
-    for link in set(all_links): # Use set to avoid processing duplicate links
-        local_path = '/'.join(link.split('/main/')[1:])
-        print(f"\nProcessing: {local_path}")
-
-        json_data = convert_file_to_json_sandboxed(local_path)
-
-        if json_data and "error" not in json_data:
-            output_path = os.path.join(OUTPUT_DIR, local_path + '.json')
-            os.makedirs(os.path.dirname(output_path), exist_ok=True)
-
-            with open(output_path, 'w', encoding='utf-8') as f:
-                json.dump(json_data, f, indent=4)
-
-            print(f"    [SUCCESS] Saved backup to {output_path}")
-            processed_count += 1
-        else:
-            error_msg = json_data.get("error", "Unknown error") if json_data else "File not found"
-            print(f"    [ERROR] Failed to process {local_path}: {error_msg}")
-            failed_count += 1
-
-    print(f"\n{'='*60}\nBackup process complete.\nSuccessfully processed: {processed_count}/{len(all_links)}\nFailed/Skipped: {failed_count}\n{'='*60}")
-
-    if failed_count > 0:
-        sys.exit(1) # Exit with an error code if any files failed
+        print(f"Error converting {filepath}: {e}", file=sys.stderr)
 
 if __name__ == "__main__":
-    main()
+    # This list is generated from the "Total Recall Edition" of MANIFEST2.md and MANIFEST3.md.
+    files_to_convert = [
+        # CORE Files from MANIFEST2.md
+        # Python Backend
+        "python_service/api.py",
+        "python_service/engine.py",
+        "python_service/models.py",
+        "python_service/adapters/__init__.py",
+        "python_service/adapters/base.py",
+        "python_service/adapters/utils.py",
+        "python_service/adapters/betfair_adapter.py",
+        "python_service/adapters/pointsbet_adapter.py",
+        "python_service/adapters/racing_and_sports_adapter.py",
+        "python_service/adapters/tvg_adapter.py",
+        # TypeScript Frontend
+        "web_platform/frontend/package.json",
+        "web_platform/frontend/package-lock.json",
+        "web_platform/frontend/tailwind.config.ts",
+        "web_platform/frontend/tsconfig.json",
+        "web_platform/frontend/src/app/page.tsx",
+
+        # Operational Files from MANIFEST3.md
+        # Project Tooling
+        ".gitignore",
+        "convert_to_json.py",
+        # Environment & Setup
+        "setup_windows.bat",
+        ".env",
+        "python_service/requirements.txt",
+        # Strategic Blueprints
+        "README.md",
+        "ARCHITECTURAL_MANDATE.md",
+        "HISTORY.md",
+        "STATUS.md",
+        "WISDOM.md",
+        "PROJECT_MANIFEST.md",
+    ]
+
+    print("Starting conversion based on the final manifest...")
+    for filepath in files_to_convert:
+        convert_file_to_json(filepath)
+    print("Conversion process complete.")
