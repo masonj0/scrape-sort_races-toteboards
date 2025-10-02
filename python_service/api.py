@@ -1,46 +1,41 @@
-# python_service/main.py
-# ==============================================================================
-# Checkmate Ultimate Solo - Fortified Python Backend
-# ==============================================================================
+# python_service/api.py
 
+import logging
 from flask import Flask, jsonify
 from flask_cors import CORS
-from engine import DataSourceOrchestrator, TrifectaAnalyzer, Settings
-import logging
+from dotenv import load_dotenv
+from .engine import CheckmateEngine
 
-# --- Initialization ---
+# Load environment variables from .env file
+load_dotenv()
+
+# Basic logging setup
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+
 app = Flask(__name__)
-CORS(app) # Enable CORS for the React frontend
 
-logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] %(name)s: %(message)s')
+# Apply CORS settings to allow requests from the frontend
+CORS(app, resources={r"/api/*": {"origins": "http://localhost:3000"}})
 
-# Initialize our battle-tested CORE components
-orchestrator = DataSourceOrchestrator()
-analyzer = TrifectaAnalyzer()
-settings = Settings()
+engine = CheckmateEngine()
 
-# --- API Endpoints ---
-@app.route('/api/races/live', methods=['GET'])
-def get_live_races():
-    """Fetches, analyzes, and returns live race data in the format expected by the Ultimate frontend."""
-    logging.info("Request received for /api/races/live")
+@app.route('/api/odds', methods=['GET'])
+def get_odds():
+    """New endpoint to fetch formatted odds for the frontend."""
     try:
-        all_races, _ = orchestrator.get_races()
-        analyzed_races = [analyzer.analyze_race(race, settings) for race in all_races]
-        races_dict = [race.model_dump() for race in analyzed_races]
-        logging.info(f"Successfully processed and returning {len(races_dict)} races.")
-        return jsonify(races_dict)
+        results = engine.get_current_odds()
+        serializable_results = [r.dict() for r in results]
+        return jsonify({"success": True, "data": serializable_results}), 200
     except Exception as e:
-        logging.critical(f"FATAL error in get_live_races: {e}", exc_info=True)
-        return jsonify({"error": "An internal server error occurred."}), 500
+        logging.error(f"Error in /api/odds: {e}", exc_info=True)
+        return jsonify({"success": False, "error": str(e)}), 500
 
-@app.route('/api/health', methods=['GET'])
-def health_check():
-    """Provides a basic health check."""
-    return jsonify({'status': 'healthy'})
-
-# --- Main Execution ---
-if __name__ == '__main__':
-    print("Starting Checkmate Ultimate Solo Backend on http://localhost:8000")
-    from waitress import serve
-    serve(app, host="0.0.0.0", port=8000)
+@app.route('/scrape', methods=['GET'])
+def scrape():
+    """Original endpoint, now used to manually trigger a data refresh."""
+    try:
+        result = engine.scrape_all()
+        return jsonify(result), 200
+    except Exception as e:
+        logging.error(f"Error in /scrape: {e}", exc_info=True)
+        return jsonify({"success": False, "error": str(e)}), 500

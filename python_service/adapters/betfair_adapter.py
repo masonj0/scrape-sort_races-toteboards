@@ -1,95 +1,61 @@
 # python_service/adapters/betfair_adapter.py
 
-import logging
-from datetime import datetime
-from typing import List
+import os
+from .base import BaseAdapter
+from ..models import RaceData, RunnerData
+from typing import List, Dict, Any
+from datetime import datetime, timezone
 
-from .base import BaseAdapterV7, Race, Runner
-from .utils import parse_odds
-
-class BetfairExchangeAdapter(BaseAdapterV7):
-    """
-    Adapter for the Betfair Exchange API.
-    """
+class BetfairAdapter(BaseAdapter):
+    """Adapter for the Betfair Exchange API, inspired by the Data Scientist adapter."""
     SOURCE_ID = "betfair_exchange"
-    API_ENDPOINT = "https://ero.betfair.com/www/sports/exchange/readonly/v1/bymarket?alt=json&filter=canonical&maxResults=25&rollupLimit=2&types=EVENT,MARKET_DESCRIPTION,RUNNER_DESCRIPTION,RUNNER_EXCHANGE_PRICES_BEST,MARKET_STATE&marketProjection=EVENT,MARKET_START_TIME,RUNNER_DESCRIPTION&eventTypeIds=7"
+    BASE_URL = "https://api.betfair.com/exchange/betting/json-rpc/v1"
 
-    def fetch_races(self) -> List[Race]:
-        """
-        Fetches race data from the Betfair Exchange API and transforms it into
-        the standardized Race model.
-        """
-        data = self.fetcher.get(self.API_ENDPOINT, headers={'Accept': 'application/json'})
-        if not isinstance(data, dict):
-            logging.warning(f"BetfairExchangeAdapter received invalid or non-dict data: {type(data)}")
+    def __init__(self, fetcher):
+        super().__init__(fetcher)
+        self.app_key = os.getenv("BETFAIR_APP_KEY")
+        self.session_token = os.getenv("BETFAIR_SESSION_TOKEN")
+
+    def fetch_races(self) -> List[RaceData]:
+        if not self.app_key or not self.session_token:
+            self.logger.warning(f"API keys for {self.SOURCE_ID} not configured. Skipping.")
             return []
 
-        return self._parse_betfair_races(data)
+        self.logger.info(f"Fetching market catalogues from {self.SOURCE_ID}")
+        headers = {
+            "X-Application": self.app_key,
+            "X-Authentication": self.session_token,
+            "Content-Type": "application/json"
+        }
+        payload = {
+            "jsonrpc": "2.0",
+            "method": "SportsAPING/v1.0/listMarketCatalogue",
+            "params": {
+                "filter": {"eventTypeIds": ["7"], "marketTypeCodes": ["WIN"]},
+                "maxResults": 100,
+                "marketProjection": ["EVENT", "RUNNER_DESCRIPTION"]
+            },
+            "id": 1
+        }
 
-    def _parse_betfair_races(self, data: dict) -> List[Race]:
-        """
-        Parses the complex JSON structure from the Betfair API.
-        """
+        response_data = self.fetcher.post(self.BASE_URL, headers=headers, json=payload)
+        if not response_data or "result" not in response_data:
+            self.logger.error("Invalid or empty response from Betfair API.")
+            return []
+
         races = []
-        try:
-            event_nodes = data.get('eventTypes', [{}])[0].get('eventNodes', [])
-            for event_node in event_nodes:
-                event = event_node.get('event', {})
-                for market_node in event_node.get('marketNodes', []):
-                    market = market_node.get('market', {})
-                    if market.get('marketType', '') != 'WIN':
-                        continue
-
-                    runners = []
-                    for runner_node in market_node.get('runners', []):
-                        if runner_node.get('state', {}).get('status') != 'ACTIVE':
-                            continue
-
-                        raw_odds = None
-                        if 'exchange' in runner_node:
-                            available_to_back = runner_node['exchange'].get('availableToBack', [])
-                            if available_to_back:
-                                raw_odds = available_to_back[0].get('price')
-
-                        # Use the centralized utility to parse odds.
-                        # The raw_odds is already a float here, but using the utility ensures consistency.
-                        odds = parse_odds(raw_odds)
-
-                        if odds < 999.0:
-                            runners.append(
-                                Runner(
-                                    name=runner_node.get('description', {}).get('runnerName', 'Unknown'),
-                                    odds=odds
-                                )
-                            )
-
-                    if len(runners) >= 3:
-                        start_time = None
-                        if market.get('marketStartTime'):
-                            try:
-                                start_time = datetime.fromisoformat(market['marketStartTime'].replace('Z', '+00:00'))
-                            except ValueError:
-                                pass # Ignore if parsing fails
-
-                        race_number = None
-                        event_name = event.get('eventName', '')
-                        if 'R' in event_name:
-                            try:
-                                race_number = int(event_name.split('R')[-1])
-                            except (ValueError, IndexError):
-                                pass
-
-                        races.append(
-                            Race(
-                                race_id=f"betfair_{market.get('marketId', 'unknown')}",
-                                track_name=event.get('venue', 'Betfair Exchange'),
-                                post_time=start_time,
-                                race_number=race_number,
-                                runners=runners,
-                                source=self.SOURCE_ID
-                            )
-                        )
-        except (KeyError, TypeError, IndexError) as e:
-            logging.error(f"Error parsing Betfair data structure: {e}")
+        for market in response_data["result"]:
+            try:
+                runners = [RunnerData(name=r['runnerName'], odds=None) for r in market.get('runners', [])]
+                # Note: This endpoint does not provide live odds. A second call to listMarketBook would be needed.
+                races.append(RaceData(
+                    race_id=f"bf_{market['marketId']}",
+                    track_name=market.get('event', {}).get('venue', 'Unknown Track'),
+                    post_time=datetime.fromisoformat(market['marketStartTime'].replace('Z', '+00:00')),
+                    runners=runners,
+                    source=self.SOURCE_ID
+                ))
+            except (KeyError, TypeError) as e:
+                self.logger.warning(f"Skipping malformed Betfair market: {e}")
 
         return races

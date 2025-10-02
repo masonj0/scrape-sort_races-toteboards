@@ -1,4 +1,4 @@
-import asyncio
+import anyio
 import random
 import httpx
 from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
@@ -13,7 +13,8 @@ USER_AGENTS = [
     stop=stop_after_attempt(5),
     wait=wait_exponential(multiplier=1, min=2, max=60),
     retry=retry_if_exception_type((httpx.RequestError, httpx.HTTPStatusError)),
-    reraise=True
+    reraise=True,
+    sleep=anyio.sleep,
 )
 async def get_page_content(url: str, post_data: dict = None) -> str:
     """
