@@ -40,29 +40,40 @@ def convert_file_to_json(filepath):
         print(f"Error converting {filepath}: {e}", file=sys.stderr)
 
 if __name__ == "__main__":
-    # This list is generated from MANIFEST2.md and MANIFEST3.md to ensure a complete backup.
+    # This list is generated from the "Total Recall Edition" of MANIFEST2.md and MANIFEST3.md.
     files_to_convert = [
-        # From MANIFEST2.md (CORE Architecture)
-        ".env",
-        "ARCHITECTURAL_MANDATE.md",
-        "README.md",
-        "STATUS.md",
-        "setup_windows.bat",
+        # CORE Files from MANIFEST2.md
+        # Python Backend
         "python_service/api.py",
         "python_service/engine.py",
         "python_service/models.py",
-        "python_service/requirements.txt",
         "python_service/adapters/__init__.py",
         "python_service/adapters/base.py",
+        "python_service/adapters/utils.py",
         "python_service/adapters/betfair_adapter.py",
         "python_service/adapters/pointsbet_adapter.py",
         "python_service/adapters/racing_and_sports_adapter.py",
         "python_service/adapters/tvg_adapter.py",
+        # TypeScript Frontend
+        "web_platform/frontend/package.json",
+        "web_platform/frontend/package-lock.json",
+        "web_platform/frontend/tailwind.config.ts",
+        "web_platform/frontend/tsconfig.json",
         "web_platform/frontend/src/app/page.tsx",
 
-        # From MANIFEST3.md (Operational & Tooling)
-        # Strategic Blueprints & Sacred Texts
+        # Operational Files from MANIFEST3.md
+        # Project Tooling
+        ".gitignore",
+        "convert_to_json.py",
+        # Environment & Setup
+        "setup_windows.bat",
+        ".env",
+        "python_service/requirements.txt",
+        # Strategic Blueprints
+        "README.md",
+        "ARCHITECTURAL_MANDATE.md",
         "HISTORY.md",
+        "STATUS.md",
         "WISDOM.md",
         "PROJECT_MANIFEST.md",
     ]
