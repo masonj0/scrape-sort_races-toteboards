@@ -1,14 +1,14 @@
 # python_service/adapters/pointsbet_adapter.py
 
 import logging
-import requests
 from datetime import datetime
 from typing import List
 
+from .base import BaseAdapter
 from ..models import RaceData, RunnerData
 from .utils import parse_odds
 
-class PointsBetAdapter:
+class PointsBetAdapter(BaseAdapter):
     """
     Adapter for the PointsBet API, enhanced for multi-sport coverage.
     """
@@ -16,17 +16,8 @@ class PointsBetAdapter:
     API_TEMPLATE = "https://api.nj.pointsbet.com/api/v2/sports/{sport}/events/upcoming?page=1"
     SPORTS = ["horse-racing", "harness-racing", "greyhound-racing"]
 
-    def __init__(self):
-        self.logger = logging.getLogger(self.__class__.__name__)
-
-    def _fetch_data(self, url):
-        try:
-            response = requests.get(url, timeout=10)
-            response.raise_for_status()
-            return response.json()
-        except requests.RequestException as e:
-            self.logger.error(f"GET request to {url} failed: {e}")
-            return None
+    def __init__(self, fetcher):
+        super().__init__(fetcher)
 
     def fetch_races(self) -> List[RaceData]:
         """
@@ -36,7 +27,8 @@ class PointsBetAdapter:
         all_races = []
         for sport in self.SPORTS:
             url = self.API_TEMPLATE.format(sport=sport)
-            response_data = self._fetch_data(url)
+            # Use the shared, hardened fetcher
+            response_data = self.fetcher.get(url, headers={}, source_id=self.SOURCE_ID)
             if not response_data or not isinstance(response_data, dict):
                 self.logger.warning(f"Invalid response from PointsBet for sport: {sport}")
                 continue

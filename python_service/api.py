@@ -37,6 +37,19 @@ def get_races():
         logging.error(f"Error in /api/races: {e}", exc_info=True)
         return jsonify({"success": False, "error": str(e)}), 500
 
+@app.route('/api/dashboard', methods=['GET'])
+@limiter.limit("30 per minute")
+def get_dashboard_summary():
+    logging.info("--- DASHBOARD ENDPOINT HIT ---")
+    try:
+        summary = engine.get_dashboard_summary()
+        logging.info(f"--- DASHBOARD SUMMARY GENERATED: {summary} ---")
+        return jsonify(summary), 200
+    except Exception as e:
+        logging.error(f"--- ERROR IN /api/dashboard ---: {e}", exc_info=True)
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
 @app.route('/api/adapters/<adapter_name>/status', methods=['GET'])
 def get_adapter_status(adapter_name):
     status = engine.get_adapter_status(adapter_name)
@@ -47,4 +60,4 @@ def get_adapter_status(adapter_name):
 # Add other endpoints as needed, applying rate limits where appropriate
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+    app.run(host='0.0.0.0', port=5001)

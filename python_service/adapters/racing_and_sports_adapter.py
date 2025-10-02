@@ -2,13 +2,13 @@
 
 import os
 import logging
-import requests
-from typing import List, Optional
+from typing import List
 from datetime import datetime, timezone
 
+from .base import BaseAdapter
 from ..models import RaceData
 
-class RacingAndSportsAdapter:
+class RacingAndSportsAdapter(BaseAdapter):
     """
     Adapter for the RacingAndSports API, enhanced for multi-race type coverage.
     """
@@ -16,18 +16,9 @@ class RacingAndSportsAdapter:
     API_TEMPLATE = "https://api.racingandsports.com.au/Meetings?RaceType={race_type}"
     RACE_TYPES = ['R', 'G', 'H']  # R=Thoroughbred, G=Greyhound, H=Harness
 
-    def __init__(self, api_key: Optional[str] = None):
-        self.logger = logging.getLogger(self.__class__.__name__)
-        self.api_key = api_key or os.getenv("RAS_API_KEY")
-
-    def _fetch_data(self, url, headers):
-        try:
-            response = requests.get(url, headers=headers, timeout=15)
-            response.raise_for_status()
-            return response.json()
-        except requests.RequestException as e:
-            self.logger.error(f"GET request to {url} failed: {e}")
-            return None
+    def __init__(self, fetcher):
+        super().__init__(fetcher)
+        self.api_key = os.getenv("RAS_API_KEY")
 
     def fetch_races(self) -> List[RaceData]:
         if not self.api_key:
@@ -40,7 +31,7 @@ class RacingAndSportsAdapter:
 
         for race_type in self.RACE_TYPES:
             url = self.API_TEMPLATE.format(race_type=race_type)
-            meetings_data = self._fetch_data(url, headers=headers)
+            meetings_data = self.fetcher.get(url, headers=headers, source_id=self.SOURCE_ID)
             if not meetings_data or not isinstance(meetings_data, list):
                 self.logger.warning(f"Invalid or empty response from RAS for race type: {race_type}")
                 continue

@@ -2,13 +2,15 @@
 
 import logging
 from abc import ABC, abstractmethod
-from typing import List
-from ..models import RaceData
+from typing import List, Any
+# Assuming pydantic models are in a shared location
+# from ..models import RaceData
 
 class BaseAdapter(ABC):
     """Abstract base class for all data adapters."""
 
     def __init__(self, fetcher):
+        """Adapters now accept a shared, hardened fetcher instance."""
         self.fetcher = fetcher
         self.logger = logging.getLogger(self.__class__.__name__)
 
@@ -19,6 +21,6 @@ class BaseAdapter(ABC):
         pass
 
     @abstractmethod
-    def fetch_races(self) -> List[RaceData]:
+    def fetch_races(self) -> List[Any]: # Should be List[RaceData]
         """Fetch and parse race data from the source."""
         pass

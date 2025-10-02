@@ -1,13 +1,18 @@
 # python_service/adapters/betfair_adapter.py
 
 import os
-import requests
 import logging
 from datetime import datetime, timedelta
+from typing import List
 
-class BetfairAdapter:
-    def __init__(self):
-        self.logger = logging.getLogger(self.__class__.__name__)
+from .base import BaseAdapter
+from ..models import RaceData # Assuming models are defined
+
+class BetfairAdapter(BaseAdapter):
+    SOURCE_ID = "betfair"
+
+    def __init__(self, fetcher):
+        super().__init__(fetcher)
         self.base_url = "https://api.betfair.com/exchange/betting/rest/v1.0/"
         self.auth_url = "https://identitysso.betfair.com/api/login"
         self.app_key = os.getenv('BETFAIR_APP_KEY')
@@ -25,20 +30,16 @@ class BetfairAdapter:
         headers = {'X-Application': self.app_key, 'Content-Type': 'application/x-www-form-urlencoded'}
         payload = f'username={self.username}&password={self.password}'
 
-        try:
-            response = requests.post(self.auth_url, headers=headers, data=payload, timeout=10)
-            response.raise_for_status()
-            data = response.json()
-            if data.get('status') == 'SUCCESS':
-                self.session_token = data.get('token')
-                self.token_expires_at = datetime.now() + timedelta(hours=4)
-                self.logger.info("Successfully authenticated with Betfair.")
-                return True
-            else:
-                self.logger.error(f"Betfair authentication failed: {data.get('error')}")
-                return False
-        except requests.RequestException as e:
-            self.logger.error(f"Error during Betfair authentication: {e}")
+        data = self.fetcher.post(self.auth_url, headers=headers, data=payload, source_id=self.SOURCE_ID)
+
+        if data and data.get('status') == 'SUCCESS':
+            self.session_token = data.get('token')
+            self.token_expires_at = datetime.now() + timedelta(hours=4)
+            self.logger.info("Successfully authenticated with Betfair.")
+            return True
+        else:
+            error_msg = data.get('error') if data else "Unknown error"
+            self.logger.error(f"Betfair authentication failed: {error_msg}")
             return False
 
     def _ensure_authenticated(self):
