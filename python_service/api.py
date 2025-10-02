@@ -1,73 +1,68 @@
 # python_service/api.py
 
+import asyncio
 import logging
-from flask import Flask, jsonify, request
-from flask_cors import CORS
-from flask_limiter import Limiter
-from flask_limiter.util import get_remote_address
+from contextlib import asynccontextmanager
+from fastapi import FastAPI, Depends
+from fastapi.middleware.cors import CORSMiddleware
+
 from .engine import EngineManager
 
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+# --- Lifespan Management ---
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """
+    Manages the application's lifespan, handling startup and shutdown events.
+    """
+    logging.info("App startup: Initializing engine and background task.")
+    engine = get_engine()
+    background_task = asyncio.create_task(engine.run())
 
-app = Flask(__name__)
+    yield  # The application is now running
 
-# Whitelist origins for security
-CORS(app, origins=["http://localhost:3000", "http://localhost:8000"])
+    logging.info("App shutdown: Cancelling background task and closing resources.")
+    background_task.cancel()
+    try:
+        await background_task
+    except asyncio.CancelledError:
+        logging.info("Background task successfully cancelled.")
 
-# Initialize rate limiter
-limiter = Limiter(
-    app=app,
-    key_func=get_remote_address,
-    default_limits=["200 per day", "50 per hour"]
+    for adapter in engine.adapters:
+        if hasattr(adapter, 'close'):
+            await adapter.close()
+
+# --- App Setup ---
+app = FastAPI(
+    title="Checkmate Ultimate Solo API",
+    description="Aggregates horse racing odds from multiple sources.",
+    version="1.0.0",
+    lifespan=lifespan
 )
 
-engine = EngineManager()
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000", "http://localhost:8000"],
+    allow_credentials=True,
+    allow_methods=["GET"],
+    allow_headers=["*"]
+)
 
-@app.route('/health', methods=['GET'])
-def health_check():
-    return jsonify({"status": "healthy"}), 200
+# --- Engine Dependency ---
+engine_manager = EngineManager()
 
-@app.route('/api/races', methods=['GET'])
-@limiter.limit("10 per minute")
-def get_races():
-    try:
-        races = engine.fetch_and_process_races()
-        return jsonify(races), 200
-    except Exception as e:
-        logging.error(f"Error in /api/races: {e}", exc_info=True)
-        return jsonify({"success": False, "error": str(e)}), 500
+def get_engine():
+    """Dependency provider for the EngineManager."""
+    return engine_manager
 
-@app.route('/api/funnel', methods=['GET'])
-@limiter.limit("30 per minute")
-def get_funnel_stats():
-    try:
-        stats = engine.get_funnel_statistics()
-        return jsonify(stats), 200
-    except Exception as e:
-        logging.error(f"Error in /api/funnel: {e}", exc_info=True)
-        return jsonify({"success": False, "error": str(e)}), 500
+# --- API Endpoints ---
+@app.get("/health")
+async def health_check():
+    return {"status": "healthy"}
 
-
-@app.route('/api/dashboard', methods=['GET'])
-@limiter.limit("30 per minute")
-def get_dashboard_summary():
-    """Provides a high-level summary of the last data scrape, including failures."""
-    try:
-        summary = engine.get_dashboard_summary()
-        return jsonify(summary), 200
-    except Exception as e:
-        logging.error(f"Error in /api/dashboard: {e}", exc_info=True)
-        return jsonify({"success": False, "error": str(e)}), 500
-
-
-@app.route('/api/adapters/<adapter_name>/status', methods=['GET'])
-def get_adapter_status(adapter_name):
-    status = engine.get_adapter_status(adapter_name)
-    if status:
-        return jsonify(status), 200
-    return jsonify({"error": "Adapter not found"}), 404
-
-# Add other endpoints as needed, applying rate limits where appropriate
-
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+@app.get("/races")
+async def get_races(engine: EngineManager = Depends(get_engine)):
+    """
+    Returns the latest fetched race data.
+    The engine is injected as a dependency to facilitate testing.
+    """
+    return engine.last_races

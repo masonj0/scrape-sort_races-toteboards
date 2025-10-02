@@ -1,31 +1,46 @@
 # python_service/adapters/base.py
 
-import logging
 import abc
+import logging
+import aiohttp
+from typing import Dict, Any
 
 class BaseAdapter(abc.ABC):
     """
     An abstract base class for all data source adapters, enforcing a
-    consistent interface.
+    consistent asynchronous interface.
     """
 
-    def __init__(self, fetcher):
+    def __init__(self):
         """
-        Initializes the adapter with a shared fetcher instance.
-
-        :param fetcher: An instance of a fetcher class (e.g., DefensiveFetcher)
-                        that handles the actual HTTP requests.
+        Initializes the adapter. Each adapter is responsible for managing
+        its own resources, such as HTTP sessions.
         """
         self.logger = logging.getLogger(self.__class__.__name__)
-        self.fetcher = fetcher
+        self._session: aiohttp.ClientSession | None = None
+
+    async def get_session(self) -> aiohttp.ClientSession:
+        """Provides a lazy-initialized aiohttp.ClientSession."""
+        if self._session is None or self._session.closed:
+            self._session = aiohttp.ClientSession()
+        return self._session
 
     @abc.abstractmethod
-    def fetch_races(self) -> dict:
+    async def fetch_races(self) -> Dict[str, Any]:
         """
-        Abstract method to fetch race data from the source.
+        Abstract method to fetch race data from the source asynchronously.
 
         This method must be implemented by all subclasses. It should return
-        a dictionary with a 'success' key (boolean) and either a 'data' key
-        (on success) or an 'error_details' key (on failure).
+        a dictionary containing race data or error information.
+        A consistent format is expected, e.g., {"races": [...], "error": "..."}
         """
-        raise NotImplementedError("Each adapter must implement the fetch_races method.")
+        raise NotImplementedError("Each adapter must implement the async fetch_races method.")
+
+    async def close(self):
+        """
+        Closes the underlying aiohttp session, if it was created.
+        This is crucial for graceful shutdown.
+        """
+        if self._session and not self._session.closed:
+            await self._session.close()
+            self.logger.info(f"Closed session for {self.__class__.__name__}")
