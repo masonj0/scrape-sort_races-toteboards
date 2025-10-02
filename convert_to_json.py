@@ -40,59 +40,31 @@ def convert_file_to_json(filepath):
         print(f"Error converting {filepath}: {e}", file=sys.stderr)
 
 if __name__ == "__main__":
-    # This list is a direct reflection of the final manifest for the Council of AI Superbrains.
-    # It includes all CORE and specified LEGACY files.
+    # This list is generated from MANIFEST2.md and MANIFEST3.md to ensure a complete backup.
     files_to_convert = [
-        # CORE Documentation
-        "README.md",
+        # From MANIFEST2.md (CORE Architecture)
+        ".env",
         "ARCHITECTURAL_MANDATE.md",
-
-        # CORE Frontend
-        "web_platform/frontend/src/app/page.tsx",
-
-        # CORE Backend
+        "README.md",
+        "STATUS.md",
+        "setup_windows.bat",
         "python_service/api.py",
         "python_service/engine.py",
+        "python_service/models.py",
+        "python_service/requirements.txt",
         "python_service/adapters/__init__.py",
         "python_service/adapters/base.py",
         "python_service/adapters/betfair_adapter.py",
         "python_service/adapters/pointsbet_adapter.py",
+        "python_service/adapters/racing_and_sports_adapter.py",
         "python_service/adapters/tvg_adapter.py",
-        "python_service/adapters/utils.py",
-        "python_service/requirements.txt",
+        "web_platform/frontend/src/app/page.tsx",
 
-        # LEGACY Adapters (src/checkmate_v7)
-        "src/checkmate_v7/adapters/AndWereOff.py",
-        "src/checkmate_v7/adapters/Stablemates.py",
-        "src/checkmate_v7/adapters/utils.py",
-
-        # LEGACY Adapters (src/paddock_parser)
-        "src/paddock_parser/adapters/atg_adapter.py",
-        "src/paddock_parser/adapters/attheraces_adapter.py",
-        "src/paddock_parser/adapters/betfair_data_scientist_adapter.py",
-        "src/paddock_parser/adapters/equibase_adapter.py",
-        "src/paddock_parser/adapters/fanduel_graphql_adapter.py",
-        "src/paddock_parser/adapters/greyhound_recorder.py",
-        "src/paddock_parser/adapters/pointsbet_adapter.py",
-        "src/paddock_parser/adapters/racingandsports_adapter.py",
-        "src/paddock_parser/adapters/racingpost_adapter.py",
-        "src/paddock_parser/adapters/ras_adapter.py",
-        "src/paddock_parser/adapters/skysports_adapter.py",
-        "src/paddock_parser/adapters/timeform_adapter.py",
-        "src/paddock_parser/adapters/twinspires_adapter.py",
-        "src/paddock_parser/adapters/utils.py",
-
-        # LEGACY Reviews
-        "ReviewableJSON/attheraces_adapter.py.json",
-        "ReviewableJSON/betfair_data_scientist_adapter.py.json",
-        "ReviewableJSON/equibase.py.json",
-        "ReviewableJSON/equibase_adapter.py.json",
-        "ReviewableJSON/fanduel_graphql_adapter.py.json",
-        "ReviewableJSON/greyhound_recorder.py.json",
-        "ReviewableJSON/racingandsports_adapter.py.json",
-        "ReviewableJSON/racingpost_adapter.py.json",
-        "ReviewableJSON/skysports_adapter.py.json",
-        "ReviewableJSON/timeform_adapter.py.json"
+        # From MANIFEST3.md (Operational & Tooling)
+        # Strategic Blueprints & Sacred Texts
+        "HISTORY.md",
+        "WISDOM.md",
+        "PROJECT_MANIFEST.md",
     ]
 
     print("Starting conversion based on the final manifest...")
