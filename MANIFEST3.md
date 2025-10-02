@@ -29,7 +29,6 @@
 https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/.gitignore
 https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/convert_to_json.py
 
-
 ### Environment & Setup
 https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/setup_windows.bat
 https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/.env
