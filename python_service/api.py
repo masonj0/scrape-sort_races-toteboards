@@ -1,45 +1,43 @@
 # python_service/api.py
-# ==============================================================================
-# Checkmate Ultimate - The Full-Power Python Backend API (CORS CORRECTED)
-# ==============================================================================
 
 import logging
 from flask import Flask, jsonify
 from flask_cors import CORS
+from dotenv import load_dotenv
+from .engine import CheckmateEngine
 
-from engine import DataSourceOrchestrator, TrifectaAnalyzer, Settings
+# Load environment variables from .env file
+load_dotenv()
+
+# Basic logging setup
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
 app = Flask(__name__)
-CORS(app)
 
-logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] %(name)s: %(message)s')
+# Apply CORS settings to allow requests from the frontend
+CORS(app, resources={r"/api/*": {"origins": "http://localhost:3000"}})
 
-orchestrator = DataSourceOrchestrator()
-analyzer = TrifectaAnalyzer()
-settings = Settings()
+engine = CheckmateEngine()
 
-logging.info("Checkmate Ultimate Backend initialized with CORS enabled.")
-
-@app.route('/api/races/live', methods=['GET'])
-def get_live_races():
-    logging.info("Request received for /api/races/live")
+@app.'/api/odds', methods=['GET'])
+def get_odds():
+    """New endpoint to fetch formatted odds for the frontend."""
     try:
-        all_races, _ = orchestrator.get_races()
-        analyzed_races = [analyzer.analyze_race(race, settings) for race in all_races]
-        races_dict = [race.model_dump() for race in analyzed_races]
-        return jsonify(races_dict)
+        results = engine.get_current_odds()
+        serializable_results = [r.dict() for r in results]
+        return jsonify({"success": True, "data": serializable_results}), 200
     except Exception as e:
-        logging.critical(f"FATAL error in get_live_races: {e}", exc_info=True)
-        return jsonify({"error": "An internal server error occurred."}), 500
+        logging.error(f"Error in /api/odds: {e}", exc_info=True)
+        return jsonify({"success": False, "error": str(e)}), 500
 
-@app.route('/api/health', methods=['GET'])
-def health_check():
-    return jsonify({'status': 'ok'})
+@app.route('/scrape', methods=['GET'])
+def scrape():
+    """Original endpoint, now used to manually trigger a data refresh."""
+    try:
+        result = engine.scrape_all()
+        return jsonify(result), 200
+    except Exception as e:
+        logging.error(f"Error in /scrape: {e}", exc_info=True)
+        return jsonify({"success": False, "error": str(e)}), 500
 
-if __name__ == '__main__':
-    from waitress import serve
-    print("\n" + "="*60)
-    print("  STARTING CHECKMATE ULTIMATE BACKEND (FULL POWER)")
-    print("  Listening on http://localhost:8000")
-    print("="*60 + "\n")
-    serve(app, host="0.0.0.0", port=8000)
+ 
