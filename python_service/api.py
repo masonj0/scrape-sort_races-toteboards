@@ -37,6 +37,18 @@ def get_races():
         logging.error(f"Error in /api/races: {e}", exc_info=True)
         return jsonify({"success": False, "error": str(e)}), 500
 
+@app.route('/api/funnel', methods=['GET'])
+@limiter.limit("30 per minute")
+def get_funnel_stats():
+    """New endpoint for Funnel Vision statistics."""
+    try:
+        stats = engine.get_funnel_statistics()
+        return jsonify(stats), 200
+    except Exception as e:
+        logging.error(f"Error in /api/funnel: {e}", exc_info=True)
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
 @app.route('/api/adapters/<adapter_name>/status', methods=['GET'])
 def get_adapter_status(adapter_name):
     status = engine.get_adapter_status(adapter_name)
