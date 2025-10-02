@@ -19,7 +19,7 @@ CORS(app, resources={r"/api/*": {"origins": "http://localhost:3000"}})
 
 engine = CheckmateEngine()
 
-@app.route('/api/odds', methods=['GET'])
+@app.'/api/odds', methods=['GET'])
 def get_odds():
     """New endpoint to fetch formatted odds for the frontend."""
     try:
@@ -39,3 +39,5 @@ def scrape():
     except Exception as e:
         logging.error(f"Error in /scrape: {e}", exc_info=True)
         return jsonify({"success": False, "error": str(e)}), 500
+
+ 
