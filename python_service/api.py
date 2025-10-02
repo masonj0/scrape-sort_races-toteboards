@@ -1,43 +1,50 @@
 # python_service/api.py
 
 import logging
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 from flask_cors import CORS
-from dotenv import load_dotenv
-from .engine import CheckmateEngine
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
+from .engine import EngineManager
 
-# Load environment variables from .env file
-load_dotenv()
-
-# Basic logging setup
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
 app = Flask(__name__)
 
-# Apply CORS settings to allow requests from the frontend
-CORS(app, resources={r"/api/*": {"origins": "http://localhost:3000"}})
+# Whitelist origins for security
+CORS(app, origins=["http://localhost:3000", "http://localhost:8000"])
 
-engine = CheckmateEngine()
+# Initialize rate limiter
+limiter = Limiter(
+    app=app,
+    key_func=get_remote_address,
+    default_limits=["200 per day", "50 per hour"]
+)
 
-@app.'/api/odds', methods=['GET'])
-def get_odds():
-    """New endpoint to fetch formatted odds for the frontend."""
+engine = EngineManager()
+
+@app.route('/health', methods=['GET'])
+def health_check():
+    return jsonify({"status": "healthy"}), 200
+
+@app.route('/api/races', methods=['GET'])
+@limiter.limit("10 per minute")
+def get_races():
     try:
-        results = engine.get_current_odds()
-        serializable_results = [r.dict() for r in results]
-        return jsonify({"success": True, "data": serializable_results}), 200
+        races = engine.fetch_races()
+        return jsonify([r.dict() for r in races]), 200
     except Exception as e:
-        logging.error(f"Error in /api/odds: {e}", exc_info=True)
+        logging.error(f"Error in /api/races: {e}", exc_info=True)
         return jsonify({"success": False, "error": str(e)}), 500
 
-@app.route('/scrape', methods=['GET'])
-def scrape():
-    """Original endpoint, now used to manually trigger a data refresh."""
-    try:
-        result = engine.scrape_all()
-        return jsonify(result), 200
-    except Exception as e:
-        logging.error(f"Error in /scrape: {e}", exc_info=True)
-        return jsonify({"success": False, "error": str(e)}), 500
+@app.route('/api/adapters/<adapter_name>/status', methods=['GET'])
+def get_adapter_status(adapter_name):
+    status = engine.get_adapter_status(adapter_name)
+    if status:
+        return jsonify(status), 200
+    return jsonify({"error": "Adapter not found"}), 404
 
- 
+# Add other endpoints as needed, applying rate limits where appropriate
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000)
