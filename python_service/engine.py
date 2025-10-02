@@ -152,3 +152,10 @@ class EngineManager:
         if key not in self._cache: return False
         _, timestamp = self._cache[key]
         return (datetime.now() - timestamp) < self._cache_ttl
+
+    def get_funnel_statistics(self) -> Dict[str, Any]:
+        """Provides a statistical summary of the last data collection funnel."""
+        cache_key = "funnel_stats"
+        if self._is_cache_valid(cache_key):
+            return self._cache[cache_key][0]
+        return {"status": "stale", "message": "Funnel data is being generated."}
