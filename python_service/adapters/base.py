@@ -1,31 +1,22 @@
 # python_service/adapters/base.py
 
 import logging
-import abc
+import aiohttp
+from typing import Optional
 
-class BaseAdapter(abc.ABC):
-    """
-    An abstract base class for all data source adapters, enforcing a
-    consistent interface.
-    """
-
-    def __init__(self, fetcher):
-        """
-        Initializes the adapter with a shared fetcher instance.
-
-        :param fetcher: An instance of a fetcher class (e.g., DefensiveFetcher)
-                        that handles the actual HTTP requests.
-        """
+class BaseAdapter:
+    def __init__(self):
         self.logger = logging.getLogger(self.__class__.__name__)
-        self.fetcher = fetcher
+        self._session: Optional[aiohttp.ClientSession] = None
 
-    @abc.abstractmethod
-    def fetch_races(self) -> dict:
-        """
-        Abstract method to fetch race data from the source.
+    async def get_session(self) -> aiohttp.ClientSession:
+        if self._session is None or self._session.closed:
+            self._session = aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=20))
+        return self._session
 
-        This method must be implemented by all subclasses. It should return
-        a dictionary with a 'success' key (boolean) and either a 'data' key
-        (on success) or an 'error_details' key (on failure).
-        """
-        raise NotImplementedError("Each adapter must implement the fetch_races method.")
+    async def close(self):
+        if self._session and not self._session.closed:
+            await self._session.close()
+
+    async def fetch_races(self):
+        raise NotImplementedError

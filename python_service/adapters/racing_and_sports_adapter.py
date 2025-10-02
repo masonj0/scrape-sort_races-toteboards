@@ -1,28 +1,45 @@
 # python_service/adapters/racing_and_sports_adapter.py
 
 import os
-import logging
 from datetime import datetime, timezone
-from ..models import RaceData, RunnerData
+import aiohttp
+
+from ..models import Race, Runner
 from .base import BaseAdapter
 
 class RacingAndSportsAdapter(BaseAdapter):
+    """
+    An adapter for fetching race data from the Racing and Sports API.
+    """
     SOURCE_ID = "racing_and_sports"
     BASE_URL = "https://api.racingandsports.com.au/Meetings"
 
-    def __init__(self, fetcher):
-        super().__init__(fetcher)
+    def __init__(self):
+        """Initializes the adapter and retrieves the necessary API key."""
+        super().__init__()
         self.api_key = os.getenv("RAS_API_KEY")
 
-    def fetch_races(self):
+    async def fetch_races(self):
+        """
+        Asynchronously fetches and processes race data from the Racing and Sports API.
+        """
         if not self.api_key:
+            self.logger.error("RAS_API_KEY is not set. Cannot fetch data.")
             return {'success': False, 'error_details': {'error': 'ConfigurationError', 'message': 'RAS_API_KEY not set'}}
 
-        fetch_result = self.fetcher.get(self.BASE_URL, headers={"X-API-Key": self.api_key}, source_id=self.SOURCE_ID)
-        if not fetch_result['success']:
-            return {'success': False, 'error_details': fetch_result}
+        try:
+            session = await self.get_session()
+            headers = {"X-API-Key": self.api_key}
+            async with session.get(self.BASE_URL, headers=headers) as response:
+                response.raise_for_status()
+                meetings_data = await response.json()
+        except aiohttp.ClientError as e:
+            self.logger.error(f"Network error fetching RAS data: {e}")
+            return {'success': False, 'error_details': {'error': 'NetworkError', 'message': str(e)}}
+        except Exception as e:
+            self.logger.error(f"An unexpected error occurred fetching RAS data: {e}")
+            return {'success': False, 'error_details': {'error': 'UnexpectedError', 'message': str(e)}}
 
-        meetings_data = fetch_result['data']
         if not isinstance(meetings_data, list):
             return {'success': False, 'error_details': {'error': 'InvalidResponse', 'message': 'API did not return a list of meetings'}}
 
@@ -34,15 +51,19 @@ class RacingAndSportsAdapter(BaseAdapter):
                     post_time_str = race_data.get('StartTimeUTC')
                     if not post_time_str: continue
                     post_time = datetime.fromisoformat(post_time_str.replace('Z', '+00:00'))
+
                     if post_time < datetime.now(timezone.utc): continue
 
-                    runners = [RunnerData(name=f"Runner #{r.get('RunnerNo')}", odds=None) for r in race_data.get('Runners', [])]
+                    runners = [Runner(name=f"Runner #{r.get('RunnerNo')}", odds=None) for r in race_data.get('Runners', [])]
                     if not runners: continue
 
-                    races.append(RaceData(
-                        race_id=f"ras_{race_data.get('RaceID')}", track_name=track_name,
-                        race_number=race_data.get('RaceNo'), post_time=post_time,
-                        runners=runners, source=self.SOURCE_ID
+                    races.append(Race(
+                        id=f"ras_{race_data.get('RaceID')}",
+                        venue=track_name,
+                        race_number=race_data.get('RaceNo'),
+                        race_time=post_time,
+                        runners=runners,
+                        source=self.SOURCE_ID
                     ))
                 except Exception as e:
                     self.logger.warning(f"Skipping malformed RAS race: {e}")
