@@ -1,13 +1,14 @@
 # python_service/adapters/pointsbet_adapter.py
 
 import logging
+import requests
 from datetime import datetime
 from typing import List
 
-from .base import BaseAdapterV7, Race, Runner
+from ..models import RaceData, RunnerData
 from .utils import parse_odds
 
-class PointsBetAdapter(BaseAdapterV7):
+class PointsBetAdapter:
     """
     Adapter for the PointsBet API, enhanced for multi-sport coverage.
     """
@@ -15,7 +16,19 @@ class PointsBetAdapter(BaseAdapterV7):
     API_TEMPLATE = "https://api.nj.pointsbet.com/api/v2/sports/{sport}/events/upcoming?page=1"
     SPORTS = ["horse-racing", "harness-racing", "greyhound-racing"]
 
-    def fetch_races(self) -> List[Race]:
+    def __init__(self):
+        self.logger = logging.getLogger(self.__class__.__name__)
+
+    def _fetch_data(self, url):
+        try:
+            response = requests.get(url, timeout=10)
+            response.raise_for_status()
+            return response.json()
+        except requests.RequestException as e:
+            self.logger.error(f"GET request to {url} failed: {e}")
+            return None
+
+    def fetch_races(self) -> List[RaceData]:
         """
         Fetches race data for all configured sports from the PointsBet API.
         """
@@ -23,7 +36,7 @@ class PointsBetAdapter(BaseAdapterV7):
         all_races = []
         for sport in self.SPORTS:
             url = self.API_TEMPLATE.format(sport=sport)
-            response_data = self.fetcher.get(url)
+            response_data = self._fetch_data(url)
             if not response_data or not isinstance(response_data, dict):
                 self.logger.warning(f"Invalid response from PointsBet for sport: {sport}")
                 continue
@@ -34,7 +47,7 @@ class PointsBetAdapter(BaseAdapterV7):
         self.logger.info(f"Successfully fetched {len(all_races)} total races from PointsBet.")
         return all_races
 
-    def _parse_events(self, events: List[dict], sport_name: str) -> List[Race]:
+    def _parse_events(self, events: List[dict], sport_name: str) -> List[RaceData]:
         """
         Parses a list of event dictionaries from the API response into Race objects.
         """
@@ -48,23 +61,25 @@ class PointsBetAdapter(BaseAdapterV7):
                 for outcome in event.get('fixedPrice', {}).get('outcomes', []):
                     if outcome.get('outcomeType') == 'Win':
                         odds = parse_odds(outcome.get('price'))
-                        if odds < 999.0:
-                            runners.append(Runner(name=outcome.get('name', 'Unknown'), odds=odds))
+                        if odds is not None and odds < 999.0:
+                            runners.append(RunnerData(name=outcome.get('name', 'Unknown'), odds=odds))
 
                 if len(runners) < 3:
                     continue
 
-                start_time = datetime.fromisoformat(event['startsAt'].replace('Z', '+00:00')) if event.get('startsAt') else None
+                start_time_str = event.get('startsAt')
+                if not start_time_str:
+                    continue
+                start_time = datetime.fromisoformat(start_time_str.replace('Z', '+00:00'))
 
                 races.append(
-                    Race(
+                    RaceData(
                         race_id=f"pointsbet_{event.get('key', 'unknown')}",
                         track_name=event.get('competitionName', 'Unknown Track'),
                         race_number=event.get('eventNumber'),
                         post_time=start_time,
                         runners=runners,
                         source=self.SOURCE_ID,
-                        race_type=sport_name
                     )
                 )
             except (KeyError, TypeError) as e:
