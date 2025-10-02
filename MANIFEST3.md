@@ -28,7 +28,6 @@
 ---
 
 ## 3.0 Raw File Links for Review
-
 ### Environment & Setup
 https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/setup_windows.bat
 https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/.env
