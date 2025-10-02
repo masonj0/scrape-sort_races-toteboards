@@ -31,8 +31,8 @@ def health_check():
 @limiter.limit("10 per minute")
 def get_races():
     try:
-        races = engine.fetch_races()
-        return jsonify([r.dict() for r in races]), 200
+        races = engine.fetch_and_process_races()
+        return jsonify(races), 200
     except Exception as e:
         logging.error(f"Error in /api/races: {e}", exc_info=True)
         return jsonify({"success": False, "error": str(e)}), 500
@@ -40,12 +40,23 @@ def get_races():
 @app.route('/api/funnel', methods=['GET'])
 @limiter.limit("30 per minute")
 def get_funnel_stats():
-    """New endpoint for Funnel Vision statistics."""
     try:
         stats = engine.get_funnel_statistics()
         return jsonify(stats), 200
     except Exception as e:
         logging.error(f"Error in /api/funnel: {e}", exc_info=True)
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
+@app.route('/api/dashboard', methods=['GET'])
+@limiter.limit("30 per minute")
+def get_dashboard_summary():
+    """Provides a high-level summary of the last data scrape, including failures."""
+    try:
+        summary = engine.get_dashboard_summary()
+        return jsonify(summary), 200
+    except Exception as e:
+        logging.error(f"Error in /api/dashboard: {e}", exc_info=True)
         return jsonify({"success": False, "error": str(e)}), 500
 
 
