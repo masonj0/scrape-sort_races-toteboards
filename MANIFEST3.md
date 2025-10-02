@@ -1,33 +1,33 @@
-# Checkmate Ultimate Solo: Operational & Tooling Manifest
+# Checkmate Ultimate Solo: Operational Manifest (Total Recall Edition)
 
-**Purpose:** To provide a complete, actionable list of all satellite files that are critical to the project's operation, deployment, and strategic direction. This manifest reflects the VERIFIED state of the repository as of the last 'Operation: Bedrock' commit.
-
----
-
-## 1.0 Environment & Setup
-
-*These files configure the developer environment and project dependencies.*
-
-*   **Windows Setup Script:** `setup_windows.bat`
-*   **Environment Variables:** `.env`
-*   **Python Dependencies:** `python_service/requirements.txt`
+**Purpose:** To provide a complete, verified, and actionable list of all satellite files critical to the project's operation, tooling, and strategic direction. This is the definitive manifest for non-application-code review.
 
 ---
 
-## 2.0 Strategic Blueprints & Sacred Texts
+## 1.0 Project Tooling
+*   `.gitignore` - Defines version control exclusions.
+*   `convert_to_json.py` - The script for creating AI-reviewable backups.
 
-*These documents define the project's history, architecture, status, and protocols.*
+## 2.0 Environment & Setup
+*   `setup_windows.bat` - The Windows environment setup script.
+*   `.env` - Configuration for environment variables.
+*   `python_service/requirements.txt` - Python backend dependencies.
 
-*   **README:** `README.md`
-*   **Architectural Mandate:** `ARCHITECTURAL_MANDATE.md`
-*   **Project History:** `HISTORY.md`
-*   **Project Status:** `STATUS.md`
-*   **Agent Protocol:** `WISDOM.md`
-*   **Legacy Manifest:** `PROJECT_MANIFEST.md`
+## 3.0 Strategic Blueprints
+*   `README.md` - The primary public-facing document.
+*   `ARCHITECTURAL_MANDATE.md` - Defines the final architectural vision.
+*   `HISTORY.md` - The narrative history of the project.
+*   `STATUS.md` - The last official status report.
+*   `WISDOM.md` - The operational protocol for AI agents.
+*   `PROJECT_MANIFEST.md` - The original legacy manifest.
 
 ---
 
-## 3.0 Raw File Links for Review
+## 4.0 Raw File Links
+
+### Project Tooling
+https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/.gitignore
+https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/convert_to_json.py
 
 ### Environment & Setup
 https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/setup_windows.bat

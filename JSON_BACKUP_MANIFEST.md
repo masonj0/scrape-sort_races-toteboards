@@ -1,33 +1,37 @@
-# Checkmate Ultimate Solo: JSON Backup Manifest for AI Review
+# Checkmate Ultimate Solo: JSON Backup Manifest (Total Recall Edition)
 
-**Purpose:** To provide a single, consolidated list of direct links to the JSON backups of all CORE and Operational files. This file is the designated single source of truth for external AI code review.
+**Purpose:** To provide a single, complete, and verified list of direct links to the JSON backups of all CORE and Operational files. This is the definitive entry point for external AI code review.
 
 ---
 
-## 1.0 CORE Architecture Files (JSON Backups)
+## 1.0 CORE Architecture (JSON Backups)
 
-*Links to the JSON backups of the primary application source code.*
-
-### Python Backend (python_service)
+### Python Backend
 https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/api.py.json
 https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/engine.py.json
 https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/models.py.json
 https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/adapters/__init__.py.json
 https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/adapters/base.py.json
+https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/adapters/utils.py.json
 https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/adapters/betfair_adapter.py.json
 https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/adapters/pointsbet_adapter.py.json
 https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/adapters/racing_and_sports_adapter.py.json
 https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/adapters/tvg_adapter.py.json
-https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/adapters/utils.py.json
 
-### TypeScript Frontend (web_platform/frontend)
+### TypeScript Frontend
+https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/web_platform/frontend/package.json.json
+https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/web_platform/frontend/package-lock.json.json
+https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/web_platform/frontend/tailwind.config.ts.json
+https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/web_platform/frontend/tsconfig.json.json
 https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/web_platform/frontend/src/app/page.tsx.json
 
 ---
 
-## 2.0 Operational & Tooling Files (JSON Backups)
+## 2.0 Operational & Tooling (JSON Backups)
 
-*Links to the JSON backups of all satellite files critical to project operation and strategy.*
+### Project Tooling
+https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/.gitignore.json
+https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/convert_to_json.py.json
 
 ### Environment & Setup
 https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/setup_windows.bat.json
