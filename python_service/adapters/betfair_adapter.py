@@ -67,10 +67,10 @@ class BetfairAdapter(BaseAdapter):
                 return {'races': []}
 
             all_races = [self._parse_betfair_race(market) for market in markets_response['result']]
+
             fetch_duration = (datetime.now() - start_time).total_seconds()
             return {
-                # FEEDBACK FIX: Use .model_dump() instead of .dict()
-                'races': [r.model_dump() for r in all_races],
+                'races': [r.dict() for r in all_races],
                 'source_info': {
                     'name': self.source_name, 'status': 'SUCCESS',
                     'races_fetched': len(all_races), 'error_message': None,
