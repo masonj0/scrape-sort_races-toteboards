@@ -1,17 +1,56 @@
 # python_service/models.py
 
-from pydantic import BaseModel
-from typing import List, Optional
-from datetime import datetime
+from pydantic import BaseModel, Field, field_validator
+from typing import List, Optional, Dict
+from datetime import datetime, date
+from decimal import Decimal
+
+class OddsData(BaseModel):
+    win: Optional[Decimal] = None
+    source: str
+    last_updated: datetime
+
+    @field_validator('win')
+    def win_must_be_positive(cls, v):
+        if v is not None and v <= 1.0:
+            raise ValueError('Odds must be greater than 1.0')
+        return v
 
 class Runner(BaseModel):
-    name: str
-    odds: Optional[float] = None
+    number: int = Field(..., gt=0, lt=100)
+    name: str = Field(..., max_length=100)
+    scratched: bool = False
+    odds: Dict[str, OddsData] = {}
 
 class Race(BaseModel):
     id: str
     venue: str
-    race_number: int
-    race_time: datetime
+    race_number: int = Field(..., gt=0, lt=21)
+    start_time: datetime
     runners: List[Runner]
-    source: str
+
+    @field_validator('runners')
+    def runner_numbers_must_be_unique(cls, v):
+        numbers = [r.number for r in v]
+        if len(numbers) != len(set(numbers)):
+            raise ValueError('Runner numbers must be unique within a race')
+        return v
+
+class SourceInfo(BaseModel):
+    name: str
+    status: str
+    races_fetched: int
+    error_message: Optional[str] = None
+    fetch_duration: float
+
+class FetchMetadata(BaseModel):
+    fetch_time: datetime
+    sources_queried: List[str]
+    sources_successful: int
+    total_races: int
+
+class AggregatedResponse(BaseModel):
+    date: date
+    races: List[Race]
+    sources: List[SourceInfo]
+    metadata: FetchMetadata
