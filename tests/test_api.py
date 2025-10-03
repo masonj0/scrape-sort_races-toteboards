@@ -1,55 +1,87 @@
+# tests/test_api.py
+
 import pytest
 from fastapi.testclient import TestClient
-from unittest.mock import MagicMock
+from unittest.mock import patch, MagicMock
 
-# Adjust the import path to match the location of your FastAPI app
-from python_service.api import app, get_engine
+from python_service.api import app
 from python_service.engine import EngineManager
 
-# Fixture for the mock engine
+# Since the engine is now a global instance in api.py, we patch it there.
 @pytest.fixture
-def mock_engine():
-    """Create a mock EngineManager for testing."""
-    engine = MagicMock(spec=EngineManager)
-    engine.last_races = {"races": [{"id": "test_race_1"}], "errors": [], "timestamp": 12345}
-    return engine
-
-# Fixture for the TestClient with the mocked dependency
-@pytest.fixture
-def client(mock_engine):
-    """Create a TestClient with the engine dependency overridden."""
-    app.dependency_overrides[get_engine] = lambda: mock_engine
+def client():
+    """
+    Create a TestClient for the API. The engine is mocked for each test function
+    that needs it by using the @patch decorator.
+    """
     with TestClient(app) as c:
         yield c
-    # Clean up the override after the test
-    app.dependency_overrides = {}
 
+# Test for the /health endpoint
 def test_health_check(client):
     """
     SPEC: The /health endpoint should be available and return a healthy status.
     """
-    # ARRANGE
-    # TestClient 'client' is already arranged by the fixture
-
-    # ACT
     response = client.get("/health")
-
-    # ASSERT
     assert response.status_code == 200
     assert response.json() == {"status": "healthy"}
 
-def test_get_races_returns_mock_data(client, mock_engine):
+# Test for the /races endpoint
+@patch('python_service.api.engine', spec=EngineManager)
+def test_get_races(mock_engine, client):
     """
-    SPEC: The /races endpoint should return the data from the EngineManager.
+    SPEC: The /races endpoint should return data from engine.get_last_races().
     """
     # ARRANGE
-    # The mock_engine is configured by its fixture to return specific data.
+    mock_data = {"races": [{"id": "race1"}], "timestamp": 12345.0}
+    mock_engine.get_last_races.return_value = mock_data
 
     # ACT
     response = client.get("/races")
 
     # ASSERT
     assert response.status_code == 200
-    assert response.json() == mock_engine.last_races
-    # Verify that the data returned is what the mock was configured with
-    assert response.json()["races"][0]["id"] == "test_race_1"
+    assert response.json() == mock_data
+    mock_engine.get_last_races.assert_called_once()
+
+# Test for the /dashboard endpoint
+@patch('python_service.api.engine', spec=EngineManager)
+def test_get_dashboard(mock_engine, client):
+    """
+    SPEC: The /dashboard endpoint should return data from engine.get_dashboard_summary().
+    """
+    # ARRANGE
+    mock_data = {
+        "last_races_summary": {"races": [], "timestamp": 123},
+        "fetcher_failures": [{"adapter": "TestAdapter", "error": "Failed"}]
+    }
+    mock_engine.get_dashboard_summary.return_value = mock_data
+
+    # ACT
+    response = client.get("/dashboard")
+
+    # ASSERT
+    assert response.status_code == 200
+    assert response.json() == mock_data
+    mock_engine.get_dashboard_summary.assert_called_once()
+
+# Test for the /funnel endpoint
+@patch('python_service.api.engine', spec=EngineManager)
+def test_get_funnel(mock_engine, client):
+    """
+    SPEC: The /funnel endpoint should return data from engine.get_funnel_statistics().
+    """
+    # ARRANGE
+    mock_data = {
+        "races_fetched_by_source": {"Adapter1": 10, "Adapter2": 5},
+        "total_races_fetched": 15
+    }
+    mock_engine.get_funnel_statistics.return_value = mock_data
+
+    # ACT
+    response = client.get("/funnel")
+
+    # ASSERT
+    assert response.status_code == 200
+    assert response.json() == mock_data
+    mock_engine.get_funnel_statistics.assert_called_once()
