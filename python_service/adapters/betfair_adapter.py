@@ -1,13 +1,15 @@
 # python_service/adapters/betfair_adapter.py
 
 import os
+import re
 import logging
 from datetime import datetime, timedelta
 from typing import Dict, Any, List
 import httpx
+from decimal import Decimal
 
 from .base import BaseAdapter
-from ..models import Race, Runner, OddsData # Assuming these are available and correct
+from ..models import Race, Runner, OddsData
 
 class BetfairAdapter(BaseAdapter):
     def __init__(self):
@@ -24,7 +26,6 @@ class BetfairAdapter(BaseAdapter):
     async def _authenticate(self, http_client: httpx.AsyncClient):
         if self.session_token and self.token_expiry and self.token_expiry > datetime.now():
             return
-
         if not all([self.app_key, self.username, self.password]):
             raise Exception("Betfair credentials not set in environment.")
 
@@ -38,7 +39,6 @@ class BetfairAdapter(BaseAdapter):
         if data.get('status') == 'SUCCESS':
             self.session_token = data.get('token')
             self.token_expiry = datetime.now() + timedelta(hours=4)
-            self.logger.info("Betfair authentication successful.")
         else:
             raise Exception(f"Betfair authentication failed: {data.get('error')}")
 
@@ -48,33 +48,21 @@ class BetfairAdapter(BaseAdapter):
             await self._authenticate(http_client)
 
             market_filter = {
-                "eventTypeIds": ["7"], # Horse Racing
-                "marketTypeCodes": ["WIN"],
+                "eventTypeIds": ["7"], "marketTypeCodes": ["WIN"],
                 "marketStartTime": {"from": f"{date}T00:00:00Z", "to": f"{date}T23:59:59Z"}
             }
-
-            headers = {
-                "X-Application": self.app_key,
-                "X-Authentication": self.session_token,
-                "Content-Type": "application/json"
-            }
-
+            headers = {"X-Application": self.app_key, "X-Authentication": self.session_token, "Content-Type": "application/json"}
             json_payload = {
-                "jsonrpc": "2.0",
-                "method": "SportsAPING/v1.0/listMarketCatalogue",
+                "jsonrpc": "2.0", "method": "SportsAPING/v1.0/listMarketCatalogue",
                 "params": {
                     "filter": market_filter,
                     "marketProjection": ["EVENT", "RUNNER_DESCRIPTION", "MARKET_START_TIME"],
                     "maxResults": 1000
-                },
-                "id": 1
+                }, "id": 1
             }
 
-            # Using the base make_request would be ideal, but for a direct implementation:
-            response = await http_client.post(self.base_url, headers=headers, json=json_payload)
-            response.raise_for_status()
-            markets_response = response.json()
-
+            # BUG FIX: Use the resilient self.make_request method
+            markets_response = await self.make_request(http_client, 'POST', '/', headers=headers, json=json_payload)
             if not markets_response or 'result' not in markets_response:
                 return {'races': []}
 
@@ -91,29 +79,28 @@ class BetfairAdapter(BaseAdapter):
             }
         except Exception as e:
             self.logger.error(f"Failed to fetch races from Betfair: {e}", exc_info=True)
-            # Re-raise to be caught by the engine
             raise
 
     def _parse_betfair_race(self, market: Dict[str, Any]) -> Race:
         venue = market.get('event', {}).get('venue', 'Unknown Venue')
         start_time = datetime.fromisoformat(market['marketStartTime'].replace('Z', '+00:00'))
-        race_number_str = ''.join(filter(str.isdigit, market.get('marketName', 'R0')))
-        race_number = int(race_number_str) if race_number_str else 0
+
+        # BUG FIX: Use a robust regex for race number parsing
+        match = re.search(r'[Rr](\\d+)', market.get('marketName', ''))
+        race_number = int(match.group(1)) if match else 0
 
         runners = []
         for runner_data in market.get('runners', []):
-            # Note: This endpoint does not provide odds. A full implementation would make another
-            # call to listMarketBook here, but for now we create runners without odds.
             if runner_data.get('status') == 'ACTIVE':
                 runners.append(Runner(
                     number=runner_data.get('sortPriority', 0),
-                    name=runner_data.get('runnerName', 'Unknown Runner')
+                    name=runner_data.get('runnerName', 'Unknown Runner'),
+                    scratched=False # Explicitly set required field
                 ))
 
         return Race(
             id=f"bf_{market['marketId']}",
-            venue=venue,
-            race_number=race_number,
-            start_time=start_time,
-            runners=runners
+            venue=venue, race_number=race_number, start_time=start_time,
+            runners=runners,
+            source=self.source_name # BUG FIX: Add the required 'source' field
         )

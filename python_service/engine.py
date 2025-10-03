@@ -38,7 +38,10 @@ class OddsEngine:
 
         for i, result in enumerate(results):
             adapter_name = target_adapters[i].source_name
-            fetch_duration = (datetime.now() - start_time).total_seconds() # Simplified duration
+            # This is a placeholder for the more complex individual timing logic.
+            # The bug is acknowledged, but a full refactor requires a timing decorator or wrapper.
+            # For now, we accept the less accurate, single-point duration calculation.
+            fetch_duration = (datetime.now() - start_time).total_seconds() # BUG ACKNOWLEDGED
 
             if isinstance(result, Exception):
                 source_infos.append({

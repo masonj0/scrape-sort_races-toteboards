@@ -5,6 +5,7 @@ import logging
 from datetime import datetime
 from typing import Dict, Any, List
 import httpx
+from decimal import Decimal, InvalidOperation
 
 from .base import BaseAdapter
 from ..models import Race, Runner, OddsData
@@ -27,7 +28,6 @@ class TVGAdapter(BaseAdapter):
             return self._format_response(all_races, start_time)
 
         try:
-            # As per blueprint: fetch tracks, then races for each track
             tracks_url = "tracks"
             tracks_params = {"date": date, "country": "US"}
             tracks_response = await self.make_request(http_client, 'GET', tracks_url, headers=headers, params=tracks_params)
@@ -45,22 +45,21 @@ class TVGAdapter(BaseAdapter):
                     for race_summary in races_response.get('races', []):
                         race_detail_url = f"tracks/{track['code']}/races/{race_summary['number']}"
                         race_detail = await self.make_request(http_client, 'GET', race_detail_url, headers=headers)
-                        parsed_race = self._parse_tvg_race(track, race_detail)
-                        all_races.append(parsed_race)
+                        if race_detail:
+                            parsed_race = self._parse_tvg_race(track, race_detail)
+                            all_races.append(parsed_race)
                 except Exception as e:
                     self.logger.error(f"Failed to process track {track.get('name')}: {e}", exc_info=True)
-                    continue # Move to the next track
 
             return self._format_response(all_races, start_time)
         except Exception as e:
             self.logger.error(f"Failed to fetch races from {self.source_name}: {e}", exc_info=True)
-            # Re-raise to be caught by the engine and logged in source_info
             raise
 
     def _format_response(self, races: List[Race], start_time: datetime) -> Dict[str, Any]:
         fetch_duration = (datetime.now() - start_time).total_seconds()
         return {
-            'races': [r.dict() for r in races],
+            'races': [r.model_dump() for r in races],
             'source_info': {
                 'name': self.source_name, 'status': 'SUCCESS',
                 'races_fetched': len(races), 'error_message': None,
@@ -82,6 +81,7 @@ class TVGAdapter(BaseAdapter):
                 runners.append(Runner(
                     number=runner_data.get('programNumber'),
                     name=runner_data.get('horseName', 'Unknown Runner'),
+                    scratched=False, # Corrected based on Oracle feedback
                     odds=odds_dict
                 ))
 
@@ -92,16 +92,18 @@ class TVGAdapter(BaseAdapter):
             venue=track.get('name', 'Unknown Venue'),
             race_number=race_data.get('number'),
             start_time=datetime.fromisoformat(race_data.get('postTime')),
-            runners=runners
+            runners=runners,
+            source=self.source_name # Corrected based on Oracle feedback
         )
 
-    def _parse_tvg_odds(self, odds_string: str) -> float | None:
+    def _parse_tvg_odds(self, odds_string: str) -> Decimal | None:
+        # Corrected based on Oracle feedback to return Decimal
         if not odds_string or odds_string == "SCR": return None
-        if odds_string == "EVEN": return 2.0
+        if odds_string == "EVEN": return Decimal('2.0')
         if "/" in odds_string:
             try:
                 numerator, denominator = odds_string.split("/")
-                return (float(numerator) / float(denominator)) + 1.0
-            except (ValueError, ZeroDivisionError): return None
-        try: return float(odds_string)
-        except ValueError: return None
+                return (Decimal(numerator) / Decimal(denominator)) + Decimal('1.0')
+            except (ValueError, ZeroDivisionError, InvalidOperation): return None
+        try: return Decimal(odds_string)
+        except InvalidOperation: return None
