@@ -6,7 +6,7 @@ from typing import Dict, Any, List
 import httpx
 
 from .base import BaseAdapter
-from ..models import Race, Runner, OddsData
+from ..models import Race, Runner
 
 class RacingAndSportsAdapter(BaseAdapter):
     def __init__(self):
@@ -22,7 +22,6 @@ class RacingAndSportsAdapter(BaseAdapter):
         headers = {"Authorization": f"Bearer {self.api_token}", "Accept": "application/json"}
 
         if not self.api_token:
-            self.logger.warning(f"{self.source_name}: RACING_AND_SPORTS_TOKEN not set. Skipping.")
             return self._format_response(all_races, start_time, is_success=False, error_message="ConfigurationError: Token not set")
 
         try:
@@ -36,7 +35,6 @@ class RacingAndSportsAdapter(BaseAdapter):
             for meeting in meetings_data['meetings']:
                 for race_summary in meeting.get('races', []):
                     try:
-                        # A full implementation would fetch each race's runners, but we'll parse the summary
                         parsed_race = self._parse_ras_race(meeting, race_summary)
                         all_races.append(parsed_race)
                     except Exception as e:
@@ -59,13 +57,7 @@ class RacingAndSportsAdapter(BaseAdapter):
         }
 
     def _parse_ras_race(self, meeting: Dict[str, Any], race: Dict[str, Any]) -> Race:
-        runners = []
-        for runner_data in race.get('runners', []):
-            runners.append(Runner(
-                number=runner_data.get('runnerNumber'),
-                name=runner_data.get('horseName', 'Unknown Runner'),
-                scratched=runner_data.get('isScratched', False)
-            ))
+        runners = [Runner(number=rd.get('runnerNumber'), name=rd.get('horseName', 'Unknown'), scratched=rd.get('isScratched', False)) for rd in race.get('runners', [])]
 
         return Race(
             id=f"ras_{race.get('raceId')}",
