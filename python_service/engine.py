@@ -2,62 +2,66 @@
 
 import asyncio
 import logging
-import time
+import httpx
+from datetime import datetime
 from typing import Dict, Any, List
 
-# Assuming adapters are defined elsewhere and imported
+from .adapters.base import BaseAdapter
 from .adapters.betfair_adapter import BetfairAdapter
 from .adapters.tvg_adapter import TVGAdapter
 from .adapters.racing_and_sports_adapter import RacingAndSportsAdapter
 from .adapters.pointsbet_adapter import PointsBetAdapter
 
-class EngineManager:
+class OddsEngine:
     def __init__(self):
         self.logger = logging.getLogger(self.__class__.__name__)
-        self.adapters = [BetfairAdapter(), TVGAdapter(), RacingAndSportsAdapter(), PointsBetAdapter()]
-        self.fetch_interval = 60 # seconds
-        self.last_races: Dict[str, Any] = {}
-        self._lock = asyncio.Lock() # CRITICAL FIX 3: Add lock for race condition protection
+        self.adapters: List[BaseAdapter] = [
+            BetfairAdapter(), TVGAdapter(),
+            RacingAndSportsAdapter(), PointsBetAdapter()
+        ]
+        self.http_client = httpx.AsyncClient()
 
-    async def fetch_all_races(self) -> None:
-        """Fetches races from all adapters and updates the shared state under a lock."""
-        self.logger.info("Starting parallel fetch from all adapters...")
-        tasks = [adapter.fetch_races() for adapter in self.adapters]
+    async def close(self):
+        await self.http_client.aclose()
+
+    async def fetch_all_odds(self, date: str, source_filter: str = None) -> Dict[str, Any]:
+        target_adapters = self.adapters
+        if source_filter:
+            target_adapters = [a for a in self.adapters if a.source_name.lower() == source_filter.lower()]
+
+        tasks = [adapter.fetch_races(date, self.http_client) for adapter in target_adapters]
         results = await asyncio.gather(*tasks, return_exceptions=True)
 
-        # CRITICAL FIX 3: Protect the update of shared state
-        async with self._lock:
-            all_races: List[Dict] = []
-            errors: List[Dict] = []
+        successful_results = []
+        source_infos = []
+        for i, result in enumerate(results):
+            adapter_name = target_adapters[i].source_name
+            if isinstance(result, Exception):
+                source_infos.append({
+                    'name': adapter_name, 'status': 'FAILED',
+                    'races_fetched': 0, 'error_message': str(result), 'fetch_duration': 0
+                })
+            else:
+                successful_results.append(result)
+                source_infos.append({
+                    'name': adapter_name, 'status': 'SUCCESS',
+                    'races_fetched': len(result.get('races', [])),
+                    'error_message': None, 'fetch_duration': 0 # Placeholder
+                })
 
-            for i, result in enumerate(results):
-                adapter_name = self.adapters[i].__class__.__name__
-                if isinstance(result, Exception):
-                    errors.append({"adapter": adapter_name, "error": str(result)})
-                    self.logger.error(f"Adapter {adapter_name} failed: {result}")
-                elif result:
-                    # Assuming a consistent return structure from adapters
-                    all_races.extend(result.get("races", []))
-                    if result.get("error"):
-                        errors.append({"adapter": adapter_name, "error": result["error"]})
+        # Basic merge - a real implementation would dedupe
+        all_races = []
+        for res in successful_results:
+            all_races.extend(res.get('races', []))
 
-            self.last_races = {
-                "races": all_races,
-                "errors": errors,
-                "timestamp": time.time()
+        return {
+            "date": datetime.strptime(date, '%Y-%m-%d').date(),
+            "races": all_races,
+            "sources": source_infos,
+            "metadata": {
+                'fetch_time': datetime.now(),
+                'sources_queried': [a.source_name for a in target_adapters],
+                'sources_successful': len(successful_results),
+                'total_races': len(all_races)
             }
-            self.logger.info(f"Fetch complete. Found {len(all_races)} races. Encountered {len(errors)} errors.")
-
-    async def run(self):
-        """The main background loop for the engine."""
-        while True:
-            try:
-                await self.fetch_all_races()
-                await asyncio.sleep(self.fetch_interval)
-            except asyncio.CancelledError:
-                self.logger.info("Engine run loop cancelled.")
-                break
-            except Exception as e:
-                self.logger.error(f"An unexpected error occurred in the engine loop: {e}", exc_info=True)
-                # Avoid rapid failure loops
-                await asyncio.sleep(self.fetch_interval * 2)
+        }
