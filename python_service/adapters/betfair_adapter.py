@@ -67,10 +67,10 @@ class BetfairAdapter(BaseAdapter):
                 return {'races': []}
 
             all_races = [self._parse_betfair_race(market) for market in markets_response['result']]
-
             fetch_duration = (datetime.now() - start_time).total_seconds()
             return {
-                'races': [r.dict() for r in all_races],
+                # FEEDBACK FIX: Use .model_dump() instead of .dict()
+                'races': [r.model_dump() for r in all_races],
                 'source_info': {
                     'name': self.source_name, 'status': 'SUCCESS',
                     'races_fetched': len(all_races), 'error_message': None,
@@ -86,7 +86,7 @@ class BetfairAdapter(BaseAdapter):
         start_time = datetime.fromisoformat(market['marketStartTime'].replace('Z', '+00:00'))
 
         # BUG FIX: Use a robust regex for race number parsing
-        match = re.search(r'[Rr](\\d+)', market.get('marketName', ''))
+        match = re.search(r'[Rr](\d+)', market.get('marketName', ''))
         race_number = int(match.group(1)) if match else 0
 
         runners = []
