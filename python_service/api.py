@@ -1,51 +1,45 @@
 # python_service/api.py
 
-import asyncio
 import logging
-from fastapi import FastAPI
+from datetime import datetime, date
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
-from .engine import EngineManager
+from .engine import OddsEngine
 
-app = FastAPI(
-    title="Checkmate Ultimate Solo API",
-    description="Aggregates horse racing odds from multiple sources.",
-    version="2.0"
-)
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+
+app = FastAPI(title="Checkmate Ultimate Solo API", version="2.0")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://localhost:8000"],
-    allow_credentials=True,
-    allow_methods=["GET"],
-    allow_headers=["*"]
+    allow_origins=["http://localhost:3000", "http://localhost:3001"],
+    allow_credentials=True, allow_methods=["GET"], allow_headers=["*"]
 )
 
-engine = EngineManager()
-background_task = None
+engine: OddsEngine
 
 @app.on_event("startup")
 async def startup_event():
-    global background_task
-    background_task = asyncio.create_task(engine.run())
+    global engine
+    engine = OddsEngine()
+    logging.info("Server startup: OddsEngine initialized.")
 
 @app.on_event("shutdown")
 async def shutdown_event():
-    global background_task
-    if background_task:
-        background_task.cancel()
-        try: await background_task
-        except asyncio.CancelledError: pass
-    await engine.close_adapters()
+    await engine.close()
+    logging.info("Server shutdown: HTTP client resources closed.")
 
 @app.get("/health")
-async def health_check(): return {"status": "healthy"}
+async def health_check():
+    return {"status": "ok", "timestamp": datetime.now().isoformat()}
 
-@app.get("/races")
-async def get_races(): return engine.get_last_races()
-
-@app.get("/dashboard")
-async def get_dashboard(): return engine.get_dashboard_summary()
-
-@app.get("/funnel")
-async def get_funnel(): return engine.get_funnel_statistics()
+@app.get("/api/races")
+async def get_races(race_date: date = datetime.now().date(), source: str = None):
+    try:
+        date_str = race_date.strftime('%Y-%m-%d')
+        aggregated_data = await engine.fetch_all_odds(date_str, source)
+        return aggregated_data
+    except Exception as e:
+        logging.error(f"Error in /api/races: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Internal Server Error")
