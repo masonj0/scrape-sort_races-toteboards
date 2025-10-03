@@ -5,12 +5,35 @@ from fastapi.testclient import TestClient
 from unittest.mock import patch, AsyncMock
 from datetime import datetime, date
 
-from python_service.api import app
-from python_service.engine import OddsEngine
+from python_service.config import Settings
+
+# This is the key: We patch the get_settings function in the api module
+# BEFORE the TestClient is created and the app is started.
+@pytest.fixture(autouse=True)
+def override_settings():
+    """
+    Override settings for all tests. This fixture ensures that any call to
+    get_settings() within the application will return a controlled, mock
+    Settings object, preventing it from loading from .env files.
+    """
+    mock_settings = Settings(
+        BETFAIR_APP_KEY="test_key",
+        BETFAIR_USERNAME="test_user",
+        BETFAIR_PASSWORD="test_password",
+        # Explicitly disable .env file loading for tests
+        _env_file=None
+    )
+    with patch('python_service.api.get_settings', return_value=mock_settings):
+        yield
 
 @pytest.fixture
 def client():
-    """Create a TestClient for the API, which handles the async event loop."""
+    """
+    Create a TestClient for the API. The settings are already mocked by the
+    override_settings fixture, so the lifespan manager will use the mock settings.
+    """
+    # Now we can safely import the app because get_settings is patched
+    from python_service.api import app
     with TestClient(app) as c:
         yield c
 
@@ -23,10 +46,10 @@ def test_health_check(client):
     json_response = response.json()
     assert json_response["status"] == "ok"
     assert "timestamp" in json_response
-    # Verify the timestamp is a valid ISO 8601 string
     assert isinstance(json_response["timestamp"], str)
     datetime.fromisoformat(json_response["timestamp"])
 
+# The engine is created in the lifespan, so we patch its methods directly
 @patch('python_service.engine.OddsEngine.fetch_all_odds', new_callable=AsyncMock)
 def test_get_races_success(mock_fetch, client):
     """

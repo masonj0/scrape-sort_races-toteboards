@@ -11,12 +11,12 @@ from .base import BaseAdapter
 from ..models import Race, Runner, OddsData
 
 class TVGAdapter(BaseAdapter):
-    def __init__(self):
+    def __init__(self, config):
         super().__init__(
             source_name="TVG",
             base_url="https://api.tvg.com/v3/"
         )
-        self.api_key = os.getenv("TVG_API_KEY")
+        self.api_key = config.TVG_API_KEY
 
     async def fetch_races(self, date: str, http_client: httpx.AsyncClient) -> Dict[str, Any]:
         start_time = datetime.now()

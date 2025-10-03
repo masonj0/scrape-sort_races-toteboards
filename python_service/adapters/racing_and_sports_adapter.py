@@ -9,12 +9,12 @@ from .base import BaseAdapter
 from ..models import Race, Runner
 
 class RacingAndSportsAdapter(BaseAdapter):
-    def __init__(self):
+    def __init__(self, config):
         super().__init__(
             source_name="Racing and Sports",
             base_url="https://api.racingandsports.com.au/"
         )
-        self.api_token = os.getenv("RACING_AND_SPORTS_TOKEN")
+        self.api_token = config.RACING_AND_SPORTS_TOKEN
 
     async def fetch_races(self, date: str, http_client: httpx.AsyncClient) -> Dict[str, Any]:
         start_time = datetime.now()

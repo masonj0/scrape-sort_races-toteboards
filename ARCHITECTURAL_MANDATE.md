@@ -1,12 +1,18 @@
-# Checkmate: The Ultimate Solo Mandate
+# The Checkmate Architectural Mandate (V2)
 
-## Final Architecture
-The project has reached its final, perfected form: The Ultimate Solo, powered by the full strength of our CORE engine.
+## The Prime Directive: The Two-Pillar System
 
-This architecture consists of two pillars:
+The project's architecture is a lean, hyper-powerful, two-pillar system: The **"Ultimate Solo."** This design was chosen for its clarity, maintainability, and performance, representing the hard-won victory over the complexity of previous multi-language architectures.
 
-1.  **The Full-Power Python Backend:** A lightweight Flask API (`api.py`) that directly leverages the production-grade `DataSourceOrchestrator` and `TrifectaAnalyzer` from our CORE `engine.py` for global data collection.
+## Pillar 1: The Asynchronous Python Backend
 
-2.  **The Ultimate TypeScript Frontend:** The `Checkmate Ultimate Solo` React component, which provides the complete, production-grade operational dashboard.
+The backend is a modern, asynchronous service built on **FastAPI**. Its architecture is defined by the principles in `checkmate_pseudocode.md.txt` and includes:
 
-All previous architectures (Penta-Hybrid, etc.) are now considered historical R&D assets and are preserved in the repository's `attic` and legacy directories.
+1.  **The `OddsEngine`:** A central, async orchestrator responsible for managing the data collection lifecycle.
+2.  **The Resilient `BaseAdapter`:** A sophisticated abstract base class that provides all adapters with built-in, professional-grade features like `httpx` connection pooling, automatic retries with exponential backoff, and standardized error handling.
+3.  **The Adapter Fleet:** A modular system of 'plugin' adapters that inherit from the `BaseAdapter`, each responsible for a single data source.
+4.  **Pydantic Data Contracts:** Strict, validated Pydantic models are used for all data, ensuring type safety and data integrity throughout the entire application.
+
+## Pillar 2: The Ultimate TypeScript Frontend
+
+The frontend is a modern, feature-rich web application built on **Next.js** and **TypeScript**. It provides the complete, production-grade operational dashboard for the end-user.
