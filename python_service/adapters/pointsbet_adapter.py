@@ -5,7 +5,7 @@ from typing import Dict, Any
 import httpx
 
 class PointsBetAdapter(BaseAdapter):
-    def __init__(self):
+    def __init__(self, config):
         super().__init__(
             source_name="PointsBet",
             base_url="https://api.pointsbet.com/api/v2/"

@@ -13,11 +13,14 @@ from .adapters.racing_and_sports_adapter import RacingAndSportsAdapter
 from .adapters.pointsbet_adapter import PointsBetAdapter
 
 class OddsEngine:
-    def __init__(self):
+    def __init__(self, config):
+        self.config = config
         self.logger = logging.getLogger(self.__class__.__name__)
         self.adapters: List[BaseAdapter] = [
-            BetfairAdapter(), TVGAdapter(),
-            RacingAndSportsAdapter(), PointsBetAdapter()
+            BetfairAdapter(config=self.config),
+            TVGAdapter(config=self.config),
+            RacingAndSportsAdapter(config=self.config),
+            PointsBetAdapter(config=self.config)
         ]
         self.http_client = httpx.AsyncClient()
 

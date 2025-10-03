@@ -12,14 +12,11 @@ from .base import BaseAdapter
 from ..models import Race, Runner, OddsData
 
 class BetfairAdapter(BaseAdapter):
-    def __init__(self):
-        super().__init__(
-            source_name="Betfair",
-            base_url="https://api.betfair.com/exchange/betting/json-rpc/v1"
-        )
-        self.app_key = os.getenv("BETFAIR_APP_KEY")
-        self.username = os.getenv("BETFAIR_USERNAME")
-        self.password = os.getenv("BETFAIR_PASSWORD")
+    def __init__(self, config):
+        super().__init__(source_name="Betfair", base_url="https://api.betfair.com/exchange/betting/rest/v1.0/")
+        self.app_key = config.BETFAIR_APP_KEY
+        self.username = config.BETFAIR_USERNAME
+        self.password = config.BETFAIR_PASSWORD
         self.session_token: str | None = None
         self.token_expiry: datetime | None = None
 
