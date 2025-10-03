@@ -2,8 +2,8 @@
 
 import asyncio
 import logging
-import time
-from datetime import datetime, timedelta
+import httpx
+from datetime import datetime
 from typing import Dict, Any, List
 
 from .adapters.base import BaseAdapter
@@ -12,67 +12,62 @@ from .adapters.tvg_adapter import TVGAdapter
 from .adapters.racing_and_sports_adapter import RacingAndSportsAdapter
 from .adapters.pointsbet_adapter import PointsBetAdapter
 
-class EngineManager:
+class OddsEngine:
     def __init__(self):
         self.logger = logging.getLogger(self.__class__.__name__)
-        self.adapters: List[BaseAdapter] = [BetfairAdapter(), TVGAdapter(), RacingAndSportsAdapter(), PointsBetAdapter()]
-        self.fetch_interval = 60
-        self._last_races: Dict[str, Any] = {}
-        self._last_funnel_stats: Dict[str, Any] = {}
-        self._last_run_failures: List[Dict[str, Any]] = []
-        self._lock = asyncio.Lock()
+        self.adapters: List[BaseAdapter] = [
+            BetfairAdapter(), TVGAdapter(),
+            RacingAndSportsAdapter(), PointsBetAdapter()
+        ]
+        self.http_client = httpx.AsyncClient()
 
-    async def fetch_all_races(self) -> None:
-        self.logger.info("Starting parallel fetch...")
-        tasks = [adapter.fetch_races() for adapter in self.adapters]
+    async def close(self):
+        await self.http_client.aclose()
+
+    async def fetch_all_odds(self, date: str, source_filter: str = None) -> Dict[str, Any]:
+        target_adapters = self.adapters
+        if source_filter:
+            target_adapters = [a for a in self.adapters if a.source_name.lower() == source_filter.lower()]
+
+        tasks = [adapter.fetch_races(date, self.http_client) for adapter in target_adapters]
         results = await asyncio.gather(*tasks, return_exceptions=True)
 
-        async with self._lock:
-            all_races, errors, races_by_adapter = [], [], {}
-            for i, result in enumerate(results):
-                adapter_name = self.adapters[i].__class__.__name__
-                if isinstance(result, Exception):
-                    errors.append({"adapter": adapter_name, "error": "ExecutionException", "message": str(result)})
-                    races_by_adapter[adapter_name] = []
-                elif result and result.get('success'):
-                    races_by_adapter[adapter_name] = result.get('data', [])
-                    all_races.extend(result.get('data', []))
-                else:
-                    errors.append({"adapter": adapter_name, "error_details": result.get('error_details', {})})
-                    races_by_adapter[adapter_name] = []
+        successful_results = []
+        source_infos = []
+        start_time = datetime.now()
 
-            self._last_races = {"races": all_races, "timestamp": time.time()}
-            self._last_run_failures = errors
-            self._last_funnel_stats = {
-                'races_fetched_by_source': {name: len(races) for name, races in races_by_adapter.items()},
-                'total_races_fetched': sum(len(races) for races in races_by_adapter.values())
+        for i, result in enumerate(results):
+            adapter_name = target_adapters[i].source_name
+            fetch_duration = (datetime.now() - start_time).total_seconds() # Simplified duration
+
+            if isinstance(result, Exception):
+                source_infos.append({
+                    'name': adapter_name, 'status': 'FAILED',
+                    'races_fetched': 0, 'error_message': str(result), 'fetch_duration': fetch_duration
+                })
+            else:
+                successful_results.append(result)
+                source_infos.append({
+                    'name': adapter_name, 'status': 'SUCCESS',
+                    'races_fetched': len(result.get('races', [])),
+                    'error_message': None, 'fetch_duration': fetch_duration
+                })
+
+        all_races = []
+        for res in successful_results:
+            all_races.extend(res.get('races', []))
+
+        # In a future step, this will call a NormalizeAndDeduplicate function
+        # For now, we return the raw aggregation
+
+        return {
+            "date": datetime.strptime(date, '%Y-%m-%d').date(),
+            "races": all_races,
+            "sources": source_infos,
+            "metadata": {
+                'fetch_time': datetime.now(),
+                'sources_queried': [a.source_name for a in target_adapters],
+                'sources_successful': len(successful_results),
+                'total_races': len(all_races)
             }
-            self.logger.info(f"Fetch complete. Races: {len(all_races)}. Errors: {len(errors)}.")
-
-    async def run(self):
-        """Blueprint-Enhanced: Intelligent run loop to prevent overlap."""
-        while True:
-            start_time = time.time()
-            try:
-                await self.fetch_all_races()
-            except asyncio.CancelledError:
-                self.logger.info("Engine run loop cancelled.")
-                break
-            except Exception as e:
-                self.logger.error(f"Unexpected error in engine loop: {e}", exc_info=True)
-
-            elapsed = time.time() - start_time
-            sleep_time = max(0, self.fetch_interval - elapsed)
-            if elapsed > self.fetch_interval:
-                self.logger.warning(f"Fetch took {elapsed:.2f}s, longer than interval {self.fetch_interval}s. Next fetch will start immediately.")
-
-            await asyncio.sleep(sleep_time)
-
-    async def close_adapters(self):
-        for adapter in self.adapters:
-            if hasattr(adapter, 'close'): await adapter.close()
-
-    def get_last_races(self): return self._last_races
-    def get_funnel_statistics(self): return self._last_funnel_stats
-    def get_dashboard_summary(self):
-        return {"last_races_summary": self._last_races, "fetcher_failures": self._last_run_failures}
+        }
