@@ -20,6 +20,7 @@
 *   `STATUS.md` - The last official status report.
 *   `WISDOM.md` - The operational protocol for AI agents.
 *   `PROJECT_MANIFEST.md` - The original legacy manifest.
+*   `ROADMAP_APPENDICES.md` - The definitive adapter backlog and intelligence leads.
 
 ---
 
@@ -41,3 +42,4 @@ https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/head
 https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/STATUS.md
 https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/WISDOM.md
 https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/PROJECT_MANIFEST.md
+https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/ROADMAP_APPENDICES.md

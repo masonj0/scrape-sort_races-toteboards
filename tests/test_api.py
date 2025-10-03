@@ -2,86 +2,86 @@
 
 import pytest
 from fastapi.testclient import TestClient
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch, AsyncMock
+from datetime import datetime, date
 
 from python_service.api import app
-from python_service.engine import EngineManager
+from python_service.engine import OddsEngine
 
-# Since the engine is now a global instance in api.py, we patch it there.
 @pytest.fixture
 def client():
-    """
-    Create a TestClient for the API. The engine is mocked for each test function
-    that needs it by using the @patch decorator.
-    """
+    """Create a TestClient for the API, which handles the async event loop."""
     with TestClient(app) as c:
         yield c
 
-# Test for the /health endpoint
 def test_health_check(client):
     """
-    SPEC: The /health endpoint should be available and return a healthy status.
+    SPEC: The /health endpoint should be available and return a healthy status with a timestamp.
     """
     response = client.get("/health")
     assert response.status_code == 200
-    assert response.json() == {"status": "healthy"}
+    json_response = response.json()
+    assert json_response["status"] == "ok"
+    assert "timestamp" in json_response
+    # Verify the timestamp is a valid ISO 8601 string
+    assert isinstance(json_response["timestamp"], str)
+    datetime.fromisoformat(json_response["timestamp"])
 
-# Test for the /races endpoint
-@patch('python_service.api.engine', spec=EngineManager)
-def test_get_races(mock_engine, client):
+@patch('python_service.engine.OddsEngine.fetch_all_odds', new_callable=AsyncMock)
+def test_get_races_success(mock_fetch, client):
     """
-    SPEC: The /races endpoint should return data from engine.get_last_races().
-    """
-    # ARRANGE
-    mock_data = {"races": [{"id": "race1"}], "timestamp": 12345.0}
-    mock_engine.get_last_races.return_value = mock_data
-
-    # ACT
-    response = client.get("/races")
-
-    # ASSERT
-    assert response.status_code == 200
-    assert response.json() == mock_data
-    mock_engine.get_last_races.assert_called_once()
-
-# Test for the /dashboard endpoint
-@patch('python_service.api.engine', spec=EngineManager)
-def test_get_dashboard(mock_engine, client):
-    """
-    SPEC: The /dashboard endpoint should return data from engine.get_dashboard_summary().
+    SPEC: The /api/races endpoint should return aggregated data from engine.fetch_all_odds().
     """
     # ARRANGE
-    mock_data = {
-        "last_races_summary": {"races": [], "timestamp": 123},
-        "fetcher_failures": [{"adapter": "TestAdapter", "error": "Failed"}]
+    today = date.today()
+    mock_response_data = {
+        "date": today.isoformat(),
+        "races": [{"id": "race1", "venue": "Test Venue"}],
+        "sources": [],
+        "metadata": {}
     }
-    mock_engine.get_dashboard_summary.return_value = mock_data
+    mock_fetch.return_value = mock_response_data
 
     # ACT
-    response = client.get("/dashboard")
+    response = client.get(f"/api/races?race_date={today.isoformat()}")
 
     # ASSERT
     assert response.status_code == 200
-    assert response.json() == mock_data
-    mock_engine.get_dashboard_summary.assert_called_once()
+    response_json = response.json()
+    assert response_json["date"] == today.isoformat()
+    assert response_json["races"] == mock_response_data["races"]
+    mock_fetch.assert_awaited_once_with(today.strftime('%Y-%m-%d'), None)
 
-# Test for the /funnel endpoint
-@patch('python_service.api.engine', spec=EngineManager)
-def test_get_funnel(mock_engine, client):
+@patch('python_service.engine.OddsEngine.fetch_all_odds', new_callable=AsyncMock)
+def test_get_races_with_source_filter(mock_fetch, client):
     """
-    SPEC: The /funnel endpoint should return data from engine.get_funnel_statistics().
+    SPEC: The /api/races endpoint should correctly pass the source filter to the engine.
     """
     # ARRANGE
-    mock_data = {
-        "races_fetched_by_source": {"Adapter1": 10, "Adapter2": 5},
-        "total_races_fetched": 15
-    }
-    mock_engine.get_funnel_statistics.return_value = mock_data
+    today = date.today()
+    mock_fetch.return_value = {"date": today.isoformat(), "races": [], "sources": [], "metadata": {}}
+    source_name = "Betfair"
 
     # ACT
-    response = client.get("/funnel")
+    response = client.get(f"/api/races?race_date={today.isoformat()}&source={source_name}")
 
     # ASSERT
     assert response.status_code == 200
-    assert response.json() == mock_data
-    mock_engine.get_funnel_statistics.assert_called_once()
+    mock_fetch.assert_awaited_once_with(today.strftime('%Y-%m-%d'), source_name)
+
+@patch('python_service.engine.OddsEngine.fetch_all_odds', new_callable=AsyncMock)
+def test_get_races_engine_error(mock_fetch, client):
+    """
+    SPEC: The /api/races endpoint should return a 500 error if the engine raises an exception.
+    """
+    # ARRANGE
+    mock_fetch.side_effect = Exception("A critical engine failure occurred")
+    today = date.today()
+
+    # ACT
+    response = client.get(f"/api/races?race_date={today.isoformat()}")
+
+    # ASSERT
+    assert response.status_code == 500
+    assert response.json() == {"detail": "Internal Server Error"}
+    mock_fetch.assert_awaited_once()

@@ -48,3 +48,4 @@ https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/head
 https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/ReviewableJSON/STATUS.md.json
 https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/ReviewableJSON/WISDOM.md.json
 https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/ReviewableJSON/PROJECT_MANIFEST.md.json
+https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/ReviewableJSON/ROADMAP_APPENDICES.md.json
