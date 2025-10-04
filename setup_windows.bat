@@ -1,49 +1,66 @@
-@ECHO OFF
-SETLOCAL
+@echo off
+REM ============================================================================
+REM  Project Gemini: Windows Setup Script
+REM
+REM  This script automates the setup of the Python backend environment.
+REM  It will:
+REM  1. Create a Python virtual environment in the '.venv' directory.
+REM  2. Activate the virtual environment.
+REM  3. Install all required dependencies from 'python_service/requirements.txt'.
+REM ============================================================================
 
-:: ==============================================================================
-:: == Checkmate Ultimate Solo - Environment Setup Script
-:: ==============================================================================
-:: This script verifies and installs dependencies for the final, two-pillar
-:: architecture: Python and Node.js.
-:: ==============================================================================
+echo [INFO] Starting Project Gemini backend setup for Windows...
 
-ECHO.
-ECHO [SETUP] Starting Checkmate Ultimate Solo Environment Verification...
-ECHO ==========================================================
+REM --- Check for Python ---
+echo [INFO] Checking for Python installation...
+python --version >nul 2>&1
+if %errorlevel% neq 0 (
+    echo [ERROR] Python is not found in the system's PATH.
+    echo [ERROR] Please install Python 3.8+ and ensure it is added to your PATH.
+    goto :eof
+)
+echo [SUCCESS] Python found.
 
-:check_python
-ECHO.
-ECHO [1/2] Verifying Python and installing dependencies...
-WHERE python >nul 2>nul
-IF %ERRORLEVEL% NEQ 0 (ECHO [ERROR] Python not found. Please install Python 3.10+ & GOTO :error)
+REM --- Create Virtual Environment ---
+echo [INFO] Creating Python virtual environment in '.\.venv\'...
+if not exist .\.venv (
+    python -m venv .venv
+    if %errorlevel% neq 0 (
+        echo [ERROR] Failed to create the virtual environment.
+        goto :eof
+    )
+    echo [SUCCESS] Virtual environment created.
+) else (
+    echo [INFO] Virtual environment '.\.venv\' already exists. Skipping creation.
+)
 
-CALL pip install -r python_service\requirements.txt
-IF %ERRORLEVEL% NEQ 0 (ECHO [ERROR] Failed to install Python dependencies. & GOTO :error)
-ECHO [SUCCESS] Python dependencies installed.
+REM --- Activate and Install Dependencies ---
+echo [INFO] Activating virtual environment and installing dependencies...
+call .\.venv\Scripts\activate.bat
+if %errorlevel% neq 0 (
+    echo [ERROR] Failed to activate the virtual environment.
+    goto :eof
+)
 
-:check_node
-ECHO.
-ECHO [2/2] Verifying Node.js and installing dependencies...
-WHERE npm >nul 2>nul
-IF %ERRORLEVEL% NEQ 0 (ECHO [ERROR] NPM not found. Please install Node.js. & GOTO :error)
+echo [INFO] Installing packages from 'python_service/requirements.txt'...
+pip install -r python_service/requirements.txt
+if %errorlevel% neq 0 (
+    echo [ERROR] Failed to install dependencies. Check 'requirements.txt' and your connection.
+    goto :eof
+)
+echo [SUCCESS] All dependencies installed successfully.
 
-CALL npm --prefix web_platform\frontend install
-IF %ERRORLEVEL% NEQ 0 GOTO :error
-ECHO [SUCCESS] TypeScript dependencies installed.
-
-ECHO.
-ECHO ==========================================================
-ECHO [SUCCESS] All Ultimate Solo environment dependencies are present and configured!
-ECHO ==========================================================
-GOTO :eof
-
-:error
-ECHO.
-ECHO ==========================================================
-ECHO [FAILURE] Environment setup failed. Please correct the errors above and re-run.
-ECHO ==========================================================
-EXIT /B 1
+REM --- Final Instructions ---
+echo.
+echo ============================================================================
+echo  Setup Complete!
+echo ============================================================================
+echo.
+echo  To activate the environment in your current command prompt, run:
+echo.
+echo      call .\.venv\Scripts\activate.bat
+echo.
+echo  The Python backend is now ready.
+echo ============================================================================
 
 :eof
-ENDLOCAL
