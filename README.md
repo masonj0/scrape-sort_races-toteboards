@@ -1,34 +1,41 @@
-# Checkmate Ultimate Solo
+# Checkmate Ultimate Solo (V2 - FastAPI Edition)
 
-This repository contains the Checkmate Ultimate Solo project, a streamlined, high-performance horse racing analysis tool.
+This repository contains the Checkmate Ultimate Solo project, a global, multi-source horse racing analysis tool. The project is a two-pillar system: a powerful, asynchronous Python backend that performs all data gathering, and a feature-rich TypeScript frontend.
 
 ---
 
 ## 🚀 Quick Start
 
-### 1. Start the Python Backend
-Open a terminal in the project root:
-```bash
-# Navigate to the service directory
-cd python_service
+### 1. Configure Your Environment
 
-# Install/update dependencies
-pip install -r requirements.txt
+Run the setup script to ensure Python and Node.js are correctly configured and all dependencies are installed.
 
-# Run the API service
-python api.py
+```batch
+# From the project root:
+setup_windows.bat
 ```
 
-### 2. Start the TypeScript Frontend (in a new terminal)
-Open a second terminal in the project root:
-```bash
-# Navigate to the frontend directory
-cd web_platform/frontend
+Optional: Create a `.env` file in the project root and add your API keys (see `.env.example` when available).
 
-# Install/update dependencies
-npm install
+### 2. Run the Python Backend (FastAPI)
+
+```bash
+# From the project root, activate the virtual environment:
+venv\Scripts\activate
+
+# Run the async server with Uvicorn:
+cd python_service
+uvicorn api:app --reload
+```
+
+The API will be available at `http://localhost:8000`.
+
+### 3. Run the Ultimate TypeScript Frontend
+
+```bash
+# From the project root:
+cd web_platform/frontend
 npm run dev
 ```
 
-### 3. Open Your Browser
-Navigate to `http://localhost:3000`. The UI should now connect to the backend and display live data.
+Navigate to `http://localhost:3000` in your browser.

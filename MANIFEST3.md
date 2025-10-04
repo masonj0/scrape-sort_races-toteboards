@@ -11,6 +11,7 @@
 ## 2.0 Environment & Setup
 *   `setup_windows.bat` - The Windows environment setup script.
 *   `.env` - Configuration for environment variables.
+*   `.env.example` - An example template for environment configuration.
 *   `python_service/requirements.txt` - Python backend dependencies.
 
 ## 3.0 Strategic Blueprints
@@ -20,6 +21,7 @@
 *   `STATUS.md` - The last official status report.
 *   `WISDOM.md` - The operational protocol for AI agents.
 *   `PROJECT_MANIFEST.md` - The original legacy manifest.
+*   `ROADMAP_APPENDICES.md` - The definitive adapter backlog and intelligence leads.
 
 ---
 
@@ -32,6 +34,7 @@ https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/head
 ### Environment & Setup
 https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/setup_windows.bat
 https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/.env
+https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/.env.example
 https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/requirements.txt
 
 ### Strategic Blueprints
@@ -41,3 +44,4 @@ https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/head
 https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/STATUS.md
 https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/WISDOM.md
 https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/PROJECT_MANIFEST.md
+https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/ROADMAP_APPENDICES.md
