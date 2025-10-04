@@ -46,7 +46,7 @@ def client():
 
 def test_health_check(client):
     """
-    SPEC: The /health endpoint should be available and return a healthy status.
+    SPEC: The /health endpoint should be available and return a healthy status with a timestamp.
     """
     response = client.get("/health")
     assert response.status_code == 200
