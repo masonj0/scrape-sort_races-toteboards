@@ -2,7 +2,7 @@
 
 from pydantic import BaseModel, Field, field_validator
 from typing import List, Optional, Dict
-from datetime import datetime
+from datetime import datetime, date
 from decimal import Decimal
 
 class OddsData(BaseModel):
@@ -50,7 +50,7 @@ class FetchMetadata(BaseModel):
     total_races: int
 
 class AggregatedResponse(BaseModel):
-    date: datetime.date
+    date: date
     races: List[Race]
     sources: List[SourceInfo]
     metadata: FetchMetadata

@@ -1,0 +1,2814 @@
+{
+  "tree": [
+    {
+      "path": ".env",
+      "size": 305,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/a42c4db915faa5d154e5cf9fc953e49bc727927e"
+    },
+    {
+      "path": ".env.example",
+      "size": 470,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/3c67a712e7e2d7a5f5c16f02146cbbea60161d33"
+    },
+    {
+      "path": ".gitignore",
+      "size": 351,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/8f10f1ff5c7aec9b34bc1f20f0a1833b1e5b4fe8"
+    },
+    {
+      "path": "AGENTS.md",
+      "size": 9373,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/56802ea079fe735d65d4e1c24fc99ffb5ac43729"
+    },
+    {
+      "path": "ARCHITECTURAL_MANDATE.md",
+      "size": 1469,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/40a5d477f116e35ceb49158f2f9ab3c159d68c2d"
+    },
+    {
+      "path": "ARCHITECTURAL_MANDATE_V8.1.md",
+      "size": 2124,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/3ed68684b7e8876a4430cee92a0d33acd03527ee"
+    },
+    {
+      "path": "GEMINI_ONBOARDING.md",
+      "size": 2598,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/acc8a8cf06e78875188326d0e3e70ac9dfc1104b"
+    },
+    {
+      "path": "HISTORY.md",
+      "size": 5749,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/da011ef2fac0be43997f5d8d29143b28520fa824"
+    },
+    {
+      "path": "JSON_BACKUP_MANIFEST.md",
+      "size": 4549,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/39e593717c522f9f7b1030475415ebe86d879648"
+    },
+    {
+      "path": "MANIFEST2.md",
+      "size": 4824,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/9ce66c1f8bef46a9e1649e6b99f9546447fdea7c"
+    },
+    {
+      "path": "MANIFEST3.md",
+      "size": 2643,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/b044bcdd47b65b9d8071fa60f774c12607a881bb"
+    },
+    {
+      "path": "PROJECT_MANIFEST.md",
+      "size": 1163,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/d3706aa72e17e498b6e0025d3c5f3b9808653260"
+    },
+    {
+      "path": "Procfile",
+      "size": 121,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/fd6ccb260f0b0d1fd926882d4149050ab5ba4469"
+    },
+    {
+      "path": "README.md",
+      "size": 1098,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/4dffcfed00d824b9d6b439d9b017c477f7c18d0e"
+    },
+    {
+      "path": "ROADMAP.md",
+      "size": 5932,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/d959bcf58426c7a68c281df816be8d31aba69d9b"
+    },
+    {
+      "path": "ROADMAP_APPENDICES.md",
+      "size": 2217,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/e4792a1c12636cb8e1f8a92735963bdd8181de1f"
+    },
+    {
+      "path": "ReviewableJSON",
+      "size": null,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/trees/126762ab09268367ee23d5c7e6335365e0732269"
+    },
+    {
+      "path": "ReviewableJSON/.env.json",
+      "size": 373,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/fa41660f72ee2eae538918b376df1442e64f3d69"
+    },
+    {
+      "path": "ReviewableJSON/.gitignore.json",
+      "size": 437,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/1e06f6e4b7261f9a5e1530e1953abdecbbe97af5"
+    },
+    {
+      "path": "ReviewableJSON/ARCHITECTURAL_MANDATE.md.json",
+      "size": 844,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/7bfa616b92afe7a7b5f973949d9c0ffa27b89394"
+    },
+    {
+      "path": "ReviewableJSON/HISTORY.md.json",
+      "size": 5902,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/aa795ec212e8ffa9a6c7140d8f8c317d2ae2b29e"
+    },
+    {
+      "path": "ReviewableJSON/PROJECT_MANIFEST.md.json",
+      "size": 1250,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/ec2c4a15e67aa2d3c51cae057414a41e50f23de6"
+    },
+    {
+      "path": "ReviewableJSON/README.md.json",
+      "size": 862,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/94ac55c0ddfbf80cce972b9ca35e9eb0eaa67e69"
+    },
+    {
+      "path": "ReviewableJSON/ROADMAP_APPENDICES.md.json",
+      "size": 1369,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/efa49335893cd3985dd489a49d3761f9fae94279"
+    },
+    {
+      "path": "ReviewableJSON/ReviewableJSON",
+      "size": null,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/trees/21d2ed3b51bc75a6b26fea9c087b66f45318e457"
+    },
+    {
+      "path": "ReviewableJSON/ReviewableJSON/attheraces_adapter.py.json.json",
+      "size": 3836,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/29f7636296080471342e53b690c7522bf6b15958"
+    },
+    {
+      "path": "ReviewableJSON/ReviewableJSON/betfair_data_scientist_adapter.py.json.json",
+      "size": 2648,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/9ff53f6a407d1af27f925d5d6d55509cf0afd961"
+    },
+    {
+      "path": "ReviewableJSON/ReviewableJSON/equibase.py.json.json",
+      "size": 4237,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/bc848cab0b52dea6efac95627448f2dc0557d3b9"
+    },
+    {
+      "path": "ReviewableJSON/ReviewableJSON/equibase_adapter.py.json.json",
+      "size": 3323,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/797d6998165bbaaff71e45fc87e83cedc23379a1"
+    },
+    {
+      "path": "ReviewableJSON/ReviewableJSON/fanduel_graphql_adapter.py.json.json",
+      "size": 10484,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/cce5a098f73d8feafbe41dfe420c64dac27ffc87"
+    },
+    {
+      "path": "ReviewableJSON/ReviewableJSON/greyhound_recorder.py.json.json",
+      "size": 4426,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/9f68435318d9c33d16014b15557cbac7557020f7"
+    },
+    {
+      "path": "ReviewableJSON/ReviewableJSON/racingandsports_adapter.py.json.json",
+      "size": 2607,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/da6520aec110c68732483df7774a02f332059ede"
+    },
+    {
+      "path": "ReviewableJSON/ReviewableJSON/racingpost_adapter.py.json.json",
+      "size": 6432,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/de8203cb225724d7f55fa674a6afcaa5e74f5941"
+    },
+    {
+      "path": "ReviewableJSON/ReviewableJSON/skysports_adapter.py.json.json",
+      "size": 7151,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/1e6f37f83752758fc741a54ead6ee5c6000ab7ef"
+    },
+    {
+      "path": "ReviewableJSON/ReviewableJSON/timeform_adapter.py.json.json",
+      "size": 3945,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/fdca47641432f55b2bfedf0f3f3e8346b7300d0a"
+    },
+    {
+      "path": "ReviewableJSON/STATUS.md.json",
+      "size": 693,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/b905a35f512844247bf6cd322326dfdca14721ce"
+    },
+    {
+      "path": "ReviewableJSON/WISDOM.md.json",
+      "size": 7647,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/55a446fa72b5ce925c17931ebd02c2c02923d1aa"
+    },
+    {
+      "path": "ReviewableJSON/__init__.py.json",
+      "size": 888,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/472f17efb71b9d3436b07a3cb5ab0946deec9820"
+    },
+    {
+      "path": "ReviewableJSON/__version__.py.json",
+      "size": 107,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/76a1525413a14372f6fae7f32046f8c03cb2176e"
+    },
+    {
+      "path": "ReviewableJSON/attheraces_adapter.py.json",
+      "size": 3501,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/8ff93c41c8d071597c8db0d4e13c39d716a6232c"
+    },
+    {
+      "path": "ReviewableJSON/attic",
+      "size": null,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/trees/7bfb53bb9a79752fcde7c136f1e94f9f62917667"
+    },
+    {
+      "path": "ReviewableJSON/attic/dashboard.py.json",
+      "size": 3501,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/4e5bea14952117f822622ca77cb417ec452608a8"
+    },
+    {
+      "path": "ReviewableJSON/attic/portable_demo_v2.py.json",
+      "size": 8472,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/0dcd3a3db46543499eb3472687dc34e7a408567a"
+    },
+    {
+      "path": "ReviewableJSON/backtester.py.json",
+      "size": 2136,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/13e0f5eb0bdc6abc09a1a094d8875d004ae477c8"
+    },
+    {
+      "path": "ReviewableJSON/base.py.json",
+      "size": 2010,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/e9728c617f5a79005f89d66baf09e15dee7128cb"
+    },
+    {
+      "path": "ReviewableJSON/betfair_data_scientist_adapter.py.json",
+      "size": 2388,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/0e7e73185aea6cb25c9bf3a9d3b6b50a76d1afd6"
+    },
+    {
+      "path": "ReviewableJSON/browser.py.json",
+      "size": 499,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/4ba75342dd63c29655b07438c288588778a318a4"
+    },
+    {
+      "path": "ReviewableJSON/checkmate_engine.py.json",
+      "size": 20084,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/fee41b029aaf3633cf14e33d802b00ee9c3379da"
+    },
+    {
+      "path": "ReviewableJSON/checkmate_web",
+      "size": null,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/trees/fcc6e713d3fe0d032790302d108812e929be45eb"
+    },
+    {
+      "path": "ReviewableJSON/checkmate_web/engine.py.json",
+      "size": 17993,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/6bbe8772d533e8bc8ddca5066f2bf4721e693387"
+    },
+    {
+      "path": "ReviewableJSON/checkmate_web/main.py.json",
+      "size": 4903,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/bee5cb6abdaf3af93cd4a651a260ea80cd3dbbf7"
+    },
+    {
+      "path": "ReviewableJSON/config.py.json",
+      "size": 763,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/018b691908d1e97d31a4e293c7cb924c533bf5be"
+    },
+    {
+      "path": "ReviewableJSON/convert_to_json.py.json",
+      "size": 3628,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/35a7f73d5c4d482a90d39ed11e8e8f8c0684bb17"
+    },
+    {
+      "path": "ReviewableJSON/debug_hr_report.py.json",
+      "size": 276,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/173db3fb6e5024f30ae55733db8db99fd1c36d64"
+    },
+    {
+      "path": "ReviewableJSON/download_timeform.py.json",
+      "size": 696,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/6e88914b51bbef078933716f7699061586585ed8"
+    },
+    {
+      "path": "ReviewableJSON/equibase.py.json",
+      "size": 3940,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/4818e26336299b0264b3bcf48c09e0dc56162840"
+    },
+    {
+      "path": "ReviewableJSON/equibase_adapter.py.json",
+      "size": 3092,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/a0ba2f5544c559064f199e1706008dc7e0b4cb52"
+    },
+    {
+      "path": "ReviewableJSON/fanduel_graphql_adapter.py.json",
+      "size": 9808,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/d9bfa1757634c7db61baa4df906ce1971d2caf61"
+    },
+    {
+      "path": "ReviewableJSON/greyhound_recorder.py.json",
+      "size": 4157,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/b6b3e21169b777c2fe60be298cc95f6ac0aae5f5"
+    },
+    {
+      "path": "ReviewableJSON/honeypot.py.json",
+      "size": 1160,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/2b855f12b3cad12274a53121283e13f506f292eb"
+    },
+    {
+      "path": "ReviewableJSON/http_client.py.json",
+      "size": 2492,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/7a959577a707b56f5ce66d37ba2d37581827930d"
+    },
+    {
+      "path": "ReviewableJSON/hunt.py.json",
+      "size": 2425,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/0a37c173f5b7e8a36978309b99b173ad5d60636d"
+    },
+    {
+      "path": "ReviewableJSON/launch_and_hunt.py.json",
+      "size": 4534,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/ed877345f9359d4ef6f2fff278aeff885a480308"
+    },
+    {
+      "path": "ReviewableJSON/launch_dashboard.py.json",
+      "size": 2821,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/a6a80c69d069611d417bf0830356c4e2d2aa8198"
+    },
+    {
+      "path": "ReviewableJSON/launch_paddock_parser.py.json",
+      "size": 381,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/eccb6525a66c9627568da80c23936c64d1e62403"
+    },
+    {
+      "path": "ReviewableJSON/main.py.json",
+      "size": 3310,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/b1362b7bae3ef3584a941f3e3516d07f6d2a38ee"
+    },
+    {
+      "path": "ReviewableJSON/manager.py.json",
+      "size": 4091,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/f1cb7b3a92aabab5427aba3d441393ce1dd5725d"
+    },
+    {
+      "path": "ReviewableJSON/manual_override_tool.py.json",
+      "size": 1144,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/ce984838063dd1f3d40c8f6817924a9dcb5f1512"
+    },
+    {
+      "path": "ReviewableJSON/merger.py.json",
+      "size": 2927,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/40b4c79da545252db26504193374fdd1b85f2bd1"
+    },
+    {
+      "path": "ReviewableJSON/models.py.json",
+      "size": 700,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/12c33c92477ef9fd4ecd35557070820af718ba2e"
+    },
+    {
+      "path": "ReviewableJSON/pipeline.py.json",
+      "size": 7890,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/aff0efc3fdf0692cda3ff5dac1224ab70bd2107f"
+    },
+    {
+      "path": "ReviewableJSON/portable_demo.py.json",
+      "size": 8463,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/8da7f71fcee055df83923d6fb7caa367a77d5b7d"
+    },
+    {
+      "path": "ReviewableJSON/python_service",
+      "size": null,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/trees/fa8c68f5a90b1a7b88fd5f4dc757c9d526e2a604"
+    },
+    {
+      "path": "ReviewableJSON/python_service/__init__.py.json",
+      "size": 133,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/cd139527bf31a271bcc3e33a15aeb220e1a630d3"
+    },
+    {
+      "path": "ReviewableJSON/python_service/adapters",
+      "size": null,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/trees/3130d9bc36458511e66978d6abce6a61ae06e144"
+    },
+    {
+      "path": "ReviewableJSON/python_service/adapters/__init__.py.json",
+      "size": 550,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/dce6d4f0801354effb9111040c7f00597555f814"
+    },
+    {
+      "path": "ReviewableJSON/python_service/adapters/base.py.json",
+      "size": 1834,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/a6ec44b8abc8fc3699d37e0981b3951d325ee7e1"
+    },
+    {
+      "path": "ReviewableJSON/python_service/adapters/betfair_adapter.py.json",
+      "size": 4981,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/d25c73a5142cf1c8dc5279109303f6f5e5082b2b"
+    },
+    {
+      "path": "ReviewableJSON/python_service/adapters/pointsbet_adapter.py.json",
+      "size": 739,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/b86ea11227e50239a6f5b9ebd2926671cbeed629"
+    },
+    {
+      "path": "ReviewableJSON/python_service/adapters/racing_and_sports_adapter.py.json",
+      "size": 3280,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/e5aa4c5570fcaa8fe5dc300448cab33bbdd0ed11"
+    },
+    {
+      "path": "ReviewableJSON/python_service/adapters/tvg_adapter.py.json",
+      "size": 5225,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/d02c20fc00f04d76601e6b250c57b10f8f1b9ab5"
+    },
+    {
+      "path": "ReviewableJSON/python_service/adapters/utils.py.json",
+      "size": 1512,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/2e3129d4870685c5096750ce23d85c2c8db51039"
+    },
+    {
+      "path": "ReviewableJSON/python_service/api.py.json",
+      "size": 1851,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/6e626a839d6d12592768ee928b474011de8c1b4e"
+    },
+    {
+      "path": "ReviewableJSON/python_service/checkmate_service.py.json",
+      "size": 7240,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/ecf6e515f06b1080fe2fc2c653e6834f10b66117"
+    },
+    {
+      "path": "ReviewableJSON/python_service/engine.py.json",
+      "size": 3684,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/70c17c281557575ada41d5316f5eb2e0af0ee576"
+    },
+    {
+      "path": "ReviewableJSON/python_service/models.py.json",
+      "size": 1600,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/edf4348dc8a3c390160450c1a5a8a684ff7b6538"
+    },
+    {
+      "path": "ReviewableJSON/python_service/requirements.txt.json",
+      "size": 219,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/3664e2c1827214e707186eb8cae583640652fc79"
+    },
+    {
+      "path": "ReviewableJSON/python_service/windows_service_wrapper.py.json",
+      "size": 1954,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/bcd7efa52205c81353c3eb5368bc6ff243441177"
+    },
+    {
+      "path": "ReviewableJSON/racingandsports_adapter.py.json",
+      "size": 2373,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/b5e67efd7346d0254b64a4e669fb8ca8227cc4fc"
+    },
+    {
+      "path": "ReviewableJSON/racingpost_adapter.py.json",
+      "size": 6087,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/b6286dc6469cb90c0efaab7f8206eb17d82d173f"
+    },
+    {
+      "path": "ReviewableJSON/run.py.json",
+      "size": 1875,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/76021319252aa35c1e40282aa65cd724bf1df008"
+    },
+    {
+      "path": "ReviewableJSON/scorer.py.json",
+      "size": 3316,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/b27920dbc0554ef5ff74b8edda9033fe51238614"
+    },
+    {
+      "path": "ReviewableJSON/setup.py.json",
+      "size": 126,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/3adeea5109e1661ba7fb5aa8228364ddd5732b50"
+    },
+    {
+      "path": "ReviewableJSON/setup_windows.bat.json",
+      "size": 1887,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/5e28555ddd444329e97905990b820b4cbe4250c2"
+    },
+    {
+      "path": "ReviewableJSON/skysports_adapter.py.json",
+      "size": 6705,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/5f918dacc2d0816d574d13e795c3dcac95f18c2a"
+    },
+    {
+      "path": "ReviewableJSON/src",
+      "size": null,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/trees/48f202803a388cc24b029dba4a4d1921d9feb94d"
+    },
+    {
+      "path": "ReviewableJSON/src/checkmate_v7",
+      "size": null,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/trees/ac438ef96caf3a30fa39b536085c8e8d0968a257"
+    },
+    {
+      "path": "ReviewableJSON/src/checkmate_v7/__init__.py.json",
+      "size": 71,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/b416f74a1b4c93335fa8a1f3c803d45a6fed3f61"
+    },
+    {
+      "path": "ReviewableJSON/src/checkmate_v7/adapters",
+      "size": null,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/trees/b06b27157abb9204da2b1c822613f5f9a1e63a1a"
+    },
+    {
+      "path": "ReviewableJSON/src/checkmate_v7/adapters/AndWereOff.py.json",
+      "size": 18981,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/a672952a1945806ae51c940f65884a186e8e96a6"
+    },
+    {
+      "path": "ReviewableJSON/src/checkmate_v7/adapters/Stablemates.py.json",
+      "size": 1544,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/c84967078af87a0772714fb73fd7293b04b9aa56"
+    },
+    {
+      "path": "ReviewableJSON/src/checkmate_v7/adapters/__init__.py.json",
+      "size": 638,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/76ec1e3f3ab31bbff8f3eea38cdb2096a9a7c823"
+    },
+    {
+      "path": "ReviewableJSON/src/checkmate_v7/adapters/utils.py.json",
+      "size": 604,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/6719c093006511ccbb215ed33fd670769aa917b9"
+    },
+    {
+      "path": "ReviewableJSON/src/checkmate_v7/api.py.json",
+      "size": 10583,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/2e6d9982aa4f418e948504e478e1c983cf235266"
+    },
+    {
+      "path": "ReviewableJSON/src/checkmate_v7/base.py.json",
+      "size": 2742,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/28c50bc6822be5dad30a9901e5523dc11099e5e1"
+    },
+    {
+      "path": "ReviewableJSON/src/checkmate_v7/celery_worker.py.json",
+      "size": 110,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/91e87e96256d1fe223ce361d0d6315730ac2f95d"
+    },
+    {
+      "path": "ReviewableJSON/src/checkmate_v7/cockpit.py.json",
+      "size": 6027,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/f3b09c8d2771ce7c9e8e1db7f2140d828a5fccf0"
+    },
+    {
+      "path": "ReviewableJSON/src/checkmate_v7/config.py.json",
+      "size": 332,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/a6905d3e861fc49f93960ce94daa0628f2ccccdb"
+    },
+    {
+      "path": "ReviewableJSON/src/checkmate_v7/database.py.json",
+      "size": 1787,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/58fd80d5792943fef52f417f60993648f3497fcb"
+    },
+    {
+      "path": "ReviewableJSON/src/checkmate_v7/headless_monitor.py.json",
+      "size": 3423,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/09cf0b6bff0c014d559105812e92f50bfc48559e"
+    },
+    {
+      "path": "ReviewableJSON/src/checkmate_v7/logging_config.py.json",
+      "size": 884,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/ae7df92928a94fa2d33910b2e83bab15be6f586b"
+    },
+    {
+      "path": "ReviewableJSON/src/checkmate_v7/logic.py.json",
+      "size": 3121,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/43ef20bdd769dea533e0e69a824b4e739d6a2b64"
+    },
+    {
+      "path": "ReviewableJSON/src/checkmate_v7/models.py.json",
+      "size": 5216,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/e337d91c82387ef52cf5764ac2a52b5cb75f0860"
+    },
+    {
+      "path": "ReviewableJSON/src/checkmate_v7/run.py.json",
+      "size": 4586,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/0bf89297ba0785ef5d3d62a01d1cae3567c75437"
+    },
+    {
+      "path": "ReviewableJSON/src/checkmate_v7/services.py.json",
+      "size": 2160,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/62c8ce0d7b728719c515a29c7ca822262b13bee6"
+    },
+    {
+      "path": "ReviewableJSON/src/checkmate_v7/settings.py.json",
+      "size": 1434,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/704fc6b6706a71c5bd8d6590d79762c3ecddfba9"
+    },
+    {
+      "path": "ReviewableJSON/src/paddock_parser",
+      "size": null,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/trees/875d2ba4c7ff6d6c95c3750dc40c01af6138b3ab"
+    },
+    {
+      "path": "ReviewableJSON/src/paddock_parser/__init__.py.json",
+      "size": 215,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/cc94eb380730620e7eb6d1f2e6c6ba98ef37ff73"
+    },
+    {
+      "path": "ReviewableJSON/src/paddock_parser/__version__.py.json",
+      "size": 107,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/76a1525413a14372f6fae7f32046f8c03cb2176e"
+    },
+    {
+      "path": "ReviewableJSON/src/paddock_parser/adapters",
+      "size": null,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/trees/c0bd4cb962d4291fe9b270edb73533b9d54f8d0d"
+    },
+    {
+      "path": "ReviewableJSON/src/paddock_parser/adapters/__init__.py.json",
+      "size": 1161,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/94f3a924f59a15e5802b916911d149991940ecb9"
+    },
+    {
+      "path": "ReviewableJSON/src/paddock_parser/adapters/atg_adapter.py.json",
+      "size": 3068,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/ed04497af0eed91f80a52c243e293f0c827e244f"
+    },
+    {
+      "path": "ReviewableJSON/src/paddock_parser/adapters/attheraces_adapter.py.json",
+      "size": 5342,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/f3217a5a23dbe557cec6c9cb802ac88b03821689"
+    },
+    {
+      "path": "ReviewableJSON/src/paddock_parser/adapters/betfair_data_scientist_adapter.py.json",
+      "size": 2376,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/c5bade94ca4f6d6a496d544ac41ac3ef9a54cb8b"
+    },
+    {
+      "path": "ReviewableJSON/src/paddock_parser/adapters/equibase_adapter.py.json",
+      "size": 2876,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/78904fd30b9ae3127e3fd4ca4a814e2f05cb9bd9"
+    },
+    {
+      "path": "ReviewableJSON/src/paddock_parser/adapters/fanduel_graphql_adapter.py.json",
+      "size": 3912,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/4cf25d312f38727754e7676713f360f0b72c0b30"
+    },
+    {
+      "path": "ReviewableJSON/src/paddock_parser/adapters/greyhound_recorder.py.json",
+      "size": 4155,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/315af5fa54f76d154699cf22225a3fef7cca152f"
+    },
+    {
+      "path": "ReviewableJSON/src/paddock_parser/adapters/pointsbet_adapter.py.json",
+      "size": 3698,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/63f4443f81cb20c39a0ed1485620d3e15e3f4d3c"
+    },
+    {
+      "path": "ReviewableJSON/src/paddock_parser/adapters/racingandsports_adapter.py.json",
+      "size": 2371,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/850ec29830cae54179583f0f8ce51d75f68fe680"
+    },
+    {
+      "path": "ReviewableJSON/src/paddock_parser/adapters/racingpost_adapter.py.json",
+      "size": 6085,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/b987130a143405b9ac125d4e8a57220081a79510"
+    },
+    {
+      "path": "ReviewableJSON/src/paddock_parser/adapters/ras_adapter.py.json",
+      "size": 2640,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/fd7f89e62f1d544df884cd655c478ab12b56426f"
+    },
+    {
+      "path": "ReviewableJSON/src/paddock_parser/adapters/skysports_adapter.py.json",
+      "size": 6760,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/7abd987351ee1b486a35d0c2f7c2cdc8ac52a4ce"
+    },
+    {
+      "path": "ReviewableJSON/src/paddock_parser/adapters/timeform_adapter.py.json",
+      "size": 4671,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/b61b6194116676f57219e4f2e5dbf475a7a07e09"
+    },
+    {
+      "path": "ReviewableJSON/src/paddock_parser/adapters/twinspires_adapter.py.json",
+      "size": 5074,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/95357a775209f4b55680d8fa92ffd1890333e1c3"
+    },
+    {
+      "path": "ReviewableJSON/src/paddock_parser/adapters/utils.py.json",
+      "size": 606,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/ab05341f66842bf03658dc966d812c9ce9894d14"
+    },
+    {
+      "path": "ReviewableJSON/src/paddock_parser/api",
+      "size": null,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/trees/8da5d570534601026b7178c953fa9055840db8f1"
+    },
+    {
+      "path": "ReviewableJSON/src/paddock_parser/api/main.py.json",
+      "size": 3310,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/b1362b7bae3ef3584a941f3e3516d07f6d2a38ee"
+    },
+    {
+      "path": "ReviewableJSON/src/paddock_parser/backtester.py.json",
+      "size": 2136,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/13e0f5eb0bdc6abc09a1a094d8875d004ae477c8"
+    },
+    {
+      "path": "ReviewableJSON/src/paddock_parser/base.py.json",
+      "size": 2070,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/41d0a9e6de64575748cd0d2ec6d5dab2a112d719"
+    },
+    {
+      "path": "ReviewableJSON/src/paddock_parser/config.py.json",
+      "size": 984,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/ff60c61f8dcb86d23e5969ab35f6eeb6f33f73f0"
+    },
+    {
+      "path": "ReviewableJSON/src/paddock_parser/database",
+      "size": null,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/trees/498a24b1c1cb275c60ba84a0d7a835d94144ff9b"
+    },
+    {
+      "path": "ReviewableJSON/src/paddock_parser/database/manager.py.json",
+      "size": 5592,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/65a59cedfe0ee53491b3e78634743b7503528942"
+    },
+    {
+      "path": "ReviewableJSON/src/paddock_parser/entry_points.py.json",
+      "size": 1789,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/14556013cb0cd00fc7fc0b31cceccd9dd11de93f"
+    },
+    {
+      "path": "ReviewableJSON/src/paddock_parser/fetcher.py.json",
+      "size": 1730,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/ca079331d3cb8739725b9097306972863a7a70f4"
+    },
+    {
+      "path": "ReviewableJSON/src/paddock_parser/http_client.py.json",
+      "size": 2492,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/7a959577a707b56f5ce66d37ba2d37581827930d"
+    },
+    {
+      "path": "ReviewableJSON/src/paddock_parser/log_analyzer.py.json",
+      "size": 999,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/5c0d1f049876692f2164cad5d3f7270de29ccf9d"
+    },
+    {
+      "path": "ReviewableJSON/src/paddock_parser/merger.py.json",
+      "size": 2927,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/40b4c79da545252db26504193374fdd1b85f2bd1"
+    },
+    {
+      "path": "ReviewableJSON/src/paddock_parser/models.py.json",
+      "size": 1197,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/7946fc90774cad1e078adad660ad65e1acb2bd17"
+    },
+    {
+      "path": "ReviewableJSON/src/paddock_parser/pipeline.py.json",
+      "size": 8028,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/a32e3ba7e35619dcdb62c643b27e538b11330aa2"
+    },
+    {
+      "path": "ReviewableJSON/src/paddock_parser/prediction_engine.py.json",
+      "size": 5946,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/4d1f5601d7ac7265bc2002e175c5dd33cc68dd6f"
+    },
+    {
+      "path": "ReviewableJSON/src/paddock_parser/run.py.json",
+      "size": 1871,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/ebdc23cbd8d78230ac2362ebd55182797775d3ba"
+    },
+    {
+      "path": "ReviewableJSON/src/paddock_parser/scorer.py.json",
+      "size": 4321,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/1e1506b191d1b084e16711a3dd21fa5437bc5852"
+    },
+    {
+      "path": "ReviewableJSON/src/paddock_parser/sync_fetcher.py.json",
+      "size": 1282,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/63099723e6a025dbaf445eb10c908ca8eb5f172c"
+    },
+    {
+      "path": "ReviewableJSON/src/paddock_parser/ui",
+      "size": null,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/trees/aa223e65bd09e819da33ca7943ba9535753ed674"
+    },
+    {
+      "path": "ReviewableJSON/src/paddock_parser/ui/terminal_ui.py.json",
+      "size": 6728,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/54583d94abb82081e859a5a453d2b62c1de7087a"
+    },
+    {
+      "path": "ReviewableJSON/src/paddock_parser/utils",
+      "size": null,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/trees/f3d1e67995b10eeeafaeb35acf3ac11491b53fc9"
+    },
+    {
+      "path": "ReviewableJSON/src/paddock_parser/utils/__init__.py.json",
+      "size": 282,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/f88279d2d11a354402406a7a854199104c684417"
+    },
+    {
+      "path": "ReviewableJSON/src/paddock_parser/utils/browser.py.json",
+      "size": 499,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/4ba75342dd63c29655b07438c288588778a318a4"
+    },
+    {
+      "path": "ReviewableJSON/src/paddock_parser/utils/honeypot.py.json",
+      "size": 1160,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/2b855f12b3cad12274a53121283e13f506f292eb"
+    },
+    {
+      "path": "ReviewableJSON/terminal_ui.py.json",
+      "size": 7442,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/01511ce2a99ac4cbabc4a11f41ee2b846ca2cde5"
+    },
+    {
+      "path": "ReviewableJSON/test_attheraces_adapter.py.json",
+      "size": 2503,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/e183d5cec36cc59db9d46effd3906fc4fd4ad815"
+    },
+    {
+      "path": "ReviewableJSON/test_backtester.py.json",
+      "size": 4434,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/df8ae5276db2b86d8c3e9df0285e203492eef2f8"
+    },
+    {
+      "path": "ReviewableJSON/test_betfair_data_scientist_adapter.py.json",
+      "size": 1900,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/5cbddf03126fc5c941899fe096907a9957122bcb"
+    },
+    {
+      "path": "ReviewableJSON/test_equibase_adapter.py.json",
+      "size": 1458,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/b9ebd6c11fd076cac39e8ecfc18d4e49df2658f5"
+    },
+    {
+      "path": "ReviewableJSON/test_exporters.py.json",
+      "size": 3785,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/ae280c38488c2f7fb6491bd08aae378e3bd71b02"
+    },
+    {
+      "path": "ReviewableJSON/test_fanduel_adapter.py.json",
+      "size": 6618,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/03f55cb3e9a388eec00713fb314a232f3b451a80"
+    },
+    {
+      "path": "ReviewableJSON/test_fanduel_graphql_adapter.py.json",
+      "size": 6589,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/f50d512aae864447283c51d7da77e244673a4710"
+    },
+    {
+      "path": "ReviewableJSON/test_forager_client.py.json",
+      "size": 3190,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/69ecc4686c7ffd104e183621988c8bea932c1418"
+    },
+    {
+      "path": "ReviewableJSON/test_greyhound_recorder_adapter.py.json",
+      "size": 1821,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/49ff903823a63e4c61e5356a54dc702b6a269169"
+    },
+    {
+      "path": "ReviewableJSON/test_honeypot.py.json",
+      "size": 1585,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/b6cf4112d25e3a45fb9654d5778cc2d96f1366fc"
+    },
+    {
+      "path": "ReviewableJSON/test_main.py.json",
+      "size": 5865,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/4089a993add2471f246ae388ada41dd73a62a063"
+    },
+    {
+      "path": "ReviewableJSON/test_manager.py.json",
+      "size": 4699,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/7fadb48ed8aecb70cff7f7c72bc571f9cb52f252"
+    },
+    {
+      "path": "ReviewableJSON/test_merger.py.json",
+      "size": 4149,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/5e44938efc2fec31d98384d45fd52a8cdae3db2b"
+    },
+    {
+      "path": "ReviewableJSON/test_pipeline.py.json",
+      "size": 3170,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/94b9e9600656d667d09015ca1626f0456b2600b6"
+    },
+    {
+      "path": "ReviewableJSON/test_placeholder.py.json",
+      "size": 232,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/9bfefa38d9683cd741b6ddc2c0831a8602869949"
+    },
+    {
+      "path": "ReviewableJSON/test_racingandsports_adapter.py.json",
+      "size": 1456,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/eca94fd29b9245fe5bc668f1b14eb334b2c8e958"
+    },
+    {
+      "path": "ReviewableJSON/test_racingpost_adapter.py.json",
+      "size": 2875,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/afc400ab0ecbc94b1f556d4c44b0650545de34dd"
+    },
+    {
+      "path": "ReviewableJSON/test_run.py.json",
+      "size": 2173,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/2181f07a69ddd2c80e71215c722d472300f5ed69"
+    },
+    {
+      "path": "ReviewableJSON/test_scorer.py.json",
+      "size": 3277,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/00c0ec24ab8ebb9ac07264298033451373d13e8a"
+    },
+    {
+      "path": "ReviewableJSON/test_skysports_adapter.py.json",
+      "size": 2164,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/61b226995a55ca9f756c1f617d4cea018faaa04e"
+    },
+    {
+      "path": "ReviewableJSON/test_terminal_ui.py.json",
+      "size": 4746,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/5a7bbfefd24d1e767a23b2304a941442c8dc3f78"
+    },
+    {
+      "path": "ReviewableJSON/test_terminal_ui_rich.py.json",
+      "size": 3488,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/03cf0939d4e693f377c0e37837c89bf536e9fecc"
+    },
+    {
+      "path": "ReviewableJSON/test_timeform_adapter.py.json",
+      "size": 957,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/11d10e8fe8d9a8805d406f52c6d441b8e8f303d8"
+    },
+    {
+      "path": "ReviewableJSON/tests",
+      "size": null,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/trees/a40eeeb6298cab55386f3b2cb3a4c819159e6e6a"
+    },
+    {
+      "path": "ReviewableJSON/tests/__init__.py.json",
+      "size": 60,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/9e71a1a6a13f4b07bb3d68e048c6988cb89808bc"
+    },
+    {
+      "path": "ReviewableJSON/tests/adapters",
+      "size": null,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/trees/292f52380b171d4aa4e682f120a4ad3eb1e72c89"
+    },
+    {
+      "path": "ReviewableJSON/tests/adapters/__init__.py.json",
+      "size": 69,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/4a22d646aaf3055a6f0d676c8988ad94674f6b0a"
+    },
+    {
+      "path": "ReviewableJSON/tests/adapters/test_atg_adapter.py.json",
+      "size": 3947,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/2cea8cd113c47bf65829a7564d41f0fd2f0580a8"
+    },
+    {
+      "path": "ReviewableJSON/tests/adapters/test_attheraces_adapter.py.json",
+      "size": 2422,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/05259481e41466b046cf642dd97c04b8aa52622a"
+    },
+    {
+      "path": "ReviewableJSON/tests/adapters/test_betfair_data_scientist_adapter.py.json",
+      "size": 1890,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/f3427a48e475d28ebb4742eb5cbeb54b607c0cf2"
+    },
+    {
+      "path": "ReviewableJSON/tests/adapters/test_equibase_adapter.py.json",
+      "size": 2747,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/2db74c99e15f8e52026c5b0ed7d79074bd97621b"
+    },
+    {
+      "path": "ReviewableJSON/tests/adapters/test_fanduel_graphql_adapter.py.json",
+      "size": 3297,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/a843fac34fb890a8430fa5f1bede8e0d7e0093cf"
+    },
+    {
+      "path": "ReviewableJSON/tests/adapters/test_greyhound_recorder_adapter.py.json",
+      "size": 1821,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/49ff903823a63e4c61e5356a54dc702b6a269169"
+    },
+    {
+      "path": "ReviewableJSON/tests/adapters/test_pointsbet_adapter.py.json",
+      "size": 3334,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/970ebb75304c750e9aaa1573a95bdf98b7f62a70"
+    },
+    {
+      "path": "ReviewableJSON/tests/adapters/test_racingandsports_adapter.py.json",
+      "size": 1456,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/eca94fd29b9245fe5bc668f1b14eb334b2c8e958"
+    },
+    {
+      "path": "ReviewableJSON/tests/adapters/test_racingpost_adapter.py.json",
+      "size": 2875,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/afc400ab0ecbc94b1f556d4c44b0650545de34dd"
+    },
+    {
+      "path": "ReviewableJSON/tests/adapters/test_ras_adapter.py.json",
+      "size": 1831,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/965a71730c6731b922cd1d0efc074cbb123cd83f"
+    },
+    {
+      "path": "ReviewableJSON/tests/adapters/test_skysports_adapter.py.json",
+      "size": 2661,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/bfd438720b177d960f6bc0ac794b9e5dfd306809"
+    },
+    {
+      "path": "ReviewableJSON/tests/adapters/test_timeform_adapter.py.json",
+      "size": 2650,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/1cb541e2f83bbfe3f7e9cf537406f5ecd99b2acb"
+    },
+    {
+      "path": "ReviewableJSON/tests/adapters/test_twinspires_adapter.py.json",
+      "size": 3520,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/6e0215c02bbeea1b995dfb0b62daf7bbd3e476ca"
+    },
+    {
+      "path": "ReviewableJSON/tests/api",
+      "size": null,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/trees/fd6e5b4a555345dbcd9d34d8ed8157292d4b8df1"
+    },
+    {
+      "path": "ReviewableJSON/tests/api/test_exporters.py.json",
+      "size": 3785,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/ae280c38488c2f7fb6491bd08aae378e3bd71b02"
+    },
+    {
+      "path": "ReviewableJSON/tests/api/test_main.py.json",
+      "size": 5865,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/4089a993add2471f246ae388ada41dd73a62a063"
+    },
+    {
+      "path": "ReviewableJSON/tests/checkmate_v7",
+      "size": null,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/trees/d634121ad178971d9cb7071f1c12861199c4f8d5"
+    },
+    {
+      "path": "ReviewableJSON/tests/checkmate_v7/test_api.py.json",
+      "size": 3744,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/ed5e922556e45027c7cea326f34c7f0d0fa29593"
+    },
+    {
+      "path": "ReviewableJSON/tests/checkmate_v7/test_betfair_adapter.py.json",
+      "size": 2630,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/fe1bb877d5760619f726260a9d1c07f0b540ccad"
+    },
+    {
+      "path": "ReviewableJSON/tests/checkmate_v7/test_betfair_modern_adapter.py.json",
+      "size": 1556,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/cbfa31cc2dbd6fc73d0fd201f8d26a649b0cce0a"
+    },
+    {
+      "path": "ReviewableJSON/tests/checkmate_v7/test_equibase_adapter.py.json",
+      "size": 3464,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/353475920b14f0322f6e212cc24f8c197c30b4d1"
+    },
+    {
+      "path": "ReviewableJSON/tests/checkmate_v7/test_fanduel_adapter.py.json",
+      "size": 2685,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/7841365e8b1a9eac18f94a195df4af1b0ff4db4b"
+    },
+    {
+      "path": "ReviewableJSON/tests/checkmate_v7/test_fanduel_api_adapter.py.json",
+      "size": 1957,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/df8c8179af875c345ee15fbc092cd8c4bba40718"
+    },
+    {
+      "path": "ReviewableJSON/tests/checkmate_v7/test_logic.py.json",
+      "size": 8376,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/bb9ae43003f09949f3ff7469551a20838993587c"
+    },
+    {
+      "path": "ReviewableJSON/tests/checkmate_v7/test_models.py.json",
+      "size": 2383,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/4a89579269ebde04eb84bf267a0e75853b2ed9b7"
+    },
+    {
+      "path": "ReviewableJSON/tests/checkmate_v7/test_pointsbet_adapter.py.json",
+      "size": 2942,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/7aff674c7273a6db0b89857890e110a24378934e"
+    },
+    {
+      "path": "ReviewableJSON/tests/checkmate_v7/test_racingpost_adapter.py.json",
+      "size": 2513,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/28871cbfaa7866528d4d560a259f8470e0293b0b"
+    },
+    {
+      "path": "ReviewableJSON/tests/checkmate_v7/test_racingpost_modern_adapter.py.json",
+      "size": 2514,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/2495a39e79728f07041731a43c79861dc8dc57af"
+    },
+    {
+      "path": "ReviewableJSON/tests/checkmate_v7/test_run.py.json",
+      "size": 2204,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/9bedad4dfbcc6e836456387875b1a37f97280641"
+    },
+    {
+      "path": "ReviewableJSON/tests/checkmate_v7/test_services.py.json",
+      "size": 2680,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/5be9786aa03b03319567fbb54a7f2821e8342b60"
+    },
+    {
+      "path": "ReviewableJSON/tests/checkmate_v7/test_twinspires_adapter.py.json",
+      "size": 3483,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/fa8401977c6b6d53c5bfbb2e2276215200fb0970"
+    },
+    {
+      "path": "ReviewableJSON/tests/database",
+      "size": null,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/trees/9b06629a42c776ed4f48055f2a78bcd2f8ca4f34"
+    },
+    {
+      "path": "ReviewableJSON/tests/database/test_manager.py.json",
+      "size": 4699,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/7fadb48ed8aecb70cff7f7c72bc571f9cb52f252"
+    },
+    {
+      "path": "ReviewableJSON/tests/test_backtester.py.json",
+      "size": 4434,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/df8ae5276db2b86d8c3e9df0285e203492eef2f8"
+    },
+    {
+      "path": "ReviewableJSON/tests/test_checkmate_v7.py.json",
+      "size": 4868,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/7d090e970b0688289ab7810b516f463c5dd61e74"
+    },
+    {
+      "path": "ReviewableJSON/tests/test_fetcher.py.json",
+      "size": 4166,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/2e9d337c426e0609fc898ee177c3506212cd1099"
+    },
+    {
+      "path": "ReviewableJSON/tests/test_forager_client.py.json",
+      "size": 3190,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/69ecc4686c7ffd104e183621988c8bea932c1418"
+    },
+    {
+      "path": "ReviewableJSON/tests/test_log_analyzer.py.json",
+      "size": 2749,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/aa037fb8b9a39709a298f55f71b629dce1ed78a4"
+    },
+    {
+      "path": "ReviewableJSON/tests/test_merger.py.json",
+      "size": 4149,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/5e44938efc2fec31d98384d45fd52a8cdae3db2b"
+    },
+    {
+      "path": "ReviewableJSON/tests/test_pipeline.py.json",
+      "size": 3170,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/94b9e9600656d667d09015ca1626f0456b2600b6"
+    },
+    {
+      "path": "ReviewableJSON/tests/test_scorer.py.json",
+      "size": 3325,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/012aa14774e70b378aa50a2ea9f5aeb858840b2b"
+    },
+    {
+      "path": "ReviewableJSON/tests/ui",
+      "size": null,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/trees/b972cd3dd309848052b708f8f2b29a5c12d141cb"
+    },
+    {
+      "path": "ReviewableJSON/tests/ui/test_terminal_ui_rich.py.json",
+      "size": 4591,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/8c7f18cc62a2024867e3883ab750d0f928a98f25"
+    },
+    {
+      "path": "ReviewableJSON/tests/utils",
+      "size": null,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/trees/c1bb26edf9d78c7f8c88949a71f03f2ff3351f92"
+    },
+    {
+      "path": "ReviewableJSON/tests/utils/__init__.py.json",
+      "size": 66,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/03e7359f672be10f206e6ba6d2d7688ce51a3c5e"
+    },
+    {
+      "path": "ReviewableJSON/tests/utils/test_honeypot.py.json",
+      "size": 1585,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/b6cf4112d25e3a45fb9654d5778cc2d96f1366fc"
+    },
+    {
+      "path": "ReviewableJSON/the_one_script.py.json",
+      "size": 23834,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/25d761727ee6cc6117522a092a78cce3136a9a20"
+    },
+    {
+      "path": "ReviewableJSON/the_sovereign_script.py.json",
+      "size": 7803,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/127c5dbbf6ec7fbc8de5db5be76c188902b27cd9"
+    },
+    {
+      "path": "ReviewableJSON/timeform_adapter.py.json",
+      "size": 3677,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/ca42166043b36c337118b72868406bc6b69df34f"
+    },
+    {
+      "path": "ReviewableJSON/utils.py.json",
+      "size": 608,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/099cc6fa5b6281df76d09b0fa86905b18287a296"
+    },
+    {
+      "path": "ReviewableJSON/web_platform",
+      "size": null,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/trees/9621e65096f0278fe78bb37a5553374994929069"
+    },
+    {
+      "path": "ReviewableJSON/web_platform/frontend",
+      "size": null,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/trees/56209566acf8061aa62c257f7807c34eded33e27"
+    },
+    {
+      "path": "ReviewableJSON/web_platform/frontend/package-lock.json.json",
+      "size": 83312,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/06ae9c6e1c38bd94059b5b29c81967305316ed06"
+    },
+    {
+      "path": "ReviewableJSON/web_platform/frontend/package.json.json",
+      "size": 655,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/50f75e77dfe8b8155cfcbbab845fe4181f516d05"
+    },
+    {
+      "path": "ReviewableJSON/web_platform/frontend/src",
+      "size": null,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/trees/37dd007f16bc6f42f9b40fe9af03c2dfa6fef982"
+    },
+    {
+      "path": "ReviewableJSON/web_platform/frontend/src/app",
+      "size": null,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/trees/2916f89fc0145bfb294e22d81b2daed228e5e255"
+    },
+    {
+      "path": "ReviewableJSON/web_platform/frontend/src/app/page.tsx.json",
+      "size": 9554,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/c38eac166a7460ae78f15a2b6ab4db9d1ba45423"
+    },
+    {
+      "path": "ReviewableJSON/web_platform/frontend/tailwind.config.ts.json",
+      "size": 382,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/06f5d4cbb1669c74e4c2d109475078251887a792"
+    },
+    {
+      "path": "ReviewableJSON/web_platform/frontend/tsconfig.json.json",
+      "size": 750,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/35b995b9a340453db73271e58fb0b4d62fc40083"
+    },
+    {
+      "path": "ReviewableJSON/web_server.py.json",
+      "size": 334,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/ffbcc1879d635015af8a47b6c90462e0be916f47"
+    },
+    {
+      "path": "STATUS.md",
+      "size": 971,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/4aef8d3fd03ff43eac29e7b224818a8a61cb23e0"
+    },
+    {
+      "path": "WISDOM.md",
+      "size": 7500,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/e99c49431d1fd3563f29d4c1966acc02cae0ecc8"
+    },
+    {
+      "path": "attic",
+      "size": null,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/trees/57865066f278064fa63a47aa7a0295a3ee8d52ec"
+    },
+    {
+      "path": "attic/ARCHITECTURAL_MANDATE_V7.2.md",
+      "size": 15885,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/f27d93b52dc45982c9e3284da69b9a3bccc43113"
+    },
+    {
+      "path": "attic/build_python_service.py",
+      "size": 2908,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/089bae7dc544864c02b77526b9363ffeb7532f34"
+    },
+    {
+      "path": "attic/checkmate_app.py",
+      "size": 7457,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/78bdeb6c5012bdd7b774100cf6db23c1feefd3dc"
+    },
+    {
+      "path": "attic/checkmate_engine.py",
+      "size": 19298,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/a1423d6d582446b46b6b428a7003f1b85af7a730"
+    },
+    {
+      "path": "attic/checkmate_monitor_v1.html",
+      "size": 23373,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/a327b006c047d52fefbd8e3fc1ad8fd6dd487960"
+    },
+    {
+      "path": "attic/dashboard.py",
+      "size": 3288,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/a51229e0fb0e13a5ca432fe899c8376f82805a24"
+    },
+    {
+      "path": "attic/desktop_app",
+      "size": null,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/trees/8d750026f6e9e020e64320023e692dbef37d0a58"
+    },
+    {
+      "path": "attic/desktop_app/App.xaml",
+      "size": 309,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/bb76810929b0987b16b1383e361888be9106244b"
+    },
+    {
+      "path": "attic/desktop_app/App.xaml.cs",
+      "size": 105,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/005bf62e805a6a3221b681a85a02ed094b2756b0"
+    },
+    {
+      "path": "attic/desktop_app/CheckmateDeck.csproj",
+      "size": 382,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/e1c51e8dcfda22f41e2b5d05c79e3c9bfa59a688"
+    },
+    {
+      "path": "attic/desktop_app/Models",
+      "size": null,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/trees/38398fa5d72a19860bfbc97bfdd033513705cde1"
+    },
+    {
+      "path": "attic/desktop_app/Models/AdapterStatusDisplay.cs",
+      "size": 1766,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/3e2de1e49276fc0e402ccd555d9f22020b6862b5"
+    },
+    {
+      "path": "attic/desktop_app/Models/DisplayRace.cs",
+      "size": 1840,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/4392eaaac9bc0f456775524e3665d3a9677aed28"
+    },
+    {
+      "path": "attic/desktop_app/Services",
+      "size": null,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/trees/463c571dea58b6410ade3481c146104facb36098"
+    },
+    {
+      "path": "attic/desktop_app/Services/DatabaseService.cs",
+      "size": 4516,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/230f0226f66b6dbd126693b288f8b4b23c1913ee"
+    },
+    {
+      "path": "attic/desktop_app/Services/IDatabaseService.cs",
+      "size": 248,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/7480d2bb82f5ab6e0ab06dff98891a778e797dae"
+    },
+    {
+      "path": "attic/desktop_app/ViewModels",
+      "size": null,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/trees/c4c7c3739fbc4ed7daf1fd82ee0cfdb1df99d350"
+    },
+    {
+      "path": "attic/desktop_app/ViewModels/MainViewModel.cs",
+      "size": 2721,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/dce27c44ce96a1031203a222d8a070c72d751ad1"
+    },
+    {
+      "path": "attic/desktop_app/Views",
+      "size": null,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/trees/f636b2c3955d1c035cc3a2b3528618d24703143b"
+    },
+    {
+      "path": "attic/desktop_app/Views/MainWindow.xaml",
+      "size": 2614,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/ff80deabbe3bc4bf942d8dc789add85b65e192bb"
+    },
+    {
+      "path": "attic/desktop_app/Views/MainWindow.xaml.cs",
+      "size": 390,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/cf5f6b6b0aa3623ce0d61c40f65b1d94798fb046"
+    },
+    {
+      "path": "attic/desktop_app/app_config.json",
+      "size": 48,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/4bbb4fddb5e64475ecb3214dde402099301c011e"
+    },
+    {
+      "path": "attic/launcher.py",
+      "size": 5457,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/1160b0e2ce01ecad1e02ae07ad153db4f4cea001"
+    },
+    {
+      "path": "attic/legacy_tests_pre_triage",
+      "size": null,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/trees/62c10b1bca044653eb80a2b620b4a1608c83e312"
+    },
+    {
+      "path": "attic/legacy_tests_pre_triage/__init__.py",
+      "size": 0,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+    },
+    {
+      "path": "attic/legacy_tests_pre_triage/adapters",
+      "size": null,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/trees/52c007543d1ab203a33b3c0392511686d3e037c3"
+    },
+    {
+      "path": "attic/legacy_tests_pre_triage/adapters/__init__.py",
+      "size": 0,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+    },
+    {
+      "path": "attic/legacy_tests_pre_triage/adapters/equibase_sample.html",
+      "size": 138379,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/0e42805ffb7b7ab310c08989945efb751fb73498"
+    },
+    {
+      "path": "attic/legacy_tests_pre_triage/adapters/greyhound_recorder_sample.html",
+      "size": 3261,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/b68f5c8440b3c30e5a862a2b68b295ce87ce73a1"
+    },
+    {
+      "path": "attic/legacy_tests_pre_triage/adapters/mock_data",
+      "size": null,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/trees/84d2b3f3927ffd477edbc58df18470982db57ea2"
+    },
+    {
+      "path": "attic/legacy_tests_pre_triage/adapters/mock_data/equibase_sample.html",
+      "size": 138379,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/0e42805ffb7b7ab310c08989945efb751fb73498"
+    },
+    {
+      "path": "attic/legacy_tests_pre_triage/adapters/mock_data/equibase_test_sample.html",
+      "size": 551,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/834b1b9ed519280c8a451d5409f35ec06fd3c587"
+    },
+    {
+      "path": "attic/legacy_tests_pre_triage/adapters/mock_data/greyhound_recorder_sample.html",
+      "size": 3261,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/b68f5c8440b3c30e5a862a2b68b295ce87ce73a1"
+    },
+    {
+      "path": "attic/legacy_tests_pre_triage/adapters/mock_data/pointsbet_sample.json",
+      "size": 1401,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/67613c7563588370dfa1dc3308e5f951ea26d5b4"
+    },
+    {
+      "path": "attic/legacy_tests_pre_triage/adapters/mock_data/racingpost_sample.html",
+      "size": 13087,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/612062bb583320f4ddc5ddb17ee038417f4b586a"
+    },
+    {
+      "path": "attic/legacy_tests_pre_triage/adapters/mock_data/timeform_race_detail_sample.html",
+      "size": 6686,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/276888f95bfd1a826d070ab1e3c8930f77e5d62d"
+    },
+    {
+      "path": "attic/legacy_tests_pre_triage/adapters/mock_data/twinspires_race_detail.html",
+      "size": 728,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/48f341b4d3f75e6a36b3933f4745bbf45105e0e3"
+    },
+    {
+      "path": "attic/legacy_tests_pre_triage/adapters/mock_data/twinspires_todays_tracks.html",
+      "size": 474,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/deab51266fd8ef0bd890377e30ab2435a277eaa7"
+    },
+    {
+      "path": "attic/legacy_tests_pre_triage/adapters/racingandsports_sample.json",
+      "size": 30445,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/325072246c7206f22d85ec39dc96fb148039f113"
+    },
+    {
+      "path": "attic/legacy_tests_pre_triage/adapters/racingpost_sample.html",
+      "size": 13087,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/612062bb583320f4ddc5ddb17ee038417f4b586a"
+    },
+    {
+      "path": "attic/legacy_tests_pre_triage/adapters/skysports_race_detail_sample.html",
+      "size": 746,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/7e210c26537b3a298315bc1b766d3b16f2ff9c27"
+    },
+    {
+      "path": "attic/legacy_tests_pre_triage/adapters/skysports_racecards_sample.html",
+      "size": 211791,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/d2f6220bd01667ad7a784d6e1912bcbfcb523c95"
+    },
+    {
+      "path": "attic/legacy_tests_pre_triage/adapters/test_atg_adapter.py",
+      "size": 3673,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/cab0f78d4c03e2f2cefe04e304805b2d21ba1feb"
+    },
+    {
+      "path": "attic/legacy_tests_pre_triage/adapters/test_attheraces_adapter.py",
+      "size": 2207,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/0996b54a175f6f5d3f222d15fc806fe61c34c3e8"
+    },
+    {
+      "path": "attic/legacy_tests_pre_triage/adapters/test_betfair_data_scientist_adapter.py",
+      "size": 1711,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/7e159ef1dba396b6cbd7c5b473299df989c51642"
+    },
+    {
+      "path": "attic/legacy_tests_pre_triage/adapters/test_equibase_adapter.py",
+      "size": 2546,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/9d45c562917ba2eefdd21cd58825941a7ff820ea"
+    },
+    {
+      "path": "attic/legacy_tests_pre_triage/adapters/test_fanduel_graphql_adapter.py",
+      "size": 3027,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/c8b26bf0e791dc5915f7ab03cadd47a3064a95c2"
+    },
+    {
+      "path": "attic/legacy_tests_pre_triage/adapters/test_greyhound_recorder_adapter.py",
+      "size": 1679,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/ef186618e3642568c2104bd708891152dc882d66"
+    },
+    {
+      "path": "attic/legacy_tests_pre_triage/adapters/test_pointsbet_adapter.py",
+      "size": 3128,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/6e4b4ae7a9ad75bc0d2d331fb8e32d57470a626c"
+    },
+    {
+      "path": "attic/legacy_tests_pre_triage/adapters/test_racingandsports_adapter.py",
+      "size": 1312,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/0c3d5e6f1d0cf38087fcbcab23e1ce31f7bddc9b"
+    },
+    {
+      "path": "attic/legacy_tests_pre_triage/adapters/test_racingpost_adapter.py",
+      "size": 2694,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/87daf19181855c71dea93e11ae3f3df3405e7389"
+    },
+    {
+      "path": "attic/legacy_tests_pre_triage/adapters/test_ras_adapter.py",
+      "size": 1694,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/2ce982b6b272abf93704447bba3c9dc6dd8acf3e"
+    },
+    {
+      "path": "attic/legacy_tests_pre_triage/adapters/test_skysports_adapter.py",
+      "size": 2467,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/d2c03720eabaab9e513869c7ed9ea6fb8f1837bc"
+    },
+    {
+      "path": "attic/legacy_tests_pre_triage/adapters/test_timeform_adapter.py",
+      "size": 2474,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/424df4e042106adaec09da2726ad7b50077fdc0e"
+    },
+    {
+      "path": "attic/legacy_tests_pre_triage/adapters/test_twinspires_adapter.py",
+      "size": 3306,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/706a2018ebb3ebd4538c6ebf7a4c56c1b16819bd"
+    },
+    {
+      "path": "attic/legacy_tests_pre_triage/adapters/timeform.html",
+      "size": 91520,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/48e21e948c281fb9f3290d83c54ba8f9a39ee9f9"
+    },
+    {
+      "path": "attic/legacy_tests_pre_triage/api",
+      "size": null,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/trees/2edef7e07d712d7354a917760bd25e051351af36"
+    },
+    {
+      "path": "attic/legacy_tests_pre_triage/api/test_exporters.py",
+      "size": 3534,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/52aaa98fb69f084b9e2c3fb3410436fae86238ec"
+    },
+    {
+      "path": "attic/legacy_tests_pre_triage/api/test_main.py",
+      "size": 5539,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/22bf68386e89581bde1ca01c1293803eaa206c8c"
+    },
+    {
+      "path": "attic/legacy_tests_pre_triage/checkmate_v7",
+      "size": null,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/trees/a22ddf8f047b23f7ea7f727cdccf834ffd8fde4d"
+    },
+    {
+      "path": "attic/legacy_tests_pre_triage/checkmate_v7/fixtures",
+      "size": null,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/trees/1dd840d2d5e8ea0276b8de1bfcf9a80f7debcc7e"
+    },
+    {
+      "path": "attic/legacy_tests_pre_triage/checkmate_v7/fixtures/betfair_data.csv",
+      "size": 133,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/7a0ba74337e6541a289d0077f6b416981422c914"
+    },
+    {
+      "path": "attic/legacy_tests_pre_triage/checkmate_v7/fixtures/equibase_entries.html",
+      "size": 1113,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/e803a8985534ea65414c9720d1b690f04f44b3aa"
+    },
+    {
+      "path": "attic/legacy_tests_pre_triage/checkmate_v7/fixtures/equibase_race_detail.html",
+      "size": 523,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/ce19b64b4c498addfe03370d20553cb87453e8dd"
+    },
+    {
+      "path": "attic/legacy_tests_pre_triage/checkmate_v7/fixtures/fanduel",
+      "size": null,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/trees/bc18affa5415fbe746bc42d692bc1f6c961a4e9c"
+    },
+    {
+      "path": "attic/legacy_tests_pre_triage/checkmate_v7/fixtures/fanduel/schedule.json",
+      "size": 5840,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/dc1cc953179eeef6bbd1ae9c5ca6d888c73ea5fc"
+    },
+    {
+      "path": "attic/legacy_tests_pre_triage/checkmate_v7/fixtures/fanduel_detail_response.json",
+      "size": 1812,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/ca203d4761fc9ce16bee36fd8bd488cb0e2e9ae7"
+    },
+    {
+      "path": "attic/legacy_tests_pre_triage/checkmate_v7/fixtures/fanduel_graphql_response.json",
+      "size": 1581,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/0b671d55d3603e99e6d7b42e74bc83b530684c1d"
+    },
+    {
+      "path": "attic/legacy_tests_pre_triage/checkmate_v7/fixtures/fanduel_schedule_response.json",
+      "size": 2561,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/03e678bb4be504134d89df2fbd9e7a67b8fcb127"
+    },
+    {
+      "path": "attic/legacy_tests_pre_triage/checkmate_v7/fixtures/pointsbet_races.json",
+      "size": 1255,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/f8131a17be004afa2bcb742298021ed623e87fcb"
+    },
+    {
+      "path": "attic/legacy_tests_pre_triage/checkmate_v7/fixtures/racingpost_racecard.html",
+      "size": 1872,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/6f27a3f983bacdc3b74682acf5d13a0b324669a6"
+    },
+    {
+      "path": "attic/legacy_tests_pre_triage/checkmate_v7/fixtures/twinspires_index.html",
+      "size": 499,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/18a40791ea7bd293dd35466d630cbfbb7cc43ee7"
+    },
+    {
+      "path": "attic/legacy_tests_pre_triage/checkmate_v7/fixtures/twinspires_race_detail.html",
+      "size": 828,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/0647e319837dbdce27e61effbd604141e902db7e"
+    },
+    {
+      "path": "attic/legacy_tests_pre_triage/checkmate_v7/test_api.py",
+      "size": 3477,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/a769e7f7ffb064317aa50547207620b64980a64e"
+    },
+    {
+      "path": "attic/legacy_tests_pre_triage/checkmate_v7/test_betfair_modern_adapter.py",
+      "size": 1384,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/ef9936cd0e7993968f9e60ddbf7ea0afba50557a"
+    },
+    {
+      "path": "attic/legacy_tests_pre_triage/checkmate_v7/test_fanduel_api_adapter.py",
+      "size": 1773,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/ec300d6f21ddb8f14708a666377c466d06974f3e"
+    },
+    {
+      "path": "attic/legacy_tests_pre_triage/checkmate_v7/test_logic.py",
+      "size": 7803,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/ce65c56371e0acc9721e218606697c97e5c84166"
+    },
+    {
+      "path": "attic/legacy_tests_pre_triage/checkmate_v7/test_models.py",
+      "size": 2096,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/8f2dd817e94b369533d42070100f6163f4c49ce2"
+    },
+    {
+      "path": "attic/legacy_tests_pre_triage/checkmate_v7/test_racingpost_modern_adapter.py",
+      "size": 2289,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/1fd47074cafe823885eba5740e971a2071416f06"
+    },
+    {
+      "path": "attic/legacy_tests_pre_triage/checkmate_v7/test_run.py",
+      "size": 2044,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/79f346c85e3aa7cf2f1a67262078f5eb25bbb447"
+    },
+    {
+      "path": "attic/legacy_tests_pre_triage/checkmate_v7/test_services.py",
+      "size": 2476,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/7e0488053f62b1818d3143553d38e44ba3e8402e"
+    },
+    {
+      "path": "attic/legacy_tests_pre_triage/database",
+      "size": null,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/trees/f47f53deab1934185b89e585c93d341fc70a6a7f"
+    },
+    {
+      "path": "attic/legacy_tests_pre_triage/database/test_manager.py",
+      "size": 4402,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/dff25370e54f2e4af03e4dccc49eb3f54e522807"
+    },
+    {
+      "path": "attic/legacy_tests_pre_triage/test_backtester.py",
+      "size": 4163,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/b792a9bb79f4328af7902c4aeb163c2ed3a621e6"
+    },
+    {
+      "path": "attic/legacy_tests_pre_triage/test_checkmate_v7.py",
+      "size": 4577,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/0265451f385cdbc5a2ca2addb100ea5dde07e6bd"
+    },
+    {
+      "path": "attic/legacy_tests_pre_triage/test_fetcher.py",
+      "size": 3930,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/41c6b51dfde04070c40b5ea5a190ae126eaa61c0"
+    },
+    {
+      "path": "attic/legacy_tests_pre_triage/test_forager_client.py",
+      "size": 3001,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/9f533707d36aa60a16c6721d8bf9fcf3ff45f58c"
+    },
+    {
+      "path": "attic/legacy_tests_pre_triage/test_log_analyzer.py",
+      "size": 2538,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/2c9d2e01f61c6cc840f207880653fc69cb02ee8d"
+    },
+    {
+      "path": "attic/legacy_tests_pre_triage/test_merger.py",
+      "size": 3878,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/6bb6acdc1060e2c47a2d5ecdb5a82fe9ea707bd5"
+    },
+    {
+      "path": "attic/legacy_tests_pre_triage/test_pipeline.py",
+      "size": 2989,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/d6cf2335de5a4af02b306e9c80e58d6c12f333b7"
+    },
+    {
+      "path": "attic/legacy_tests_pre_triage/test_python_service.py",
+      "size": 2729,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/6d54ef10d0983fb19287e0d42e2c5a2e20ead166"
+    },
+    {
+      "path": "attic/legacy_tests_pre_triage/test_scorer.py",
+      "size": 3128,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/876fb3b815a4572e60832aac555cdd065fa075be"
+    },
+    {
+      "path": "attic/legacy_tests_pre_triage/ui",
+      "size": null,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/trees/534a4d595ed6141734b632c78d496488325ba0a0"
+    },
+    {
+      "path": "attic/legacy_tests_pre_triage/ui/test_terminal_ui_rich.py",
+      "size": 4313,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/15a9e14c3f23a3243ee202643ee5cdce68b28be8"
+    },
+    {
+      "path": "attic/legacy_tests_pre_triage/utils",
+      "size": null,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/trees/2571a78ba3dbb27392181056b4c5766beb00c8b8"
+    },
+    {
+      "path": "attic/legacy_tests_pre_triage/utils/__init__.py",
+      "size": 0,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+    },
+    {
+      "path": "attic/legacy_tests_pre_triage/utils/honeypot_sample.html",
+      "size": 419,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/20df7f51d872fff4fc09207e0b8c826c41bd748c"
+    },
+    {
+      "path": "attic/legacy_tests_pre_triage/utils/test_honeypot.py",
+      "size": 1461,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/76851e378a437a0ae3a27205cb48b7b447eaca21"
+    },
+    {
+      "path": "attic/portable_demo_v2.py",
+      "size": 7958,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/4de75482b1fd34feee78c8bc82171217bfd0b9a7"
+    },
+    {
+      "path": "attic/rust_engine",
+      "size": null,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/trees/a7d609d1e3928a7bc59a1fbc54194f7d5a1ea888"
+    },
+    {
+      "path": "attic/rust_engine/rust_engine",
+      "size": null,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/trees/5a8199b6aeeb3dced924302617e0507212ed5e67"
+    },
+    {
+      "path": "attic/rust_engine/rust_engine/Cargo.toml",
+      "size": 1113,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/c280ba90ab58b797c75c0c689f77fa914fb278f5"
+    },
+    {
+      "path": "attic/rust_engine/rust_engine/benches",
+      "size": null,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/trees/58ffad277bd7463296e2933429133e3ee19a9448"
+    },
+    {
+      "path": "attic/rust_engine/rust_engine/benches/analysis_benchmark.rs",
+      "size": 883,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/c0559dc8be00df7adf68a43d35ced780ff94a537"
+    },
+    {
+      "path": "attic/rust_engine/rust_engine/src",
+      "size": null,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/trees/a34cb662285e41b946b1dc27b6f649ca72d64829"
+    },
+    {
+      "path": "attic/rust_engine/rust_engine/src/lib.rs",
+      "size": 8659,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/e5fc554088197dbde0f0677c75d05a3f17e3487b"
+    },
+    {
+      "path": "attic/rust_engine/rust_engine/src/main.rs",
+      "size": 6775,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/d70b12a54276e66f67fbfb55c74dc9ca2c3b2836"
+    },
+    {
+      "path": "attic/the_one_script.py",
+      "size": 25715,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/e50c1950110e40ebd96b5de040fd0ba6439f3358"
+    },
+    {
+      "path": "attic/tipsheet_generator.py",
+      "size": 6675,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/6b4bf9f5d6fc241b37a4eab8b68ab7b1b4ccb4be"
+    },
+    {
+      "path": "attic/vba_source",
+      "size": null,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/trees/c23328af853bbd28b765cc002dc63d3f01996055"
+    },
+    {
+      "path": "attic/vba_source/Module_Charts.bas",
+      "size": 971,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/9a204d8b8dee271d86a2ada10b95fb32b6fffbc4"
+    },
+    {
+      "path": "attic/vba_source/Module_DB.bas",
+      "size": 1315,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/111d6ff7893e142d6de9f993b783e1ec6324cc49"
+    },
+    {
+      "path": "attic/vba_source/Module_UI.bas",
+      "size": 2478,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/19ee25f9ec4bb989d59d8ae89245a5f90254f6f3"
+    },
+    {
+      "path": "build_launcher.py",
+      "size": 2911,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/94931096d82f3c561c8e9d5003429db50c256a8e"
+    },
+    {
+      "path": "checkmate_web",
+      "size": null,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/trees/92fcad03c496ad95174dcc5c8cb32ac8b16c43f1"
+    },
+    {
+      "path": "checkmate_web/engine.py",
+      "size": 17390,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/00cda2d8192559872a936cb63631e2e9f33a8257"
+    },
+    {
+      "path": "checkmate_web/main.py",
+      "size": 4568,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/cde732359a3acd77c0cdc96bdb6f65e5698227a7"
+    },
+    {
+      "path": "checkmate_web/requirements.txt",
+      "size": 72,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/f45533361b217118e5191a96d79c0ced129134e0"
+    },
+    {
+      "path": "checkmate_web/static",
+      "size": null,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/trees/ebeb87c5e3dd55ebacf1661ac918c4951a739e99"
+    },
+    {
+      "path": "checkmate_web/static/app.js",
+      "size": 11423,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/a92925cb8329aaf341dcc7e0e50a99feb04b7f4c"
+    },
+    {
+      "path": "checkmate_web/static/index.html",
+      "size": 5354,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/37512b57f7c1079a51004a213891bbe1ab4333b2"
+    },
+    {
+      "path": "checkmate_web/static/style.css",
+      "size": 7870,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/7d8b3ee55f75766fa6e936688f8b6dd53d49bd5d"
+    },
+    {
+      "path": "config.ini",
+      "size": 369,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/5c0c9884ef7236b37fede994768225791acbfaaa"
+    },
+    {
+      "path": "convert_to_json.py",
+      "size": 3401,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/70ba6d77733a6b62c9a93bd5113d132b62e7769a"
+    },
+    {
+      "path": "covatic_sky.js",
+      "size": 294578,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/f165abb8f108bb5367a983ac8df10a206e319e0f"
+    },
+    {
+      "path": "debug_hr_report.py",
+      "size": 204,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/1d830fef5fa6ffc86b1faa1e7c660d3c32104d26"
+    },
+    {
+      "path": "diagnostic_report.txt",
+      "size": 59907,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/20313c512584068ab0c77e0f609bac30812aedcd"
+    },
+    {
+      "path": "docs",
+      "size": null,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/trees/acc0f492485a38c81b0065f3ab218f003a250749"
+    },
+    {
+      "path": "docs/memos",
+      "size": null,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/trees/9e93c397f80031d56cfacea2abce7d00b049efd7"
+    },
+    {
+      "path": "docs/memos/2025-08-30_RoadmapUpdate.md",
+      "size": 2178,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/bbb72f4e934cb51f0e651c3ce5d5f3e5b368f5e7"
+    },
+    {
+      "path": "docs/memos/MEMO_2025-09-01_Code_Review_Tool_Anomaly.md",
+      "size": 2543,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/67534397fb8257a476c2c0c649ea824962dd9195"
+    },
+    {
+      "path": "documentation_backup.txt",
+      "size": 16446,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/4424ab18db212c5a72cf9f2a06b999cf065e00bd"
+    },
+    {
+      "path": "download_timeform.py",
+      "size": 605,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/f05d1d9f8dc92531e4343e9e621bed9f24741998"
+    },
+    {
+      "path": "env",
+      "size": 34,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/d0d99f473f91fe35148d2a9fee2b5c5dd7635a9c"
+    },
+    {
+      "path": "historical_data.csv",
+      "size": 297,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/5a2cd081d2ebc1bb1fc1d54f52dbbca375d411eb"
+    },
+    {
+      "path": "hunt.py",
+      "size": 2221,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/8edd56f143cefcc223c44b563daaacd002760c37"
+    },
+    {
+      "path": "install.sh",
+      "size": 427,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/783c3bab9c651afdfa24c6f995bccef49472f73a"
+    },
+    {
+      "path": "launch_and_hunt.py",
+      "size": 4214,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/6377f018d142744b59fdc6adc1c513e79394e213"
+    },
+    {
+      "path": "launch_checkmate.bat",
+      "size": 902,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/1947118596900985a9981babc9509707f842c05d"
+    },
+    {
+      "path": "launch_command_deck.bat",
+      "size": 381,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/8dc87542f617eb7d5012827c684cdab8de4c2363"
+    },
+    {
+      "path": "launch_dashboard.py",
+      "size": 2656,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/20800d854e9f11bc60b454a8c12c370c0c87a46e"
+    },
+    {
+      "path": "launch_paddock_parser.py",
+      "size": 292,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/0aa1478a185700a43f8e6b752aaf28597e62a0a8"
+    },
+    {
+      "path": "manual_override_tool.py",
+      "size": 1034,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/43a24ce6427cff43e3dfd2261e7696925f53de5c"
+    },
+    {
+      "path": "pg_schemas",
+      "size": null,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/trees/9b334ec112cc95ae678dee91b853b39698fd439b"
+    },
+    {
+      "path": "pg_schemas/historical_races.sql",
+      "size": 607,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/b8ddccf66d32e85dff93f2525f96404284759826"
+    },
+    {
+      "path": "pg_schemas/quarantine_races.sql",
+      "size": 422,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/3385f4f5ba9020990dbed64fc826245662711b06"
+    },
+    {
+      "path": "project_backup_emergency_book.txt",
+      "size": 85368,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/8f7c0112a3712db2554cfb506f0e10a5d99a5ee1"
+    },
+    {
+      "path": "pyproject.toml",
+      "size": 692,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/fb2d86a76214a6660231933a4de5b84df77b9302"
+    },
+    {
+      "path": "pytest.ini",
+      "size": 348,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/6e5fdaffbc02ef6985245dc0da3212c80082ccf4"
+    },
+    {
+      "path": "python_service",
+      "size": null,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/trees/5114d812d590c04c604058304095346de79348ec"
+    },
+    {
+      "path": "python_service/__init__.py",
+      "size": 64,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/89c84bde6a9cc930234cd17a6035030e4d07c3c3"
+    },
+    {
+      "path": "python_service/adapters",
+      "size": null,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/trees/d05936987fcb7c9b67cc5a7f807906d72bb4c8a7"
+    },
+    {
+      "path": "python_service/adapters/__init__.py",
+      "size": 451,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/fa4c2446b773700a10aaafd9090d2504d15a8f33"
+    },
+    {
+      "path": "python_service/adapters/base.py",
+      "size": 1714,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/ff626af1400d811a960d49145f92b69566a428b5"
+    },
+    {
+      "path": "python_service/adapters/betfair_adapter.py",
+      "size": 4655,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/ed42af7dcc36e394c006d5606613fb4b77576558"
+    },
+    {
+      "path": "python_service/adapters/pointsbet_adapter.py",
+      "size": 638,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/5d76122ab8536eb544591f22670a2dd8bb717f17"
+    },
+    {
+      "path": "python_service/adapters/racing_and_sports_adapter.py",
+      "size": 3077,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/ec602271cb16224d01dcf034638082f1834e3197"
+    },
+    {
+      "path": "python_service/adapters/tvg_adapter.py",
+      "size": 4958,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/858f6f61f50d65a1aa5607ca374dfa8047fa15d6"
+    },
+    {
+      "path": "python_service/adapters/utils.py",
+      "size": 1387,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/beedc5984e082c84be061356eac951c1a8ddb87c"
+    },
+    {
+      "path": "python_service/api.py",
+      "size": 2553,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/35893b3c39a96368cc6adf03f259dc335cca2bf9"
+    },
+    {
+      "path": "python_service/checkmate_service.py",
+      "size": 7606,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/a959fcbd5939faaeac109b4831403958d2539c8a"
+    },
+    {
+      "path": "python_service/config.py",
+      "size": 706,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/b5ac5833ee17c45c4ee4f8c3750e548b60894962"
+    },
+    {
+      "path": "python_service/engine.py",
+      "size": 3615,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/0d47749e633037ecb2afe4f230a6f0f13f095fbd"
+    },
+    {
+      "path": "python_service/minimal_service.py",
+      "size": 2742,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/3bea1ed080047f7f2e67ea086f9de57441595450"
+    },
+    {
+      "path": "python_service/models.py",
+      "size": 1479,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/e62c0aad60bc0b3bfacfc97aee80127d3da9b07e"
+    },
+    {
+      "path": "python_service/requirements.txt",
+      "size": 139,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/bb80ee44b30213013f1e43dae6c66b9320ed84da"
+    },
+    {
+      "path": "python_service/security.py",
+      "size": 745,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/a1dca4163a21a76dc0ce70b5018987b1bd1c3495"
+    },
+    {
+      "path": "python_service/windows_service_wrapper.py",
+      "size": 1818,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/ebd454ea07d33201c15b14d8acae6050c62774eb"
+    },
+    {
+      "path": "r_scripts",
+      "size": null,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/trees/56fe89c6e828d785ef7139d8a44ccb1861cee43f"
+    },
+    {
+      "path": "r_scripts/predictive_model.R",
+      "size": 1010,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/46f18be5cbffae4622777c99f563536c006ac289"
+    },
+    {
+      "path": "requirements.txt",
+      "size": 141,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/d67685ad855a959ffd0505fe80bded03b5c887c1"
+    },
+    {
+      "path": "run_server.py",
+      "size": 487,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/42a1a75d956c29a20a206c355a849596e115a27f"
+    },
+    {
+      "path": "rust_engine",
+      "size": null,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/trees/e0727993b2dcba238c68e3670a9a936a1db031b6"
+    },
+    {
+      "path": "rust_engine/.gitignore",
+      "size": 71,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/10da26bed62abe25bc62212fe392d472614d2ef3"
+    },
+    {
+      "path": "rust_engine/tests",
+      "size": null,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/trees/6e2d69b9b0b9461f17a8901ccb7c7777e8ea1141"
+    },
+    {
+      "path": "rust_engine/tests/integration_tests.rs",
+      "size": 2370,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/e08bee732bafbd03081120888d49f66f02135db7"
+    },
+    {
+      "path": "setup.py",
+      "size": 69,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/7f1a1763ca9cebc7bc16576d353d3284ee5d3c7d"
+    },
+    {
+      "path": "setup_windows.bat",
+      "size": 2339,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/b8da273e7fd8bee7626e701d018bd716c7260d4b"
+    },
+    {
+      "path": "shared_database",
+      "size": null,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/trees/fa3b48255251bd994106f730ac3eb6d725b16851"
+    },
+    {
+      "path": "shared_database/schema.sql",
+      "size": 1438,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/232212022a51055f03d44a45ad425ea7b27ad9f0"
+    },
+    {
+      "path": "shared_database/web_schema.sql",
+      "size": 911,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/279562111db8b265d0927ec9cafe5cd8f3682e0d"
+    },
+    {
+      "path": "skysports_detail_raw.html",
+      "size": 166134,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/a413f69f5bf196dcf988f41c9ee0719b397d6197"
+    },
+    {
+      "path": "skysports_racecards.html",
+      "size": 269809,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/64f43889ba1f33c449afd455fcc991729965e90f"
+    },
+    {
+      "path": "skysports_raw.html",
+      "size": 301174,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/51d0945c054d0e62820b0d0e8df0a8cffea08fd9"
+    },
+    {
+      "path": "src",
+      "size": null,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/trees/70088043e45f72f3bb0327adfaec5cd9dc8d6014"
+    },
+    {
+      "path": "src/checkmate_v7",
+      "size": null,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/trees/10302958dd054bcaed459af28e2a91ac50be9e58"
+    },
+    {
+      "path": "src/checkmate_v7/__init__.py",
+      "size": 0,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+    },
+    {
+      "path": "src/checkmate_v7/adapters",
+      "size": null,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/trees/daaa4c26f7b689d51a5096c968c1507be721a795"
+    },
+    {
+      "path": "src/checkmate_v7/adapters/AndWereOff.py",
+      "size": 18201,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/2fe45486ef7032d984a263cd6e6707852c7cd85f"
+    },
+    {
+      "path": "src/checkmate_v7/adapters/Stablemates.py",
+      "size": 1418,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/2597a8fbf9556d1ff794cce464a1e6ef12d05330"
+    },
+    {
+      "path": "src/checkmate_v7/adapters/__init__.py",
+      "size": 550,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/39e5eac8c8d1083838aa6fd08b335609d34ec342"
+    },
+    {
+      "path": "src/checkmate_v7/adapters/utils.py",
+      "size": 510,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/1721bb629fc9fea0343e2b3a72cc3317d8024492"
+    },
+    {
+      "path": "src/checkmate_v7/api.py",
+      "size": 10068,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/ef377d55c67b7cc691b0e879cc1de4a5445ffd1e"
+    },
+    {
+      "path": "src/checkmate_v7/base.py",
+      "size": 2567,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/483bb8e6577a16574ead5d43c3d3d74da447410c"
+    },
+    {
+      "path": "src/checkmate_v7/celery_worker.py",
+      "size": 33,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/8bacef2f96ea30f98d787069c91b8183881dea13"
+    },
+    {
+      "path": "src/checkmate_v7/cockpit.py",
+      "size": 5725,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/a6a05368c77d36c22ab5c1c678fd62b3c694b00f"
+    },
+    {
+      "path": "src/checkmate_v7/config.py",
+      "size": 243,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/4b66bbda253c868850e7079c0b301ad733cbfe94"
+    },
+    {
+      "path": "src/checkmate_v7/database.py",
+      "size": 1649,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/25ff44a41c736458bcac2dbc788b19a0457fd8eb"
+    },
+    {
+      "path": "src/checkmate_v7/headless_monitor.py",
+      "size": 3164,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/e2108113eb0af63c1468a15a95e9f3aa7f411b52"
+    },
+    {
+      "path": "src/checkmate_v7/logging_config.py",
+      "size": 776,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/d06b637430eb9e849d563a6c422874e3ce341274"
+    },
+    {
+      "path": "src/checkmate_v7/logic.py",
+      "size": 2925,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/7d90a82cf9eaa6076ddddb715435cdf6ccfbf30d"
+    },
+    {
+      "path": "src/checkmate_v7/models.py",
+      "size": 4962,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/7425993ba8ba035509b83d8eca335e2184ae40eb"
+    },
+    {
+      "path": "src/checkmate_v7/run.py",
+      "size": 4311,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/eb6c2a52b97b197ccf4ef46f6c69d4012643f826"
+    },
+    {
+      "path": "src/checkmate_v7/services.py",
+      "size": 2008,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/11bb65b41ba048a852b29d34fb2253e6d7e3475c"
+    },
+    {
+      "path": "src/checkmate_v7/settings.py",
+      "size": 1317,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/4760ec0d66c99319304df297309457ea886cc438"
+    },
+    {
+      "path": "src/paddock_parser",
+      "size": null,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/trees/5436fd8662ee4b6598842f352440516c58904aa3"
+    },
+    {
+      "path": "src/paddock_parser/__init__.py",
+      "size": 135,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/63e2d34588e4b9f4cc90ad1804354aaa3ecec943"
+    },
+    {
+      "path": "src/paddock_parser/__version__.py",
+      "size": 28,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/5f1e7508d5baa253fd9412362c4995cbf2074612"
+    },
+    {
+      "path": "src/paddock_parser/adapters",
+      "size": null,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/trees/0e29d9b26123d8db31dcd2c942a57df25b9d7a5f"
+    },
+    {
+      "path": "src/paddock_parser/adapters/__init__.py",
+      "size": 1022,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/3cc2be4d9d3bd1d4f76a558a632cec65027d5ef3"
+    },
+    {
+      "path": "src/paddock_parser/adapters/atg_adapter.py",
+      "size": 2847,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/e8338fe4bb3aec5957bc719f3a504b2fa2305f97"
+    },
+    {
+      "path": "src/paddock_parser/adapters/attheraces_adapter.py",
+      "size": 5022,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/182486560689ecef9b78db6bb7c6ae7e01280f7a"
+    },
+    {
+      "path": "src/paddock_parser/adapters/betfair_data_scientist_adapter.py",
+      "size": 2165,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/3273ca02158cea13dc9fde337ece1103ccf734ec"
+    },
+    {
+      "path": "src/paddock_parser/adapters/equibase_adapter.py",
+      "size": 2690,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/fb9b83c65515a4ac7dfcc66f41e16db2a8140b95"
+    },
+    {
+      "path": "src/paddock_parser/adapters/fanduel_graphql_adapter.py",
+      "size": 3649,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/a70b438839bda58d32310f96d37568188840cd47"
+    },
+    {
+      "path": "src/paddock_parser/adapters/greyhound_recorder.py",
+      "size": 3929,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/92df1dd4162df995ea67f8e7af9592483dd067df"
+    },
+    {
+      "path": "src/paddock_parser/adapters/pointsbet_adapter.py",
+      "size": 3483,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/239e07a183fa9f2727791211dfb2eb8645a2db64"
+    },
+    {
+      "path": "src/paddock_parser/adapters/racingandsports_adapter.py",
+      "size": 2180,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/ddc4239e49e4e32e1fbf5dff0716de9fc3c51243"
+    },
+    {
+      "path": "src/paddock_parser/adapters/racingpost_adapter.py",
+      "size": 5800,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/ab6b2bc49246112f2d48f0f4d66a74bfc23ee277"
+    },
+    {
+      "path": "src/paddock_parser/adapters/ras_adapter.py",
+      "size": 2448,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/1dbe89e5cca8cc71062e28357c1e013da2f18e10"
+    },
+    {
+      "path": "src/paddock_parser/adapters/skysports_adapter.py",
+      "size": 6409,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/230e23207d19c50f77d786cdd5f61b5859a9d8bf"
+    },
+    {
+      "path": "src/paddock_parser/adapters/timeform_adapter.py",
+      "size": 4396,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/604ae8a81c169edfad4f5b0a0ad4652077d92d5d"
+    },
+    {
+      "path": "src/paddock_parser/adapters/twinspires_adapter.py",
+      "size": 4797,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/b8fc122a06c17d116de9111795b4b19595e3196c"
+    },
+    {
+      "path": "src/paddock_parser/adapters/utils.py",
+      "size": 510,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/1721bb629fc9fea0343e2b3a72cc3317d8024492"
+    },
+    {
+      "path": "src/paddock_parser/api",
+      "size": null,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/trees/4d89f521e3b090f51e6a402b4c14792d0b2cd492"
+    },
+    {
+      "path": "src/paddock_parser/api/main.py",
+      "size": 3077,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/f64ebf3c59a8eb36ca7c2b7b2b85e4a0c51d4514"
+    },
+    {
+      "path": "src/paddock_parser/backtester.py",
+      "size": 1973,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/9951c29dc98efb117103933e889578dfadce85c9"
+    },
+    {
+      "path": "src/paddock_parser/base.py",
+      "size": 1889,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/858f81b965493da066eed346bf8036a3fc65f1e1"
+    },
+    {
+      "path": "src/paddock_parser/config.py",
+      "size": 873,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/9f6d99a2bb52c39122d7ffe239da6d4d70d2801b"
+    },
+    {
+      "path": "src/paddock_parser/database",
+      "size": null,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/trees/fef52f28d15c40d1949fdf07c0d5ad7d799e0632"
+    },
+    {
+      "path": "src/paddock_parser/database/manager.py",
+      "size": 5288,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/4dce84631a4dd4463af4fee2313affd120411b59"
+    },
+    {
+      "path": "src/paddock_parser/entry_points.py",
+      "size": 1640,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/4674af6bbcdfa59b3dc2d9f1373ab563e9ff5160"
+    },
+    {
+      "path": "src/paddock_parser/fetcher.py",
+      "size": 1601,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/bd1c2ba2b18aeb2dd9410a1877c520098b9c6d6d"
+    },
+    {
+      "path": "src/paddock_parser/http_client.py",
+      "size": 2336,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/cb0783333d15fea28acc4c268334d52eef213575"
+    },
+    {
+      "path": "src/paddock_parser/log_analyzer.py",
+      "size": 883,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/9ee32bfd63d5402653919f1674bda3441c42a8a5"
+    },
+    {
+      "path": "src/paddock_parser/merger.py",
+      "size": 2765,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/61594c81f5fb46754a2518b3b8fe6d0dd491249d"
+    },
+    {
+      "path": "src/paddock_parser/models.py",
+      "size": 1070,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/5a1fb5e2483cd80b094fa7a3256d4ccc962cbba1"
+    },
+    {
+      "path": "src/paddock_parser/pipeline.py",
+      "size": 7700,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/986c9ec9f212da9d2ce7299a2c9ce6bce6abd67a"
+    },
+    {
+      "path": "src/paddock_parser/prediction_engine.py",
+      "size": 5627,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/7238207c9608a5544f4a44f29ddeeba48aea35c4"
+    },
+    {
+      "path": "src/paddock_parser/run.py",
+      "size": 1727,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/06069d9eca87ca74a3dccf0c7f31bbc0bdd6087a"
+    },
+    {
+      "path": "src/paddock_parser/scorer.py",
+      "size": 4085,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/5de7ecba79debd6035a82ce413948b7ba2a14755"
+    },
+    {
+      "path": "src/paddock_parser/sync_fetcher.py",
+      "size": 1153,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/3059b1e7acd048854bb84e8470a28b8104d12d75"
+    },
+    {
+      "path": "src/paddock_parser/ui",
+      "size": null,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/trees/1df73f045c4e7c54c3b9da0d546b2d69b33e6e60"
+    },
+    {
+      "path": "src/paddock_parser/ui/terminal_ui.py",
+      "size": 6325,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/de0391b945c5e80e675aec1af2192c7d1607c63c"
+    },
+    {
+      "path": "src/paddock_parser/utils",
+      "size": null,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/trees/78e090f93f7147e284e7b2a3846d7d69d0c566ff"
+    },
+    {
+      "path": "src/paddock_parser/utils/__init__.py",
+      "size": 193,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/239078e4348f9c75f1592d74868692f66410e414"
+    },
+    {
+      "path": "src/paddock_parser/utils/browser.py",
+      "size": 404,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/184512a6c2d48f72b1e9e221f4aaac2acc435990"
+    },
+    {
+      "path": "src/paddock_parser/utils/honeypot.py",
+      "size": 1036,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/a60fc1c5faa99716db6de09e32fcc2f685d2f49d"
+    },
+    {
+      "path": "src/paddock_parser_ng.egg-info",
+      "size": null,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/trees/60cfe5792e436c2e74b1c75276cfd307c7b970b5"
+    },
+    {
+      "path": "src/paddock_parser_ng.egg-info/PKG-INFO",
+      "size": 2216,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/467cbc30c52bd44a248ada07b213414489c4c3b1"
+    },
+    {
+      "path": "src/paddock_parser_ng.egg-info/SOURCES.txt",
+      "size": 1882,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/e2fedb9b7e271af79ebe2f94a133e6136d28c9db"
+    },
+    {
+      "path": "src/paddock_parser_ng.egg-info/dependency_links.txt",
+      "size": 0,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+    },
+    {
+      "path": "src/paddock_parser_ng.egg-info/top_level.txt",
+      "size": 15,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/3b1adf3edcb2417627768ccc8461c54ccbd7a63a"
+    },
+    {
+      "path": "tests",
+      "size": null,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/trees/82aa2b4ee7b77349252536eb113b8a8577d932e2"
+    },
+    {
+      "path": "tests/test_api.py",
+      "size": 3174,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/33042c305b8d3848b19aa0a22e5f1670ad047d70"
+    },
+    {
+      "path": "web_platform",
+      "size": null,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/trees/c4b1ecc60dfacb7fd002404d16b7643d80fa7830"
+    },
+    {
+      "path": "web_platform/api_gateway",
+      "size": null,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/trees/9d2e98c756181bbbb9e6ffa8f4d682772563cdbf"
+    },
+    {
+      "path": "web_platform/api_gateway/.env",
+      "size": 54,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/85f659b28d29ebbb69746684171ba39e7f5fb915"
+    },
+    {
+      "path": "web_platform/api_gateway/package-lock.json",
+      "size": 115496,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/5f4d81a02fdd6848f9cfae9d26d587ea45108727"
+    },
+    {
+      "path": "web_platform/api_gateway/package.json",
+      "size": 477,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/4601e04c28fad461a3a1933b83f3b633fb53ac39"
+    },
+    {
+      "path": "web_platform/api_gateway/src",
+      "size": null,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/trees/fd02da658ae2ea56b3444c3fc7d36f50bd0b2607"
+    },
+    {
+      "path": "web_platform/api_gateway/src/server.ts",
+      "size": 7215,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/0b4a1fbbbe92654e872908f28d6da31f1447fce0"
+    },
+    {
+      "path": "web_platform/api_gateway/src/services",
+      "size": null,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/trees/77545ff8706428a461ff5d03dd977c5741fa0fc8"
+    },
+    {
+      "path": "web_platform/api_gateway/src/services/DatabaseService.ts",
+      "size": 685,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/cfdc10d8f6e9b0f0c62fca0ec5bef5441bcd8f05"
+    },
+    {
+      "path": "web_platform/api_gateway/tsconfig.json",
+      "size": 337,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/f7d71f1adc993048bd1b88a892cdc0e9de27ecaa"
+    },
+    {
+      "path": "web_platform/frontend",
+      "size": null,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/trees/a5fee90e9b22b2885d4ad333ec38858f349bdb0c"
+    },
+    {
+      "path": "web_platform/frontend/.gitignore",
+      "size": 471,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/3f22f54b4964052aaa3deb9bbee09cdcbefd4c5a"
+    },
+    {
+      "path": "web_platform/frontend/.next",
+      "size": null,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/trees/ebf085a56b1ee432051fa9963d86980032180a3b"
+    },
+    {
+      "path": "web_platform/frontend/.next/app-build-manifest.json",
+      "size": 945,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/00132e70f41e73181f50831b50a34e52aa766b20"
+    },
+    {
+      "path": "web_platform/frontend/.next/build-manifest.json",
+      "size": 967,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/d01ec30162c1e2a1b48f3fef7b3651baf8b0bf06"
+    },
+    {
+      "path": "web_platform/frontend/.next/react-loadable-manifest.json",
+      "size": 2,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/9e26dfeeb6e641a33dae4961196235bdb965b21b"
+    },
+    {
+      "path": "web_platform/frontend/.next/server",
+      "size": null,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/trees/eddfe78da3a07f3d6a445ddaebe507f40a2c465b"
+    },
+    {
+      "path": "web_platform/frontend/.next/server/app-paths-manifest.json",
+      "size": 66,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/c2f18397d7da3ce9382cb844779333276cffc8c3"
+    },
+    {
+      "path": "web_platform/frontend/.next/server/app",
+      "size": null,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/trees/a4cbeceaffd242ca526a2ae64dbe105e0fadd542"
+    },
+    {
+      "path": "web_platform/frontend/.next/server/app/page.js",
+      "size": 111472,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/8a07fee24f09edc2ce74d4d3eae3173f54709402"
+    },
+    {
+      "path": "web_platform/frontend/.next/server/app/page_client-reference-manifest.js",
+      "size": 3253,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/6ffcc853f6e7b8c5383c0adcb600fd4b2ecfa854"
+    },
+    {
+      "path": "web_platform/frontend/.next/server/middleware-build-manifest.js",
+      "size": 822,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/7bc9f31d1af3fbe85e6b684132b71614ae664bd6"
+    },
+    {
+      "path": "web_platform/frontend/.next/server/middleware-manifest.json",
+      "size": 83,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/57712aad396d04572020fd7519b33520c90816aa"
+    },
+    {
+      "path": "web_platform/frontend/.next/server/middleware-react-loadable-manifest.js",
+      "size": 36,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/170749eca8a4c612cc6ffafa73398480c02d3679"
+    },
+    {
+      "path": "web_platform/frontend/.next/server/next-font-manifest.js",
+      "size": 188,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/786e5795325174b20ed55027d60fffaeb8004506"
+    },
+    {
+      "path": "web_platform/frontend/.next/server/next-font-manifest.json",
+      "size": 159,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/409f26344bf566a9dcf715f24ae7777c8eb70618"
+    },
+    {
+      "path": "web_platform/frontend/.next/server/pages-manifest.json",
+      "size": 111,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/15d96be7d74615ddd4ed9d684526ed795c2d9d80"
+    },
+    {
+      "path": "web_platform/frontend/.next/server/server-reference-manifest.js",
+      "size": 121,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/2a2b3c1eb60b1eb4deb2a39a54e594a129a8cc83"
+    },
+    {
+      "path": "web_platform/frontend/.next/server/server-reference-manifest.json",
+      "size": 84,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/badfae416b88d2c84ef69020f1e5765ffde9cf19"
+    },
+    {
+      "path": "web_platform/frontend/.next/server/webpack-runtime.js",
+      "size": 1459,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/fdf08bdce5a5b20edc7685c707edfd4a3c8a8db8"
+    },
+    {
+      "path": "web_platform/frontend/.next/types",
+      "size": null,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/trees/1a32468e47b14962d032ff5a91f4c3da570e7790"
+    },
+    {
+      "path": "web_platform/frontend/.next/types/app",
+      "size": null,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/trees/061dd129cb487fcfcb7666844ef6978be77320a6"
+    },
+    {
+      "path": "web_platform/frontend/.next/types/app/layout.ts",
+      "size": 3466,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/9dfb74b9981d0c73799d473f602d5248c41a9329"
+    },
+    {
+      "path": "web_platform/frontend/.next/types/app/page.ts",
+      "size": 3454,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/dbe47f4a2ae9036c86cd8cf3ae002a0534992b33"
+    },
+    {
+      "path": "web_platform/frontend/.next/types/package.json",
+      "size": 18,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/1632c2c4df6894a83b70fa949fb32a9d4881adf9"
+    },
+    {
+      "path": "web_platform/frontend/app",
+      "size": null,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/trees/c4bc116e1492f74896936801645639e576ed13b3"
+    },
+    {
+      "path": "web_platform/frontend/app/globals.css",
+      "size": 58,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/bd6213e1dfe6b0a79ce7d8b37d0d2dc70f0250bb"
+    },
+    {
+      "path": "web_platform/frontend/app/layout.tsx",
+      "size": 505,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/8adc457eb5caa4f63cf8412e644fdcce0bd3eebb"
+    },
+    {
+      "path": "web_platform/frontend/app/page.tsx",
+      "size": 182,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/e51671c3f5c2c66c2230f6a41474c4c584eca275"
+    },
+    {
+      "path": "web_platform/frontend/next-env.d.ts",
+      "size": 201,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/4f11a03dc6cc37f2b5105c08f2e7b24c603ab2f4"
+    },
+    {
+      "path": "web_platform/frontend/package-lock.json",
+      "size": 75495,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/930fc1f8e2462e237fca9919f9dbe3d940ce3d0d"
+    },
+    {
+      "path": "web_platform/frontend/package.json",
+      "size": 487,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/2f0c52b36d664e77c6d34adb972bf7a17ac509e2"
+    },
+    {
+      "path": "web_platform/frontend/postcss.config.js",
+      "size": 81,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/96bb01e7dd1fcd9b131ec736a3be2570721d4c8c"
+    },
+    {
+      "path": "web_platform/frontend/src",
+      "size": null,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/trees/6e27314e9530f8c5c82d69a1d9d308f25edfb0d1"
+    },
+    {
+      "path": "web_platform/frontend/src/app",
+      "size": null,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/trees/9cf88cf719a4508fcaf95640819b08e0b9a2f324"
+    },
+    {
+      "path": "web_platform/frontend/src/app/page.tsx",
+      "size": 9249,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/d04d15766ff4ca15412cb26202d531c16dc54409"
+    },
+    {
+      "path": "web_platform/frontend/src/components",
+      "size": null,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/trees/648399f7021895affacab4ae12e2e4e9e2c4b333"
+    },
+    {
+      "path": "web_platform/frontend/src/components/LiveRaceDashboard.tsx",
+      "size": 1737,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/04669bf1b517dffb12157c73914fbac17755df16"
+    },
+    {
+      "path": "web_platform/frontend/src/components/RaceCard.tsx",
+      "size": 966,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/38f205319571b7951d6ba6bfe68ef2df491bcea9"
+    },
+    {
+      "path": "web_platform/frontend/src/components/ScoreBadge.tsx",
+      "size": 720,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/a5a5c4353b01b9a86486c208102af36979a415fd"
+    },
+    {
+      "path": "web_platform/frontend/src/components/TrifectaFactors.tsx",
+      "size": 1317,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/67d65515df20d3d6923bcfd5f16f1e778317fe3f"
+    },
+    {
+      "path": "web_platform/frontend/src/hooks",
+      "size": null,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/trees/d5563922ac2ece456ca56e05a3e702fba6dd6269"
+    },
+    {
+      "path": "web_platform/frontend/src/hooks/useRealTimeRaces.ts",
+      "size": 818,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/a7e0509fa5895fe15b8b5d0a857f777e62c5d58c"
+    },
+    {
+      "path": "web_platform/frontend/src/types",
+      "size": null,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/trees/05efea43919f26d6985fb7902a1ff5a38bd992c9"
+    },
+    {
+      "path": "web_platform/frontend/src/types/racing.ts",
+      "size": 481,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/e7466774ab2c0ddbeb898a9c8f3438ee690e402d"
+    },
+    {
+      "path": "web_platform/frontend/tailwind.config.ts",
+      "size": 287,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/168aa21b532aaeb3124411e8d463db3378a883c2"
+    },
+    {
+      "path": "web_platform/frontend/tsconfig.json",
+      "size": 581,
+      "url": "https://api.github.com/repos/masonj0/scrape-sort_races-toteboards/git/blobs/14bd9ea9c48ae458b26df8301a21b5371c47d62b"
+    }
+  ]
+}
