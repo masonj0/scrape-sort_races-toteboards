@@ -1,7 +1,7 @@
 # python_service/engine.py
 
 import asyncio
-import logging
+import structlog
 import httpx
 from datetime import datetime
 from typing import Dict, Any, List, Tuple
@@ -15,7 +15,7 @@ from .adapters.pointsbet_adapter import PointsBetAdapter
 class OddsEngine:
     def __init__(self, config):
         self.config = config
-        self.logger = logging.getLogger(self.__class__.__name__)
+        self.log = structlog.get_logger(self.__class__.__name__)
         self.adapters: List[BaseAdapter] = [
             BetfairAdapter(config=self.config),
             TVGAdapter(config=self.config),
@@ -43,7 +43,7 @@ class OddsEngine:
             return (adapter.source_name, result, duration)
         except Exception as e:
             duration = (datetime.now() - start_time).total_seconds()
-            self.logger.error(f"Adapter {adapter.source_name} raised an unhandled exception: {e}")
+            self.log.error("Adapter raised an unhandled exception", adapter=adapter.source_name, error=e)
             # Propagate the exception along with the timing info
             raise e from None
 
@@ -63,7 +63,7 @@ class OddsEngine:
             if isinstance(result, Exception):
                 # This path is for unexpected errors in the wrapper or adapter itself
                 # The adapter name is not easily available here, logging is key
-                self.logger.error(f"A fetch task failed unexpectedly: {result}", exc_info=True)
+                self.log.error("A fetch task failed unexpectedly", error=result, exc_info=True)
                 continue
 
             adapter_name, adapter_result, fetch_duration = result

@@ -1,6 +1,6 @@
 # python_service/api.py
 
-import logging
+import structlog
 from datetime import datetime, date
 from fastapi import FastAPI, HTTPException, Request, Depends
 from fastapi.middleware.cors import CORSMiddleware
@@ -12,8 +12,9 @@ from contextlib import asynccontextmanager
 from .config import get_settings
 from .engine import OddsEngine
 from .security import verify_api_key
+from .logging_config import configure_logging
 
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+log = structlog.get_logger()
 
 # Define the lifespan context manager for robust startup/shutdown
 @asynccontextmanager
@@ -23,13 +24,14 @@ async def lifespan(app: FastAPI):
     with validated settings and attaches it to the app state. On shutdown, it
     properly closes the engine's resources.
     """
+    configure_logging()
     settings = get_settings()
     app.state.engine = OddsEngine(config=settings)
-    logging.info("Server startup: Configuration validated and OddsEngine initialized.")
+    log.info("Server startup: Configuration validated and OddsEngine initialized.")
     yield
     # Clean up the engine resources
     await app.state.engine.close()
-    logging.info("Server shutdown: HTTP client resources closed.")
+    log.info("Server shutdown: HTTP client resources closed.")
 
 limiter = Limiter(key_func=get_remote_address)
 
@@ -60,7 +62,7 @@ async def get_all_adapter_statuses(request: Request, engine: OddsEngine = Depend
         statuses = engine.get_all_adapter_statuses()
         return statuses
     except Exception as e:
-        logging.error(f"Error in /api/adapters/status: {e}", exc_info=True)
+        log.error("Error in /api/adapters/status", exc_info=True)
         raise HTTPException(status_code=500, detail="Internal Server Error")
 
 
@@ -78,5 +80,5 @@ async def get_races(
         aggregated_data = await engine.fetch_all_odds(date_str, source)
         return aggregated_data
     except Exception as e:
-        logging.error(f"Error in /api/races: {e}", exc_info=True)
+        log.error("Error in /api/races", exc_info=True)
         raise HTTPException(status_code=500, detail="Internal Server Error")
