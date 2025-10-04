@@ -2,19 +2,34 @@
 
 import pytest
 from fastapi.testclient import TestClient
-from unittest.mock import patch, AsyncMock, MagicMock
+from unittest.mock import patch, AsyncMock
 from datetime import datetime, date
 
-# This is the key fix: We patch the Settings class itself where it is defined.
-# This ensures that any part of the application that tries to instantiate
-# Settings() will get our mock object instead, avoiding all validation errors.
+# DO NOT import the `app` object at the top level.
+# This is the key to preventing the startup validation from running before our patch is in place.
+from python_service.config import Settings
+
+# This fixture is the core of the solution. It runs automatically for every test.
+# It patches the Settings class within the config module itself. This ensures that
+# any code that tries to instantiate Settings() will get our mock object instead,
+# completely bypassing the real __init__ and its validation.
 @pytest.fixture(autouse=True)
 def override_settings_for_tests():
-    # Create a mock object that has the necessary attributes.
-    # We use a MagicMock for simplicity instead of a real Settings object.
-    mock_settings = MagicMock()
-    mock_settings.API_KEY = "test_api_key"
+    # Create a test-specific Settings class to prevent loading .env files
+    class TestSettings(Settings):
+        class Config:
+            env_file = None
 
+    mock_settings = TestSettings(
+        BETFAIR_APP_KEY="test_key",
+        BETFAIR_USERNAME="test_user",
+        BETFAIR_PASSWORD="test_password",
+        API_KEY="test_api_key",
+        TVG_API_KEY="test_tvg_key",
+        RACING_AND_SPORTS_TOKEN="test_ras_token",
+        POINTSBET_API_KEY="test_pb_key"
+    )
+    # The patch must target the location where the object is *used*.
     with patch('python_service.config.Settings', return_value=mock_settings):
         yield
 
@@ -87,8 +102,6 @@ def test_get_races_no_key(mock_fetch, client):
     assert response.json() == {"detail": "Not authenticated"}
     mock_fetch.assert_not_called()
 
-
-# Tests for the new /api/adapters/status endpoint
 @patch('python_service.engine.OddsEngine.get_all_adapter_statuses')
 def test_get_all_adapter_statuses_success(mock_get_statuses, client):
     """

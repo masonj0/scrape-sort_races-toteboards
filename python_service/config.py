@@ -14,6 +14,7 @@ class Settings(BaseSettings):
     # Optional keys with default values
     TVG_API_KEY: Optional[str] = None
     RACING_AND_SPORTS_TOKEN: Optional[str] = None
+    POINTSBET_API_KEY: Optional[str] = None
 
     # Security Settings
     API_KEY: str

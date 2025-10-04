@@ -8,3 +8,5 @@ httpx==0.24.1
 pytest==8.4.2
 
 structlog
+respx
+pytest-asyncio
