@@ -1,51 +1,82 @@
 # python_service/api.py
 
-import asyncio
 import logging
-from fastapi import FastAPI
+from datetime import datetime, date
+from fastapi import FastAPI, HTTPException, Request, Depends
 from fastapi.middleware.cors import CORSMiddleware
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
+from contextlib import asynccontextmanager
 
-from .engine import EngineManager
+from .config import get_settings
+from .engine import OddsEngine
+from .security import verify_api_key
 
-app = FastAPI(
-    title="Checkmate Ultimate Solo API",
-    description="Aggregates horse racing odds from multiple sources.",
-    version="2.0"
-)
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+
+# Define the lifespan context manager for robust startup/shutdown
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """
+    Manage the application's lifespan. On startup, it initializes the OddsEngine
+    with validated settings and attaches it to the app state. On shutdown, it
+    properly closes the engine's resources.
+    """
+    settings = get_settings()
+    app.state.engine = OddsEngine(config=settings)
+    logging.info("Server startup: Configuration validated and OddsEngine initialized.")
+    yield
+    # Clean up the engine resources
+    await app.state.engine.close()
+    logging.info("Server shutdown: HTTP client resources closed.")
+
+limiter = Limiter(key_func=get_remote_address)
+
+# Pass the lifespan manager to the FastAPI app
+app = FastAPI(title="Checkmate Ultimate Solo API", version="2.1", lifespan=lifespan)
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://localhost:8000"],
-    allow_credentials=True,
-    allow_methods=["GET"],
-    allow_headers=["*"]
+    allow_origins=["http://localhost:3000", "http://localhost:3001"],
+    allow_credentials=True, allow_methods=["GET"], allow_headers=["*"]
 )
 
-engine = EngineManager()
-background_task = None
-
-@app.on_event("startup")
-async def startup_event():
-    global background_task
-    background_task = asyncio.create_task(engine.run())
-
-@app.on_event("shutdown")
-async def shutdown_event():
-    global background_task
-    if background_task:
-        background_task.cancel()
-        try: await background_task
-        except asyncio.CancelledError: pass
-    await engine.close_adapters()
+# Dependency function to get the engine instance from the app state
+def get_engine(request: Request) -> OddsEngine:
+    return request.app.state.engine
 
 @app.get("/health")
-async def health_check(): return {"status": "healthy"}
+async def health_check():
+    return {"status": "ok", "timestamp": datetime.now().isoformat()}
 
-@app.get("/races")
-async def get_races(): return engine.get_last_races()
+@app.get("/api/adapters/status")
+@limiter.limit("60/minute")
+async def get_all_adapter_statuses(request: Request, engine: OddsEngine = Depends(get_engine), _=Depends(verify_api_key)):
+    """Provides a list of health statuses for all adapters, required by the new frontend blueprint."""
+    try:
+        statuses = engine.get_all_adapter_statuses()
+        return statuses
+    except Exception as e:
+        logging.error(f"Error in /api/adapters/status: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Internal Server Error")
 
-@app.get("/dashboard")
-async def get_dashboard(): return engine.get_dashboard_summary()
 
-@app.get("/funnel")
-async def get_funnel(): return engine.get_funnel_statistics()
+@app.get("/api/races")
+@limiter.limit("30/minute")
+async def get_races(
+    request: Request,
+    race_date: date = datetime.now().date(),
+    source: str = None,
+    engine: OddsEngine = Depends(get_engine),
+    _=Depends(verify_api_key)
+):
+    try:
+        date_str = race_date.strftime('%Y-%m-%d')
+        aggregated_data = await engine.fetch_all_odds(date_str, source)
+        return aggregated_data
+    except Exception as e:
+        logging.error(f"Error in /api/races: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Internal Server Error")
