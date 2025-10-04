@@ -43,6 +43,7 @@
 *   `api.py` - The Flask API entry point.
 *   `engine.py` - The central orchestration engine.
 *   `models.py` - Pydantic data models for validation.
+*   `security.py` - API key authentication logic.
 
 ### Adapters (`python_service/adapters/`)
 *   `__init__.py` - Defines the 'adapters' package.
@@ -75,6 +76,7 @@
 https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/api.py
 https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/engine.py
 https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/models.py
+https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/security.py
 https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/adapters/__init__.py
 https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/adapters/base.py
 https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/adapters/utils.py
