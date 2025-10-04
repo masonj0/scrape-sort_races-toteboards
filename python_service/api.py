@@ -11,6 +11,7 @@ from contextlib import asynccontextmanager
 
 from .config import get_settings
 from .engine import OddsEngine
+from .security import verify_api_key
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
@@ -57,7 +58,8 @@ async def get_races(
     request: Request,
     race_date: date = datetime.now().date(),
     source: str = None,
-    engine: OddsEngine = Depends(get_engine)
+    engine: OddsEngine = Depends(get_engine),
+    _=Depends(verify_api_key)
 ):
     try:
         date_str = race_date.strftime('%Y-%m-%d')

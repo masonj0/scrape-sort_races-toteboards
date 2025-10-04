@@ -11,6 +11,7 @@
 ## 2.0 Environment & Setup
 *   `setup_windows.bat` - The Windows environment setup script.
 *   `.env` - Configuration for environment variables.
+*   `.env.example` - An example template for environment configuration.
 *   `python_service/requirements.txt` - Python backend dependencies.
 
 ## 3.0 Strategic Blueprints
@@ -33,6 +34,7 @@ https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/head
 ### Environment & Setup
 https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/setup_windows.bat
 https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/.env
+https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/.env.example
 https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/requirements.txt
 
 ### Strategic Blueprints

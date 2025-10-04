@@ -15,6 +15,9 @@ class Settings(BaseSettings):
     TVG_API_KEY: Optional[str] = None
     RACING_AND_SPORTS_TOKEN: Optional[str] = None
 
+    # Security Settings
+    API_KEY: str
+
     class Config:
         env_file = ".env"
 
