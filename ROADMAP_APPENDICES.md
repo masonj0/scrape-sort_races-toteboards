@@ -65,6 +65,7 @@ A curated list of projects and resources to accelerate development.
 1.  **joenano/rpscrape:** https://github.com/joenano/rpscrape
 2.  **Daniel57910/horse-scraper:** https://github.com/Daniel57910/horse-scraper
 3.  **Web Scraping for HKJC:** https://gist.github.com/tomfoolc/ef039b229c8e97bd40c5493174bca839
+3.  **Web Scraping for HKJC:** https://gist.github.com/tomfoolc/ef039b229c8e97bd40c5493174bca839
 4.  **LibHunt horse-racing projects:** https://www.libhunt.com/topic/horse-racing
 5.  **Web data scraping blog:** https://www.3idatascing.com/how-does-web-data-scraping-help-in-horse-racing-and-greyhound/
 6.  **Fawazk/Greyhoundscraper:** https://github.com/Fawazk/Greyhoundscraper

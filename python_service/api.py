@@ -52,6 +52,18 @@ def get_engine(request: Request) -> OddsEngine:
 async def health_check():
     return {"status": "ok", "timestamp": datetime.now().isoformat()}
 
+@app.get("/api/adapters/status")
+@limiter.limit("60/minute")
+async def get_all_adapter_statuses(request: Request, engine: OddsEngine = Depends(get_engine), _=Depends(verify_api_key)):
+    """Provides a list of health statuses for all adapters, required by the new frontend blueprint."""
+    try:
+        statuses = engine.get_all_adapter_statuses()
+        return statuses
+    except Exception as e:
+        logging.error(f"Error in /api/adapters/status: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Internal Server Error")
+
+
 @app.get("/api/races")
 @limiter.limit("30/minute")
 async def get_races(

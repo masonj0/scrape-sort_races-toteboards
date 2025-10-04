@@ -86,3 +86,54 @@ def test_get_races_no_key(mock_fetch, client):
     assert response.status_code == 403
     assert response.json() == {"detail": "Not authenticated"}
     mock_fetch.assert_not_called()
+
+
+# Tests for the new /api/adapters/status endpoint
+@patch('python_service.engine.OddsEngine.get_all_adapter_statuses')
+def test_get_all_adapter_statuses_success(mock_get_statuses, client):
+    """
+    SPEC: The /api/adapters/status endpoint should return status data with a valid API key.
+    """
+    # ARRANGE
+    mock_status_data = [{"adapter_name": "Betfair", "status": "OK"}]
+    mock_get_statuses.return_value = mock_status_data
+    headers = {"X-API-Key": "test_api_key"}
+
+    # ACT
+    response = client.get("/api/adapters/status", headers=headers)
+
+    # ASSERT
+    assert response.status_code == 200
+    assert response.json() == mock_status_data
+    mock_get_statuses.assert_called_once()
+
+
+@patch('python_service.engine.OddsEngine.get_all_adapter_statuses')
+def test_get_all_adapter_statuses_invalid_key(mock_get_statuses, client):
+    """
+    SPEC: The /api/adapters/status endpoint should return a 403 error with an invalid API key.
+    """
+    # ARRANGE
+    headers = {"X-API-Key": "invalid_key"}
+
+    # ACT
+    response = client.get("/api/adapters/status", headers=headers)
+
+    # ASSERT
+    assert response.status_code == 403
+    assert response.json() == {"detail": "Invalid or missing API Key"}
+    mock_get_statuses.assert_not_called()
+
+
+@patch('python_service.engine.OddsEngine.get_all_adapter_statuses')
+def test_get_all_adapter_statuses_no_key(mock_get_statuses, client):
+    """
+    SPEC: The /api/adapters/status endpoint should return a 403 error with no API key.
+    """
+    # ARRANGE & ACT
+    response = client.get("/api/adapters/status")
+
+    # ASSERT
+    assert response.status_code == 403
+    assert response.json() == {"detail": "Not authenticated"}
+    mock_get_statuses.assert_not_called()

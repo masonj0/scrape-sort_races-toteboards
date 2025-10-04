@@ -27,6 +27,13 @@ class OddsEngine:
     async def close(self):
         await self.http_client.aclose()
 
+    def get_all_adapter_statuses(self) -> List[Dict[str, Any]]:
+        """Returns the health status of all registered adapters."""
+        statuses = []
+        for adapter in self.adapters:
+            statuses.append(adapter.get_status())
+        return statuses
+
     async def _time_adapter_fetch(self, adapter: BaseAdapter, date: str) -> Tuple[str, Dict[str, Any], float]:
         """Wraps an adapter's fetch call to accurately measure its duration."""
         start_time = datetime.now()

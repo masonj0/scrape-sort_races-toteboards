@@ -36,3 +36,7 @@ class BaseAdapter(ABC):
                 backoff = 1 * (2 ** retry_count) # Exponential backoff
                 await asyncio.sleep(backoff)
         raise Exception("make_request failed after max retries")
+
+    def get_status(self) -> Dict[str, Any]:
+        """Returns a dictionary representing the adapter's default status."""
+        return {"adapter_name": self.source_name, "status": "OK"}
