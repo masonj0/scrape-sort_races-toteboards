@@ -1,0 +1,4 @@
+{
+    "file_path": "python_service/config.py",
+    "content": "# python_service/config.py\n\nfrom pydantic_settings import BaseSettings\nfrom typing import Optional\nfrom functools import lru_cache\n\nclass Settings(BaseSettings):\n    \"\"\"Defines all required environment variables. Fails on startup if any are missing.\"\"\"\n    # API Keys - Add all required keys here\n    BETFAIR_APP_KEY: str\n    BETFAIR_USERNAME: str\n    BETFAIR_PASSWORD: str\n\n    # Optional keys with default values\n    TVG_API_KEY: Optional[str] = None\n    RACING_AND_SPORTS_TOKEN: Optional[str] = None\n    POINTSBET_API_KEY: Optional[str] = None\n\n    # Security Settings\n    API_KEY: str\n\n    class Config:\n        env_file = \".env\"\n\n# Use a cached function to create a single settings instance\n@lru_cache()\ndef get_settings():\n    return Settings()"
+}
