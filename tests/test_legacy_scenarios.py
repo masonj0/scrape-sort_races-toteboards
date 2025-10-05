@@ -5,69 +5,63 @@ from decimal import Decimal
 
 # Note: The 'client' fixture is automatically available from tests/conftest.py
 
-# Mock data ported from legacy tests, but adapted for modern Pydantic models.
-# The structure now matches python_service/models.py exactly.
-MOCK_RACE_PASS = {
-    "id": "LEGACY_PASS_1",
-    "venue": "Legacy Park",
-    "race_number": 1,
-    "start_time": datetime.now().isoformat(),
-    "source": "Legacy",
+# --- Mock Data for "True Trifecta" Logic ---
+# This data is structured to test the new analyzer's specific rules.
+
+def create_mock_runner(number, odds_val):
+    """Helper to create a runner dictionary for mock responses."""
+    return {
+        "number": number,
+        "name": f"Horse {number}",
+        "scratched": False,
+        "odds": {"TestOdds": {"win": odds_val, "source": "TestOdds", "last_updated": datetime.now().isoformat()}}
+    }
+
+# This race should PASS: 5 runners (<10), fav odds 3.0 (>2.5), 2nd fav odds 4.5 (>4.0)
+MOCK_RACE_PASS_TT = {
+    "id": "TT_PASS_1", "venue": "Trifecta Park", "race_number": 1, "start_time": datetime.now().isoformat(), "source": "Legacy",
     "runners": [
-        {"number": 1, "name": "Horse A", "scratched": False, "odds": {"TestOdds": {"win": Decimal("2.5"), "source": "TestOdds", "last_updated": datetime.now().isoformat()}}},
-        {"number": 2, "name": "Horse B", "scratched": False, "odds": {"TestOdds": {"win": Decimal("3.5"), "source": "TestOdds", "last_updated": datetime.now().isoformat()}}},
-        {"number": 3, "name": "Horse C", "scratched": False, "odds": {"TestOdds": {"win": Decimal("4.0"), "source": "TestOdds", "last_updated": datetime.now().isoformat()}}},
-        {"number": 4, "name": "Horse D", "scratched": False, "odds": {"TestOdds": {"win": Decimal("8.0"), "source": "TestOdds", "last_updated": datetime.now().isoformat()}}},
-        {"number": 5, "name": "Horse E", "scratched": False, "odds": {"TestOdds": {"win": Decimal("10.0"), "source": "TestOdds", "last_updated": datetime.now().isoformat()}}},
-        {"number": 6, "name": "Horse F", "scratched": False, "odds": {"TestOdds": {"win": Decimal("12.0"), "source": "TestOdds", "last_updated": datetime.now().isoformat()}}},
-        {"number": 7, "name": "Horse G", "scratched": False, "odds": {"TestOdds": {"win": Decimal("15.0"), "source": "TestOdds", "last_updated": datetime.now().isoformat()}}},
-        {"number": 8, "name": "Horse H", "scratched": False, "odds": {"TestOdds": {"win": Decimal("20.0"), "source": "TestOdds", "last_updated": datetime.now().isoformat()}}},
+        create_mock_runner(1, "3.0"), create_mock_runner(2, "4.5"), create_mock_runner(3, "5.0"),
+        create_mock_runner(4, "8.0"), create_mock_runner(5, "10.0")
     ]
 }
 
-MOCK_RACE_FAIL_RUNNERS = {
-    "id": "LEGACY_FAIL_1",
-    "venue": "Legacy Park",
-    "race_number": 2,
-    "start_time": datetime.now().isoformat(),
-    "source": "Legacy",
-    "runners": [
-        {"number": i, "name": f"Horse {i}", "scratched": False, "odds": {}} for i in range(1, 8) # Only 7 runners
-    ]
+# This race should FAIL: Field size is 11 (> 10)
+MOCK_RACE_FAIL_FIELD_SIZE_TT = {
+    "id": "TT_FAIL_FS", "venue": "Trifecta Park", "race_number": 2, "start_time": datetime.now().isoformat(), "source": "Legacy",
+    "runners": [create_mock_runner(i, str(5.0 + i)) for i in range(1, 12)]
 }
 
-MOCK_RACE_FAIL_ODDS = {
-    "id": "LEGACY_FAIL_2",
-    "venue": "Legacy Park",
-    "race_number": 3,
-    "start_time": datetime.now().isoformat(),
-    "source": "Legacy",
-    "runners": [
-        {"number": 1, "name": "Horse J", "scratched": False, "odds": {"TestOdds": {"win": Decimal("1.5"), "source": "TestOdds", "last_updated": datetime.now().isoformat()}}}, # Favorite odds too low
-        {"number": 2, "name": "Horse K", "scratched": False, "odds": {"TestOdds": {"win": Decimal("3.5"), "source": "TestOdds", "last_updated": datetime.now().isoformat()}}},
-        {"number": 3, "name": "Horse L", "scratched": False, "odds": {"TestOdds": {"win": Decimal("4.0"), "source": "TestOdds", "last_updated": datetime.now().isoformat()}}},
-        {"number": 4, "name": "Horse M", "scratched": False, "odds": {"TestOdds": {"win": Decimal("8.0"), "source": "TestOdds", "last_updated": datetime.now().isoformat()}}},
-        {"number": 5, "name": "Horse N", "scratched": False, "odds": {"TestOdds": {"win": Decimal("10.0"), "source": "TestOdds", "last_updated": datetime.now().isoformat()}}},
-        {"number": 6, "name": "Horse O", "scratched": False, "odds": {"TestOdds": {"win": Decimal("12.0"), "source": "TestOdds", "last_updated": datetime.now().isoformat()}}},
-        {"number": 7, "name": "Horse P", "scratched": False, "odds": {"TestOdds": {"win": Decimal("15.0"), "source": "TestOdds", "last_updated": datetime.now().isoformat()}}},
-        {"number": 8, "name": "Horse Q", "scratched": False, "odds": {"TestOdds": {"win": Decimal("20.0"), "source": "TestOdds", "last_updated": datetime.now().isoformat()}}},
-    ]
+# This race should FAIL: Favorite odds are 2.0 (< 2.5)
+MOCK_RACE_FAIL_FAV_ODDS_TT = {
+    "id": "TT_FAIL_FO", "venue": "Trifecta Park", "race_number": 3, "start_time": datetime.now().isoformat(), "source": "Legacy",
+    "runners": [create_mock_runner(1, "2.0"), create_mock_runner(2, "4.5"), create_mock_runner(3, "5.0")]
 }
+
+# This race should FAIL: Second favorite odds are 3.5 (< 4.0)
+MOCK_RACE_FAIL_2ND_FAV_ODDS_TT = {
+    "id": "TT_FAIL_SFO", "venue": "Trifecta Park", "race_number": 4, "start_time": datetime.now().isoformat(), "source": "Legacy",
+    "runners": [create_mock_runner(1, "3.0"), create_mock_runner(2, "3.5"), create_mock_runner(3, "5.0")]
+}
+
 
 @patch('python_service.engine.OddsEngine.fetch_all_odds', new_callable=AsyncMock)
-def test_analyzer_with_legacy_scenarios(mock_fetch, client):
+def test_true_trifecta_analyzer_with_legacy_scenarios(mock_fetch, client):
     """
-    Tests the /api/races/qualified endpoint against ported legacy test cases
-    to ensure the TrifectaAnalyzer logic is correctly filtering races.
+    Tests the /api/races/qualified endpoint against legacy scenarios adapted
+    for the new 'True Trifecta' logic.
     """
     # ARRANGE
-    # Mock the engine's return value, ensuring it matches the AggregatedResponse structure
     mock_engine_response = {
-        "races": [MOCK_RACE_PASS, MOCK_RACE_FAIL_RUNNERS, MOCK_RACE_FAIL_ODDS]
+        "races": [
+            MOCK_RACE_PASS_TT,
+            MOCK_RACE_FAIL_FIELD_SIZE_TT,
+            MOCK_RACE_FAIL_FAV_ODDS_TT,
+            MOCK_RACE_FAIL_2ND_FAV_ODDS_TT
+        ]
     }
     mock_fetch.return_value = mock_engine_response
 
-    # The API key is mocked in the settings via the conftest.py fixture
     headers = {"X-API-Key": "test_api_key"}
     today = date.today().isoformat()
 
@@ -78,7 +72,7 @@ def test_analyzer_with_legacy_scenarios(mock_fetch, client):
     assert response.status_code == 200
     qualified_races = response.json()
 
-    # The analyzer should filter the 3 mock races down to the 1 that passes
-    assert len(qualified_races) == 1
-    assert qualified_races[0]["id"] == "LEGACY_PASS_1"
+    # The analyzer should filter the 4 mock races down to the 1 that passes
+    assert len(qualified_races) == 1, "Only one race should have passed the True Trifecta criteria"
+    assert qualified_races[0]["id"] == "TT_PASS_1"
     mock_fetch.assert_awaited_once()

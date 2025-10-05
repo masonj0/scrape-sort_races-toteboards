@@ -1,49 +1,79 @@
-from typing import List
 import structlog
 from decimal import Decimal
+from typing import List, Optional
 
-from python_service.models import Race
+from python_service.models import Race, Runner
 
 log = structlog.get_logger(__name__)
 
-class TrifectaAnalyzer:
-    """Analyzes a list of races to find qualified betting opportunities."""
+def _get_best_win_odds(runner: Runner) -> Optional[Decimal]:
+    """Helper to find the best (lowest) win odds for a runner from any source."""
+    if not runner.odds:
+        return None
 
-    def __init__(self, min_runners: int = 8, min_favorite_odds: float = 2.0):
-        self.min_runners = min_runners
+    valid_odds = [
+        odds_data.win
+        for odds_data in runner.odds.values()
+        if odds_data and odds_data.win is not None
+    ]
+
+    return min(valid_odds) if valid_odds else None
+
+
+class TrifectaAnalyzer:
+    """Analyzes races to find opportunities based on the 'Trifecta of Factors'."""
+
+    def __init__(self, max_field_size: int = 10, min_favorite_odds: float = 2.5, min_second_favorite_odds: float = 4.0):
+        self.max_field_size = max_field_size
         self.min_favorite_odds = Decimal(str(min_favorite_odds))
-        log.info("TrifectaAnalyzer initialized", min_runners=self.min_runners, min_favorite_odds=self.min_favorite_odds)
+        self.min_second_favorite_odds = Decimal(str(min_second_favorite_odds))
+        log.info(
+            "TrifectaAnalyzer initialized with TRUE TRIFECTA logic",
+            max_field_size=self.max_field_size,
+            min_favorite_odds=self.min_favorite_odds,
+            min_second_favorite_odds=self.min_second_favorite_odds
+        )
 
     def qualify_races(self, races: List[Race]) -> List[Race]:
-        """Filters a list of races based on qualification criteria."""
+        """Filters a list of races based on the true handicapping criteria."""
         qualified_races = []
-        if not races:
-            return []
-
         for race in races:
             active_runners = [r for r in race.runners if not r.scratched]
 
-            # Rule 1: Must have at least the minimum number of runners
-            if len(active_runners) < self.min_runners:
+            # FACTOR 2: Field size, the lower the better
+            if len(active_runners) > self.max_field_size:
+                log.debug(f"Race {race.id} disqualified: Field size too large ({len(active_runners)} > {self.max_field_size}).")
                 continue
 
-            # Rule 2: Favorite's odds must be above a certain threshold.
-            # This requires finding the lowest 'win' odds among all runners from any source.
-            all_win_odds = []
+            # Get runners with valid odds and attach the odds for sorting
+            runners_with_odds = []
             for runner in active_runners:
-                for odds_data in runner.odds.values():
-                    if odds_data and odds_data.win is not None:
-                        all_win_odds.append(odds_data.win)
+                best_odds = _get_best_win_odds(runner)
+                if best_odds is not None:
+                    runners_with_odds.append((runner, best_odds))
 
-            if not all_win_odds:
-                # Cannot qualify a race with no available odds.
+            # Need at least 2 runners with odds to find a favorite and second favorite
+            if len(runners_with_odds) < 2:
+                log.debug(f"Race {race.id} disqualified: Not enough runners with odds.")
                 continue
 
-            favorite_odds = min(all_win_odds)
+            # Sort runners by their best odds
+            runners_with_odds.sort(key=lambda x: x[1])
+
+            favorite_odds = runners_with_odds[0][1]
+            second_favorite_odds = runners_with_odds[1][1]
+
+            # FACTOR 3: Odds for the favorite horse cannot be 'chalky'
             if favorite_odds < self.min_favorite_odds:
+                log.debug(f"Race {race.id} disqualified: Favorite odds too low ({favorite_odds} < {self.min_favorite_odds}).")
+                continue
+
+            # FACTOR 1: Second-favorite odds, the higher the better
+            if second_favorite_odds < self.min_second_favorite_odds:
+                log.debug(f"Race {race.id} disqualified: Second favorite odds too low ({second_favorite_odds} < {self.min_second_favorite_odds}).")
                 continue
 
             qualified_races.append(race)
 
-        log.info("Race qualification complete", total_races=len(races), qualified_races=len(qualified_races))
+        log.info("True Trifecta qualification complete", total_races=len(races), qualified_races=len(qualified_races))
         return qualified_races
