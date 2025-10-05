@@ -7,7 +7,7 @@
 ## 1.0 Project Tooling
 *   `.gitignore` - Defines version control exclusions.
 *   `convert_to_json.py` - The script for creating AI-reviewable backups.
-*   `run_kingdom.bat` - The standardized launcher for the entire application.
+*   `run_fortuna.bat` - The standardized launcher for the entire application.
 
 ## 2.0 Environment & Setup
 *   `setup_windows.bat` - The whole-system Windows environment setup script.

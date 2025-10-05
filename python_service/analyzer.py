@@ -69,7 +69,6 @@ class TrifectaAnalyzer(BaseAnalyzer):
                 log.debug(f"Race {race.id} disqualified: Not enough runners with odds.")
                 continue
 
-            # Sort runners by their best odds
             runners_with_odds.sort(key=lambda x: x[1])
 
             favorite_odds = runners_with_odds[0][1]
