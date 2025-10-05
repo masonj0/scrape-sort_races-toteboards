@@ -26,8 +26,8 @@ def get_api_data(endpoint: str):
         return None, str(e)
 
 # --- UI Layout ---
-st.title("🚀 Checkmate Command Deck")
-st.markdown("Real-time operational dashboard for the Ultimate Solo backend.")
+st.title("🚀 Fortuna Faucet Command Deck")
+st.markdown("Real-time operational dashboard for the Fortuna Faucet backend.")
 
 # --- Sidebar Controls ---
 st.sidebar.header("Controls")
