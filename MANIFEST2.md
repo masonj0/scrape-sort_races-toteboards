@@ -26,16 +26,13 @@
 │       └── greyhound_adapter.py
 └── web_platform/
     └── frontend/
-        ├── next.config.mjs
-        ├── package-lock.json
         ├── package.json
         ├── tailwind.config.ts
         ├── tsconfig.json
-        └── src/
-            └── app/
-                ├── globals.css
-                ├── layout.tsx
-                └── page.tsx
+        └── app/
+            ├── globals.css
+            ├── layout.tsx
+            └── page.tsx
 ```
 
 ---
@@ -64,12 +61,10 @@
 
 ### Configuration
 *   `package.json` - Lists all Node.js dependencies.
-*   `package-lock.json` - Locks exact versions for reproducible builds.
-*   `next.config.mjs` - Build configuration for Next.js.
 *   `tailwind.config.ts` - Tailwind CSS theme and UI configuration.
 *   `tsconfig.json` - TypeScript compiler options.
 
-### Application Source (`web_platform/frontend/src/app/`)
+### Application Source (`web_platform/frontend/app/`)
 *   `page.tsx` - The main application UI component.
 *   `layout.tsx` - The root layout and HTML structure.
 *   `globals.css` - Global CSS styles.
@@ -96,10 +91,8 @@ https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/head
 
 ### TypeScript Frontend
 https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/web_platform/frontend/package.json
-https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/web_platform/frontend/package-lock.json
-https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/web_platform/frontend/next.config.mjs
 https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/web_platform/frontend/tailwind.config.ts
 https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/web_platform/frontend/tsconfig.json
-https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/web_platform/frontend/src/app/page.tsx
-https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/web_platform/frontend/src/app/layout.tsx
-https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/web_platform/frontend/src/app/globals.css
+https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/web_platform/frontend/app/page.tsx
+https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/web_platform/frontend/app/layout.tsx
+https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/web_platform/frontend/app/globals.css

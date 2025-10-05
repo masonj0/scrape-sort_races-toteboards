@@ -1,0 +1,4 @@
+{
+    "original_path": "run_backend.bat",
+    "content": "@echo off\nREM ============================================================================\nREM  Project Gemini: Backend Launcher\nREM ============================================================================\n\necho [INFO] Locating virtual environment...\nif not exist .\\\\.venv\\\\Scripts\\\\activate.bat (\n    echo [ERROR] Virtual environment not found. Please run 'setup_windows.bat' first.\n    goto :eof\n)\n\necho [INFO] Activating virtual environment...\ncall .\\\\.venv\\\\Scripts\\\\activate.bat\n\necho [INFO] Starting FastAPI server with uvicorn (hot-reloading enabled)...\nuvicorn python_service.api:app --reload\n\n:eof"
+}
