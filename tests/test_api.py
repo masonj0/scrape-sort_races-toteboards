@@ -5,44 +5,7 @@ from fastapi.testclient import TestClient
 from unittest.mock import patch, AsyncMock
 from datetime import datetime, date
 
-# DO NOT import the `app` object at the top level.
-# This is the key to preventing the startup validation from running before our patch is in place.
-from python_service.config import Settings
-
-# This fixture is the core of the solution. It runs automatically for every test.
-# It patches the Settings class within the config module itself. This ensures that
-# any code that tries to instantiate Settings() will get our mock object instead,
-# completely bypassing the real __init__ and its validation.
-@pytest.fixture(autouse=True)
-def override_settings_for_tests():
-    # Create a test-specific Settings class to prevent loading .env files
-    class TestSettings(Settings):
-        class Config:
-            env_file = None
-
-    mock_settings = TestSettings(
-        BETFAIR_APP_KEY="test_key",
-        BETFAIR_USERNAME="test_user",
-        BETFAIR_PASSWORD="test_password",
-        API_KEY="test_api_key",
-        TVG_API_KEY="test_tvg_key",
-        RACING_AND_SPORTS_TOKEN="test_ras_token",
-        POINTSBET_API_KEY="test_pb_key"
-    )
-    # The patch must target the location where the object is *used*.
-    with patch('python_service.config.Settings', return_value=mock_settings):
-        yield
-
-@pytest.fixture
-def client():
-    """
-    Create a TestClient for the API. The app is imported *inside* the fixture
-    to ensure that the patch from `override_settings_for_tests` is active
-    before the app and its lifespan manager are initialized.
-    """
-    from python_service.api import app
-    with TestClient(app) as c:
-        yield c
+# Imports are now cleaner as fixtures are in conftest.py
 
 def test_health_check(client):
     """
