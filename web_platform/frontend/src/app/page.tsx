@@ -46,7 +46,8 @@ function useQualifiedRaces() {
       try {
         // NOTE: The API endpoint requires a valid API Key in the header.
         // This example assumes the Next.js proxy is configured to add it.
-        const response = await fetch('/api/races/qualified');
+        // The only available analyzer is 'trifecta', so we hardcode it for now.
+        const response = await fetch('/api/races/qualified/trifecta');
         if (!response.ok) {
           const errorText = await response.text();
           throw new Error(`HTTP error! status: ${response.status}, details: ${errorText}`);

@@ -5,7 +5,7 @@ import os
 from dotenv import load_dotenv
 
 # --- Configuration ---
-st.set_page_config(layout="wide", page_title="Checkmate Command Deck")
+st.set_page_config(layout="wide", page_title="Fortuna Faucet Command Deck")
 load_dotenv() # Load .env file
 
 API_BASE_URL = "http://127.0.0.1:8000"

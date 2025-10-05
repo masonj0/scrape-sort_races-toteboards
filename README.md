@@ -15,21 +15,14 @@ Run the setup script to ensure Python and Node.js are correctly configured and a
 setup_windows.bat
 ```
 
-### 2. Run the Python Backend (FastAPI)
+### 2. Launch the Application
 
-```bash
-# From the project root, activate the virtual environment:
-venv\Scripts\activate
+Run the master launch script. This will start both the Python backend and the TypeScript frontend servers in parallel.
 
-# Run the async server with Uvicorn:
-cd python_service
-uvicorn api:app --reload
-```
-
-### 3. Run the TypeScript Frontend
-
-```bash
+```batch
 # From the project root:
-cd web_platform/frontend
-npm run dev
+run_fortuna.bat
 ```
+
+The backend API will be available at `http://localhost:8000`.
+The frontend will be available at `http://localhost:3000`.

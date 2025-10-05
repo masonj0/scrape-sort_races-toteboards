@@ -1,4 +1,4 @@
-# Checkmate Ultimate Solo: Operational Manifest (Total Recall Edition)
+# Fortuna Faucet: Operational Manifest
 
 **Purpose:** To provide a complete, verified, and actionable list of all satellite files critical to the project's operation, tooling, and strategic direction. This is the definitive manifest for non-application-code review.
 
