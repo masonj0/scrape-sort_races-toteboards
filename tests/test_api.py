@@ -150,3 +150,49 @@ def test_get_all_adapter_statuses_no_key(mock_get_statuses, client):
     assert response.status_code == 403
     assert response.json() == {"detail": "Not authenticated"}
     mock_get_statuses.assert_not_called()
+
+
+@patch('python_service.engine.OddsEngine.fetch_all_odds', new_callable=AsyncMock)
+def test_get_qualified_races_success(mock_fetch, client):
+    """
+    SPEC: The /api/races/qualified endpoint should return a correctly filtered list of races.
+    """
+    # ARRANGE
+    today = date.today()
+    now_iso = datetime.now().isoformat()
+
+    mock_engine_response = {
+        "races": [
+            { # This race should be qualified (8 runners, fav_odds > 2.0)
+                "id": "test_race_1", "venue": "Test Park", "race_number": 1, "start_time": now_iso, "source": "Test",
+                "runners": [
+                    {"number": i, "name": f"Runner {i}", "scratched": False, "odds": {"TestOdds": {"win": 2.5 + i, "source": "TestOdds", "last_updated": now_iso}}} for i in range(1, 9)
+                ]
+            },
+            { # This race should be filtered out (not enough runners)
+                "id": "test_race_2", "venue": "Test Park", "race_number": 2, "start_time": now_iso, "source": "Test",
+                "runners": [
+                    {"number": i, "name": f"Runner {i}", "scratched": False, "odds": {}} for i in range(1, 8)
+                ]
+            },
+            { # This race should be filtered out (favorite odds too low)
+                "id": "test_race_3", "venue": "Test Park", "race_number": 3, "start_time": now_iso, "source": "Test",
+                "runners": [
+                    {"number": i, "name": f"Runner {i}", "scratched": False, "odds": {"TestOdds": {"win": 1.5, "source": "TestOdds", "last_updated": now_iso}}} for i in range(1, 9)
+                ]
+            }
+        ]
+    }
+
+    mock_fetch.return_value = mock_engine_response
+    headers = {"X-API-Key": "test_api_key"}
+
+    # ACT
+    response = client.get(f"/api/races/qualified?race_date={today.isoformat()}", headers=headers)
+
+    # ASSERT
+    assert response.status_code == 200
+    response_data = response.json()
+    assert len(response_data) == 1
+    assert response_data[0]["id"] == "test_race_1"
+    mock_fetch.assert_awaited_once_with(today.strftime('%Y-%m-%d'))
