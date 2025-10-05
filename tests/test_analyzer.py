@@ -2,107 +2,115 @@ import pytest
 from decimal import Decimal
 from datetime import datetime
 from python_service.models import Race, Runner, OddsData
-from python_service.analyzer import TrifectaAnalyzer
+from python_service.analyzer import TrifectaAnalyzer, _get_best_win_odds
+
+# Helper to create runners for tests
+def create_runner(number, odds_val=None, scratched=False):
+    odds_data = {}
+    if odds_val:
+        odds_data["TestOdds"] = OddsData(win=Decimal(str(odds_val)), source="TestOdds", last_updated=datetime.now())
+    return Runner(number=number, name=f"Runner {number}", odds=odds_data, scratched=scratched)
 
 @pytest.fixture
-def sample_races():
-    """Provides a list of sample Race objects for testing."""
+def sample_races_for_true_trifecta():
+    """Provides a list of sample Race objects for the new 'True Trifecta' logic."""
     return [
-        # Race 1: Qualifies (8 runners, fav odds > 2.0)
+        # Race 1: Should PASS all criteria
         Race(
-            id="test_race_1",
-            venue="Test Park",
-            race_number=1,
-            start_time=datetime.now(),
-            source="Test",
+            id="race_pass_1", venue="Test Park", race_number=1, start_time=datetime.now(), source="Test",
             runners=[
-                Runner(number=i, name=f"Runner {i}", odds={
-                    "TestOdds": OddsData(win=Decimal(str(2.5 + i)), source="TestOdds", last_updated=datetime.now())
-                }) for i in range(1, 9)
+                create_runner(1, 3.0), # Favorite
+                create_runner(2, 4.5), # Second Favorite
+                create_runner(3, 5.0),
+                create_runner(4, 8.0),
+                create_runner(5, 10.0),
             ]
         ),
-        # Race 2: Fails (not enough runners)
+        # Race 2: Should FAIL (Field size too large)
         Race(
-            id="test_race_2",
-            venue="Test Park",
-            race_number=2,
-            start_time=datetime.now(),
-            source="Test",
+            id="race_fail_field_size", venue="Test Park", race_number=2, start_time=datetime.now(), source="Test",
+            runners=[create_runner(i, 5.0 + i) for i in range(1, 12)] # 11 runners
+        ),
+        # Race 3: Should FAIL (Favorite odds too low)
+        Race(
+            id="race_fail_fav_odds", venue="Test Park", race_number=3, start_time=datetime.now(), source="Test",
             runners=[
-                Runner(number=i, name=f"Runner {i}", odds={}) for i in range(1, 5)
+                create_runner(1, 2.0), # Favorite odds < 2.5
+                create_runner(2, 4.5),
+                create_runner(3, 5.0),
             ]
         ),
-        # Race 3: Fails (favorite odds too low)
+        # Race 4: Should FAIL (Second favorite odds too low)
         Race(
-            id="test_race_3",
-            venue="Test Park",
-            race_number=3,
-            start_time=datetime.now(),
-            source="Test",
+            id="race_fail_2nd_fav_odds", venue="Test Park", race_number=4, start_time=datetime.now(), source="Test",
             runners=[
-                Runner(number=i, name=f"Runner {i}", odds={
-                    "TestOdds": OddsData(win=Decimal(str(1.5 + i)), source="TestOdds", last_updated=datetime.now())
-                }) for i in range(1, 9)
+                create_runner(1, 3.0),
+                create_runner(2, 3.5), # Second favorite odds < 4.0
+                create_runner(3, 5.0),
             ]
         ),
-        # Race 4: Qualifies (10 runners, fav odds > 2.0)
+        # Race 5: Should FAIL (Not enough runners with odds)
         Race(
-            id="test_race_4",
-            venue="Test Park",
-            race_number=4,
-            start_time=datetime.now(),
-            source="Test",
+            id="race_fail_not_enough_odds", venue="Test Park", race_number=5, start_time=datetime.now(), source="Test",
             runners=[
-                Runner(number=i, name=f"Runner {i}", odds={
-                    "TestOdds": OddsData(win=Decimal(str(3.0 + i)), source="TestOdds", last_updated=datetime.now())
-                }) for i in range(1, 11)
+                create_runner(1, 3.0),
+                create_runner(2), # No odds
+                create_runner(3), # No odds
             ]
         ),
-        # Race 5: Fails (scratched runners bring it below threshold)
+        # Race 6: Should PASS (scratched runner ignored, still meets criteria)
         Race(
-            id="test_race_5",
-            venue="Test Park",
-            race_number=5,
-            start_time=datetime.now(),
-            source="Test",
+            id="race_pass_scratched", venue="Test Park", race_number=6, start_time=datetime.now(), source="Test",
             runners=[
-                Runner(number=1, name="Runner 1", odds={}, scratched=True),
-                Runner(number=2, name="Runner 2", odds={}, scratched=True),
-                Runner(number=3, name="Runner 3", odds={}, scratched=True),
-                Runner(number=4, name="Runner 4", odds={}),
-                Runner(number=5, name="Runner 5", odds={}),
-                Runner(number=6, name="Runner 6", odds={}),
-                Runner(number=7, name="Runner 7", odds={}),
-                Runner(number=8, name="Runner 8", odds={}),
+                create_runner(1, 3.0),
+                create_runner(2, 4.5),
+                create_runner(3, 5.0),
+                create_runner(4, 8.0, scratched=True),
             ]
         ),
     ]
 
-def test_qualify_races_success(sample_races):
+def test_true_trifecta_analyzer_qualifies_correct_races(sample_races_for_true_trifecta):
     """
-    Tests that the analyzer correctly identifies races that meet the
-    qualification criteria.
+    Tests that the analyzer correctly identifies races that meet the new
+    'True Trifecta' qualification criteria.
     """
-    analyzer = TrifectaAnalyzer(min_runners=8, min_favorite_odds=2.0)
-    qualified_races = analyzer.qualify_races(sample_races)
+    analyzer = TrifectaAnalyzer() # Use default criteria
+    qualified_races = analyzer.qualify_races(sample_races_for_true_trifecta)
 
     qualified_ids = {race.id for race in qualified_races}
 
-    assert "test_race_1" in qualified_ids
-    assert "test_race_4" in qualified_ids
+    assert "race_pass_1" in qualified_ids
+    assert "race_pass_scratched" in qualified_ids
     assert len(qualified_races) == 2
 
-def test_qualify_races_filters_correctly(sample_races):
+def test_true_trifecta_analyzer_filters_incorrect_races(sample_races_for_true_trifecta):
     """
     Tests that the analyzer correctly filters out races that do not meet
-    the qualification criteria.
+    the new 'True Trifecta' qualification criteria.
     """
-    analyzer = TrifectaAnalyzer(min_runners=8, min_favorite_odds=2.0)
-    qualified_races = analyzer.qualify_races(sample_races)
+    analyzer = TrifectaAnalyzer() # Use default criteria
+    qualified_races = analyzer.qualify_races(sample_races_for_true_trifecta)
 
     qualified_ids = {race.id for race in qualified_races}
 
-    assert "test_race_2" not in qualified_ids  # Not enough runners
-    assert "test_race_3" not in qualified_ids  # Favorite odds too low
-    assert "test_race_5" not in qualified_ids  # Scratched runners
-    assert len(qualified_races) == 2
+    assert "race_fail_field_size" not in qualified_ids
+    assert "race_fail_fav_odds" not in qualified_ids
+    assert "race_fail_2nd_fav_odds" not in qualified_ids
+    assert "race_fail_not_enough_odds" not in qualified_ids
+
+def test_get_best_win_odds_helper():
+    """Tests the helper function for finding the best odds."""
+    runner_with_odds = create_runner(1)
+    runner_with_odds.odds = {
+        "SourceA": OddsData(win=Decimal("3.0"), source="A", last_updated=datetime.now()),
+        "SourceB": OddsData(win=Decimal("2.5"), source="B", last_updated=datetime.now()),
+    }
+    assert _get_best_win_odds(runner_with_odds) == Decimal("2.5")
+
+    runner_no_odds = create_runner(2)
+    assert _get_best_win_odds(runner_no_odds) is None
+
+    runner_no_win = create_runner(3)
+    runner_no_win.odds = {"SourceA": OddsData(win=None, source="A", last_updated=datetime.now())}
+    assert _get_best_win_odds(runner_no_win) is None
