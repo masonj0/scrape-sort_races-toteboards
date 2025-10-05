@@ -10,3 +10,5 @@ pytest==8.4.2
 structlog
 respx
 pytest-asyncio
+streamlit
+pandas

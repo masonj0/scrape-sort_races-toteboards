@@ -12,6 +12,7 @@ The backend is a modern, asynchronous service built on **FastAPI**. Its architec
 2.  **The Resilient `BaseAdapter`:** A sophisticated abstract base class that provides all adapters with built-in, professional-grade features like `httpx` connection pooling, automatic retries with exponential backoff, and standardized error handling.
 3.  **The Adapter Fleet:** A modular system of 'plugin' adapters that inherit from the `BaseAdapter`, each responsible for a single data source.
 4.  **Pydantic Data Contracts:** Strict, validated Pydantic models are used for all data, ensuring type safety and data integrity throughout the entire application.
+5.  **The `TrifectaAnalyzer` (Intelligence Layer):** A dedicated module that sits on top of the `OddsEngine`. Its sole purpose is to consume the collected race data and apply business logic to score and qualify opportunities, architecturally separating data analysis from data collection.
 
 ## Pillar 2: The Ultimate TypeScript Frontend
 

@@ -1,4 +1,4 @@
 {
-    "file_path": ".gitignore",
+    "original_path": ".gitignore",
     "content": "# Byte-compiled / optimized files\n__pycache__/\n*.pyc\n\n# Distribution / packaging\nbuild/\ndist/\n*.egg-info/\n\n# Unit test / coverage reports\n.pytest_cache/\n.coverage\n\n# Environments\n.venv/\nvenv/\nenv/\n\n# IDE settings\n.vscode/\n.idea/\n\n# Database files\n*.db\n*.sqlite\n*.sqlite3\n\n# Node.js\nnode_modules/\n/ui/node_modules/\n/ui/build/\n\n# Environment files\n.env\n"
 }
