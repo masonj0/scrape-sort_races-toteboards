@@ -1,5 +1,3 @@
-# convert_to_json.py
-
 import json
 import os
 import re

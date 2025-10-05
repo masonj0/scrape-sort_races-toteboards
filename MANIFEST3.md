@@ -7,6 +7,7 @@
 ## 1.0 Project Tooling
 *   `.gitignore` - Defines version control exclusions.
 *   `convert_to_json.py` - The script for creating AI-reviewable backups.
+*   `run_backend.bat` - The standardized launcher for the backend service.
 
 ## 2.0 Environment & Setup
 *   `setup_windows.bat` - The Windows environment setup script.
@@ -22,26 +23,3 @@
 *   `WISDOM.md` - The operational protocol for AI agents.
 *   `PROJECT_MANIFEST.md` - The original legacy manifest.
 *   `ROADMAP_APPENDICES.md` - The definitive adapter backlog and intelligence leads.
-
----
-
-## 4.0 Raw File Links
-
-### Project Tooling
-https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/.gitignore
-https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/convert_to_json.py
-
-### Environment & Setup
-https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/setup_windows.bat
-https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/.env
-https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/.env.example
-https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/requirements.txt
-
-### Strategic Blueprints
-https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/README.md
-https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/ARCHITECTURAL_MANDATE.md
-https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/HISTORY.md
-https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/STATUS.md
-https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/WISDOM.md
-https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/PROJECT_MANIFEST.md
-https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/ROADMAP_APPENDICES.md
