@@ -13,6 +13,7 @@
 │   ├── api.py
 │   ├── engine.py
 │   ├── models.py
+│   ├── analyzer.py
 │   └── adapters/
 │       ├── __init__.py
 │       ├── base.py
@@ -20,19 +21,18 @@
 │       ├── betfair_adapter.py
 │       ├── pointsbet_adapter.py
 │       ├── racing_and_sports_adapter.py
-│       └── tvg_adapter.py
+│       ├── tvg_adapter.py
+│       ├── harness_adapter.py
+│       └── greyhound_adapter.py
 └── web_platform/
     └── frontend/
-        ├── next.config.mjs
-        ├── package-lock.json
         ├── package.json
         ├── tailwind.config.ts
         ├── tsconfig.json
-        └── src/
-            └── app/
-                ├── globals.css
-                ├── layout.tsx
-                └── page.tsx
+        └── app/
+            ├── globals.css
+            ├── layout.tsx
+            └── page.tsx
 ```
 
 ---
@@ -44,6 +44,7 @@
 *   `engine.py` - The central orchestration engine.
 *   `models.py` - Pydantic data models for validation.
 *   `security.py` - API key authentication logic.
+*   `analyzer.py` - The business logic layer for qualifying races.
 
 ### Adapters (`python_service/adapters/`)
 *   `__init__.py` - Defines the 'adapters' package.
@@ -53,17 +54,17 @@
 *   `pointsbet_adapter.py` - PointsBet data source adapter.
 *   `racing_and_sports_adapter.py` - Racing and Sports data source adapter.
 *   `tvg_adapter.py` - TVG data source adapter.
+*   `harness_adapter.py` - Harness racing data source adapter.
+*   `greyhound_adapter.py` - Greyhound racing data source adapter.
 
 ## 3.0 TypeScript Frontend (`web_platform/frontend/`)
 
 ### Configuration
 *   `package.json` - Lists all Node.js dependencies.
-*   `package-lock.json` - Locks exact versions for reproducible builds.
-*   `next.config.mjs` - Build configuration for Next.js.
 *   `tailwind.config.ts` - Tailwind CSS theme and UI configuration.
 *   `tsconfig.json` - TypeScript compiler options.
 
-### Application Source (`web_platform/frontend/src/app/`)
+### Application Source (`web_platform/frontend/app/`)
 *   `page.tsx` - The main application UI component.
 *   `layout.tsx` - The root layout and HTML structure.
 *   `globals.css` - Global CSS styles.
@@ -77,6 +78,7 @@ https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/head
 https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/engine.py
 https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/models.py
 https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/security.py
+https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/analyzer.py
 https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/adapters/__init__.py
 https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/adapters/base.py
 https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/adapters/utils.py
@@ -84,13 +86,13 @@ https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/head
 https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/adapters/pointsbet_adapter.py
 https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/adapters/racing_and_sports_adapter.py
 https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/adapters/tvg_adapter.py
+https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/adapters/harness_adapter.py
+https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/adapters/greyhound_adapter.py
 
 ### TypeScript Frontend
 https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/web_platform/frontend/package.json
-https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/web_platform/frontend/package-lock.json
-https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/web_platform/frontend/next.config.mjs
 https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/web_platform/frontend/tailwind.config.ts
 https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/web_platform/frontend/tsconfig.json
-https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/web_platform/frontend/src/app/page.tsx
-https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/web_platform/frontend/src/app/layout.tsx
-https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/web_platform/frontend/src/app/globals.css
+https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/web_platform/frontend/app/page.tsx
+https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/web_platform/frontend/app/layout.tsx
+https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/web_platform/frontend/app/globals.css

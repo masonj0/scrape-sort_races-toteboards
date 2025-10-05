@@ -72,3 +72,32 @@ A curated list of projects and resources to accelerate development.
 7.  **Betfair Hub Models Scraping Tutorial:** https://betfair-datascientists.github.io/tutorials/How_to_Automate_3/
 8.  **scrapy-horse-racing:** https://github.com/chrism-attmann/scrapy-horse-racing
 9.  **horse-racing-data:** https://github.com/jeffkub/horse-racing-data
+
+
+## C. Un-Mined Gems (Future Campaign Candidates)
+
+*Discovered during a full operational review. These represent high-value, validated concepts from the project's history that are candidates for future development campaigns.*
+
+### C1. The Intelligence Layer ("The Analyst")
+
+- **Concept:** A dedicated analysis and scoring engine (`analyzer.py`) that sits on top of the `OddsEngine`. It would provide a high-value `/api/races/qualified` endpoint, transforming the API from a data funnel into a source of actionable intelligence.
+- **Origin:** Inspired by the `TrifectaAnalyzer` logic in the legacy `checkmate_engine.py` prototype. Formally proposed as "Operation: Activate the Analyst".
+- **Value:** Fulfills the project's original vision of finding opportunities, not just collecting data. Creates a clean architectural separation between data collection and business logic.
+
+### C2. The Legacy Test Suite ("The Oracle's Library")
+
+- **Concept:** Repurpose the vast collection of existing tests and mock data located in `attic/legacy_tests_pre_triage`.
+- **Origin:** Identified during the full repository file catalog audit.
+- **Value:** Provides a massive shortcut to production hardening. Allows the project to increase test coverage and resilience by validating the CORE services against hundreds of historical edge cases.
+
+### C3. The AI Architectural Reviews ("The Council's Wisdom")
+
+- **Concept:** Synthesize the expert analysis and architectural recommendations from the multiple AI model reviews stored in the Digital Attic (`*.md.txt` files).
+- **Origin:** Explicitly mentioned in the Gemini928 handoff memo as "Architectural Parables".
+- **Value:** A source of high-level architectural consulting. These documents may contain actionable advice on performance, security, or design patterns that could significantly improve the current architecture.
+
+### C4. The Interactive Dashboard Prototype ("The Command Deck")
+
+- **Concept:** Create a modern, internal, real-time command deck for visualizing engine data and testing new `Analyzer` models.
+- **Origin:** Inspired by the `portable_demo_v2.py` Streamlit application from the attic.
+- **Value:** An invaluable tool for development, debugging, and real-time operational insight, far more intuitive than raw logs or API calls.
