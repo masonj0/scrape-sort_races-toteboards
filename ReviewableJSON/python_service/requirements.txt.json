@@ -1,4 +1,4 @@
 {
-    "file_path": "python_service/requirements.txt",
-    "content": "requests==2.31.0\npython-dotenv==1.0.0\npydantic==2.5.2\nfastapi==0.104.1\nuvicorn[standard]==0.24.0\naiohttp==3.9.0\nhttpx==0.24.1\npytest==8.4.2"
+    "original_path": "python_service/requirements.txt",
+    "content": "requests==2.31.0\npython-dotenv==1.0.0\npydantic==2.5.2\nfastapi==0.104.1\nuvicorn[standard]==0.24.0\naiohttp==3.9.0\nhttpx==0.24.1\npytest==8.4.2\n\nstructlog\nrespx\npytest-asyncio\n"
 }
