@@ -20,7 +20,8 @@
 │       ├── betfair_adapter.py
 │       ├── pointsbet_adapter.py
 │       ├── racing_and_sports_adapter.py
-│       └── tvg_adapter.py
+│       ├── tvg_adapter.py
+│       └── harness_adapter.py
 └── web_platform/
     └── frontend/
         ├── next.config.mjs
@@ -53,6 +54,7 @@
 *   `pointsbet_adapter.py` - PointsBet data source adapter.
 *   `racing_and_sports_adapter.py` - Racing and Sports data source adapter.
 *   `tvg_adapter.py` - TVG data source adapter.
+*   `harness_adapter.py` - Harness racing data source adapter.
 
 ## 3.0 TypeScript Frontend (`web_platform/frontend/`)
 
@@ -84,6 +86,7 @@ https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/head
 https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/adapters/pointsbet_adapter.py
 https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/adapters/racing_and_sports_adapter.py
 https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/adapters/tvg_adapter.py
+https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/adapters/harness_adapter.py
 
 ### TypeScript Frontend
 https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/web_platform/frontend/package.json
