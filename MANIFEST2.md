@@ -13,6 +13,7 @@
 │   ├── api.py
 │   ├── engine.py
 │   ├── models.py
+│   ├── analyzer.py
 │   └── adapters/
 │       ├── __init__.py
 │       ├── base.py
@@ -20,7 +21,8 @@
 │       ├── betfair_adapter.py
 │       ├── pointsbet_adapter.py
 │       ├── racing_and_sports_adapter.py
-│       └── tvg_adapter.py
+│       ├── tvg_adapter.py
+│       └── harness_adapter.py
 └── web_platform/
     └── frontend/
         ├── next.config.mjs
@@ -44,6 +46,7 @@
 *   `engine.py` - The central orchestration engine.
 *   `models.py` - Pydantic data models for validation.
 *   `security.py` - API key authentication logic.
+*   `analyzer.py` - The business logic layer for qualifying races.
 
 ### Adapters (`python_service/adapters/`)
 *   `__init__.py` - Defines the 'adapters' package.
@@ -53,6 +56,7 @@
 *   `pointsbet_adapter.py` - PointsBet data source adapter.
 *   `racing_and_sports_adapter.py` - Racing and Sports data source adapter.
 *   `tvg_adapter.py` - TVG data source adapter.
+*   `harness_adapter.py` - Harness racing data source adapter.
 
 ## 3.0 TypeScript Frontend (`web_platform/frontend/`)
 
@@ -77,6 +81,7 @@ https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/head
 https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/engine.py
 https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/models.py
 https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/security.py
+https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/analyzer.py
 https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/adapters/__init__.py
 https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/adapters/base.py
 https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/adapters/utils.py
@@ -84,6 +89,7 @@ https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/head
 https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/adapters/pointsbet_adapter.py
 https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/adapters/racing_and_sports_adapter.py
 https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/adapters/tvg_adapter.py
+https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/adapters/harness_adapter.py
 
 ### TypeScript Frontend
 https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/web_platform/frontend/package.json
