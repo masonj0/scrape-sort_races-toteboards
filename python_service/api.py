@@ -15,7 +15,7 @@ from .engine import OddsEngine
 from .models import Race
 from .security import verify_api_key
 from .logging_config import configure_logging
-from .analyzer import TrifectaAnalyzer
+from .analyzer import AnalyzerEngine
 
 log = structlog.get_logger()
 
@@ -69,9 +69,10 @@ async def get_all_adapter_statuses(request: Request, engine: OddsEngine = Depend
         raise HTTPException(status_code=500, detail="Internal Server Error")
 
 
-@app.get("/api/races/qualified", response_model=List[Race])
+@app.get("/api/races/qualified/{analyzer_name}", response_model=List[Race])
 @limiter.limit("30/minute")
 async def get_qualified_races(
+    analyzer_name: str,
     request: Request,
     race_date: date = datetime.now().date(),
     engine: OddsEngine = Depends(get_engine),
@@ -89,7 +90,9 @@ async def get_qualified_races(
         # This assumes the raw data from the engine is a list of dicts
         races = [Race.model_validate(r) for r in aggregated_data.get('races', [])]
 
-        analyzer = TrifectaAnalyzer()
+        analyzer_engine = AnalyzerEngine()
+        # In the future, kwargs could come from the request's query params
+        analyzer = analyzer_engine.get_analyzer(analyzer_name)
         qualified_races = analyzer.qualify_races(races)
         return qualified_races
     except Exception as e:

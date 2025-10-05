@@ -151,7 +151,7 @@ def test_get_qualified_races_success(mock_fetch, client):
     headers = {"X-API-Key": "test_api_key"}
 
     # ACT
-    response = client.get(f"/api/races/qualified?race_date={today.isoformat()}", headers=headers)
+    response = client.get(f"/api/races/qualified/trifecta?race_date={today.isoformat()}", headers=headers)
 
     # ASSERT
     assert response.status_code == 200

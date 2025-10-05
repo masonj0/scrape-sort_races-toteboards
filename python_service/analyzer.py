@@ -1,11 +1,13 @@
+from abc import ABC, abstractmethod
+from typing import List, Dict, Type, Optional
 import structlog
 from decimal import Decimal
-from typing import List, Optional
 
 from python_service.models import Race, Runner
 
 log = structlog.get_logger(__name__)
 
+# --- Corrected Helper Function ---
 def _get_best_win_odds(runner: Runner) -> Optional[Decimal]:
     """Helper to find the best (lowest) win odds for a runner from any source."""
     if not runner.odds:
@@ -20,9 +22,21 @@ def _get_best_win_odds(runner: Runner) -> Optional[Decimal]:
     return min(valid_odds) if valid_odds else None
 
 
-class TrifectaAnalyzer:
-    """Analyzes races to find opportunities based on the 'Trifecta of Factors'."""
+# --- 1. The Abstract Base Class (The Interface) ---
+class BaseAnalyzer(ABC):
+    """The abstract interface for all future analyzer plugins."""
+    def __init__(self, **kwargs):
+        pass
 
+    @abstractmethod
+    def qualify_races(self, races: List[Race]) -> List[Race]:
+        """The core method every analyzer must implement."""
+        pass
+
+
+# --- 2. The Concrete Implementation (The First Plugin) ---
+class TrifectaAnalyzer(BaseAnalyzer):
+    """Analyzes races to find opportunities based on the 'Trifecta of Factors'."""
     def __init__(self, max_field_size: int = 10, min_favorite_odds: float = 2.5, min_second_favorite_odds: float = 4.0):
         self.max_field_size = max_field_size
         self.min_favorite_odds = Decimal(str(min_favorite_odds))
@@ -45,14 +59,12 @@ class TrifectaAnalyzer:
                 log.debug(f"Race {race.id} disqualified: Field size too large ({len(active_runners)} > {self.max_field_size}).")
                 continue
 
-            # Get runners with valid odds and attach the odds for sorting
             runners_with_odds = []
             for runner in active_runners:
                 best_odds = _get_best_win_odds(runner)
                 if best_odds is not None:
                     runners_with_odds.append((runner, best_odds))
 
-            # Need at least 2 runners with odds to find a favorite and second favorite
             if len(runners_with_odds) < 2:
                 log.debug(f"Race {race.id} disqualified: Not enough runners with odds.")
                 continue
@@ -77,3 +89,27 @@ class TrifectaAnalyzer:
 
         log.info("True Trifecta qualification complete", total_races=len(races), qualified_races=len(qualified_races))
         return qualified_races
+
+
+# --- 3. The Orchestrator (The Engine) ---
+class AnalyzerEngine:
+    """Discovers and manages all available analyzer plugins."""
+    def __init__(self):
+        self.analyzers: Dict[str, Type[BaseAnalyzer]] = {}
+        self._discover_analyzers()
+
+    def _discover_analyzers(self):
+        # In a real plugin system, this would inspect a folder.
+        # For now, we register them manually.
+        self.register_analyzer('trifecta', TrifectaAnalyzer)
+        log.info("AnalyzerEngine discovered plugins", available_analyzers=list(self.analyzers.keys()))
+
+    def register_analyzer(self, name: str, analyzer_class: Type[BaseAnalyzer]):
+        self.analyzers[name] = analyzer_class
+
+    def get_analyzer(self, name: str, **kwargs) -> BaseAnalyzer:
+        analyzer_class = self.analyzers.get(name)
+        if not analyzer_class:
+            log.error("Requested analyzer not found", requested_analyzer=name)
+            raise ValueError(f"Analyzer '{name}' not found.")
+        return analyzer_class(**kwargs)

@@ -66,7 +66,7 @@ def test_true_trifecta_analyzer_with_legacy_scenarios(mock_fetch, client):
     today = date.today().isoformat()
 
     # ACT
-    response = client.get(f"/api/races/qualified?race_date={today}", headers=headers)
+    response = client.get(f"/api/races/qualified/trifecta?race_date={today}", headers=headers)
 
     # ASSERT
     assert response.status_code == 200

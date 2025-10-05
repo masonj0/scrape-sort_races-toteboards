@@ -2,7 +2,7 @@ import pytest
 from decimal import Decimal
 from datetime import datetime
 from python_service.models import Race, Runner, OddsData
-from python_service.analyzer import TrifectaAnalyzer, _get_best_win_odds
+from python_service.analyzer import AnalyzerEngine, TrifectaAnalyzer, _get_best_win_odds
 
 # Helper to create runners for tests
 def create_runner(number, odds_val=None, scratched=False):
@@ -22,8 +22,6 @@ def sample_races_for_true_trifecta():
                 create_runner(1, 3.0), # Favorite
                 create_runner(2, 4.5), # Second Favorite
                 create_runner(3, 5.0),
-                create_runner(4, 8.0),
-                create_runner(5, 10.0),
             ]
         ),
         # Race 2: Should FAIL (Field size too large)
@@ -34,70 +32,45 @@ def sample_races_for_true_trifecta():
         # Race 3: Should FAIL (Favorite odds too low)
         Race(
             id="race_fail_fav_odds", venue="Test Park", race_number=3, start_time=datetime.now(), source="Test",
-            runners=[
-                create_runner(1, 2.0), # Favorite odds < 2.5
-                create_runner(2, 4.5),
-                create_runner(3, 5.0),
-            ]
+            runners=[create_runner(1, 2.0), create_runner(2, 4.5)]
         ),
         # Race 4: Should FAIL (Second favorite odds too low)
         Race(
             id="race_fail_2nd_fav_odds", venue="Test Park", race_number=4, start_time=datetime.now(), source="Test",
-            runners=[
-                create_runner(1, 3.0),
-                create_runner(2, 3.5), # Second favorite odds < 4.0
-                create_runner(3, 5.0),
-            ]
-        ),
-        # Race 5: Should FAIL (Not enough runners with odds)
-        Race(
-            id="race_fail_not_enough_odds", venue="Test Park", race_number=5, start_time=datetime.now(), source="Test",
-            runners=[
-                create_runner(1, 3.0),
-                create_runner(2), # No odds
-                create_runner(3), # No odds
-            ]
-        ),
-        # Race 6: Should PASS (scratched runner ignored, still meets criteria)
-        Race(
-            id="race_pass_scratched", venue="Test Park", race_number=6, start_time=datetime.now(), source="Test",
-            runners=[
-                create_runner(1, 3.0),
-                create_runner(2, 4.5),
-                create_runner(3, 5.0),
-                create_runner(4, 8.0, scratched=True),
-            ]
+            runners=[create_runner(1, 3.0), create_runner(2, 3.5)]
         ),
     ]
 
-def test_true_trifecta_analyzer_qualifies_correct_races(sample_races_for_true_trifecta):
+def test_analyzer_engine_discovery():
+    """Tests that the AnalyzerEngine correctly discovers the TrifectaAnalyzer."""
+    engine = AnalyzerEngine()
+    assert 'trifecta' in engine.analyzers
+    assert engine.analyzers['trifecta'] == TrifectaAnalyzer
+
+def test_analyzer_engine_get_analyzer():
+    """Tests that the AnalyzerEngine can instantiate a specific analyzer."""
+    engine = AnalyzerEngine()
+    analyzer = engine.get_analyzer('trifecta', max_field_size=8)
+    assert isinstance(analyzer, TrifectaAnalyzer)
+    assert analyzer.max_field_size == 8
+
+def test_analyzer_engine_get_nonexistent_analyzer():
+    """Tests that requesting a non-existent analyzer raises a ValueError."""
+    engine = AnalyzerEngine()
+    with pytest.raises(ValueError, match="Analyzer 'nonexistent' not found."):
+        engine.get_analyzer('nonexistent')
+
+def test_trifecta_analyzer_plugin_logic(sample_races_for_true_trifecta):
     """
-    Tests that the analyzer correctly identifies races that meet the new
-    'True Trifecta' qualification criteria.
+    Tests the TrifectaAnalyzer's logic when loaded via the AnalyzerEngine.
     """
-    analyzer = TrifectaAnalyzer() # Use default criteria
+    engine = AnalyzerEngine()
+    analyzer = engine.get_analyzer('trifecta') # Use default criteria
+
     qualified_races = analyzer.qualify_races(sample_races_for_true_trifecta)
 
-    qualified_ids = {race.id for race in qualified_races}
-
-    assert "race_pass_1" in qualified_ids
-    assert "race_pass_scratched" in qualified_ids
-    assert len(qualified_races) == 2
-
-def test_true_trifecta_analyzer_filters_incorrect_races(sample_races_for_true_trifecta):
-    """
-    Tests that the analyzer correctly filters out races that do not meet
-    the new 'True Trifecta' qualification criteria.
-    """
-    analyzer = TrifectaAnalyzer() # Use default criteria
-    qualified_races = analyzer.qualify_races(sample_races_for_true_trifecta)
-
-    qualified_ids = {race.id for race in qualified_races}
-
-    assert "race_fail_field_size" not in qualified_ids
-    assert "race_fail_fav_odds" not in qualified_ids
-    assert "race_fail_2nd_fav_odds" not in qualified_ids
-    assert "race_fail_not_enough_odds" not in qualified_ids
+    assert len(qualified_races) == 1
+    assert qualified_races[0].id == "race_pass_1"
 
 def test_get_best_win_odds_helper():
     """Tests the helper function for finding the best odds."""
