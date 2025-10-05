@@ -2,6 +2,7 @@
 
 import structlog
 from datetime import datetime, date
+from typing import List
 from fastapi import FastAPI, HTTPException, Request, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from slowapi import Limiter, _rate_limit_exceeded_handler
@@ -11,8 +12,10 @@ from contextlib import asynccontextmanager
 
 from .config import get_settings
 from .engine import OddsEngine
+from .models import Race
 from .security import verify_api_key
 from .logging_config import configure_logging
+from .analyzer import AnalyzerEngine
 
 log = structlog.get_logger()
 
@@ -63,6 +66,37 @@ async def get_all_adapter_statuses(request: Request, engine: OddsEngine = Depend
         return statuses
     except Exception as e:
         log.error("Error in /api/adapters/status", exc_info=True)
+        raise HTTPException(status_code=500, detail="Internal Server Error")
+
+
+@app.get("/api/races/qualified/{analyzer_name}", response_model=List[Race])
+@limiter.limit("30/minute")
+async def get_qualified_races(
+    analyzer_name: str,
+    request: Request,
+    race_date: date = datetime.now().date(),
+    engine: OddsEngine = Depends(get_engine),
+    _=Depends(verify_api_key)
+):
+    """
+    Gets all races for a given date, filters them for qualified betting
+    opportunities, and returns the qualified races.
+    """
+    try:
+        date_str = race_date.strftime('%Y-%m-%d')
+        aggregated_data = await engine.fetch_all_odds(date_str)
+
+        # We need to deserialize the race data before it can be used by the analyzer
+        # This assumes the raw data from the engine is a list of dicts
+        races = [Race.model_validate(r) for r in aggregated_data.get('races', [])]
+
+        analyzer_engine = AnalyzerEngine()
+        # In the future, kwargs could come from the request's query params
+        analyzer = analyzer_engine.get_analyzer(analyzer_name)
+        qualified_races = analyzer.qualify_races(races)
+        return qualified_races
+    except Exception as e:
+        log.error("Error in /api/races/qualified", exc_info=True)
         raise HTTPException(status_code=500, detail="Internal Server Error")
 
 

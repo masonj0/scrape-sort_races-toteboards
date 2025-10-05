@@ -1,66 +1,57 @@
 @echo off
 REM ============================================================================
-REM  Project Gemini: Windows Setup Script
-REM
-REM  This script automates the setup of the Python backend environment.
-REM  It will:
-REM  1. Create a Python virtual environment in the '.venv' directory.
-REM  2. Activate the virtual environment.
-REM  3. Install all required dependencies from 'python_service/requirements.txt'.
+REM  Project Gemini: WHOLE-SYSTEM Windows Setup Script
 REM ============================================================================
 
-echo [INFO] Starting Project Gemini backend setup for Windows...
+echo [INFO] Starting full-stack setup for Project Gemini...
 
-REM --- Check for Python ---
-echo [INFO] Checking for Python installation...
+REM --- Section 1: Python Backend Setup ---
+echo.
+echo [BACKEND] Checking for Python installation...
 python --version >nul 2>&1
 if %errorlevel% neq 0 (
-    echo [ERROR] Python is not found in the system's PATH.
-    echo [ERROR] Please install Python 3.8+ and ensure it is added to your PATH.
+    echo [ERROR] Python is not found. Please install Python 3.8+ and add to PATH.
     goto :eof
 )
-echo [SUCCESS] Python found.
+echo [BACKEND] Python found.
 
-REM --- Create Virtual Environment ---
-echo [INFO] Creating Python virtual environment in '.\.venv\'...
-if not exist .\.venv (
-    python -m venv .venv
-    if %errorlevel% neq 0 (
-        echo [ERROR] Failed to create the virtual environment.
-        goto :eof
-    )
-    echo [SUCCESS] Virtual environment created.
-) else (
-    echo [INFO] Virtual environment '.\.venv\' already exists. Skipping creation.
-)
+echo [BACKEND] Creating Python virtual environment in '.\\.venv\\'...
+if not exist .\\.venv ( python -m venv .venv )
 
-REM --- Activate and Install Dependencies ---
-echo [INFO] Activating virtual environment and installing dependencies...
-call .\.venv\Scripts\activate.bat
+echo [BACKEND] Installing dependencies from 'python_service/requirements.txt'...
+call .\\.venv\\Scripts\\activate.bat && pip install -r python_service/requirements.txt
 if %errorlevel% neq 0 (
-    echo [ERROR] Failed to activate the virtual environment.
+    echo [ERROR] Backend setup failed.
     goto :eof
 )
+echo [SUCCESS] Python backend setup complete.
 
-echo [INFO] Installing packages from 'python_service/requirements.txt'...
-pip install -r python_service/requirements.txt
+REM --- Section 2: TypeScript Frontend Setup ---
+echo.
+echo [FRONTEND] Checking for Node.js installation...
+node --version >nul 2>&1
 if %errorlevel% neq 0 (
-    echo [ERROR] Failed to install dependencies. Check 'requirements.txt' and your connection.
+    echo [ERROR] Node.js is not found. Please install Node.js (LTS).
     goto :eof
 )
-echo [SUCCESS] All dependencies installed successfully.
+echo [FRONTEND] Node.js found.
+
+echo [FRONTEND] Installing dependencies from 'package.json'...
+cd web_platform/frontend
+npm install
+if %errorlevel% neq 0 (
+    echo [ERROR] Frontend setup failed. Check npm errors.
+    cd ../..
+    goto :eof
+)
+cd ../..
+echo [SUCCESS] TypeScript frontend setup complete.
 
 REM --- Final Instructions ---
 echo.
 echo ============================================================================
-echo  Setup Complete!
-echo ============================================================================
-echo.
-echo  To activate the environment in your current command prompt, run:
-echo.
-echo      call .\.venv\Scripts\activate.bat
-echo.
-echo  The Python backend is now ready.
-echo ============================================================================
+REM  FULL-STACK SETUP COMPLETE!
+REM  You can now launch the entire application with 'run_kingdom.bat'
+REM ============================================================================
 
 :eof
