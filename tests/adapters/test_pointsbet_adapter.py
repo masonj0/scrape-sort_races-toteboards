@@ -70,7 +70,7 @@ def mock_config_no_key():
         BETFAIR_USERNAME="test",
         BETFAIR_PASSWORD="test",
         API_KEY="test",
-        POINTSBET_API_KEY=None,
+        POINTSBET_API_KEY="",
         _env_file=None
     )
 
@@ -130,7 +130,7 @@ async def test_fetch_races_no_api_key(mock_config_no_key):
 @respx.mock
 async def test_fetch_races_api_error(mock_config):
     """
-    SPEC: If the API returns an error, the adapter should raise an exception.
+    SPEC: If the API returns an error, the adapter should return a FAILED status.
     """
     # ARRANGE
     respx.get("https://api.au.pointsbet.com/api/v2/racing/futures?sportId=21").mock(
@@ -140,6 +140,11 @@ async def test_fetch_races_api_error(mock_config):
     async with httpx.AsyncClient() as client:
         adapter = PointsBetAdapter(config=mock_config)
 
-        # ACT & ASSERT
-        with pytest.raises(httpx.HTTPStatusError):
-            await adapter.fetch_races(date="2025-10-04", http_client=client)
+        # ACT
+        result = await adapter.fetch_races(date="2025-10-04", http_client=client)
+
+    # ASSERT
+    assert result['source_info']['status'] == 'FAILED'
+    assert result['source_info']['error_message'] is not None
+    assert "API request failed" in result['source_info']['error_message']
+    assert len(result['races']) == 0

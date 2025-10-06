@@ -3,7 +3,7 @@
 import asyncio
 import logging
 from abc import ABC, abstractmethod
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 import httpx
 
 class BaseAdapter(ABC):
@@ -18,8 +18,9 @@ class BaseAdapter(ABC):
     async def fetch_races(self, date: str, http_client: httpx.AsyncClient) -> Dict[str, Any]:
         raise NotImplementedError
 
-    async def make_request(self, http_client: httpx.AsyncClient, method: str, url: str, **kwargs) -> Any:
+    async def make_request(self, http_client: httpx.AsyncClient, method: str, url: str, **kwargs) -> Optional[Any]:
         retry_count = 0
+        last_error = None
         while retry_count < self.max_retries:
             try:
                 full_url = f"{self.base_url}{url}"
@@ -28,14 +29,15 @@ class BaseAdapter(ABC):
                 response.raise_for_status()
                 return response.json()
             except (httpx.RequestError, httpx.HTTPStatusError) as e:
+                last_error = e
                 self.logger.warning(f"Request failed for {self.source_name} (attempt {retry_count + 1}/{self.max_retries}): {e}")
                 retry_count += 1
-                if retry_count >= self.max_retries:
-                    self.logger.error(f"Max retries exceeded for {self.source_name}. Aborting.")
-                    raise
-                backoff = 1 * (2 ** retry_count) # Exponential backoff
-                await asyncio.sleep(backoff)
-        raise Exception("make_request failed after max retries")
+                if retry_count < self.max_retries:
+                    backoff = 1 * (2 ** retry_count)
+                    await asyncio.sleep(backoff)
+
+        self.logger.error(f"Max retries exceeded for {self.source_name}. Aborting request. Final error: {last_error}")
+        return None # Return None instead of raising an exception
 
     def get_status(self) -> Dict[str, Any]:
         """Returns a dictionary representing the adapter's default status."""
