@@ -28,6 +28,7 @@ class Race(BaseModel):
     race_number: int = Field(..., gt=0, lt=21)
     start_time: datetime
     runners: List[Runner]
+    source: str
 
     @field_validator('runners')
     def runner_numbers_must_be_unique(cls, v):
