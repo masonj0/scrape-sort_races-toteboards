@@ -17,3 +17,4 @@ lxml
 beautifulsoup4
 pikepdf
 pydantic-settings==2.1.0
+slowapi==0.1.8

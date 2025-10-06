@@ -40,6 +40,15 @@ ALL_FILES = [
     "WISDOM.md",
     "PROJECT_MANIFEST.md",
     "ROADMAP_APPENDICES.md",
+    # Added during "The Great Correction"
+    "python_service/config.py",
+    "python_service/logging_config.py",
+    "tests/conftest.py",
+    "tests/test_analyzer.py",
+    "tests/test_api.py",
+    "tests/test_legacy_scenarios.py",
+    "tests/adapters/test_greyhound_adapter.py",
+    "tests/adapters/test_pointsbet_adapter.py",
 ]
 
 aggregated_data = {}
@@ -52,7 +61,7 @@ for file_path in ALL_FILES:
 
     try:
         if is_py:
-            # For Python files, read the content from the corresponding .json file in ReviewableJSON
+            # For Python files, first attempt to read the content from the corresponding .json file in ReviewableJSON
             json_path = os.path.join("ReviewableJSON", file_path + ".json")
             if os.path.exists(json_path):
                 with open(json_path, 'r', encoding='utf-8') as f:
@@ -64,10 +73,17 @@ for file_path in ALL_FILES:
                         # If it's not a valid JSON object, read the raw text
                         f.seek(0)
                         content = f.read()
-                print(f"Successfully processed PY file: {file_path}")
+                print(f"Successfully processed PY file from JSON: {file_path}")
             else:
-                print(f"Warning: JSON for PY file not found, skipping: {json_path}")
-                continue
+                # If the JSON backup doesn't exist, fall back to the raw .py file
+                print(f"Info: JSON for PY file not found. Falling back to raw file: {file_path}")
+                if os.path.exists(file_path):
+                    with open(file_path, 'r', encoding='utf-8') as f:
+                        content = f.read()
+                    print(f"Successfully processed raw PY file: {file_path}")
+                else:
+                    print(f"Warning: Raw source file also not found, skipping: {file_path}")
+                    continue
         else:
             # For non-Python files, read from the source location
             if os.path.exists(file_path):
