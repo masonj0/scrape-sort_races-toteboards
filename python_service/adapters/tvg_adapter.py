@@ -3,7 +3,7 @@
 import os
 import logging
 from datetime import datetime
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional
 import httpx
 from decimal import Decimal, InvalidOperation
 
@@ -96,7 +96,7 @@ class TVGAdapter(BaseAdapter):
             source=self.source_name # Corrected based on Oracle feedback
         )
 
-    def _parse_tvg_odds(self, odds_string: str) -> Decimal | None:
+    def _parse_tvg_odds(self, odds_string: str) -> Optional[Decimal]:
         # Corrected based on Oracle feedback to return Decimal
         if not odds_string or odds_string == "SCR": return None
         if odds_string == "EVEN": return Decimal('2.0')
