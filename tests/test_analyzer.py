@@ -15,7 +15,7 @@ def create_runner(number, odds_val=None, scratched=False):
 def sample_races_for_true_trifecta():
     """Provides a list of sample Race objects for the new 'True Trifecta' logic."""
     return [
-        # Race 1: Should PASS all criteria
+        # Race 1: Should PASS all criteria, will have a lower score
         Race(
             id="race_pass_1", venue="Test Park", race_number=1, start_time=datetime.now(), source="Test",
             runners=[
@@ -38,6 +38,17 @@ def sample_races_for_true_trifecta():
         Race(
             id="race_fail_2nd_fav_odds", venue="Test Park", race_number=4, start_time=datetime.now(), source="Test",
             runners=[create_runner(1, 3.0), create_runner(2, 3.5)]
+        ),
+        # Race 5: Should also PASS and have a higher score than race_pass_1
+        Race(
+            id="race_pass_2", venue="Test Park", race_number=5, start_time=datetime.now(), source="Test",
+            runners=[
+                create_runner(1, 4.0), # Favorite
+                create_runner(2, 6.0), # Second Favorite
+                create_runner(3, 8.0),
+                create_runner(4, 12.0),
+                create_runner(5, 15.0),
+            ]
         ),
     ]
 
@@ -62,15 +73,25 @@ def test_analyzer_engine_get_nonexistent_analyzer():
 
 def test_trifecta_analyzer_plugin_logic(sample_races_for_true_trifecta):
     """
-    Tests the TrifectaAnalyzer's logic when loaded via the AnalyzerEngine.
+    Tests the TrifectaAnalyzer's scoring and sorting logic.
     """
     engine = AnalyzerEngine()
     analyzer = engine.get_analyzer('trifecta') # Use default criteria
 
     qualified_races = analyzer.qualify_races(sample_races_for_true_trifecta)
 
-    assert len(qualified_races) == 1
-    assert qualified_races[0].id == "race_pass_1"
+    # 1. Check that the correct number of races were qualified
+    assert len(qualified_races) == 2
+
+    # 2. Check that the scores have been assigned and are valid numbers
+    assert qualified_races[0].qualification_score is not None
+    assert qualified_races[1].qualification_score is not None
+    assert isinstance(qualified_races[0].qualification_score, float)
+
+    # 3. Check that the races are sorted by score in descending order
+    assert qualified_races[0].qualification_score > qualified_races[1].qualification_score
+    assert qualified_races[0].id == "race_pass_2" # This race should have the higher score
+    assert qualified_races[1].id == "race_pass_1"
 
 def test_get_best_win_odds_helper():
     """Tests the helper function for finding the best odds."""
