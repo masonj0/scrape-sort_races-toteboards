@@ -86,9 +86,9 @@ async def get_qualified_races(
         date_str = race_date.strftime('%Y-%m-%d')
         aggregated_data = await engine.fetch_all_odds(date_str)
 
-        # We need to deserialize the race data before it can be used by the analyzer
-        # This assumes the raw data from the engine is a list of dicts
-        races = [Race.model_validate(r) for r in aggregated_data.get('races', [])]
+        # The engine now correctly returns validated Pydantic models.
+        # No re-validation is necessary.
+        races = aggregated_data.get('races', [])
 
         analyzer_engine = AnalyzerEngine()
         # In the future, kwargs could come from the request's query params
