@@ -8,10 +8,9 @@ import structlog
 import re
 from datetime import datetime, timedelta
 from typing import Dict, Any, List, Optional
-from decimal import Decimal
 
 from .base import BaseAdapter
-from ..models import Race, Runner, OddsData
+from ..models import Race, Runner
 
 log = structlog.get_logger(__name__)
 
@@ -30,6 +29,9 @@ class BetfairAdapter(BaseAdapter):
             return
         if not all([self.app_key, self.config.BETFAIR_USERNAME, self.config.BETFAIR_PASSWORD]):
             raise ValueError("Betfair credentials not fully configured.")
+
+        if not all([self.app_key, self.config.BETFAIR_USERNAME, self.config.BETFAIR_PASSWORD]):
+            raise ValueError("Betfair credentials (APP_KEY, USERNAME, PASSWORD) not fully configured.")
 
         auth_url = "https://identitysso.betfair.com/api/login"
         headers = {'X-Application': self.app_key, 'Content-Type': 'application/x-www-form-urlencoded'}
