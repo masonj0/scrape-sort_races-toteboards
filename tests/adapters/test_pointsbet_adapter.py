@@ -70,7 +70,7 @@ def mock_config_no_key():
         BETFAIR_USERNAME="test",
         BETFAIR_PASSWORD="test",
         API_KEY="test",
-        POINTSBET_API_KEY=None,
+        POINTSBET_API_KEY="",
         _env_file=None
     )
 

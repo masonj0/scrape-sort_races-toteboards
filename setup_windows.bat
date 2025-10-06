@@ -51,7 +51,7 @@ REM --- Final Instructions ---
 echo.
 echo ============================================================================
 REM  FULL-STACK SETUP COMPLETE!
-REM  You can now launch the entire application with 'run_kingdom.bat'
+REM  You can now launch the entire application with 'run_fortuna.bat'
 REM ============================================================================
 
 :eof

@@ -1,3 +1,11 @@
+#!/usr/bin/env python3
+# ==============================================================================
+#  Fortuna Faucet: Logging Configuration
+# ==============================================================================
+# This module, restored by the Great Correction, provides a centralized
+# configuration for structured logging using structlog.
+# ==============================================================================
+
 import logging
 import sys
 import structlog
