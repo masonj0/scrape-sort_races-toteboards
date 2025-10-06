@@ -30,9 +30,6 @@ class BetfairAdapter(BaseAdapter):
         if not all([self.app_key, self.config.BETFAIR_USERNAME, self.config.BETFAIR_PASSWORD]):
             raise ValueError("Betfair credentials not fully configured.")
 
-        if not all([self.app_key, self.config.BETFAIR_USERNAME, self.config.BETFAIR_PASSWORD]):
-            raise ValueError("Betfair credentials (APP_KEY, USERNAME, PASSWORD) not fully configured.")
-
         auth_url = "https://identitysso.betfair.com/api/login"
         headers = {'X-Application': self.app_key, 'Content-Type': 'application/x-www-form-urlencoded'}
         payload = f'username={self.config.BETFAIR_USERNAME}&password={self.config.BETFAIR_PASSWORD}'
