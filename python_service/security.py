@@ -1,5 +1,6 @@
 # python_service/security.py
 
+import secrets
 from fastapi import Security, HTTPException, status, Depends
 from fastapi.security import APIKeyHeader
 
@@ -13,10 +14,10 @@ async def verify_api_key(
     settings: Settings = Depends(get_settings)
 ):
     """
-    Verifies that the provided API key matches the one in our settings.
-    The settings are injected as a dependency, making this testable.
+    Verifies the provided API key against the one in settings using a
+    timing-attack resistant comparison.
     """
-    if key == settings.API_KEY:
+    if secrets.compare_digest(key, settings.API_KEY):
         return True
     else:
         raise HTTPException(
