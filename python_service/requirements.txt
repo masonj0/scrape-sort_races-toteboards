@@ -16,3 +16,4 @@ tabula-py
 lxml
 beautifulsoup4
 pikepdf
+pydantic-settings
