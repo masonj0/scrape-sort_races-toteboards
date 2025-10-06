@@ -12,3 +12,6 @@ respx
 pytest-asyncio
 streamlit
 pandas
+tabula-py
+lxml
+beautifulsoup4
