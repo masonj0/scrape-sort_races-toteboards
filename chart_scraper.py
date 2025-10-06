@@ -13,12 +13,16 @@ from bs4 import BeautifulSoup
 from tabula import read_pdf
 import os
 import time
+import pikepdf
 
 class ChartScraper:
-    """Orchestrates the downloading and parsing of Equibase PDF charts."""
+    """Orchestrates the downloading, decrypting, and parsing of Equibase PDF charts."""
 
     def __init__(self):
         self.download_dir = "results_archive"
+        self.pdf_dir = os.path.join(self.download_dir, 'pdf')
+        self.unlocked_pdf_dir = os.path.join(self.download_dir, 'pdf_unlocked')
+        self.csv_dir = os.path.join(self.download_dir, 'csv')
         self.track_summary_url = "https://www.equibase.com/static/chart/summary/"
         self.pdf_url_pattern = (
             "http://www.equibase.com/premium/eqbPDFChartPlus.cfm?"
@@ -57,8 +61,9 @@ class ChartScraper:
     def _download_and_parse_chart(self, track_code: str, race_num: int, pdf_date_format: str):
         pdf_url = self.pdf_url_pattern.format(RACE=race_num, TID=track_code, DT=pdf_date_format)
         filename_base = f"{track_code}_{pdf_date_format.replace('/', '')}_R{race_num}"
-        pdf_path = os.path.join(self.download_dir, 'pdf', f"{filename_base}.pdf")
-        csv_path = os.path.join(self.download_dir, 'csv', f"{filename_base}_scraped.csv")
+        pdf_path = os.path.join(self.pdf_dir, f"{filename_base}.pdf")
+        unlocked_pdf_path = os.path.join(self.unlocked_pdf_dir, f"{filename_base}_unlocked.pdf")
+        csv_path = os.path.join(self.csv_dir, f"{filename_base}_scraped.csv")
 
         print(f"   - Attempting Race {race_num} ({track_code})...")
         try:
@@ -72,16 +77,26 @@ class ChartScraper:
 
             with open(pdf_path, 'wb') as f:
                 f.write(pdf_response.content)
-            print(f"     -> Downloaded PDF to {pdf_path}")
+            print(f"     -> Downloaded locked PDF to {pdf_path}")
 
         except requests.exceptions.RequestException as e:
             print(f"     -> Error downloading PDF: {e}")
             return
 
+        # --- UNLOCKING STEP ---
         try:
-            tables = read_pdf(pdf_path, pages='all', multiple_tables=True, lattice=True, silent=True)
+            with pikepdf.open(pdf_path, allow_overwriting_input=True) as pdf:
+                pdf.save(unlocked_pdf_path)
+            print(f"     -> Saved unlocked PDF to {unlocked_pdf_path}")
+        except Exception as e:
+            print(f"     -> Failed to unlock PDF with pikepdf: {e}")
+            return
+        # --- END UNLOCKING ---
+
+        try:
+            tables = read_pdf(unlocked_pdf_path, pages='all', multiple_tables=True, lattice=True, silent=True)
             if not tables:
-                print("     -> Tabula found no tables to extract.")
+                print("     -> Tabula found no tables to extract from unlocked PDF.")
                 return
 
             combined_df = pd.concat(tables, ignore_index=True)
@@ -91,9 +106,10 @@ class ChartScraper:
             print(f"     -> Error during Tabula PDF scraping: {e}")
 
     def run(self):
-        os.makedirs(os.path.join(self.download_dir, 'pdf'), exist_ok=True)
-        os.makedirs(os.path.join(self.download_dir, 'csv'), exist_ok=True)
-        print(f"Created download directory structure: {self.download_dir}")
+        os.makedirs(self.pdf_dir, exist_ok=True)
+        os.makedirs(self.unlocked_pdf_dir, exist_ok=True)
+        os.makedirs(self.csv_dir, exist_ok=True)
+        print(f"Created/verified archive directory structure in: {self.download_dir}")
 
         url_date, pdf_date = self._get_yesterday_date()
         print(f"\\n--- Starting Equibase Chart Scraper for: {pdf_date} ---")
@@ -103,14 +119,14 @@ class ChartScraper:
             print("\\n*** No tracks found for yesterday. Halting. ***")
             return
 
-        print("\\n--- Downloading and Parsing Charts ---")
+        print("\\n--- Downloading, Unlocking, and Parsing Charts ---")
         for track in tracks:
             print(f"\\n[TRACK: {track}]")
             for race_num in self.races_to_check:
                 self._download_and_parse_chart(track, race_num, pdf_date)
                 time.sleep(1)
 
-        print(f"\\n--- Scraper Finished! Check the '{self.download_dir}' folder. ---")
+        print(f"\\n--- Scraper Finished! Check the '{self.csv_dir}' folder. ---")
 
 if __name__ == "__main__":
     scraper = ChartScraper()

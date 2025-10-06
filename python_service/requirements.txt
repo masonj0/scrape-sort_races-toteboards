@@ -15,3 +15,4 @@ pandas
 tabula-py
 lxml
 beautifulsoup4
+pikepdf
