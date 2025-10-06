@@ -8,6 +8,7 @@
 *   `.gitignore` - Defines version control exclusions.
 *   `convert_to_json.py` - The script for creating AI-reviewable backups.
 *   `run_fortuna.bat` - The standardized launcher for the entire application.
+*   `chart_scraper.py` - The tool for downloading and parsing historical PDF race charts.
 
 ## 2.0 Environment & Setup
 *   `setup_windows.bat` - The whole-system Windows environment setup script.
