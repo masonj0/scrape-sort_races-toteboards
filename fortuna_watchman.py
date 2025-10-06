@@ -62,7 +62,7 @@ class Watchman:
 
                 if upcoming_targets:
                     for race in upcoming_targets:
-                        log.info("Watchman: Deploying Live Monitor for approaching race", race_id=race.id, venue=race.venue)
+                        log.info("Watchman: Deploying Live Monitor for approaching race", race_id=race.id, venue=race.venue, qualification_score=race.qualification_score)
                         updated_race = await self.live_monitor.monitor_race(race, client)
                         # In a full implementation, this updated_race object would be passed to an execution engine.
                         log.info("Watchman: Live monitoring complete for race", race_id=updated_race.id, final_odds_source=list(updated_race.runners[0].odds.keys()))

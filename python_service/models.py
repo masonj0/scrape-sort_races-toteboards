@@ -30,6 +30,7 @@ class Race(BaseModel):
     start_time: datetime
     runners: List[Runner]
     source: str
+    qualification_score: Optional[float] = None
 
     @field_validator('runners')
     def runner_numbers_must_be_unique(cls, v):
