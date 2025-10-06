@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 # ==============================================================================
-#  Fortuna Faucet: The Chart Scraper (v2 - with Decryption)
+#  Fortuna Faucet: The Chart Scraper
+# ==============================================================================
+# This script downloads and parses historical race result charts from Equibase PDF files.
+# It forms the foundation of our Results Archive pillar.
 # ==============================================================================
 
 import requests
