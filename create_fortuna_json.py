@@ -78,18 +78,20 @@ for file_path in ALL_FILES:
                 print(f"Warning: Source file not found, skipping: {file_path}")
                 continue
 
-        # Add the content to our dictionary.
-        # We attempt to load it as JSON if it's a string that looks like JSON,
-        # otherwise we just store the raw string.
         if isinstance(content, str):
-            try:
-                # Many files (like .json, or .py's json representation) contain a string that is itself JSON.
-                # Let's parse it to store the object itself.
-                aggregated_data[file_path] = json.loads(content)
-            except (json.JSONDecodeError, TypeError):
+            # For Python files, the content is raw source code and should not be parsed as JSON.
+            # For other files (like package.json), we should attempt to parse them as JSON.
+            if is_py:
                 aggregated_data[file_path] = content
+            else:
+                try:
+                    # Attempt to parse as JSON for non-python files
+                    aggregated_data[file_path] = json.loads(content)
+                except (json.JSONDecodeError, TypeError):
+                    # If parsing fails, store as a raw string
+                    aggregated_data[file_path] = content
         elif content is not None:
-             aggregated_data[file_path] = content
+            aggregated_data[file_path] = content
 
 
     except Exception as e:
