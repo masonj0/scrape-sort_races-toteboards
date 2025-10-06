@@ -1,0 +1,36 @@
+{
+  "adapter_name": "Equibase (Declarative V2)",
+  "base_url": "https://www.equibase.com",
+  "start_url": "/entries/today",
+  "steps": [
+    {
+      "step_id": "get_track_links",
+      "selector": "div.entries-tracks ul li a",
+      "extract": "href",
+      "is_list": true,
+      "output": "track_urls"
+    },
+    {
+      "step_id": "parse_races_from_tracks",
+      "iterate_on": "track_urls",
+      "item_variable": "track_url",
+      "list_selector": "div.race-details",
+      "schema": {
+        "track_name": { "selector": "div.track-name h1", "extract": "text" },
+        "race_number": { "selector": "h3.race-number", "extract": "text", "transform": "regex:(\\\\d+)" },
+        "post_time": { "selector": "span.post-time", "extract": "text" },
+        "runners": {
+          "is_list": true,
+          "list_selector": "table.entries-table tbody tr",
+          "schema": {
+            "program_number": { "selector": "td:nth-of-type(1)", "extract": "text" },
+            "name": { "selector": "td:nth-of-type(2)", "extract": "text" },
+            "jockey": { "selector": "td:nth-of-type(3)", "extract": "text" },
+            "trainer": { "selector": "td:nth-of-type(4)", "extract": "text" },
+            "morning_line_odds": { "selector": "td:last-of-type", "extract": "text" }
+          }
+        }
+      }
+    }
+  ]
+}
