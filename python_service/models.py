@@ -12,7 +12,7 @@ class OddsData(BaseModel):
 
     @field_validator('win')
     def win_must_be_positive(cls, v):
-        if v is not None and v <= 1.0:
+        if v is not None and v <= Decimal("1.0"):
             raise ValueError('Odds must be greater than 1.0')
         return v
 
@@ -20,7 +20,7 @@ class Runner(BaseModel):
     number: int = Field(..., gt=0, lt=100)
     name: str = Field(..., max_length=100)
     scratched: bool = False
-    odds: Dict[str, OddsData] = {}
+    odds: Dict[str, OddsData] = Field(default_factory=dict)
 
 class Race(BaseModel):
     id: str

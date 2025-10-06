@@ -8,6 +8,7 @@
 
 import httpx
 import structlog
+import re
 from datetime import datetime, timedelta
 from typing import Dict, Any, List, Optional
 from decimal import Decimal
@@ -26,6 +27,15 @@ class BetfairAdapter(BaseAdapter):
         self.app_key = self.config.BETFAIR_APP_KEY
         self.session_token: Optional[str] = None
         self.token_expiry: Optional[datetime] = None
+
+    def _extract_race_number(self, name: Optional[str]) -> int:
+        """Extracts a race number from a market name, e.g., 'R1 1m Hcap'."""
+        if not name: return 1 # Default to 1 if name is missing
+        match = re.search(r'\bR(\d{1,2})\b', name)
+        if match:
+            num = int(match.group(1))
+            return max(1, min(num, 20)) # Clamp to valid range 1-20
+        return 1 # Default if no pattern is found
 
     async def _authenticate(self, http_client: httpx.AsyncClient):
         if self.session_token and self.token_expiry and self.token_expiry > datetime.now():
@@ -89,12 +99,15 @@ class BetfairAdapter(BaseAdapter):
                 name=runner_data['runnerName']
             ))
 
+        race_number = self._extract_race_number(market.get('marketName'))
+
         return Race(
             id=f"bf_{market['marketId']}",
             venue=market['event']['venue'],
-            race_number=0, # Not easily available in catalogue, would need parsing from name
+            race_number=race_number,
             start_time=datetime.fromisoformat(market['marketStartTime'].replace('Z', '+00:00')),
-            runners=runners
+            runners=runners,
+            source=self.source_name
         )
 
     def _format_response(self, races: List[Race], start_time: datetime, is_success: bool = True, error_message: str = None) -> Dict[str, Any]:
