@@ -99,15 +99,15 @@ async def test_fetch_races_success(mock_config):
     assert len(races) == 1  # Should filter out the race on the 5th
 
     race = races[0]
-    assert race['id'] == "pb_PB12345"
-    assert race['venue'] == "Flemington"
-    assert race['race_number'] == 1
-    assert len(race['runners']) == 3 # includes scratched horse
+    assert race.id == "pb_PB12345"
+    assert race.venue == "Flemington"
+    assert race.race_number == 1
+    assert len(race.runners) == 3 # includes scratched horse
 
-    runner = race['runners'][1]
-    assert runner['name'] == "Horse B"
-    assert runner['scratched'] is False
-    assert str(runner['odds']['PointsBet']['win']) == '2.2'
+    runner = race.runners[1]
+    assert runner.name == "Horse B"
+    assert runner.scratched is False
+    assert str(runner.odds['PointsBet'].win) == '2.2'
 
 @pytest.mark.asyncio
 async def test_fetch_races_no_api_key(mock_config_no_key):

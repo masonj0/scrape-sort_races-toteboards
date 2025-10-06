@@ -43,7 +43,7 @@ class HarnessAdapter(BaseAdapter):
         """Formats the adapter's response consistently."""
         fetch_duration = (datetime.now() - start_time).total_seconds()
         return {
-            'races': [r.model_dump() for r in races],
+            'races': races,
             'source_info': {
                 'name': self.source_name,
                 'status': 'SUCCESS' if is_success else 'FAILED',

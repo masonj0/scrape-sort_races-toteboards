@@ -76,14 +76,14 @@ async def test_fetch_races_parses_correctly(mock_make_request, mock_config):
     assert len(races) == 1
 
     race = races[0]
-    assert race['id'] == 'greyhound_test_race_123'
-    assert race['venue'] == 'Test Track'
-    assert len(race['runners']) == 2 # One was scratched
+    assert race.id == 'greyhound_test_race_123'
+    assert race.venue == 'Test Track'
+    assert len(race.runners) == 2 # One was scratched
 
-    runner1 = race['runners'][0]
-    assert runner1['name'] == 'Rapid Rover'
-    assert runner1['number'] == 1
-    assert runner1['odds']['Greyhound Racing']['win'] == 2.5
+    runner1 = race.runners[0]
+    assert runner1.name == 'Rapid Rover'
+    assert runner1.number == 1
+    assert runner1.odds['Greyhound Racing'].win == 2.5
 
 @pytest.mark.asyncio
 @patch('python_service.adapters.greyhound_adapter.GreyhoundAdapter.make_request', new_callable=AsyncMock)
