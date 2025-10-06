@@ -55,7 +55,7 @@ class PointsBetAdapter(BaseAdapter):
     def _format_response(self, races: List[Race], start_time: datetime, is_success: bool = True, error_message: str = None) -> Dict[str, Any]:
         fetch_duration = (datetime.now() - start_time).total_seconds()
         return {
-            'races': [r.model_dump() for r in races],
+            'races': races,
             'source_info': {
                 'name': self.source_name,
                 'status': 'SUCCESS' if is_success else 'FAILED',

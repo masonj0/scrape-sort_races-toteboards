@@ -4,6 +4,9 @@ import pytest
 from fastapi.testclient import TestClient
 from unittest.mock import patch, AsyncMock
 from datetime import datetime, date
+from decimal import Decimal
+
+from python_service.models import Race, Runner, OddsData
 
 # Imports are now cleaner as fixtures are in conftest.py
 
@@ -124,26 +127,26 @@ def test_get_qualified_races_success(mock_fetch, client):
     today = date.today()
     now_iso = datetime.now().isoformat()
 
+    now = datetime.now()
+    # The mock response must now provide actual Pydantic models
     mock_engine_response = {
         "races": [
-            { # This race should be qualified (8 runners, fav_odds > 2.0)
-                "id": "test_race_1", "venue": "Test Park", "race_number": 1, "start_time": now_iso, "source": "Test",
-                "runners": [
-                    {"number": i, "name": f"Runner {i}", "scratched": False, "odds": {"TestOdds": {"win": 2.5 + i, "source": "TestOdds", "last_updated": now_iso}}} for i in range(1, 9)
+            Race(
+                id="test_race_1", venue="Test Park", race_number=1, start_time=now, source="Test",
+                runners=[
+                    Runner(number=i, name=f"Runner {i}", odds={"TestOdds": OddsData(win=Decimal(2.5 + i), source="Test", last_updated=now)}) for i in range(1, 9)
                 ]
-            },
-            { # This race should be filtered out (not enough runners)
-                "id": "test_race_2", "venue": "Test Park", "race_number": 2, "start_time": now_iso, "source": "Test",
-                "runners": [
-                    {"number": i, "name": f"Runner {i}", "scratched": False, "odds": {}} for i in range(1, 8)
+            ),
+            Race(
+                id="test_race_2", venue="Test Park", race_number=2, start_time=now, source="Test",
+                runners=[Runner(number=i, name=f"Runner {i}") for i in range(1, 8)]
+            ),
+            Race(
+                id="test_race_3", venue="Test Park", race_number=3, start_time=now, source="Test",
+                runners=[
+                    Runner(number=i, name=f"Runner {i}", odds={"TestOdds": OddsData(win=Decimal(1.5), source="Test", last_updated=now)}) for i in range(1, 9)
                 ]
-            },
-            { # This race should be filtered out (favorite odds too low)
-                "id": "test_race_3", "venue": "Test Park", "race_number": 3, "start_time": now_iso, "source": "Test",
-                "runners": [
-                    {"number": i, "name": f"Runner {i}", "scratched": False, "odds": {"TestOdds": {"win": 1.5, "source": "TestOdds", "last_updated": now_iso}}} for i in range(1, 9)
-                ]
-            }
+            )
         ]
     }
 
