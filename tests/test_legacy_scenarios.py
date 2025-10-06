@@ -2,6 +2,7 @@ import pytest
 from unittest.mock import patch, AsyncMock
 from datetime import datetime, date
 from decimal import Decimal
+from python_service.models import Race, Runner, OddsData
 
 # Note: The 'client' fixture is automatically available from tests/conftest.py
 
@@ -9,40 +10,42 @@ from decimal import Decimal
 # This data is structured to test the new analyzer's specific rules.
 
 def create_mock_runner(number, odds_val):
-    """Helper to create a runner dictionary for mock responses."""
-    return {
-        "number": number,
-        "name": f"Horse {number}",
-        "scratched": False,
-        "odds": {"TestOdds": {"win": odds_val, "source": "TestOdds", "last_updated": datetime.now().isoformat()}}
-    }
+    """Helper to create a Runner Pydantic model for mock responses."""
+    odds_data = {}
+    if odds_val:
+        odds_data["TestOdds"] = OddsData(
+            win=Decimal(odds_val),
+            source="TestOdds",
+            last_updated=datetime.now()
+        )
+    return Runner(number=number, name=f"Horse {number}", odds=odds_data)
 
 # This race should PASS: 5 runners (<10), fav odds 3.0 (>2.5), 2nd fav odds 4.5 (>4.0)
-MOCK_RACE_PASS_TT = {
-    "id": "TT_PASS_1", "venue": "Trifecta Park", "race_number": 1, "start_time": datetime.now().isoformat(), "source": "Legacy",
-    "runners": [
+MOCK_RACE_PASS_TT = Race(
+    id="TT_PASS_1", venue="Trifecta Park", race_number=1, start_time=datetime.now(), source="Legacy",
+    runners=[
         create_mock_runner(1, "3.0"), create_mock_runner(2, "4.5"), create_mock_runner(3, "5.0"),
         create_mock_runner(4, "8.0"), create_mock_runner(5, "10.0")
     ]
-}
+)
 
 # This race should FAIL: Field size is 11 (> 10)
-MOCK_RACE_FAIL_FIELD_SIZE_TT = {
-    "id": "TT_FAIL_FS", "venue": "Trifecta Park", "race_number": 2, "start_time": datetime.now().isoformat(), "source": "Legacy",
-    "runners": [create_mock_runner(i, str(5.0 + i)) for i in range(1, 12)]
-}
+MOCK_RACE_FAIL_FIELD_SIZE_TT = Race(
+    id="TT_FAIL_FS", venue="Trifecta Park", race_number=2, start_time=datetime.now(), source="Legacy",
+    runners=[create_mock_runner(i, str(5.0 + i)) for i in range(1, 12)]
+)
 
 # This race should FAIL: Favorite odds are 2.0 (< 2.5)
-MOCK_RACE_FAIL_FAV_ODDS_TT = {
-    "id": "TT_FAIL_FO", "venue": "Trifecta Park", "race_number": 3, "start_time": datetime.now().isoformat(), "source": "Legacy",
-    "runners": [create_mock_runner(1, "2.0"), create_mock_runner(2, "4.5"), create_mock_runner(3, "5.0")]
-}
+MOCK_RACE_FAIL_FAV_ODDS_TT = Race(
+    id="TT_FAIL_FO", venue="Trifecta Park", race_number=3, start_time=datetime.now(), source="Legacy",
+    runners=[create_mock_runner(1, "2.0"), create_mock_runner(2, "4.5"), create_mock_runner(3, "5.0")]
+)
 
 # This race should FAIL: Second favorite odds are 3.5 (< 4.0)
-MOCK_RACE_FAIL_2ND_FAV_ODDS_TT = {
-    "id": "TT_FAIL_SFO", "venue": "Trifecta Park", "race_number": 4, "start_time": datetime.now().isoformat(), "source": "Legacy",
-    "runners": [create_mock_runner(1, "3.0"), create_mock_runner(2, "3.5"), create_mock_runner(3, "5.0")]
-}
+MOCK_RACE_FAIL_2ND_FAV_ODDS_TT = Race(
+    id="TT_FAIL_SFO", venue="Trifecta Park", race_number=4, start_time=datetime.now(), source="Legacy",
+    runners=[create_mock_runner(1, "3.0"), create_mock_runner(2, "3.5"), create_mock_runner(3, "5.0")]
+)
 
 
 @patch('python_service.engine.OddsEngine.fetch_all_odds', new_callable=AsyncMock)
