@@ -95,8 +95,12 @@ async def get_qualified_races(
         analyzer = analyzer_engine.get_analyzer(analyzer_name)
         qualified_races = analyzer.qualify_races(races)
         return qualified_races
+    except ValueError as e:
+        # Correctly map a missing analyzer to a 404 Not Found error
+        log.warning("Requested analyzer not found", analyzer_name=analyzer_name)
+        raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
-        log.error("Error in /api/races/qualified", exc_info=True)
+        log.error("Error in /api/races/qualified", error=str(e), exc_info=True)
         raise HTTPException(status_code=500, detail="Internal Server Error")
 
 
