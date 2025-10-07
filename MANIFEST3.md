@@ -1,14 +1,19 @@
 # Fortuna Faucet: Operational Manifest
 
-**Purpose:** To provide a complete, verified, and actionable list of all satellite files critical to the project's operation, tooling, and strategic direction. This is the definitive manifest for non-application-code review.
+**Purpose:** To provide a complete, verified list of all satellite files critical to the project's operation, tooling, and strategic direction.
 
 ---
 
 ## 1.0 Project Tooling
 *   `.gitignore` - Defines version control exclusions.
-*   `convert_to_json.py` - The script for creating AI-reviewable backups.
+*   `convert_to_json.py` - The legacy script for creating AI-reviewable backups.
+*   `create_fortuna_json.py` - The primary script for creating the Superbrain package.
 *   `run_fortuna.bat` - The standardized launcher for the entire application.
-*   `chart_scraper.py` - The tool for downloading and parsing historical PDF race charts.
+*   `command_deck.py` - The internal Streamlit dashboard for real-time monitoring.
+*   `fortuna_watchman.py` - The master orchestrator for autonomous operation.
+*   `live_monitor.py` - The 'Third Pillar' tactical engine.
+*   `chart_scraper.py` - The 'Second Pillar' results archive tool.
+*   `results_parser.py` - The 'Carpenter' for parsing PDF chart data.
 
 ## 2.0 Environment & Setup
 *   `setup_windows.bat` - The whole-system Windows environment setup script.
@@ -20,7 +25,5 @@
 *   `README.md` - The primary public-facing document.
 *   `ARCHITECTURAL_MANDATE.md` - Defines the final architectural vision.
 *   `HISTORY.md` - The narrative history of the project.
-*   `STATUS.md` - The last official status report.
 *   `WISDOM.md` - The operational protocol for AI agents.
-*   `PROJECT_MANIFEST.md` - The original legacy manifest.
 *   `ROADMAP_APPENDICES.md` - The definitive adapter backlog and intelligence leads.
