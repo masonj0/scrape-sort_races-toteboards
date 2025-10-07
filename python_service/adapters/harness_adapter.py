@@ -94,20 +94,25 @@ class HarnessAdapter(BaseAdapter):
 
                 # Adapt to the Runner model's odds structure
                 odds_data = {}
-                win_odds_str = runner_data.get("morningLineOdds") # Assuming M/L odds are the target
+                win_odds_str = runner_data.get("morningLineOdds")
                 if win_odds_str:
                     try:
-                        # Use the robust, shared odds parser
-                        decimal_odds = Decimal(str(parse_odds(win_odds_str)))
+                        # The USTA API provides "5" for 5/1, which the original code handled as `Decimal('5') + 1`.
+                        # The central utility expects fractional format, so we ensure it exists.
+                        if '/' not in win_odds_str:
+                            win_odds_str = f"{win_odds_str}/1"
 
-                        if decimal_odds > 1:
-                            odds_data[self.source_name] = OddsData(
-                                win=decimal_odds,
-                                source=self.source_name,
-                                last_updated=datetime.now()
-                            )
+                        parsed_float = parse_odds(win_odds_str)
+                        if parsed_float < 999.0:
+                            decimal_odds = Decimal(str(parsed_float))
+                            if decimal_odds > 1:
+                                odds_data[self.source_name] = OddsData(
+                                    win=decimal_odds,
+                                    source=self.source_name,
+                                    last_updated=datetime.now()
+                                )
                     except (ValueError, TypeError):
-                         log.warning("Could not parse odds", odds_str=win_odds_str)
+                         log.warning("Could not parse harness odds", odds_str=win_odds_str)
 
 
                 runner = Runner(

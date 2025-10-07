@@ -53,6 +53,14 @@ class TrifectaAnalyzer(BaseAnalyzer):
 
     def _evaluate_race(self, race: Race) -> Optional[float]:
         """Evaluates a single race and returns a qualification score if it passes, else None."""
+        # --- Constants for Scoring Logic ---
+        FAV_ODDS_NORMALIZATION = 10.0
+        SEC_FAV_ODDS_NORMALIZATION = 15.0
+        FAV_ODDS_WEIGHT = 0.6
+        SEC_FAV_ODDS_WEIGHT = 0.4
+        FIELD_SIZE_SCORE_WEIGHT = 0.3
+        ODDS_SCORE_WEIGHT = 0.7
+
         active_runners = [r for r in race.runners if not r.scratched]
 
         runners_with_odds = []
@@ -74,13 +82,14 @@ class TrifectaAnalyzer(BaseAnalyzer):
 
         # --- Calculate Qualification Score (as inspired by the TypeScript Genesis) ---
         field_score = (self.max_field_size - len(active_runners)) / self.max_field_size
+
         # Normalize odds scores - cap influence of extremely high odds
-        fav_odds_score = min(float(favorite_odds) / 10.0, 1.0)
-        sec_fav_odds_score = min(float(second_favorite_odds) / 15.0, 1.0)
+        fav_odds_score = min(float(favorite_odds) / FAV_ODDS_NORMALIZATION, 1.0)
+        sec_fav_odds_score = min(float(second_favorite_odds) / SEC_FAV_ODDS_NORMALIZATION, 1.0)
 
         # Weighted average
-        odds_score = (fav_odds_score * 0.6) + (sec_fav_odds_score * 0.4)
-        final_score = (field_score * 0.3) + (odds_score * 0.7)
+        odds_score = (fav_odds_score * FAV_ODDS_WEIGHT) + (sec_fav_odds_score * SEC_FAV_ODDS_WEIGHT)
+        final_score = (field_score * FIELD_SIZE_SCORE_WEIGHT) + (odds_score * ODDS_SCORE_WEIGHT)
 
         return round(final_score * 100, 2)
 
