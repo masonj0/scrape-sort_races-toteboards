@@ -30,6 +30,7 @@ async def lifespan(app: FastAPI):
     configure_logging()
     settings = get_settings()
     app.state.engine = OddsEngine(config=settings)
+    app.state.analyzer_engine = AnalyzerEngine()
     log.info("Server startup: Configuration validated and OddsEngine initialized.")
     yield
     # Clean up the engine resources
@@ -86,11 +87,11 @@ async def get_qualified_races(
         date_str = race_date.strftime('%Y-%m-%d')
         aggregated_data = await engine.fetch_all_odds(date_str)
 
-        # We need to deserialize the race data before it can be used by the analyzer
-        # This assumes the raw data from the engine is a list of dicts
-        races = [Race.model_validate(r) for r in aggregated_data.get('races', [])]
+        # The engine now correctly returns validated Pydantic models.
+        # No re-validation is necessary.
+        races = aggregated_data.get('races', [])
 
-        analyzer_engine = AnalyzerEngine()
+        analyzer_engine = request.app.state.analyzer_engine
         # In the future, kwargs could come from the request's query params
         analyzer = analyzer_engine.get_analyzer(analyzer_name)
         qualified_races = analyzer.qualify_races(races)
