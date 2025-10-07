@@ -8,10 +8,9 @@ import structlog
 import re
 from datetime import datetime, timedelta
 from typing import Dict, Any, List, Optional
-from decimal import Decimal
 
 from .base import BaseAdapter
-from ..models import Race, Runner, OddsData
+from ..models import Race, Runner
 
 log = structlog.get_logger(__name__)
 
