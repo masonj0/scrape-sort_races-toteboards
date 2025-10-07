@@ -8,51 +8,51 @@ import httpx
 import structlog
 from datetime import datetime
 from typing import List
-from python_service.models import Race
-from python_service.adapters.oddschecker_adapter import OddscheckerAdapter
+from decimal import Decimal
+
+from python_service.models import Race, OddsData
+from python_service.adapters.betfair_adapter import BetfairAdapter
 
 log = structlog.get_logger(__name__)
 
 class LiveOddsMonitor:
     """
-    The 'Third Pillar' of the architecture.
-    This engine uses fast, live-odds adapters to get a final snapshot of the
-    market in the crucial moments before a race.
+    The 'Third Pillar' of the architecture. This engine uses the BetfairAdapter
+    to get a final, live odds snapshot for a race.
     """
 
     def __init__(self, config):
         self.config = config
-        log.info("LiveOddsMonitor initialized. (Functional with Oddschecker)")
+        self.adapter = BetfairAdapter(config)
+        log.info("LiveOddsMonitor Initialized (Armed with BetfairAdapter)")
 
-    async def get_live_snapshot(self, http_client: httpx.AsyncClient) -> List[Race]:
+    async def monitor_race(self, race: Race, http_client: httpx.AsyncClient) -> Race:
         """
-        Uses a fast, live-odds adapter to get a full snapshot of today's races.
+        Monitors a single race, fetching live odds and updating the Race object.
+        """
+        log.info("Monitoring race for live odds", race_id=race.id, venue=race.venue)
+        if not race.id.startswith('bf_'):
+            log.warning("Cannot monitor non-Betfair race", race_id=race.id, source=race.source)
+            return race # Return original race if not a Betfair market
 
-        Returns:
-            A list of Race objects with the most up-to-date odds available.
-        """
-        log.info("LiveOddsMonitor: Fetching live snapshot from Oddschecker...")
+        market_id = race.id.split('bf_')[1]
+
         try:
-            adapter = OddscheckerAdapter(config=self.config)
-            # The date param is not strictly used by this adapter but is required by the interface
-            today_str = datetime.now().strftime('%Y-%m-%d')
-            result = await adapter.fetch_races(today_str, http_client)
+            live_odds = await self.adapter.get_live_odds_for_market(market_id, http_client)
+            if not live_odds:
+                log.warning("No live odds returned from Betfair", market_id=market_id)
+                return race
 
-            # The adapter now returns a dict, we need to deserialize the races
-            races = [Race.model_validate(r) for r in result.get('races', [])]
-            log.info("LiveOddsMonitor: Snapshot successful", races_found=len(races))
-            return races
+            log.info("Successfully fetched live odds", market_id=market_id, odds_count=len(live_odds))
+            # Update the runners in the Race object with the new live odds
+            for runner in race.runners:
+                if runner.selection_id in live_odds:
+                    runner.odds[self.adapter.source_name] = OddsData(
+                        win=live_odds[runner.selection_id],
+                        source=self.adapter.source_name,
+                        last_updated=datetime.now()
+                    )
+            return race
         except Exception as e:
-            log.error("LiveOddsMonitor: Failed to get live snapshot", error=e, exc_info=True)
-            return []
-
-# Example of how this might be orchestrated in the future
-async def example_run(config):
-    log.info("--- Live Monitor Example Run --- ")
-    monitor = LiveOddsMonitor(config)
-    async with httpx.AsyncClient() as client:
-        live_races = await monitor.get_live_snapshot(client)
-        if live_races:
-            # A future analyzer could now compare these live odds against the
-            # earlier, qualified races from the main OddsEngine.
-            log.info("Example: First live race found", venue=live_races[0].venue, race=live_races[0].race_number)
+            log.error("Failed to monitor race", race_id=race.id, error=e, exc_info=True)
+            return race # Return original race on failure

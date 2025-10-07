@@ -1,7 +1,7 @@
 # python_service/adapters/tvg_adapter.py
 
 import os
-import logging
+import structlog
 from datetime import datetime
 from typing import Dict, Any, List, Optional
 import httpx
@@ -9,6 +9,8 @@ from decimal import Decimal, InvalidOperation
 
 from .base import BaseAdapter
 from ..models import Race, Runner, OddsData
+
+log = structlog.get_logger(__name__)
 
 class TVGAdapter(BaseAdapter):
     def __init__(self, config):
@@ -24,8 +26,8 @@ class TVGAdapter(BaseAdapter):
         headers = {"Accept": "application/json", "X-API-Key": self.api_key}
 
         if not self.api_key:
-            self.logger.warning(f"TVG_API_KEY not set. Adapter {self.source_name} will be skipped.")
-            return self._format_response(all_races, start_time)
+            log.warning("TVGAdapter: TVG_API_KEY not set. Skipping.")
+            return self._format_response([], start_time, is_success=False, error_message="ConfigurationError: TVG_API_KEY not set")
 
         try:
             tracks_url = "tracks"
@@ -33,8 +35,8 @@ class TVGAdapter(BaseAdapter):
             tracks_response = await self.make_request(http_client, 'GET', tracks_url, headers=headers, params=tracks_params)
 
             if not tracks_response or 'tracks' not in tracks_response:
-                self.logger.warning("TVG: No tracks found for the given date.")
-                return self._format_response(all_races, start_time)
+                log.warning("TVG: No tracks found for the given date.")
+                return self._format_response(all_races, start_time, is_success=True)
 
             for track in tracks_response['tracks']:
                 try:
@@ -48,21 +50,27 @@ class TVGAdapter(BaseAdapter):
                         if race_detail:
                             parsed_race = self._parse_tvg_race(track, race_detail)
                             all_races.append(parsed_race)
-                except Exception as e:
-                    self.logger.error(f"Failed to process track {track.get('name')}: {e}", exc_info=True)
+                except httpx.HTTPError as e:
+                    log.error(f"TVGAdapter: Failed to process track, skipping.", track_name=track.get('name'), error=str(e))
+                    continue # Continue to the next track
 
-            return self._format_response(all_races, start_time)
+            return self._format_response(all_races, start_time, is_success=True)
+        except httpx.HTTPError as e:
+            log.error("TVGAdapter: Initial HTTP request failed after retries", error=str(e), exc_info=True)
+            return self._format_response([], start_time, is_success=False, error_message="API request failed after multiple retries.")
         except Exception as e:
-            self.logger.error(f"Failed to fetch races from {self.source_name}: {e}", exc_info=True)
-            raise
+            log.error("TVGAdapter: An unexpected error occurred", error=str(e), exc_info=True)
+            return self._format_response([], start_time, is_success=False, error_message=f"An unexpected error occurred: {e}")
 
-    def _format_response(self, races: List[Race], start_time: datetime) -> Dict[str, Any]:
+    def _format_response(self, races: List[Race], start_time: datetime, is_success: bool = True, error_message: str = None) -> Dict[str, Any]:
         fetch_duration = (datetime.now() - start_time).total_seconds()
         return {
-            'races': [r.model_dump() for r in races],
+            'races': races,
             'source_info': {
-                'name': self.source_name, 'status': 'SUCCESS',
-                'races_fetched': len(races), 'error_message': None,
+                'name': self.source_name,
+                'status': 'SUCCESS' if is_success else 'FAILED',
+                'races_fetched': len(races),
+                'error_message': error_message,
                 'fetch_duration': fetch_duration
             }
         }
@@ -81,7 +89,7 @@ class TVGAdapter(BaseAdapter):
                 runners.append(Runner(
                     number=runner_data.get('programNumber'),
                     name=runner_data.get('horseName', 'Unknown Runner'),
-                    scratched=False, # Corrected based on Oracle feedback
+                    scratched=False,
                     odds=odds_dict
                 ))
 
@@ -93,11 +101,10 @@ class TVGAdapter(BaseAdapter):
             race_number=race_data.get('number'),
             start_time=datetime.fromisoformat(race_data.get('postTime')),
             runners=runners,
-            source=self.source_name # Corrected based on Oracle feedback
+            source=self.source_name
         )
 
     def _parse_tvg_odds(self, odds_string: str) -> Optional[Decimal]:
-        # Corrected based on Oracle feedback to return Decimal
         if not odds_string or odds_string == "SCR": return None
         if odds_string == "EVEN": return Decimal('2.0')
         if "/" in odds_string:
