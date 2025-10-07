@@ -2,10 +2,11 @@
 
 import structlog
 from datetime import datetime, date
-from typing import List
+from typing import List, Optional
 from fastapi import FastAPI, HTTPException, Request, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.middleware import SlowAPIMiddleware
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 from contextlib import asynccontextmanager
@@ -41,6 +42,7 @@ limiter = Limiter(key_func=get_remote_address)
 
 # Pass the lifespan manager to the FastAPI app
 app = FastAPI(title="Checkmate Ultimate Solo API", version="2.1", lifespan=lifespan)
+app.add_middleware(SlowAPIMiddleware)
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
@@ -75,7 +77,7 @@ async def get_all_adapter_statuses(request: Request, engine: OddsEngine = Depend
 async def get_qualified_races(
     analyzer_name: str,
     request: Request,
-    race_date: date = datetime.now().date(),
+    race_date: Optional[date] = None,
     engine: OddsEngine = Depends(get_engine),
     _=Depends(verify_api_key)
 ):
@@ -84,6 +86,8 @@ async def get_qualified_races(
     opportunities, and returns the qualified races.
     """
     try:
+        if race_date is None:
+            race_date = datetime.now().date()
         date_str = race_date.strftime('%Y-%m-%d')
         aggregated_data = await engine.fetch_all_odds(date_str)
 
@@ -109,12 +113,14 @@ async def get_qualified_races(
 @limiter.limit("30/minute")
 async def get_races(
     request: Request,
-    race_date: date = datetime.now().date(),
-    source: str = None,
+    race_date: Optional[date] = None,
+    source: Optional[str] = None,
     engine: OddsEngine = Depends(get_engine),
     _=Depends(verify_api_key)
 ):
     try:
+        if race_date is None:
+            race_date = datetime.now().date()
         date_str = race_date.strftime('%Y-%m-%d')
         aggregated_data = await engine.fetch_all_odds(date_str, source)
         return aggregated_data

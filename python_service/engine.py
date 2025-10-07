@@ -2,6 +2,8 @@
 
 import asyncio
 import structlog
+
+log = structlog.get_logger(__name__)
 import httpx
 from datetime import datetime
 from typing import Dict, Any, List, Tuple
@@ -61,13 +63,13 @@ class OddsEngine:
 
         for result in results:
             if isinstance(result, Exception):
-                # This path is taken if _time_adapter_fetch returns a FAILED payload
-                # due to an internal exception.
-                adapter_name, adapter_result, duration = result
-                log.error("Adapter fetch failed", adapter=adapter_name, duration=round(duration, 2), error=adapter_result['source_info']['error_message'])
-            else:
-                adapter_name, adapter_result, duration = result
+                # This path is taken for exceptions returned by asyncio.gather
+                log.error("Adapter fetch failed unexpectedly in gather", error=result, exc_info=False)
+                # We cannot know which adapter failed here, so we cannot add a FAILED entry.
+                # This is a limitation of the current design, but we prevent a crash.
+                continue
 
+            adapter_name, adapter_result, duration = result
             source_info = adapter_result.get('source_info', {})
             source_info['fetch_duration'] = round(duration, 2)
             source_infos.append(source_info)
