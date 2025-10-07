@@ -1,12 +1,15 @@
 # python_service/adapters/racing_and_sports_adapter.py
 
 import os
+import structlog
 from datetime import datetime
 from typing import Dict, Any, List
 import httpx
 
 from .base import BaseAdapter
 from ..models import Race, Runner
+
+log = structlog.get_logger(__name__)
 
 class RacingAndSportsAdapter(BaseAdapter):
     def __init__(self, config):
@@ -22,7 +25,7 @@ class RacingAndSportsAdapter(BaseAdapter):
         headers = {"Authorization": f"Bearer {self.api_token}", "Accept": "application/json"}
 
         if not self.api_token:
-            return self._format_response(all_races, start_time, is_success=False, error_message="ConfigurationError: Token not set")
+            return self._format_response([], start_time, is_success=False, error_message="ConfigurationError: Token not set")
 
         try:
             meetings_url = "v1/racing/meetings"
@@ -30,7 +33,7 @@ class RacingAndSportsAdapter(BaseAdapter):
             meetings_data = await self.make_request(http_client, 'GET', meetings_url, headers=headers, params=params)
 
             if not meetings_data or not meetings_data.get('meetings'):
-                return self._format_response(all_races, start_time)
+                return self._format_response(all_races, start_time, is_success=True)
 
             for meeting in meetings_data['meetings']:
                 for race_summary in meeting.get('races', []):
@@ -38,12 +41,15 @@ class RacingAndSportsAdapter(BaseAdapter):
                         parsed_race = self._parse_ras_race(meeting, race_summary)
                         all_races.append(parsed_race)
                     except Exception as e:
-                        self.logger.error(f"Failed to parse race for meeting {meeting.get('venueName')}: {e}", exc_info=True)
+                        log.error("RacingAndSportsAdapter: Failed to parse race", meeting=meeting.get('venueName'), error=str(e), exc_info=True)
 
-            return self._format_response(all_races, start_time)
+            return self._format_response(all_races, start_time, is_success=True)
+        except httpx.HTTPError as e:
+            log.error("RacingAndSportsAdapter: HTTP request failed after retries", error=str(e), exc_info=True)
+            return self._format_response([], start_time, is_success=False, error_message="API request failed after multiple retries.")
         except Exception as e:
-            self.logger.error(f"Failed to fetch races from {self.source_name}: {e}", exc_info=True)
-            raise
+            log.error("RacingAndSportsAdapter: An unexpected error occurred", error=str(e), exc_info=True)
+            return self._format_response([], start_time, is_success=False, error_message=f"An unexpected error occurred: {e}")
 
     def _format_response(self, races: List[Race], start_time: datetime, is_success: bool = True, error_message: str = None) -> Dict[str, Any]:
         fetch_duration = (datetime.now() - start_time).total_seconds()

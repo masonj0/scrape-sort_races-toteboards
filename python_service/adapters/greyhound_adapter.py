@@ -34,12 +34,12 @@ class GreyhoundAdapter(BaseAdapter):
             if not all_races:
                 return self._format_response([], start_time, is_success=True, error_message="Races found, but none could be parsed.")
 
-            return self._format_response(all_races, start_time)
-        except httpx.HTTPStatusError as e:
-            log.error("GreyhoundAdapter: HTTP error while fetching races", error=e, response_text=e.response.text)
-            return self._format_response([], start_time, is_success=False, error_message=f"HTTP Error: {e.response.status_code}")
+            return self._format_response(all_races, start_time, is_success=True)
+        except httpx.HTTPError as e:
+            log.error("GreyhoundAdapter: HTTP request failed after retries", error=str(e), exc_info=True)
+            return self._format_response([], start_time, is_success=False, error_message="API request failed after multiple retries.")
         except Exception as e:
-            log.error("GreyhoundAdapter: An unexpected error occurred", error=e, exc_info=True)
+            log.error("GreyhoundAdapter: An unexpected error occurred", error=str(e), exc_info=True)
             return self._format_response([], start_time, is_success=False, error_message=f"An unexpected error occurred: {str(e)}")
 
     def _format_response(self, races: List[Race], start_time: datetime, is_success: bool = True, error_message: str = None) -> Dict[str, Any]:

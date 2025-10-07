@@ -34,10 +34,6 @@ class PointsBetAdapter(BaseAdapter):
         try:
             response_json = await self.make_request(http_client, 'GET', endpoint, headers=headers, params=params)
 
-            # If make_request returns None, it signifies a total failure after retries.
-            if response_json is None:
-                return self._format_response([], start_time, is_success=False, error_message="API request failed after multiple retries.")
-
             if "events" not in response_json:
                 log.warning("PointsBetAdapter: No 'events' in response or empty response.")
                 return self._format_response([], start_time)
@@ -48,8 +44,11 @@ class PointsBetAdapter(BaseAdapter):
             all_races = [race for race in all_races if race.start_time.strftime('%Y-%m-%d') == date]
 
             return self._format_response(all_races, start_time)
-        except Exception as e:
-            log.error("Failed to fetch races from PointsBet", exc_info=True)
+        except httpx.HTTPError as e: # Catching specific HTTP errors from tenacity retries
+            log.error("PointsBetAdapter: HTTP request failed after retries", error=str(e), exc_info=True)
+            return self._format_response([], start_time, is_success=False, error_message="API request failed after multiple retries.")
+        except Exception as e: # Catch-all for other unexpected errors
+            log.error("PointsBetAdapter: An unexpected error occurred", error=str(e), exc_info=True)
             return self._format_response([], start_time, is_success=False, error_message=f"An unexpected error occurred: {e}")
 
     def _format_response(self, races: List[Race], start_time: datetime, is_success: bool = True, error_message: str = None) -> Dict[str, Any]:
