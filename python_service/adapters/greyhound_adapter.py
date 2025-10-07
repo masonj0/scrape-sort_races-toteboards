@@ -11,12 +11,14 @@ from .base import BaseAdapter
 log = structlog.get_logger(__name__)
 
 class GreyhoundAdapter(BaseAdapter):
-    """Adapter for fetching Greyhound racing data."""
+    """Adapter for fetching Greyhound racing data. Activated by setting GREYHOUND_API_URL in .env"""
 
     def __init__(self, config):
+        if not config.GREYHOUND_API_URL:
+            raise ValueError("GreyhoundAdapter cannot be initialized without GREYHOUND_API_URL.")
         super().__init__(
             source_name="Greyhound Racing",
-            base_url="https://api.greyhoundracing.example.com/"
+            base_url=config.GREYHOUND_API_URL
         )
         # Example for future use: self.api_key = config.GREYHOUND_API_KEY
 
