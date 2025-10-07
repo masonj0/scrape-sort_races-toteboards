@@ -87,6 +87,8 @@ class OddsEngine:
                 'fetch_time': datetime.now(),
                 'sources_queried': [a.source_name for a in target_adapters],
                 'sources_successful': len([s for s in source_infos if s['status'] == 'SUCCESS']),
+                'sources_failed': len([s for s in source_infos if s['status'] == 'FAILED']),
+                'failed_sources_list': [s['name'] for s in source_infos if s['status'] == 'FAILED'],
                 'total_races': len(all_races)
             }
         }

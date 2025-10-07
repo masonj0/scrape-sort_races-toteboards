@@ -55,7 +55,7 @@ class TVGAdapter(BaseAdapter):
                             parsed_race = self._parse_tvg_race(track, race_detail)
                             all_races.append(parsed_race)
                 except httpx.HTTPError as e:
-                    log.error(f"TVGAdapter: Failed to process track, skipping.", track_name=track.get('name'), error=str(e))
+                    log.error("TVGAdapter: Failed to process track, skipping.", track_name=track.get('name'), error=str(e))
                     continue # Continue to the next track
 
             return self._format_response(all_races, start_time, is_success=True)
