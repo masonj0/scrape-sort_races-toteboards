@@ -26,7 +26,9 @@ class BetfairAdapter(BaseAdapter):
         self.token_expiry: Optional[datetime] = None
 
     async def _authenticate(self, http_client: httpx.AsyncClient):
-        if self.session_token and self.token_expiry and self.token_expiry > datetime.now():
+        # Proactively refresh the token if it's set to expire within the next 5 minutes
+        # This prevents race conditions where the token expires mid-request.
+        if self.session_token and self.token_expiry and self.token_expiry > (datetime.now() + timedelta(minutes=5)):
             return
         if not all([self.app_key, self.config.BETFAIR_USERNAME, self.config.BETFAIR_PASSWORD]):
             raise ValueError("Betfair credentials not fully configured.")
