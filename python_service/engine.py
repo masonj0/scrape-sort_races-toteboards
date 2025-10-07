@@ -25,9 +25,13 @@ class OddsEngine:
             TVGAdapter(config=self.config),
             RacingAndSportsAdapter(config=self.config),
             PointsBetAdapter(config=self.config),
-            HarnessAdapter(config=self.config),
-            # GreyhoundAdapter(config=self.config) # TODO: Disabled until a functional API endpoint is provided.
+            HarnessAdapter(config=self.config)
         ]
+
+        # Conditionally activate the GreyhoundAdapter if its URL is configured
+        if self.config.GREYHOUND_API_URL:
+            self.log.info("GREYHOUND_API_URL is set. Activating GreyhoundAdapter.")
+            self.adapters.append(GreyhoundAdapter(config=self.config))
         self.http_client = httpx.AsyncClient()
 
     async def close(self):
