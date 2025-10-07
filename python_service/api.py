@@ -46,9 +46,11 @@ app.add_middleware(SlowAPIMiddleware)
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
+settings = get_settings()
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://localhost:3001"],
+    allow_origins=settings.ALLOWED_ORIGINS,
     allow_credentials=True, allow_methods=["GET"], allow_headers=["*"]
 )
 
