@@ -7,6 +7,7 @@ from decimal import Decimal
 
 from ..models import Race, Runner, OddsData
 from .base import BaseAdapter
+from .utils import parse_odds
 
 log = structlog.get_logger(__name__)
 
@@ -96,12 +97,8 @@ class HarnessAdapter(BaseAdapter):
                 win_odds_str = runner_data.get("morningLineOdds") # Assuming M/L odds are the target
                 if win_odds_str:
                     try:
-                        # Handle fractional odds like "5/2" or simple odds like "5"
-                        if '/' in win_odds_str:
-                            numerator, denominator = map(int, win_odds_str.split('/'))
-                            decimal_odds = Decimal(numerator) / Decimal(denominator) + 1
-                        else:
-                            decimal_odds = Decimal(win_odds_str) + 1
+                        # Use the robust, shared odds parser
+                        decimal_odds = Decimal(str(parse_odds(win_odds_str)))
 
                         if decimal_odds > 1:
                             odds_data[self.source_name] = OddsData(
