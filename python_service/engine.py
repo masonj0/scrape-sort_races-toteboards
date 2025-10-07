@@ -14,7 +14,7 @@ from .adapters.tvg_adapter import TVGAdapter
 from .adapters.racing_and_sports_adapter import RacingAndSportsAdapter
 from .adapters.pointsbet_adapter import PointsBetAdapter
 from .adapters.harness_adapter import HarnessAdapter
-from .adapters.greyhound_adapter import GreyhoundAdapter
+# from .adapters.greyhound_adapter import GreyhoundAdapter
 
 class OddsEngine:
     def __init__(self, config):
@@ -26,7 +26,7 @@ class OddsEngine:
             RacingAndSportsAdapter(config=self.config),
             PointsBetAdapter(config=self.config),
             HarnessAdapter(config=self.config),
-            GreyhoundAdapter(config=self.config)
+            # GreyhoundAdapter(config=self.config) # TODO: Disabled until a functional API endpoint is provided.
         ]
         self.http_client = httpx.AsyncClient()
 
