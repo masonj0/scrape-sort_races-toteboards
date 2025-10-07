@@ -11,7 +11,11 @@ from .base import BaseAdapter
 log = structlog.get_logger(__name__)
 
 class GreyhoundAdapter(BaseAdapter):
-    """Adapter for fetching Greyhound racing data."""
+    """TODO: This adapter is a non-functional template.
+
+    It is disabled in engine.py because its base_url is a placeholder ('api.greyhoundracing.example.com').
+    To enable, provide a real API endpoint and uncomment its registration in the OddsEngine.
+    """
 
     def __init__(self, config):
         super().__init__(
