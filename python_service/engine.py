@@ -61,22 +61,18 @@ class OddsEngine:
 
         for result in results:
             if isinstance(result, Exception):
-                # This path is for unexpected errors in the wrapper or adapter itself
-                # The adapter name is not easily available here, logging is key
-                self.log.error("A fetch task failed unexpectedly", error=result, exc_info=True)
-                continue
+                # This path is taken if _time_adapter_fetch returns a FAILED payload
+                # due to an internal exception.
+                adapter_name, adapter_result, duration = result
+                log.error("Adapter fetch failed", adapter=adapter_name, duration=round(duration, 2), error=adapter_result['source_info']['error_message'])
+            else:
+                adapter_name, adapter_result, duration = result
 
-            adapter_name, adapter_result, fetch_duration = result
+            source_info = adapter_result.get('source_info', {})
+            source_info['fetch_duration'] = round(duration, 2)
+            source_infos.append(source_info)
 
-            source_infos.append({
-                'name': adapter_name,
-                'status': adapter_result['source_info']['status'],
-                'races_fetched': adapter_result['source_info']['races_fetched'],
-                'error_message': adapter_result['source_info']['error_message'],
-                'fetch_duration': round(fetch_duration, 2) # Use the accurate, individual duration
-            })
-
-            if adapter_result['source_info']['status'] == 'SUCCESS':
+            if source_info.get('status') == 'SUCCESS':
                 all_races.extend(adapter_result.get('races', []))
 
         return {

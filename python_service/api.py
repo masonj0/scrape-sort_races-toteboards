@@ -12,7 +12,7 @@ from contextlib import asynccontextmanager
 
 from .config import get_settings
 from .engine import OddsEngine
-from .models import Race
+from .models import Race, AggregatedResponse
 from .security import verify_api_key
 from .logging_config import configure_logging
 from .analyzer import AnalyzerEngine
@@ -105,7 +105,7 @@ async def get_qualified_races(
         raise HTTPException(status_code=500, detail="Internal Server Error")
 
 
-@app.get("/api/races")
+@app.get("/api/races", response_model=AggregatedResponse)
 @limiter.limit("30/minute")
 async def get_races(
     request: Request,
