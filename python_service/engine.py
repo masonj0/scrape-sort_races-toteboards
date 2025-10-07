@@ -41,15 +41,11 @@ class OddsEngine:
     async def _time_adapter_fetch(self, adapter: BaseAdapter, date: str) -> Tuple[str, Dict[str, Any], float]:
         """Wraps an adapter's fetch call to accurately measure its duration."""
         start_time = datetime.now()
-        try:
-            result = await adapter.fetch_races(date, self.http_client)
-            duration = (datetime.now() - start_time).total_seconds()
-            return (adapter.source_name, result, duration)
-        except Exception as e:
-            duration = (datetime.now() - start_time).total_seconds()
-            self.log.error("Adapter raised an unhandled exception", adapter=adapter.source_name, error=e)
-            # Propagate the exception along with the timing info
-            raise e from None
+        # Adapters now handle their own exceptions and return a consistent payload.
+        # The engine's role is to orchestrate and time the calls.
+        result = await adapter.fetch_races(date, self.http_client)
+        duration = (datetime.now() - start_time).total_seconds()
+        return (adapter.source_name, result, duration)
 
     async def fetch_all_odds(self, date: str, source_filter: str = None) -> Dict[str, Any]:
         target_adapters = self.adapters

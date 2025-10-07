@@ -12,6 +12,10 @@ from ..models import Race, Runner, OddsData
 
 log = structlog.get_logger(__name__)
 
+def _parse_program_number(program_str: str) -> int:
+    """Safely parses program numbers like '1A' into an integer."""
+    return int(''.join(filter(str.isdigit, program_str))) if program_str else 99
+
 class TVGAdapter(BaseAdapter):
     def __init__(self, config):
         super().__init__(
@@ -87,7 +91,7 @@ class TVGAdapter(BaseAdapter):
                     odds_dict[self.source_name] = OddsData(win=win_odds, source=self.source_name, last_updated=datetime.now())
 
                 runners.append(Runner(
-                    number=runner_data.get('programNumber'),
+                    number=_parse_program_number(runner_data.get('programNumber')),
                     name=runner_data.get('horseName', 'Unknown Runner'),
                     scratched=False,
                     odds=odds_dict

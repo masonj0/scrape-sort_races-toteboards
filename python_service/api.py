@@ -30,6 +30,7 @@ async def lifespan(app: FastAPI):
     configure_logging()
     settings = get_settings()
     app.state.engine = OddsEngine(config=settings)
+    app.state.analyzer_engine = AnalyzerEngine()
     log.info("Server startup: Configuration validated and OddsEngine initialized.")
     yield
     # Clean up the engine resources
@@ -90,7 +91,7 @@ async def get_qualified_races(
         # No re-validation is necessary.
         races = aggregated_data.get('races', [])
 
-        analyzer_engine = AnalyzerEngine()
+        analyzer_engine = request.app.state.analyzer_engine
         # In the future, kwargs could come from the request's query params
         analyzer = analyzer_engine.get_analyzer(analyzer_name)
         qualified_races = analyzer.qualify_races(races)
