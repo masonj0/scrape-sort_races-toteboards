@@ -2,6 +2,8 @@
 
 import asyncio
 import structlog
+
+log = structlog.get_logger(__name__)
 import httpx
 from datetime import datetime
 from typing import Dict, Any, List, Tuple
@@ -12,7 +14,7 @@ from .adapters.tvg_adapter import TVGAdapter
 from .adapters.racing_and_sports_adapter import RacingAndSportsAdapter
 from .adapters.pointsbet_adapter import PointsBetAdapter
 from .adapters.harness_adapter import HarnessAdapter
-from .adapters.greyhound_adapter import GreyhoundAdapter
+# from .adapters.greyhound_adapter import GreyhoundAdapter
 
 class OddsEngine:
     def __init__(self, config):
@@ -24,7 +26,7 @@ class OddsEngine:
             RacingAndSportsAdapter(config=self.config),
             PointsBetAdapter(config=self.config),
             HarnessAdapter(config=self.config),
-            GreyhoundAdapter(config=self.config)
+            # GreyhoundAdapter(config=self.config) # TODO: Disabled until a functional API endpoint is provided.
         ]
         self.http_client = httpx.AsyncClient()
 
@@ -61,22 +63,18 @@ class OddsEngine:
 
         for result in results:
             if isinstance(result, Exception):
-                # This path is for unexpected errors in the wrapper or adapter itself
-                # The adapter name is not easily available here, logging is key
-                self.log.error("A fetch task failed unexpectedly", error=result, exc_info=True)
+                # This path is taken for exceptions returned by asyncio.gather
+                log.error("Adapter fetch failed unexpectedly in gather", error=result, exc_info=False)
+                # We cannot know which adapter failed here, so we cannot add a FAILED entry.
+                # This is a limitation of the current design, but we prevent a crash.
                 continue
 
-            adapter_name, adapter_result, fetch_duration = result
+            adapter_name, adapter_result, duration = result
+            source_info = adapter_result.get('source_info', {})
+            source_info['fetch_duration'] = round(duration, 2)
+            source_infos.append(source_info)
 
-            source_infos.append({
-                'name': adapter_name,
-                'status': adapter_result['source_info']['status'],
-                'races_fetched': adapter_result['source_info']['races_fetched'],
-                'error_message': adapter_result['source_info']['error_message'],
-                'fetch_duration': round(fetch_duration, 2) # Use the accurate, individual duration
-            })
-
-            if adapter_result['source_info']['status'] == 'SUCCESS':
+            if source_info.get('status') == 'SUCCESS':
                 all_races.extend(adapter_result.get('races', []))
 
         return {
