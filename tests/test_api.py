@@ -26,7 +26,51 @@ def test_get_races_success(mock_fetch, client):
     """
     # ARRANGE
     today = date.today()
-    mock_response_data = {"races": [{"id": "race1"}]}
+    now = datetime.now()
+    # This mock response now matches the structure of AggregatedResponse
+    mock_response_data = {
+        "date": today.isoformat(),
+        "races": [
+            {
+                "id": "test_race_1",
+                "venue": "Test Park",
+                "race_number": 1,
+                "start_time": now.isoformat(),
+                "runners": [
+                    {
+                        "number": 1,
+                        "name": "Test Runner 1",
+                        "scratched": False,
+                        "selection_id": None,
+                        "odds": {
+                            "TestSource": {
+                                "win": "5.0",
+                                "source": "TestSource",
+                                "last_updated": now.isoformat()
+                            }
+                        }
+                    }
+                ],
+                "source": "TestSource",
+                "qualification_score": None
+            }
+        ],
+        "sources": [
+            {
+                "name": "TestSource",
+                "status": "SUCCESS",
+                "races_fetched": 1,
+                "error_message": None,
+                "fetch_duration": 0.123
+            }
+        ],
+        "metadata": {
+            "fetch_time": now.isoformat(),
+            "sources_queried": ["TestSource"],
+            "sources_successful": 1,
+            "total_races": 1
+        }
+    }
     mock_fetch.return_value = mock_response_data
     headers = {"X-API-Key": "test_api_key"}
 

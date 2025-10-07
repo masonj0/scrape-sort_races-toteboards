@@ -8,17 +8,17 @@ from python_service.models import Race, Runner
 log = structlog.get_logger(__name__)
 
 def _get_best_win_odds(runner: Runner) -> Optional[Decimal]:
-    """Helper to find the best (lowest) win odds for a runner from any source."""
+    """Gets the best win odds for a runner, filtering out invalid or placeholder values."""
     if not runner.odds:
         return None
 
-    valid_odds = [
-        odds_data.win
-        for odds_data in runner.odds.values()
-        if odds_data and odds_data.win is not None
-    ]
+    # Filter out invalid or placeholder odds (e.g., > 999)
+    valid_odds = [o.win for o in runner.odds.values() if o.win is not None and o.win < 999]
 
-    return min(valid_odds) if valid_odds else None
+    if not valid_odds:
+        return None
+
+    return min(valid_odds)
 
 class BaseAnalyzer(ABC):
     """The abstract interface for all future analyzer plugins."""
