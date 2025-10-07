@@ -72,28 +72,6 @@ class BetfairAdapter(BaseAdapter):
 
     async def get_live_odds_for_market(self, market_id: str, http_client: httpx.AsyncClient) -> Dict[int, Decimal]:
         """TACTICAL method (Pillar 3). Gets live LTP for each runner in a market."""
-        try:
-            await self._authenticate(http_client)
-            headers = {"X-Application": self.app_key, "X-Authentication": self.session_token, "Content-Type": "application/json"}
-
-            params = {"marketIds": [market_id], "priceProjection": {"priceData": ["EX_TRADED"]}}
-            market_book = await self.make_request(http_client, 'POST', 'listMarketBook/', headers=headers, json=params)
-
-            live_odds = {}
-            if market_book and market_book[0].get('runners'):
-                for runner in market_book[0]['runners']:
-                    if runner.get('status') == 'ACTIVE' and runner.get('lastPriceTraded'):
-                        live_odds[runner['selectionId']] = Decimal(str(runner['lastPriceTraded']))
-            return live_odds
-        except httpx.HTTPError as e:
-            log.error("BetfairAdapter: Failed to get live odds after retries", market_id=market_id, error=str(e))
-            return {} # Return empty dict on failure
-        except Exception as e:
-            log.error("BetfairAdapter: Unexpected error getting live odds", market_id=market_id, error=str(e), exc_info=True)
-            return {}
-
-    async def get_live_odds_for_market(self, market_id: str, http_client: httpx.AsyncClient) -> Dict[int, Decimal]:
-        """TACTICAL method (Pillar 3). Gets live LTP for each runner in a market."""
         log.info("BetfairAdapter: Fetching live odds for market", market_id=market_id)
         try:
             await self._authenticate(http_client)

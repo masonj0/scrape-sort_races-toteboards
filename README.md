@@ -27,11 +27,11 @@ run_fortuna.bat
 The backend API will be available at `http://localhost:8000`.
 The frontend will be available at `http://localhost:3000`.
 
-### 3. Using the API
+### 4. Using the API
 
-To use the API directly (e.g., with `curl` or other tools), you must provide the API key set in your `.env` file via the `X-API-Key` header.
+To use the API directly (e.g., with `curl` or other tools), you must provide the `API_KEY` set in your `.env` file via the `X-API-Key` header. This is required for all endpoints except `/health`.
 
 ```bash
-# Example: Test the health check endpoint
-curl -H "X-API-Key: YOUR_SECRET_API_KEY_HERE" http://localhost:8000/health
+# Example: Test the qualified races endpoint
+curl -H "X-API-Key: YOUR_SECRET_API_KEY_HERE" http://localhost:8000/api/races/qualified/trifecta
 ```
