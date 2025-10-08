@@ -19,8 +19,7 @@ def override_settings_for_tests():
         BETFAIR_PASSWORD="test_password",
         API_KEY="test_api_key",
         TVG_API_KEY="test_tvg_key",
-        RACING_AND_SPORTS_TOKEN="test_ras_token",
-        POINTSBET_API_KEY="test_pb_key"
+        RACING_AND_SPORTS_TOKEN="test_ras_token"
     )
     with patch('python_service.config.Settings', return_value=mock_settings):
         yield

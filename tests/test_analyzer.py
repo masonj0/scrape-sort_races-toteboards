@@ -1,3 +1,6 @@
+# tests/test_analyzer.py
+# This file is restored in its entirety to bring back critical test coverage.
+
 import pytest
 from decimal import Decimal
 from datetime import datetime

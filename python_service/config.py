@@ -1,36 +1,26 @@
-#!/usr/bin/env python3
-# ==============================================================================
-#  Fortuna Faucet: Centralized Configuration
-# =================================á=============================================
-# This module, restored by the Great Correction, provides a centralized and
-# validated source for all application settings using pydantic-settings.
-# ==============================================================================
+# python_service/config.py
 
 from pydantic_settings import BaseSettings
-from functools import lru_cache
 from typing import List, Optional
+from functools import lru_cache
 
 class Settings(BaseSettings):
-    # --- Application Security ---
     API_KEY: str
-
-    # --- Betfair API Credentials ---
     BETFAIR_APP_KEY: str = ""
     BETFAIR_USERNAME: str = ""
     BETFAIR_PASSWORD: str = ""
-
-    # --- Other Adapter Keys ---
     TVG_API_KEY: str = ""
     RACING_AND_SPORTS_TOKEN: str = ""
-    POINTSBET_API_KEY: str = ""
-    GREYHOUND_API_URL: Optional[str] = None
+    ALLOWED_ORIGINS: List[str] = ["http://localhost:3000"]
 
-    # --- CORS Configuration ---
-    ALLOWED_ORIGINS: List[str] = ["http://localhost:3000", "http://localhost:3001"]
+    # --- Configuration for restored adapters ---
+    GREYHOUND_API_URL: Optional[str] = None
+    AT_THE_RACES_KEY: Optional[str] = None
+    SPORTING_LIFE_KEY: Optional[str] = None
+    TIMEFORM_KEY: Optional[str] = None
 
     class Config:
         env_file = ".env"
-        case_sensitive = True
 
 @lru_cache()
 def get_settings() -> Settings:

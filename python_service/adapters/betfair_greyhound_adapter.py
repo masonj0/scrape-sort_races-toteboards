@@ -74,8 +74,7 @@ class BetfairGreyhoundAdapter(BaseAdapter):
         for runner_data in market.get('runners', []):
             runners.append(Runner(
                 number=runner_data.get('sortPriority', 99),
-                name=runner_data['runnerName'],
-                selection_id=runner_data['selectionId']
+                name=runner_data['runnerName']
             ))
         return Race(
             id=f"bfg_{market['marketId']}",
