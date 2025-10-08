@@ -1,94 +1,131 @@
 # python_service/api.py
 
 import structlog
-from datetime import date
+from datetime import datetime, date
 from typing import List, Optional
 from fastapi import FastAPI, HTTPException, Request, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.middleware import SlowAPIMiddleware
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 from contextlib import asynccontextmanager
 
 from .config import get_settings
-from .orchestrator import fetch_all_races, get_adapter_statuses
-from .models import Race, RaceDay
+from .engine import OddsEngine
+from .models import Race, AggregatedResponse
 from .security import verify_api_key
 from .logging_config import configure_logging
 from .analyzer import AnalyzerEngine
 
 log = structlog.get_logger()
-configure_logging()
 
+# Define the lifespan context manager for robust startup/shutdown
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """
-    Manage the application's lifespan. On startup, it initializes the AnalyzerEngine
-    and attaches it to the app state.
+    Manage the application's lifespan. On startup, it initializes the OddsEngine
+    with validated settings and attaches it to the app state. On shutdown, it
+    properly closes the engine's resources.
     """
+    configure_logging()
+    settings = get_settings()
+    app.state.engine = OddsEngine(config=settings)
     app.state.analyzer_engine = AnalyzerEngine()
-    log.info("Server startup: AnalyzerEngine initialized.")
+    log.info("Server startup: Configuration validated and OddsEngine initialized.")
     yield
-    log.info("Server shutdown.")
+    # Clean up the engine resources
+    await app.state.engine.close()
+    log.info("Server shutdown: HTTP client resources closed.")
 
 limiter = Limiter(key_func=get_remote_address)
-app = FastAPI(
-    title="Fortuna Faucet V4 - Unified Architecture",
-    version="4.0",
-    lifespan=lifespan
-)
+
+# Pass the lifespan manager to the FastAPI app
+app = FastAPI(title="Checkmate Ultimate Solo API", version="2.1", lifespan=lifespan)
+app.add_middleware(SlowAPIMiddleware)
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 settings = get_settings()
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.ALLOWED_ORIGINS,
-    allow_credentials=True,
-    allow_methods=["GET"],
-    allow_headers=["*"]
+    allow_credentials=True, allow_methods=["GET"], allow_headers=["*"]
 )
+
+# Dependency function to get the engine instance from the app state
+def get_engine(request: Request) -> OddsEngine:
+    return request.app.state.engine
 
 @app.get("/health")
 async def health_check():
-    return {"status": "ok"}
+    return {"status": "ok", "timestamp": datetime.now().isoformat()}
 
 @app.get("/api/adapters/status")
 @limiter.limit("60/minute")
-async def get_all_adapter_statuses(request: Request, _=Depends(verify_api_key)):
-    return get_adapter_statuses()
-
-@app.get("/api/races", response_model=List[RaceDay])
-@limiter.limit("30/minute")
-async def get_races(request: Request, _=Depends(verify_api_key)):
+async def get_all_adapter_statuses(request: Request, engine: OddsEngine = Depends(get_engine), _=Depends(verify_api_key)):
+    """Provides a list of health statuses for all adapters, required by the new frontend blueprint."""
     try:
-        return await fetch_all_races()
-    except Exception:
-        log.error("Error in /api/races", exc_info=True)
+        statuses = engine.get_all_adapter_statuses()
+        return statuses
+    except Exception as e:
+        log.error("Error in /api/adapters/status", exc_info=True)
         raise HTTPException(status_code=500, detail="Internal Server Error")
+
 
 @app.get("/api/races/qualified/{analyzer_name}", response_model=List[Race])
 @limiter.limit("30/minute")
 async def get_qualified_races(
     analyzer_name: str,
     request: Request,
+    race_date: Optional[date] = None,
+    engine: OddsEngine = Depends(get_engine),
     _=Depends(verify_api_key)
 ):
     """
-    Gets all races for the day, filters them using the specified analyzer,
-    and returns the qualified races.
+    Gets all races for a given date, filters them for qualified betting
+    opportunities, and returns the qualified races.
     """
     try:
-        race_days = await fetch_all_races()
-        all_races: List[Race] = [race for day in race_days for race in day.races]
+        if race_date is None:
+            race_date = datetime.now().date()
+        date_str = race_date.strftime('%Y-%m-%d')
+        aggregated_data = await engine.fetch_all_odds(date_str)
+
+        # The engine now correctly returns validated Pydantic models.
+        # No re-validation is necessary.
+        races = aggregated_data.get('races', [])
 
         analyzer_engine = request.app.state.analyzer_engine
+        # In the future, kwargs could come from the request's query params
         analyzer = analyzer_engine.get_analyzer(analyzer_name)
-        qualified_races = analyzer.qualify_races(all_races)
+        qualified_races = analyzer.qualify_races(races)
         return qualified_races
     except ValueError as e:
+        # Correctly map a missing analyzer to a 404 Not Found error
         log.warning("Requested analyzer not found", analyzer_name=analyzer_name)
         raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
         log.error("Error in /api/races/qualified", error=str(e), exc_info=True)
+        raise HTTPException(status_code=500, detail="Internal Server Error")
+
+
+@app.get("/api/races", response_model=AggregatedResponse)
+@limiter.limit("30/minute")
+async def get_races(
+    request: Request,
+    race_date: Optional[date] = None,
+    source: Optional[str] = None,
+    engine: OddsEngine = Depends(get_engine),
+    _=Depends(verify_api_key)
+):
+    try:
+        if race_date is None:
+            race_date = datetime.now().date()
+        date_str = race_date.strftime('%Y-%m-%d')
+        aggregated_data = await engine.fetch_all_odds(date_str, source)
+        return aggregated_data
+    except Exception as e:
+        log.error("Error in /api/races", exc_info=True)
         raise HTTPException(status_code=500, detail="Internal Server Error")
