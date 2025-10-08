@@ -10,6 +10,7 @@ from typing import Dict, Any, List, Tuple
 
 from .adapters.base import BaseAdapter
 from .adapters.betfair_adapter import BetfairAdapter
+from .adapters.betfair_greyhound_adapter import BetfairGreyhoundAdapter
 from .adapters.tvg_adapter import TVGAdapter
 from .adapters.racing_and_sports_adapter import RacingAndSportsAdapter
 from .adapters.pointsbet_adapter import PointsBetAdapter
@@ -22,6 +23,7 @@ class OddsEngine:
         self.log = structlog.get_logger(self.__class__.__name__)
         self.adapters: List[BaseAdapter] = [
             BetfairAdapter(config=self.config),
+            BetfairGreyhoundAdapter(config=self.config),
             TVGAdapter(config=self.config),
             RacingAndSportsAdapter(config=self.config),
             PointsBetAdapter(config=self.config),
