@@ -14,6 +14,7 @@
 *   `live_monitor.py` - The 'Third Pillar' tactical engine.
 *   `chart_scraper.py` - The 'Second Pillar' results archive tool.
 *   `results_parser.py` - The 'Carpenter' for parsing PDF chart data.
+*   `python_service/adapters/betfair_greyhound_adapter.py`
 
 ## 2.0 Environment & Setup
 *   `setup_windows.bat` - The whole-system Windows environment setup script.
