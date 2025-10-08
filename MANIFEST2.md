@@ -27,13 +27,12 @@
 - `python_service/adapters/betfair_greyhound_adapter.py`
 - `python_service/adapters/greyhound_adapter.py`
 - `python_service/adapters/harness_adapter.py`
-- `python_service/adapters/pointsbet_adapter.py`
+- `python_service/adapters/at_the_races_adapter.py`
 - `python_service/adapters/racing_and_sports_adapter.py`
 - `python_service/adapters/tvg_adapter.py`
 - `python_service/adapters/oddschecker_adapter.py`
 
 #### Fleet Expansion Stubs (Wave 1)
-- `python_service/adapters/attheraces_adapter.py`
 - `python_service/adapters/drf_adapter.py`
 - `python_service/adapters/equibase_adapter.py`
 - `python_service/adapters/racingpost_adapter.py`
