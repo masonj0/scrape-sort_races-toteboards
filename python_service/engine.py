@@ -15,7 +15,7 @@ from .adapters.tvg_adapter import TVGAdapter
 from .adapters.racing_and_sports_adapter import RacingAndSportsAdapter
 from .adapters.pointsbet_adapter import PointsBetAdapter
 from .adapters.harness_adapter import HarnessAdapter
-from .adapters.greyhound_adapter import GreyhoundAdapter
+# from .adapters.greyhound_adapter import GreyhoundAdapter
 
 class OddsEngine:
     def __init__(self, config):
