@@ -31,15 +31,15 @@
 - `python_service/adapters/racing_and_sports_adapter.py`
 - `python_service/adapters/tvg_adapter.py`
 - `python_service/adapters/oddschecker_adapter.py`
+- `python_service/adapters/sporting_life_adapter.py`
+- `python_service/adapters/timeform_adapter.py`
 
 #### Fleet Expansion Stubs (Wave 1)
 - `python_service/adapters/drf_adapter.py`
 - `python_service/adapters/equibase_adapter.py`
 - `python_service/adapters/racingpost_adapter.py`
 - `python_service/adapters/racingtv_adapter.py`
-- `python_service/adapters/sportinglife_adapter.py`
 - `python_service/adapters/tab_adapter.py`
-- `python_service/adapters/timeform_adapter.py`
 
 #### Fleet Expansion Stubs (Wave 2)
 - `python_service/adapters/brisnet_adapter.py`

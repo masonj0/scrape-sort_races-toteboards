@@ -15,6 +15,8 @@ from .adapters.racing_and_sports_greyhound_adapter import RacingAndSportsGreyhou
 from .adapters.tvg_adapter import TVGAdapter
 from .adapters.racing_and_sports_adapter import RacingAndSportsAdapter
 from .adapters.at_the_races_adapter import AtTheRacesAdapter
+from .adapters.sporting_life_adapter import SportingLifeAdapter
+from .adapters.timeform_adapter import TimeformAdapter
 from .adapters.harness_adapter import HarnessAdapter
 # from .adapters.greyhound_adapter import GreyhoundAdapter
 
@@ -29,6 +31,8 @@ class OddsEngine:
             RacingAndSportsAdapter(config=self.config),
             RacingAndSportsGreyhoundAdapter(config=self.config),
             AtTheRacesAdapter(config=self.config),
+            SportingLifeAdapter(config=self.config),
+            TimeformAdapter(config=self.config),
             HarnessAdapter(config=self.config)
         ]
 
