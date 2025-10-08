@@ -1,4 +1,4 @@
-# python_service/adapters/timeform_adapter.py
+# python_service/adapters/at_the_races_adapter.py
 
 import asyncio
 import structlog
@@ -6,7 +6,7 @@ import httpx
 from datetime import datetime
 from typing import Dict, Any, List, Optional
 from bs4 import BeautifulSoup, Tag
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation
 
 from .base import BaseAdapter
 from ..models import Race, Runner, OddsData
@@ -15,15 +15,16 @@ from .utils import parse_odds
 log = structlog.get_logger(__name__)
 
 def _clean_text(text: Optional[str]) -> Optional[str]:
-    return ' '.join(text.strip().split()) if text else None
+    if text is None: return None
+    return ' '.join(text.strip().split())
 
-class TimeformAdapter(BaseAdapter):
-    """Adapter for scraping race data from timeform.com."""
+class AtTheRacesAdapter(BaseAdapter):
+    """Adapter for scraping race data from attheraces.com."""
 
     def __init__(self, config):
         super().__init__(
-            source_name="Timeform",
-            base_url="https://www.timeform.com"
+            source_name="AtTheRaces",
+            base_url="https://www.attheraces.com"
         )
 
     async def fetch_races(self, date: str, http_client: httpx.AsyncClient) -> Dict[str, Any]:
@@ -34,48 +35,50 @@ class TimeformAdapter(BaseAdapter):
             races = [race for race in await asyncio.gather(*tasks) if race]
             return self._format_response(races, start_time, is_success=True)
         except Exception as e:
-            log.error("TimeformAdapter: Failed to fetch races", error=str(e), exc_info=True)
+            log.error("AtTheRacesAdapter: Failed to fetch races", error=str(e), exc_info=True)
             return self._format_response([], start_time, is_success=False, error_message=str(e))
 
     async def _get_race_links(self, http_client: httpx.AsyncClient) -> List[str]:
-        url = f"{self.base_url}/horse-racing/racecards"
-        response_html = await self.make_request(http_client, 'GET', url)
-        soup = BeautifulSoup(response_html, "html.parser")
-        links = {a['href'] for a in soup.select("a.rp-racecard-off-link[href]")}
+        url = f"{self.base_url}/racecards"
+        response_json = await self.make_request(http_client, 'GET', url)
+        soup = BeautifulSoup(response_json, "html.parser")
+        links = {a['href'] for a in soup.select("a.race-time-link[href]")}
         return [f"{self.base_url}{link}" for link in links]
 
     async def _fetch_and_parse_race(self, url: str, http_client: httpx.AsyncClient) -> Optional[Race]:
         try:
-            response_html = await self.make_request(http_client, 'GET', url)
-            soup = BeautifulSoup(response_html, "html.parser")
-            track_name = _clean_text(soup.select_one("h1.rp-raceTimeCourseName_name").get_text())
-            race_time_str = _clean_text(soup.select_one("span.rp-raceTimeCourseName_time").get_text())
-            start_time = datetime.strptime(f"{datetime.now().date()} {race_time_str}", "%Y-%m-%d %H:%M")
+            response_json = await self.make_request(http_client, 'GET', url)
+            soup = BeautifulSoup(response_json, "html.parser")
 
-            all_times = [_clean_text(a.get_text()) for a in soup.select('a.rp-racecard-off-link')]
-            race_number = all_times.index(race_time_str) + 1 if race_time_str in all_times else 1
+            header_text = _clean_text(soup.select_one("h1.heading-racecard-title").get_text()).split("|")
+            track_name, race_time = [p.strip() for p in header_text[:2]]
 
-            runners = [self._parse_runner(row) for row in soup.select("div.rp-horseTable_mainRow")]
+            active_link = soup.select_one("a.race-time-link.active")
+            all_links_container = active_link.find_parent("div", "races")
+            all_links = all_links_container.select("a.race-time-link")
+            race_number = all_links.index(active_link) + 1
+
+            runners = [self._parse_runner(row) for row in soup.select("div.card-horse")]
 
             return Race(
-                id=f"tf_{track_name.replace(' ', '')}_{start_time.strftime('%Y%m%d')}_R{race_number}",
+                id=f"atr_{track_name.replace(' ', '')}_{datetime.now().strftime('%Y%m%d')}_R{race_number}",
                 venue=track_name,
                 race_number=race_number,
-                start_time=start_time,
+                start_time=datetime.strptime(f"{datetime.now().date()} {race_time}", "%Y-%m-%d %H:%M"),
                 runners=[r for r in runners if r],
                 source=self.source_name
             )
         except Exception as e:
-            log.error("TimeformAdapter: Failed to parse race page", url=url, error=str(e), exc_info=True)
+            log.error("AtTheRacesAdapter: Failed to parse race page", url=url, error=str(e), exc_info=True)
             return None
 
     def _parse_runner(self, row: Tag) -> Optional[Runner]:
         try:
-            name = _clean_text(row.select_one("a.rp-horseTable_horse-name").get_text())
-            num_str = _clean_text(row.select_one("span.rp-horseTable_horse-number").get_text()).strip("()")
+            name = _clean_text(row.select_one("h3.horse-name a").get_text())
+            num_str = _clean_text(row.select_one("span.horse-number").get_text())
             number = int(''.join(filter(str.isdigit, num_str)))
 
-            odds_str = _clean_text(row.select_one("button.rp-bet-placer-btn__odds").get_text())
+            odds_str = _clean_text(row.select_one("button.best-odds").get_text())
             win_odds = Decimal(str(parse_odds(odds_str))) if odds_str else None
 
             odds_data = {}

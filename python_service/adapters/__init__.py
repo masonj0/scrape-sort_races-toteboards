@@ -3,7 +3,9 @@
 from .tvg_adapter import TVGAdapter
 from .betfair_adapter import BetfairAdapter
 from .betfair_greyhound_adapter import BetfairGreyhoundAdapter
-from .pointsbet_adapter import PointsBetAdapter
+from .at_the_races_adapter import AtTheRacesAdapter
+from .sporting_life_adapter import SportingLifeAdapter
+from .timeform_adapter import TimeformAdapter
 from .racing_and_sports_adapter import RacingAndSportsAdapter
 from .harness_adapter import HarnessAdapter
 from .greyhound_adapter import GreyhoundAdapter
@@ -17,9 +19,11 @@ __all__ = [
     "BetfairAdapter",
     "BetfairGreyhoundAdapter",
     "RacingAndSportsGreyhoundAdapter",
-    "PointsBetAdapter",
+    "AtTheRacesAdapter",
     "PointsBetGreyhoundAdapter",
     "RacingAndSportsAdapter",
+    "SportingLifeAdapter",
+    "TimeformAdapter",
     "HarnessAdapter",
     "GreyhoundAdapter",
 ]
