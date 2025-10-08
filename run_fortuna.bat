@@ -1,6 +1,6 @@
 @echo off
 REM ============================================================================
-REM  Fortuna Faucet: Master Launcher
+REM  Fortuna Faucet: Master Launcher (v2 - Perfected)
 REM ============================================================================
 
 echo [INFO] Launching the Fortuna Faucet application...
@@ -12,6 +12,12 @@ start "Fortuna Backend" cmd /c "call .\\.venv\\Scripts\\activate.bat && cd pytho
 REM --- Launch Frontend ---
 echo [FRONTEND] Starting Next.js development server... (New window)
 start "Fortuna Frontend" cmd /c "cd web_platform/frontend && npm run dev"
+
+REM --- Open Browser ---
+echo [UI] Waiting 5 seconds for the frontend server to initialize...
+timeout /t 5 /nobreak >nul
+echo [UI] Opening the Fortuna Faucet dashboard in your default browser...
+start http://localhost:3000
 
 echo [SUCCESS] Both pillars of Fortuna Faucet have been launched.
 

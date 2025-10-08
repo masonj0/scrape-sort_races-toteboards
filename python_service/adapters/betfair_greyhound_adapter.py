@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # ==============================================================================
-#  Fortuna Faucet: Betfair API Adapter (v2 - Live Odds Enabled)
+#  Fortuna Faucet: Betfair Greyhound API Adapter
 # ==============================================================================
 
 import httpx
@@ -11,23 +11,21 @@ from typing import Dict, Any, List, Optional
 from decimal import Decimal
 
 from .base import BaseAdapter
-from ..models import Race, Runner
+from ..models import Race, Runner, OddsData
 
 log = structlog.get_logger(__name__)
 
-class BetfairAdapter(BaseAdapter):
-    """API client for the Betfair Exchange, with live odds capability."""
+class BetfairGreyhoundAdapter(BaseAdapter):
+    """API client for the Betfair Exchange, specifically for Greyhound markets."""
 
     def __init__(self, config):
-        super().__init__(source_name="BetfairExchange", base_url="https://api.betfair.com/exchange/betting/rest/v1.0/")
+        super().__init__(source_name="BetfairGreyhound", base_url="https://api.betfair.com/exchange/betting/rest/v1.0/")
         self.config = config
         self.app_key = self.config.BETFAIR_APP_KEY
         self.session_token: Optional[str] = None
         self.token_expiry: Optional[datetime] = None
 
     async def _authenticate(self, http_client: httpx.AsyncClient):
-        # Proactively refresh the token if it's set to expire within the next 5 minutes
-        # This prevents race conditions where the token expires mid-request.
         if self.session_token and self.token_expiry and self.token_expiry > (datetime.now() + timedelta(minutes=5)):
             return
         if not all([self.app_key, self.config.BETFAIR_USERNAME, self.config.BETFAIR_PASSWORD]):
@@ -37,8 +35,7 @@ class BetfairAdapter(BaseAdapter):
         headers = {'X-Application': self.app_key, 'Content-Type': 'application/x-www-form-urlencoded'}
         payload = f'username={self.config.BETFAIR_USERNAME}&password={self.config.BETFAIR_PASSWORD}'
 
-        log.info("BetfairAdapter: Authenticating...")
-        # Note: Auth call does not use the hardened make_request as failure is critical
+        log.info("BetfairGreyhoundAdapter: Authenticating...")
         response = await http_client.post(auth_url, headers=headers, content=payload, timeout=20)
         response.raise_for_status()
         data = response.json()
@@ -53,7 +50,7 @@ class BetfairAdapter(BaseAdapter):
         try:
             await self._authenticate(http_client)
             headers = {"X-Application": self.app_key, "X-Authentication": self.session_token, "Content-Type": "application/json"}
-            market_filter = {"eventTypeIds": ["7"], "marketTypeCodes": ["WIN"], "marketStartTime": {"from": f"{date}T00:00:00Z", "to": f"{date}T23:59:59Z"}}
+            market_filter = {"eventTypeIds": ["4339"], "marketTypeCodes": ["WIN"], "marketStartTime": {"from": f"{date}T00:00:00Z", "to": f"{date}T23:59:59Z"}}
 
             market_catalogue = await self.make_request(
                 http_client, 'POST', 'listMarketCatalogue/', headers=headers,
@@ -61,45 +58,16 @@ class BetfairAdapter(BaseAdapter):
             )
 
             if not market_catalogue:
-                return self._format_response([], start_time, is_success=True, error_message="No markets found.")
+                return self._format_response([], start_time, is_success=True, error_message="No greyhound markets found.")
 
             all_races = [self._parse_race(market) for market in market_catalogue]
             return self._format_response(all_races, start_time, is_success=True)
         except httpx.HTTPError as e:
-            log.error("BetfairAdapter: HTTP request failed after retries", error=str(e), exc_info=True)
+            log.error("BetfairGreyhoundAdapter: HTTP request failed after retries", error=str(e), exc_info=True)
             return self._format_response([], start_time, is_success=False, error_message="API request failed after multiple retries.")
         except Exception as e:
-            log.error("BetfairAdapter: Failed to fetch races", exc_info=True, error=str(e))
+            log.error("BetfairGreyhoundAdapter: Failed to fetch races", exc_info=True, error=str(e))
             return self._format_response([], start_time, is_success=False, error_message=str(e))
-
-    async def get_live_odds_for_market(self, market_id: str, http_client: httpx.AsyncClient) -> Dict[int, Decimal]:
-        """TACTICAL method (Pillar 3). Gets live LTP for each runner in a market."""
-        log.info("BetfairAdapter: Fetching live odds for market", market_id=market_id)
-        try:
-            await self._authenticate(http_client)
-            headers = {"X-Application": self.app_key, "X-Authentication": self.session_token, "Content-Type": "application/json"}
-
-            params = {"marketIds": [market_id], "priceProjection": {"priceData": ["EX_TRADED"]}}
-            market_book = await self.make_request(
-                http_client,
-                'POST',
-                'listMarketBook/',
-                headers=headers,
-                json=params
-            )
-
-            live_odds = {}
-            if market_book and market_book[0].get('runners'):
-                for runner in market_book[0]['runners']:
-                    if runner.get('status') == 'ACTIVE' and runner.get('lastPriceTraded'):
-                        live_odds[runner['selectionId']] = Decimal(str(runner['lastPriceTraded']))
-            return live_odds
-        except httpx.HTTPError as e:
-            log.error("BetfairAdapter: Failed to get live odds", market_id=market_id, error=str(e), exc_info=True)
-            return {} # Return empty dict on failure
-        except Exception as e:
-            log.error("BetfairAdapter: Unexpected error getting live odds", market_id=market_id, error=str(e), exc_info=True)
-            return {} # Return empty dict on failure
 
     def _parse_race(self, market: Dict[str, Any]) -> Race:
         runners = []
@@ -110,7 +78,7 @@ class BetfairAdapter(BaseAdapter):
                 selection_id=runner_data['selectionId']
             ))
         return Race(
-            id=f"bf_{market['marketId']}",
+            id=f"bfg_{market['marketId']}",
             venue=market['event']['venue'],
             race_number=self._extract_race_number(market.get('marketName')),
             start_time=datetime.fromisoformat(market['marketStartTime'].replace('Z', '+00:00')),
