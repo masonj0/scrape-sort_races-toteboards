@@ -11,6 +11,7 @@ from typing import Dict, Any, List, Tuple
 from .adapters.base import BaseAdapter
 from .adapters.betfair_adapter import BetfairAdapter
 from .adapters.betfair_greyhound_adapter import BetfairGreyhoundAdapter
+from .adapters.racing_and_sports_greyhound_adapter import RacingAndSportsGreyhoundAdapter
 from .adapters.tvg_adapter import TVGAdapter
 from .adapters.racing_and_sports_adapter import RacingAndSportsAdapter
 from .adapters.pointsbet_adapter import PointsBetAdapter
@@ -26,6 +27,7 @@ class OddsEngine:
             BetfairGreyhoundAdapter(config=self.config),
             TVGAdapter(config=self.config),
             RacingAndSportsAdapter(config=self.config),
+            RacingAndSportsGreyhoundAdapter(config=self.config),
             PointsBetAdapter(config=self.config),
             HarnessAdapter(config=self.config)
         ]
