@@ -28,8 +28,9 @@ class RacingAndSportsGreyhoundAdapter(BaseAdapter):
             return self._format_response([], start_time, is_success=False, error_message="ConfigurationError: Token not set")
 
         try:
+            # HYPOTHESIS: The greyhound endpoint is parallel to the racing one.
             meetings_url = "v1/greyhound/meetings"
-            params = {"date": date, "jurisdiction": "AUS"}
+            params = {"date": date, "jurisdiction": "AUS"} # Jurisdiction may need to be adjusted
             meetings_data = await self.make_request(http_client, 'GET', meetings_url, headers=headers, params=params)
 
             if not meetings_data or not meetings_data.get('meetings'):
