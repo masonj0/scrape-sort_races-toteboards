@@ -9,6 +9,7 @@ from decimal import Decimal, InvalidOperation
 
 from .base import BaseAdapter
 from ..models import Race, Runner, OddsData
+from .utils import parse_odds
 
 log = structlog.get_logger(__name__)
 
@@ -109,12 +110,15 @@ class TVGAdapter(BaseAdapter):
         )
 
     def _parse_tvg_odds(self, odds_string: str) -> Optional[Decimal]:
-        if not odds_string or odds_string == "SCR": return None
-        if odds_string == "EVEN": return Decimal('2.0')
-        if "/" in odds_string:
-            try:
-                numerator, denominator = odds_string.split("/")
-                return (Decimal(numerator) / Decimal(denominator)) + Decimal('1.0')
-            except (ValueError, ZeroDivisionError, InvalidOperation): return None
-        try: return Decimal(odds_string)
-        except InvalidOperation: return None
+        if not odds_string or odds_string == "SCR":
+            return None
+        try:
+            # Utilize the centralized parsing utility which handles fractions, evens, and decimals.
+            parsed_float = parse_odds(odds_string)
+            # The utility returns a high number on failure, which we can filter out.
+            if parsed_float >= 999.0:
+                return None
+            return Decimal(str(parsed_float))
+        except (ValueError, InvalidOperation):
+            log.warning("Could not convert parsed TVG odds to Decimal", odds_str=odds_string)
+            return None

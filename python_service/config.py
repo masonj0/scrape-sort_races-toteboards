@@ -8,7 +8,7 @@
 
 from pydantic_settings import BaseSettings
 from functools import lru_cache
-from typing import List
+from typing import List, Optional
 
 class Settings(BaseSettings):
     # --- Application Security ---
@@ -23,6 +23,7 @@ class Settings(BaseSettings):
     TVG_API_KEY: str = ""
     RACING_AND_SPORTS_TOKEN: str = ""
     POINTSBET_API_KEY: str = ""
+    GREYHOUND_API_URL: Optional[str] = None
 
     # --- CORS Configuration ---
     ALLOWED_ORIGINS: List[str] = ["http://localhost:3000", "http://localhost:3001"]

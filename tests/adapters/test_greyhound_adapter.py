@@ -18,7 +18,8 @@ def mock_config():
         BETFAIR_APP_KEY="test_key",
         BETFAIR_USERNAME="test_user",
         BETFAIR_PASSWORD="test_password",
-        API_KEY="test_api_key"
+        API_KEY="test_api_key",
+        GREYHOUND_API_URL="https://api.example.com"
     )
 
 @pytest.mark.asyncio
