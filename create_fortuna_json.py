@@ -1,5 +1,5 @@
 # create_fortuna_json.py
-# This script now dynamically reads the manifests to create the FORTUNA_ALL.JSON package.
+# This script now contains the full, enlightened logic to handle all manifest formats and path styles.
 
 import json
 import os
@@ -10,35 +10,76 @@ import sys
 MANIFEST_FILES = ['MANIFEST2.md', 'MANIFEST3.md']
 OUTPUT_FILE = 'FORTUNA_ALL.JSON'
 
-# --- Core Functions ---
-def parse_manifest_for_links(manifest_path):
-    """Parses a manifest file to extract raw GitHub file links. THIS LOGIC IS A VERBATIM COPY FROM convert_to_json.py."""
-    if not os.path.exists(manifest_path):
-        print(f"    [WARNING] Manifest not found: {manifest_path}")
-        return []
-    with open(manifest_path, 'r', encoding='utf-8') as f:
-        content = f.read()
-    return re.findall(r'(https://raw\.githubusercontent\.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/[-/\w\.]+)', content)
+# --- ENLIGHTENED PARSING LOGIC (V2) ---
+def extract_and_normalize_path(line: str) -> str | None:
+    """
+    Extracts a file path from a line, handling multiple formats, and normalizes it.
+    Handles:
+    - Markdown links: `* [display](path)`
+    - Plain paths in backticks: ``- `path.py` - description``
+    - Plain paths with list markers: `- path/to/file.py`
+    """
+    line = line.strip()
+    if not line or line.startswith('#'):
+        return None
+
+    # 1. Check for Markdown link format
+    md_match = re.search(r'\[.*\]\((https?://[^\)]+)\)', line)
+    if md_match:
+        path = md_match.group(1)
+    else:
+        # 2. Check for paths in backticks
+        bt_match = re.search(r'`([^`]+)`', line)
+        if bt_match:
+            path = bt_match.group(1)
+        else:
+            # 3. Assume plain path, stripping list markers
+            path = re.sub(r'^[*-]\s*', '', line).split(' ')[0]
+
+    # --- Path Standardization ---
+    if not path or not ('.' in path or '/' in path):
+        return None # Not a valid path
+
+    # If it's a full raw GitHub URL, extract the local path
+    if path.startswith('https://raw.githubusercontent.com/'):
+        path = '/'.join(path.split('/main/')[1:])
+
+    # Final check for valid file extensions or structure
+    if not re.search(r'(\.[a-zA-Z0-9]+$)|(^[\w/]+$)', path):
+        return None
+
+    return path.strip()
 
 # --- Main Orchestrator ---
 def main():
-    print(f"\n{'='*60}\nStarting FORTUNA_ALL.JSON creation process... (Scribe Ascension Edition)\n{'='*60}")
+    print(f"\n{'='*60}\nStarting FORTUNA_ALL.JSON creation process... (Enlightened Scribe Edition)\n{'='*60}")
 
     all_links = []
     for manifest in MANIFEST_FILES:
         print(f"--> Parsing manifest: {manifest}")
-        links = parse_manifest_for_links(manifest)
-        all_links.extend(links)
-        print(f"    --> Found {len(links)} links.")
+        if not os.path.exists(manifest):
+            print(f"    [WARNING] Manifest not found: {manifest}")
+            continue
 
-    if not all_links:
-        print("\n[FATAL] No links found in any manifest. Aborting.")
+        with open(manifest, 'r', encoding='utf-8') as f:
+            lines = f.readlines()
+
+        paths_found = 0
+        for line in lines:
+            path = extract_and_normalize_path(line)
+            if path:
+                all_local_paths.append(path)
+                paths_found += 1
+        print(f"    --> Found {paths_found} valid file paths.")
+
+    if not all_local_paths:
+        print("\n[FATAL] No valid file paths found in any manifest. Aborting.")
         sys.exit(1)
 
     fortuna_data = {}
     processed_count = 0
     failed_count = 0
-    unique_links = sorted(list(set(all_links)))
+    unique_local_paths = sorted(list(set(all_local_paths)))
 
     print(f"\nFound a total of {len(unique_links)} unique files to process.")
 
