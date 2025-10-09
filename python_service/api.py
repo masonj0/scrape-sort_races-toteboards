@@ -3,7 +3,7 @@
 import structlog
 from datetime import datetime, date
 from typing import List, Optional
-from fastapi import FastAPI, HTTPException, Request, Depends
+from fastapi import FastAPI, HTTPException, Request, Depends, Query
 from fastapi.middleware.cors import CORSMiddleware
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.middleware import SlowAPIMiddleware
@@ -81,7 +81,11 @@ async def get_qualified_races(
     request: Request,
     race_date: Optional[date] = None,
     engine: OddsEngine = Depends(get_engine),
-    _=Depends(verify_api_key)
+    _=Depends(verify_api_key),
+    # --- Dynamic Analyzer Parameters ---
+    max_field_size: Optional[int] = Query(None, description="Override the max field size for the analyzer."),
+    min_favorite_odds: Optional[float] = Query(None, description="Override the min favorite odds."),
+    min_second_favorite_odds: Optional[float] = Query(None, description="Override the min second favorite odds.")
 ):
     """
     Gets all races for a given date, filters them for qualified betting
@@ -98,8 +102,16 @@ async def get_qualified_races(
         races = aggregated_data.get('races', [])
 
         analyzer_engine = request.app.state.analyzer_engine
-        # In the future, kwargs could come from the request's query params
-        analyzer = analyzer_engine.get_analyzer(analyzer_name)
+        # Collect any provided optional parameters into a dictionary
+        analyzer_params = {
+            "max_field_size": max_field_size,
+            "min_favorite_odds": min_favorite_odds,
+            "min_second_favorite_odds": min_second_favorite_odds
+        }
+        # Filter out any parameters that were not provided by the user
+        custom_params = {k: v for k, v in analyzer_params.items() if v is not None}
+
+        analyzer = analyzer_engine.get_analyzer(analyzer_name, **custom_params)
         result = analyzer.qualify_races(races)
         return QualifiedRacesResponse(**result)
     except ValueError as e:

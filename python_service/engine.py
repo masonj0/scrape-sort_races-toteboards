@@ -47,7 +47,7 @@ class OddsEngine:
 
     async def close(self):
         await self.http_client.aclose()
-        await self.redis_client.close()
+        await self.redis_client.aclose() # Use aclose() for async client
 
     def get_all_adapter_statuses(self) -> List[Dict[str, Any]]:
         return [adapter.get_status() for adapter in self.adapters]
