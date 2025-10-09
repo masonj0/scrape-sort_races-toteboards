@@ -11,50 +11,46 @@ MANIFEST_FILES = ['MANIFEST2.md', 'MANIFEST3.md']
 OUTPUT_FILE = 'FORTUNA_ALL.JSON'
 
 # --- Core Functions ---
-def parse_manifest_for_links(manifest_path):
-    """Parses a manifest file to extract raw GitHub file links."""
+def parse_manifest_for_paths(manifest_path):
+    """Parses a manifest file to extract local file paths."""
     if not os.path.exists(manifest_path):
         print(f"    [WARNING] Manifest not found: {manifest_path}")
         return []
     with open(manifest_path, 'r', encoding='utf-8') as f:
         content = f.read()
-    # This regex now finds both markdown links and plain text paths
-    plain_paths = re.findall(r'^- `(.+?)`', content, re.MULTILINE)
-    markdown_links = re.findall(r'\[(.+?)\]\((https://raw\.githubusercontent\.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/[-/\w\.]+)\)', content)
-
-    # Extract path from the link tuple
-    linked_paths = [link.split('/main/')[1] for _, link in markdown_links]
-
-    return plain_paths + linked_paths
+    # This regex is the 'wisdom'. It finds the markdown links and extracts the local path part.
+    links = re.findall(r'https://raw\.githubusercontent\.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/([-a-zA-Z0-9_/\\.]+)', content)
+    return links
 
 # --- Main Orchestrator ---
 def main():
-    print(f"\n{'='*60}\nStarting FORTUNA_ALL.JSON creation process...\n{'='*60}")
+    print(f"\n{'='*60}\nStarting FORTUNA_ALL.JSON creation process... (Wise Scribe Edition)\n{'='*60}")
 
-    all_paths = []
+    all_local_paths = []
     for manifest in MANIFEST_FILES:
         print(f"--> Parsing manifest: {manifest}")
-        paths = parse_manifest_for_links(manifest)
-        all_paths.extend(paths)
-        print(f"    --> Found {len(paths)} paths.")
+        local_paths = parse_manifest_for_paths(manifest)
+        all_local_paths.extend(local_paths)
+        print(f"    --> Found {len(local_paths)} file paths.")
 
-    if not all_paths:
-        print("\n[FATAL] No paths found in any manifest. Aborting.")
+    if not all_local_paths:
+        print("\n[FATAL] No file paths found in any manifest. Aborting.")
         sys.exit(1)
 
     fortuna_data = {}
     processed_count = 0
     failed_count = 0
-    unique_paths = sorted(list(set(all_paths))) # Use a sorted list for consistent order
+    # Use a sorted list of unique paths for consistent order and no duplicates
+    unique_local_paths = sorted(list(set(all_local_paths)))
 
-    print(f"\nFound a total of {len(unique_paths)} unique files to process.")
+    print(f"\nFound a total of {len(unique_local_paths)} unique files to process.")
 
-    for local_path in unique_paths:
+    for local_path in unique_local_paths:
         try:
             print(f"--> Processing: {local_path}")
 
             if not os.path.exists(local_path):
-                print(f"    [ERROR] File not found locally: {local_path}")
+                print(f"    [ERROR] File not found on disk: {local_path}")
                 failed_count += 1
                 continue
 
@@ -64,14 +60,14 @@ def main():
             fortuna_data[local_path] = content
             processed_count += 1
         except Exception as e:
-            print(f"    [ERROR] Failed to process {local_path}: {e}")
+            print(f"    [ERROR] Failed to read {local_path}: {e}")
             failed_count += 1
 
     print(f"\nWriting {len(fortuna_data)} files to {OUTPUT_FILE}...")
     with open(OUTPUT_FILE, 'w', encoding='utf-8') as f:
         json.dump(fortuna_data, f, indent=4)
 
-    print(f"\n{'='*60}\nPackaging process complete.\nSuccessfully processed: {processed_count}/{len(unique_paths)}\nFailed/Skipped: {failed_count}\n{'='*60}")
+    print(f"\n{'='*60}\nPackaging process complete.\nSuccessfully processed: {processed_count}/{len(unique_local_paths)}\nFailed/Skipped: {failed_count}\n{'='*60}")
 
     if failed_count > 0:
         print("\n[WARNING] Some files failed to process. The output may be incomplete.")
