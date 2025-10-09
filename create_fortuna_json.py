@@ -54,7 +54,7 @@ def extract_and_normalize_path(line: str) -> str | None:
 def main():
     print(f"\n{'='*60}\nStarting FORTUNA_ALL.JSON creation process... (Enlightened Scribe Edition)\n{'='*60}")
 
-    all_local_paths = []
+    all_links = []
     for manifest in MANIFEST_FILES:
         print(f"--> Parsing manifest: {manifest}")
         if not os.path.exists(manifest):
@@ -81,10 +81,12 @@ def main():
     failed_count = 0
     unique_local_paths = sorted(list(set(all_local_paths)))
 
-    print(f"\nFound a total of {len(unique_local_paths)} unique files to process.")
+    print(f"\nFound a total of {len(unique_links)} unique files to process.")
 
-    for local_path in unique_local_paths:
+    for link in unique_links:
         try:
+            # THIS LOGIC IS A VERBATIM COPY FROM convert_to_json.py
+            local_path = '/'.join(link.split('/main/')[1:])
             print(f"--> Processing: {local_path}")
 
             if not os.path.exists(local_path):
@@ -98,14 +100,14 @@ def main():
             fortuna_data[local_path] = content
             processed_count += 1
         except Exception as e:
-            print(f"    [ERROR] Failed to read {local_path}: {e}")
+            print(f"    [ERROR] Failed to read {link}: {e}")
             failed_count += 1
 
     print(f"\nWriting {len(fortuna_data)} files to {OUTPUT_FILE}...")
     with open(OUTPUT_FILE, 'w', encoding='utf-8') as f:
         json.dump(fortuna_data, f, indent=4)
 
-    print(f"\n{'='*60}\nPackaging process complete.\nSuccessfully processed: {processed_count}/{len(unique_local_paths)}\nFailed/Skipped: {failed_count}\n{'='*60}")
+    print(f"\n{'='*60}\nPackaging process complete.\nSuccessfully processed: {processed_count}/{len(unique_links)}\nFailed/Skipped: {failed_count}\n{'='*60}")
 
     if failed_count > 0:
         print("\n[WARNING] Some files failed to process. The output may be incomplete.")
