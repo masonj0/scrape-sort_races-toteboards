@@ -1,93 +1,78 @@
+# create_fortuna_json.py
+# This script now dynamically reads the manifests to create the FORTUNA_ALL.JSON package.
+
 import json
 import os
+import re
+import sys
 
-# This list is consolidated from MANIFEST2.md and MANIFEST3.md
-ALL_FILES = [
-    # MANIFEST2
-    "python_service/__init__.py",
-    "python_service/api.py",
-    "python_service/engine.py",
-    "python_service/models.py",
-    "python_service/analyzer.py",
-    "python_service/security.py",
-    "python_service/adapters/__init__.py",
-    "python_service/adapters/base.py",
-    "python_service/adapters/utils.py",
-    "python_service/adapters/betfair_adapter.py",
-    "python_service/adapters/pointsbet_adapter.py",
-    "python_service/adapters/racing_and_sports_adapter.py",
-    "python_service/adapters/tvg_adapter.py",
-    "python_service/adapters/harness_adapter.py",
-    "python_service/adapters/greyhound_adapter.py",
-    "python_service/adapters/betfair_greyhound_adapter.py",
-    "python_service/adapters/racing_and_sports_greyhound_adapter.py",
-    "python_service/adapters/at_the_races_adapter.py",
-    "python_service/adapters/sporting_life_adapter.py",
-    "python_service/adapters/timeform_adapter.py",
-    "python_service/adapters/the_racing_api_adapter.py",
-    "web_platform/frontend/package.json",
-    "web_platform/frontend/tailwind.config.ts",
-    "web_platform/frontend/tsconfig.json",
-    "web_platform/frontend/app/globals.css",
-    "web_platform/frontend/app/layout.tsx",
-    "web_platform/frontend/app/page.tsx",
-    # MANIFEST3
-    ".gitignore",
-    "convert_to_json.py",
-    "run_fortuna.bat",
-    "setup_windows.bat",
-    ".env",
-    ".env.example",
-    "python_service/requirements.txt",
-    "README.md",
-    "ARCHITECTURAL_MANDATE.md",
-    "HISTORY.md",
-    "STATUS.md",
-    "WISDOM.md",
-    "PROJECT_MANIFEST.md",
-    "ROADMAP_APPENDICES.md",
-    # Added during "The Great Correction"
-    "python_service/config.py",
-    "python_service/logging_config.py",
-    "tests/conftest.py",
-    "tests/test_analyzer.py",
-    "tests/test_api.py",
-    "tests/test_legacy_scenarios.py",
-    "tests/adapters/test_greyhound_adapter.py",
-    "tests/adapters/test_pointsbet_adapter.py",
-]
+# --- Configuration ---
+MANIFEST_FILES = ['MANIFEST2.md', 'MANIFEST3.md']
+OUTPUT_FILE = 'FORTUNA_ALL.JSON'
 
-aggregated_data = {}
+# --- Core Functions ---
+def parse_manifest_for_links(manifest_path):
+    """Parses a manifest file to extract raw GitHub file links."""
+    if not os.path.exists(manifest_path):
+        print(f"    [WARNING] Manifest not found: {manifest_path}")
+        return []
+    with open(manifest_path, 'r', encoding='utf-8') as f:
+        content = f.read()
+    return re.findall(r'https://raw\.githubusercontent\.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/[-/\w\.]+', content)
 
-print("Starting file aggregation...")
+# --- Main Orchestrator ---
+def main():
+    print(f"\n{'='*60}\nStarting FORTUNA_ALL.JSON creation process...\n{'='*60}")
 
-for file_path in ALL_FILES:
-    content = None
-    is_py = file_path.endswith('.py')
+    all_links = []
+    for manifest in MANIFEST_FILES:
+        print(f"--> Parsing manifest: {manifest}")
+        links = parse_manifest_for_links(manifest)
+        all_links.extend(links)
+        print(f"    --> Found {len(links)} links.")
 
-    try:
-        # Simplified logic: Always read from the source path to ensure latest version.
-        if os.path.exists(file_path):
-            with open(file_path, 'r', encoding='utf-8') as f:
+    if not all_links:
+        print("\n[FATAL] No links found in any manifest. Aborting.")
+        sys.exit(1)
+
+    fortuna_data = {}
+    processed_count = 0
+    failed_count = 0
+    unique_links = sorted(list(set(all_links))) # Use a sorted list for consistent order
+
+    print(f"\nFound a total of {len(unique_links)} unique files to process.")
+
+    for link in unique_links:
+        try:
+            # Convert the raw GitHub URL to a local file path
+            local_path = '/'.join(link.split('/main/')[1:])
+            print(f"--> Processing: {local_path}")
+
+            if not os.path.exists(local_path):
+                print(f"    [ERROR] File not found locally: {local_path}")
+                failed_count += 1
+                continue
+
+            with open(local_path, 'r', encoding='utf-8', errors='ignore') as f:
                 content = f.read()
 
-            # Store all content as raw strings for consistency.
-            # The consumer of the JSON can parse the content if needed (e.g., for package.json).
-            aggregated_data[file_path] = content
-            print(f"Successfully processed file: {file_path}")
-        else:
-            print(f"Warning: Source file not found, skipping: {file_path}")
-            continue
+            fortuna_data[local_path] = content
+            processed_count += 1
+        except Exception as e:
+            print(f"    [ERROR] Failed to process {link}: {e}")
+            failed_count += 1
 
-    except Exception as e:
-        print(f"ERROR processing file {file_path}: {e}")
+    print(f"\nWriting {len(fortuna_data)} files to {OUTPUT_FILE}...")
+    with open(OUTPUT_FILE, 'w', encoding='utf-8') as f:
+        json.dump(fortuna_data, f, indent=4)
 
-# Write the aggregated data to the final JSON file
-try:
-    with open('FORTUNA_ALL.JSON', 'w', encoding='utf-8') as f:
-        json.dump(aggregated_data, f, indent=4)
-    print("\nSuccessfully created FORTUNA_ALL.JSON")
-except Exception as e:
-    print(f"\nERROR writing final JSON file: {e}")
+    print(f"\n{'='*60}\nPackaging process complete.\nSuccessfully processed: {processed_count}/{len(unique_links)}\nFailed/Skipped: {failed_count}\n{'='*60}")
 
-print("\nAggregation complete.")
+    if failed_count > 0:
+        print("\n[WARNING] Some files failed to process. The output may be incomplete.")
+        sys.exit(1)
+    else:
+        print(f"\n[SUCCESS] {OUTPUT_FILE} created successfully.")
+
+if __name__ == "__main__":
+    main()
