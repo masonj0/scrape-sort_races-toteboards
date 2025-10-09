@@ -1,49 +1,24 @@
-#!/usr/bin/env python3
-# ==============================================================================
-#  Fortuna Faucet: Betfair Greyhound API Adapter
-# ==============================================================================
+# python_service/adapters/betfair_greyhound_adapter.py
 
 import httpx
 import structlog
 import re
-from datetime import datetime, timedelta
+from datetime import datetime
 from typing import Dict, Any, List, Optional
-from decimal import Decimal
 
 from .base import BaseAdapter
-from ..models import Race, Runner, OddsData
+from .betfair_auth_mixin import BetfairAuthMixin
+from ..models import Race, Runner
 
 log = structlog.get_logger(__name__)
 
-class BetfairGreyhoundAdapter(BaseAdapter):
-    """API client for the Betfair Exchange, specifically for Greyhound markets."""
+class BetfairGreyhoundAdapter(BetfairAuthMixin, BaseAdapter):
+    """API client for Betfair Greyhound markets, using a shared authentication mixin."""
 
     def __init__(self, config):
         super().__init__(source_name="BetfairGreyhound", base_url="https://api.betfair.com/exchange/betting/rest/v1.0/")
         self.config = config
         self.app_key = self.config.BETFAIR_APP_KEY
-        self.session_token: Optional[str] = None
-        self.token_expiry: Optional[datetime] = None
-
-    async def _authenticate(self, http_client: httpx.AsyncClient):
-        if self.session_token and self.token_expiry and self.token_expiry > (datetime.now() + timedelta(minutes=5)):
-            return
-        if not all([self.app_key, self.config.BETFAIR_USERNAME, self.config.BETFAIR_PASSWORD]):
-            raise ValueError("Betfair credentials not fully configured.")
-
-        auth_url = "https://identitysso.betfair.com/api/login"
-        headers = {'X-Application': self.app_key, 'Content-Type': 'application/x-www-form-urlencoded'}
-        payload = f'username={self.config.BETFAIR_USERNAME}&password={self.config.BETFAIR_PASSWORD}'
-
-        log.info("BetfairGreyhoundAdapter: Authenticating...")
-        response = await http_client.post(auth_url, headers=headers, content=payload, timeout=20)
-        response.raise_for_status()
-        data = response.json()
-        if data.get('status') == 'SUCCESS':
-            self.session_token = data.get('token')
-            self.token_expiry = datetime.now() + timedelta(hours=3)
-        else:
-            raise ConnectionError(f"Betfair authentication failed: {data.get('error')}")
 
     async def fetch_races(self, date: str, http_client: httpx.AsyncClient) -> Dict[str, Any]:
         start_time = datetime.now()
@@ -52,31 +27,19 @@ class BetfairGreyhoundAdapter(BaseAdapter):
             headers = {"X-Application": self.app_key, "X-Authentication": self.session_token, "Content-Type": "application/json"}
             market_filter = {"eventTypeIds": ["4339"], "marketTypeCodes": ["WIN"], "marketStartTime": {"from": f"{date}T00:00:00Z", "to": f"{date}T23:59:59Z"}}
 
-            market_catalogue = await self.make_request(
-                http_client, 'POST', 'listMarketCatalogue/', headers=headers,
-                json={"filter": market_filter, "maxResults": 1000, "marketProjection": ["EVENT", "RUNNER_DESCRIPTION"]}
-            )
+            market_catalogue = await self.make_request(http_client, 'POST', 'listMarketCatalogue/', headers=headers, json={"filter": market_filter, "maxResults": 1000, "marketProjection": ["EVENT", "RUNNER_DESCRIPTION"]})
 
             if not market_catalogue:
-                return self._format_response([], start_time, is_success=True, error_message="No greyhound markets found.")
+                return self._format_response([], start_time, is_success=True, error_message="No markets found.")
 
             all_races = [self._parse_race(market) for market in market_catalogue]
             return self._format_response(all_races, start_time, is_success=True)
-        except httpx.HTTPError as e:
-            log.error("BetfairGreyhoundAdapter: HTTP request failed after retries", error=str(e), exc_info=True)
-            return self._format_response([], start_time, is_success=False, error_message="API request failed after multiple retries.")
         except Exception as e:
             log.error("BetfairGreyhoundAdapter: Failed to fetch races", exc_info=True, error=str(e))
             return self._format_response([], start_time, is_success=False, error_message=str(e))
 
     def _parse_race(self, market: Dict[str, Any]) -> Race:
-        runners = []
-        for runner_data in market.get('runners', []):
-            runners.append(Runner(
-                number=runner_data.get('sortPriority', 99),
-                name=runner_data['runnerName'],
-                selection_id=runner_data['selectionId']
-            ))
+        runners = [Runner(number=rd.get('sortPriority', 99), name=rd['runnerName'], selection_id=rd['selectionId']) for rd in market.get('runners', [])]
         return Race(
             id=f"bfg_{market['marketId']}",
             venue=market['event']['venue'],
@@ -90,16 +53,3 @@ class BetfairGreyhoundAdapter(BaseAdapter):
         if not name: return 1
         match = re.search(r'\\bR(\\d{1,2})\\b', name)
         return int(match.group(1)) if match else 1
-
-    def _format_response(self, races: List[Race], start_time: datetime, is_success: bool = True, error_message: str = None) -> Dict[str, Any]:
-        fetch_duration = (datetime.now() - start_time).total_seconds()
-        return {
-            'races': races,
-            'source_info': {
-                'name': self.source_name,
-                'status': 'SUCCESS' if is_success else 'FAILED',
-                'races_fetched': len(races),
-                'error_message': error_message,
-                'fetch_duration': fetch_duration
-            }
-        }

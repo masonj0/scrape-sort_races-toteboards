@@ -73,9 +73,11 @@ def test_true_trifecta_analyzer_with_legacy_scenarios(mock_fetch, client):
 
     # ASSERT
     assert response.status_code == 200
-    qualified_races = response.json()
+    response_data = response.json()
 
     # The analyzer should filter the 4 mock races down to the 1 that passes
+    assert "races" in response_data
+    qualified_races = response_data['races']
     assert len(qualified_races) == 1, "Only one race should have passed the True Trifecta criteria"
     assert qualified_races[0]["id"] == "TT_PASS_1"
     mock_fetch.assert_awaited_once()

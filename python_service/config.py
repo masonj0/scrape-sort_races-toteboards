@@ -31,12 +31,16 @@ class Settings(BaseSettings):
     SPORTING_LIFE_KEY: Optional[str] = None
     TIMEFORM_KEY: Optional[str] = None
 
+    # --- Caching Configuration ---
+    REDIS_URL: str = "redis://localhost"
+
     # --- CORS Configuration ---
     ALLOWED_ORIGINS: List[str] = ["http://localhost:3000", "http://localhost:3001"]
 
-    class Config:
-        env_file = ".env"
-        case_sensitive = True
+    model_config = {
+        "env_file": ".env",
+        "case_sensitive": True
+    }
 
 @lru_cache()
 def get_settings() -> Settings:

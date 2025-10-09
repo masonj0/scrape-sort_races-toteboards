@@ -14,6 +14,4 @@ class NYRABetsAdapter(BaseAdapter):
     async def fetch_races(self, date: str, http_client: httpx.AsyncClient) -> Dict[str, Any]:
         start_time = datetime.now()
         log.warning("NYRABetsAdapter.fetch_races is a stub.")
-        return self._format_response([], start_time)
-    def _format_response(self, races: List[Race], start_time: datetime, **kwargs) -> Dict[str, Any]:
-        return {'races': [], 'source_info': {'name': self.source_name, 'status': 'SUCCESS', 'races_fetched': 0, 'error_message': 'Not Implemented', 'fetch_duration': (datetime.now() - start_time).total_seconds()}}
+        return self._format_response([], start_time, is_success=True, error_message="Not Implemented")
