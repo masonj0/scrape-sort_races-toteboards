@@ -47,19 +47,6 @@ class TemplateAdapter(BaseAdapter):
         log.warning("TemplateAdapter.fetch_races is a stub and is not implemented.")
         return self._format_response(all_races, start_time)
 
-    def _format_response(self, races: List[Race], start_time: datetime, is_success: bool = True, error_message: str = None) -> Dict[str, Any]:
-        """Formats the adapter's response consistently."""
-        fetch_duration = (datetime.now() - start_time).total_seconds()
-        return {
-            'races': [r.model_dump() for r in races],
-            'source_info': {
-                'name': self.source_name,
-                'status': 'SUCCESS' if is_success else 'FAILED',
-                'races_fetched': len(races),
-                'error_message': error_message,
-                'fetch_duration': fetch_duration
-            }
-        }
 
     def _parse_race(self, race_data: Dict[str, Any]) -> Race:
         """[IMPLEMENT ME] Logic to parse a single race from the source's data structure."""
