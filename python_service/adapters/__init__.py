@@ -12,10 +12,12 @@ from .greyhound_adapter import GreyhoundAdapter
 from .racing_and_sports_greyhound_adapter import RacingAndSportsGreyhoundAdapter
 from .pointsbet_greyhound_adapter import PointsBetGreyhoundAdapter
 from .the_racing_api_adapter import TheRacingApiAdapter
+from .gbgb_api_adapter import GbgbApiAdapter
 
 # Define the public API for the adapters package, making it easy for the
 # orchestrator to discover and use them.
 __all__ = [
+    "GbgbApiAdapter",
     "TVGAdapter",
     "BetfairAdapter",
     "BetfairGreyhoundAdapter",
