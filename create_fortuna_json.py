@@ -54,7 +54,7 @@ def extract_and_normalize_path(line: str) -> str | None:
 def main():
     print(f"\n{'='*60}\nStarting FORTUNA Dossier creation process... (Two Dossier Edition)\n{'='*60}")
 
-    all_local_paths = []
+    all_links = []
     for manifest in MANIFEST_FILES:
         print(f"--> Parsing manifest: {manifest}")
         if not os.path.exists(manifest):
@@ -83,8 +83,10 @@ def main():
 
     print(f"\nFound a total of {len(unique_local_paths)} unique files to categorize and process.")
 
-    for local_path in unique_local_paths:
+    for link in unique_links:
         try:
+            # THIS LOGIC IS A VERBATIM COPY FROM convert_to_json.py
+            local_path = '/'.join(link.split('/main/')[1:])
             print(f"--> Processing: {local_path}")
 
             if not os.path.exists(local_path):
@@ -102,7 +104,7 @@ def main():
                 part2_data[local_path] = content
 
         except Exception as e:
-            print(f"    [ERROR] Failed to read {local_path}: {e}")
+            print(f"    [ERROR] Failed to read {link}: {e}")
             failed_count += 1
 
     # --- Write Part 1 ---
