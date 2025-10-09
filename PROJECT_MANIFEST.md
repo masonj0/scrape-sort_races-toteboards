@@ -6,7 +6,7 @@
 
 ## CORE ARCHITECTURE (Ultimate Solo)
 
-*   `.env`: **CORE** - Centralized configuration.
+*   `.env.example`: **CORE** - Centralized configuration template.
 *   `ARCHITECTURAL_MANDATE.md`: **CORE** - The project's final strategic blueprint.
 *   `README.md`: **CORE** - The primary entry point.
 *   `STATUS.md`: **CORE** - The final status report.
