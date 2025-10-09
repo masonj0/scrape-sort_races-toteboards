@@ -20,6 +20,7 @@ from .adapters.sporting_life_adapter import SportingLifeAdapter
 from .adapters.timeform_adapter import TimeformAdapter
 from .adapters.harness_adapter import HarnessAdapter
 from .adapters.the_racing_api_adapter import TheRacingApiAdapter
+from .adapters.gbgb_api_adapter import GbgbApiAdapter
 
 log = structlog.get_logger(__name__)
 
@@ -37,6 +38,7 @@ class OddsEngine:
             SportingLifeAdapter(config=self.config),
             TimeformAdapter(config=self.config),
             TheRacingApiAdapter(config=self.config),
+            GbgbApiAdapter(config=self.config),
             HarnessAdapter(config=self.config)
         ]
         self.http_client = httpx.AsyncClient()
