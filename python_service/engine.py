@@ -18,6 +18,7 @@ from .adapters.at_the_races_adapter import AtTheRacesAdapter
 from .adapters.sporting_life_adapter import SportingLifeAdapter
 from .adapters.timeform_adapter import TimeformAdapter
 from .adapters.harness_adapter import HarnessAdapter
+from .adapters.the_racing_api_adapter import TheRacingApiAdapter
 # from .adapters.greyhound_adapter import GreyhoundAdapter
 
 class OddsEngine:
@@ -33,6 +34,7 @@ class OddsEngine:
             AtTheRacesAdapter(config=self.config),
             SportingLifeAdapter(config=self.config),
             TimeformAdapter(config=self.config),
+            TheRacingApiAdapter(config=self.config),
             HarnessAdapter(config=self.config)
         ]
 
@@ -40,6 +42,7 @@ class OddsEngine:
         if self.config.GREYHOUND_API_URL:
             self.log.info("GREYHOUND_API_URL is set. Activating GreyhoundAdapter.")
             self.adapters.append(GreyhoundAdapter(config=self.config))
+
         self.http_client = httpx.AsyncClient()
 
     async def close(self):
