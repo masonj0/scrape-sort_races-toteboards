@@ -73,24 +73,32 @@ def test_analyzer_engine_get_nonexistent_analyzer():
 
 def test_trifecta_analyzer_plugin_logic(sample_races_for_true_trifecta):
     """
-    Tests the TrifectaAnalyzer's scoring and sorting logic.
+    Tests the TrifectaAnalyzer's scoring, sorting, and new response structure.
     """
     engine = AnalyzerEngine()
-    analyzer = engine.get_analyzer('trifecta') # Use default criteria
+    analyzer = engine.get_analyzer('trifecta')  # Use default criteria
 
-    qualified_races = analyzer.qualify_races(sample_races_for_true_trifecta)
+    result = analyzer.qualify_races(sample_races_for_true_trifecta)
 
-    # 1. Check that the correct number of races were qualified
+    # 1. Verify the new response structure
+    assert isinstance(result, dict)
+    assert "criteria" in result
+    assert "races" in result
+    assert result['criteria']['max_field_size'] == 10
+
+    qualified_races = result['races']
+
+    # 2. Check that the correct number of races were qualified
     assert len(qualified_races) == 2
 
-    # 2. Check that the scores have been assigned and are valid numbers
+    # 3. Check that the scores have been assigned and are valid numbers
     assert qualified_races[0].qualification_score is not None
     assert qualified_races[1].qualification_score is not None
     assert isinstance(qualified_races[0].qualification_score, float)
 
-    # 3. Check that the races are sorted by score in descending order
+    # 4. Check that the races are sorted by score in descending order
     assert qualified_races[0].qualification_score > qualified_races[1].qualification_score
-    assert qualified_races[0].id == "race_pass_2" # This race should have the higher score
+    assert qualified_races[0].id == "race_pass_2"  # This race should have the higher score
     assert qualified_races[1].id == "race_pass_1"
 
 def test_get_best_win_odds_helper():

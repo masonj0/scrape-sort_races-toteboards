@@ -1,7 +1,7 @@
 # python_service/models.py
 
 from pydantic import BaseModel, Field, field_validator
-from typing import List, Optional, Dict
+from typing import List, Optional, Dict, Any
 from datetime import datetime, date
 from decimal import Decimal
 
@@ -61,3 +61,7 @@ class AggregatedResponse(BaseModel):
     races: List[Race]
     sources: List[SourceInfo]
     metadata: FetchMetadata
+
+class QualifiedRacesResponse(BaseModel):
+    criteria: Dict[str, Any]
+    races: List[Race]

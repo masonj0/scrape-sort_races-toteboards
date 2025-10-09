@@ -207,6 +207,42 @@ def test_get_qualified_races_success(mock_fetch, client):
     # ASSERT
     assert response.status_code == 200
     response_data = response.json()
-    assert len(response_data) == 1
-    assert response_data[0]["id"] == "test_race_1"
+
+    assert "criteria" in response_data
+    assert "races" in response_data
+
+    qualified_races = response_data['races']
+    assert len(qualified_races) == 1
+    assert qualified_races[0]["id"] == "test_race_1"
+
     mock_fetch.assert_awaited_once_with(today.strftime('%Y-%m-%d'))
+
+
+@patch('python_service.engine.OddsEngine.fetch_all_odds', new_callable=AsyncMock)
+def test_get_qualified_races_with_custom_params(mock_fetch, client):
+    """
+    SPEC: The qualified races endpoint should accept and use custom analyzer parameters.
+    """
+    # ARRANGE
+    now = datetime.now()
+    # This race will PASS with default TrifectaAnalyzer settings, but FAIL with custom ones.
+    passing_race = Race(
+        id="passing_race", venue="Test Park", race_number=1, start_time=now, source="Test",
+        runners=[
+            Runner(number=1, name="Fav", odds={"Test": OddsData(win=Decimal("3.0"), source="Test", last_updated=now)}),
+            Runner(number=2, name="SecondFav", odds={"Test": OddsData(win=Decimal("4.5"), source="Test", last_updated=now)})
+        ]
+    )
+    mock_fetch.return_value = {"races": [passing_race]}
+    headers = {"X-API-Key": "test_api_key"}
+
+    # ACT: Call with custom parameters that will cause the race to be filtered out
+    response = client.get("/api/races/qualified/trifecta?min_favorite_odds=3.5", headers=headers)
+
+    # ASSERT
+    assert response.status_code == 200
+    response_data = response.json()
+    # The response should contain no races because our custom criteria filtered it out
+    assert len(response_data['races']) == 0
+    # The criteria in the response should reflect our custom parameter
+    assert response_data['criteria']['min_favorite_odds'] == 3.5

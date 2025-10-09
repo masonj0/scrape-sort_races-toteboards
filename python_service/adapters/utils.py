@@ -26,7 +26,7 @@ def parse_odds(odds: Union[str, int, float]) -> float:
                 return 1.0 + (numerator / denominator)
 
             # Handle "evens"
-            if odds.lower() == 'evens':
+            if odds.lower() in ['evs', 'evens']:
                 return 2.0
 
             # Handle simple decimal strings

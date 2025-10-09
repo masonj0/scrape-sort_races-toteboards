@@ -20,3 +20,7 @@ pydantic-settings==2.1.0
 slowapi==0.1.8
 
 tenacity
+
+# Caching Layer
+redis==5.0.1
+fakeredis==2.20.0 # For testing

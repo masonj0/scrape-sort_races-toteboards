@@ -3,7 +3,7 @@
 import structlog
 from datetime import datetime, date
 from typing import List, Optional
-from fastapi import FastAPI, HTTPException, Request, Depends
+from fastapi import FastAPI, HTTPException, Request, Depends, Query
 from fastapi.middleware.cors import CORSMiddleware
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.middleware import SlowAPIMiddleware
@@ -13,7 +13,7 @@ from contextlib import asynccontextmanager
 
 from .config import get_settings
 from .engine import OddsEngine
-from .models import Race, AggregatedResponse
+from .models import Race, AggregatedResponse, QualifiedRacesResponse
 from .security import verify_api_key
 from .logging_config import configure_logging
 from .analyzer import AnalyzerEngine
@@ -74,14 +74,18 @@ async def get_all_adapter_statuses(request: Request, engine: OddsEngine = Depend
         raise HTTPException(status_code=500, detail="Internal Server Error")
 
 
-@app.get("/api/races/qualified/{analyzer_name}", response_model=List[Race])
+@app.get("/api/races/qualified/{analyzer_name}", response_model=QualifiedRacesResponse)
 @limiter.limit("30/minute")
 async def get_qualified_races(
     analyzer_name: str,
     request: Request,
     race_date: Optional[date] = None,
     engine: OddsEngine = Depends(get_engine),
-    _=Depends(verify_api_key)
+    _=Depends(verify_api_key),
+    # --- Dynamic Analyzer Parameters ---
+    max_field_size: Optional[int] = Query(None, description="Override the max field size for the analyzer."),
+    min_favorite_odds: Optional[float] = Query(None, description="Override the min favorite odds."),
+    min_second_favorite_odds: Optional[float] = Query(None, description="Override the min second favorite odds.")
 ):
     """
     Gets all races for a given date, filters them for qualified betting
@@ -98,10 +102,18 @@ async def get_qualified_races(
         races = aggregated_data.get('races', [])
 
         analyzer_engine = request.app.state.analyzer_engine
-        # In the future, kwargs could come from the request's query params
-        analyzer = analyzer_engine.get_analyzer(analyzer_name)
-        qualified_races = analyzer.qualify_races(races)
-        return qualified_races
+        # Collect any provided optional parameters into a dictionary
+        analyzer_params = {
+            "max_field_size": max_field_size,
+            "min_favorite_odds": min_favorite_odds,
+            "min_second_favorite_odds": min_second_favorite_odds
+        }
+        # Filter out any parameters that were not provided by the user
+        custom_params = {k: v for k, v in analyzer_params.items() if v is not None}
+
+        analyzer = analyzer_engine.get_analyzer(analyzer_name, **custom_params)
+        result = analyzer.qualify_races(races)
+        return QualifiedRacesResponse(**result)
     except ValueError as e:
         # Correctly map a missing analyzer to a 404 Not Found error
         log.warning("Requested analyzer not found", analyzer_name=analyzer_name)
