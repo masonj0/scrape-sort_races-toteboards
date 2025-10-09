@@ -42,6 +42,7 @@ class OddsEngine:
         if self.config.GREYHOUND_API_URL:
             self.log.info("GREYHOUND_API_URL is set. Activating GreyhoundAdapter.")
             self.adapters.append(GreyhoundAdapter(config=self.config))
+
         self.http_client = httpx.AsyncClient()
 
     async def close(self):
