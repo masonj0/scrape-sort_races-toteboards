@@ -26,6 +26,11 @@ class Settings(BaseSettings):
     GREYHOUND_API_URL: Optional[str] = None
     THE_RACING_API_KEY: Optional[str] = None
 
+    # --- Placeholder keys for restored scrapers (not currently used but good practice) ---
+    AT_THE_RACES_KEY: Optional[str] = None
+    SPORTING_LIFE_KEY: Optional[str] = None
+    TIMEFORM_KEY: Optional[str] = None
+
     # --- CORS Configuration ---
     ALLOWED_ORIGINS: List[str] = ["http://localhost:3000", "http://localhost:3001"]
 
