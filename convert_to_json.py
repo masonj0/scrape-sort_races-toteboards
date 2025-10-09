@@ -1,91 +1,229 @@
+#!/usr/bin/env python3
 import json
 import os
 import re
-import sys
-from multiprocessing import Process, Queue
+from pathlib import Path
+from typing import Dict, List, Optional, Tuple
 
-# --- Configuration ---
-MANIFEST_FILES = ['MANIFEST2.md', 'MANIFEST3.md']
-OUTPUT_DIR = 'ReviewableJSON'
-FILE_PROCESSING_TIMEOUT = 10  # Seconds to wait before killing a hung file read
+def parse_manifest(manifest_path: str) -> List[Dict]:
+    """Parse manifest file (markdown or plain text) and extract file information."""
+    entries = []
 
-# --- Core Functions ---
-def parse_manifest_for_links(manifest_path):
-    """Parses a manifest file to extract raw GitHub file links."""
-    if not os.path.exists(manifest_path):
-        return []
-    with open(manifest_path, 'r', encoding='utf-8') as f:
+    with open(manifest_path, 'r') as f:
         content = f.read()
-    return re.findall(r'(https://raw\.githubusercontent\.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/[-/\w\.]+)', content)
 
-def _sandboxed_file_read(file_path, q):
-    """This function runs in a separate process to read a file."""
-    try:
-        with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
-            content = f.read()
-        q.put({"file_path": file_path, "content": content})
-    except Exception as e:
-        q.put({"error": str(e)})
+    # Split into lines and process
+    lines = content.strip().split('\n')
 
-def convert_file_to_json_sandboxed(file_path):
-    """Reads a file in a sandboxed process with a timeout."""
-    q = Queue()
-    p = Process(target=_sandboxed_file_read, args=(file_path, q))
-    p.start()
-    p.join(timeout=FILE_PROCESSING_TIMEOUT)
+    for line in lines:
+        line = line.strip()
+        if not line or line.startswith('#'):  # Skip empty lines and headers
+            continue
 
-    if p.is_alive():
-        p.terminate()
-        p.join() # Ensure termination is complete
-        return {"error": f"Timeout: File processing took longer than {FILE_PROCESSING_TIMEOUT} seconds."}
+        # Extract file path and track name
+        # Handle both markdown links and plain text
+        file_info = extract_file_info(line)
+        if file_info:
+            entries.append(file_info)
 
-    if not q.empty():
-        return q.get()
-    return {"error": "Unknown error in sandboxed read process."}
+    return entries
 
-# --- Main Orchestrator ---
+def extract_file_info(line: str) -> Optional[Dict]:
+    """Extract file path and track information from a manifest line."""
+
+    # Pattern 1: Markdown link format [track_name](path)
+    md_pattern = r'\[([^\]]+)\]\(([^)]+)\)'
+    md_match = re.search(md_pattern, line)
+
+    if md_match:
+        track_name = md_match.group(1)
+        file_path = md_match.group(2)
+    else:
+        # Pattern 2: Plain text format (path or just filename)
+        # Look for .html files
+        if '.html' in line:
+            file_path = line.strip()
+            # Extract track name from filename
+            track_name = extract_track_from_path(file_path)
+        else:
+            return None
+
+    # Normalize the file path
+    normalized_path = normalize_path(file_path)
+
+    # Extract date and other metadata
+    date_info = extract_date_from_path(normalized_path)
+
+    return {
+        'track': track_name,
+        'path': normalized_path,
+        'original_path': file_path,
+        'date': date_info['date'] if date_info else None,
+        'formatted_date': date_info['formatted'] if date_info else None,
+        'filename': os.path.basename(normalized_path)
+    }
+
+def normalize_path(file_path: str) -> str:
+    """Normalize file paths to handle both full and shortened versions."""
+
+    # Remove any leading/trailing whitespace
+    file_path = file_path.strip()
+
+    # If it's already a full path starting with toteboard_scrapes, return as is
+    if file_path.startswith('toteboard_scrapes/'):
+        return file_path
+
+    # If it starts with a date pattern (YYYY_MM_DD), prepend toteboard_scrapes/
+    date_pattern = r'^\d{4}_\d{2}_\d{2}/'
+    if re.match(date_pattern, file_path):
+        return f'toteboard_scrapes/{file_path}'
+
+    # If it's just a filename, try to find it in the directory structure
+    if '/' not in file_path:
+        # This is just a filename, we'll need context to place it
+        return file_path
+
+    return file_path
+
+def extract_track_from_path(file_path: str) -> str:
+    """Extract track name from file path."""
+
+    filename = os.path.basename(file_path)
+
+    # Remove .html extension
+    name = filename.replace('.html', '')
+
+    # Remove date prefix if present (YYYYMMDD_ or YYYY_MM_DD_)
+    name = re.sub(r'^\d{8}_', '', name)
+    name = re.sub(r'^\d{4}_\d{2}_\d{2}_', '', name)
+
+    # Remove _data suffix if present
+    name = re.sub(r'_data$', '', name)
+
+    # Convert underscores to spaces and title case
+    name = name.replace('_', ' ').title()
+
+    return name
+
+def extract_date_from_path(file_path: str) -> Optional[Dict]:
+    """Extract date information from file path."""
+
+    # Look for date in format YYYY_MM_DD
+    date_pattern = r'(\d{4})_(\d{2})_(\d{2})'
+    match = re.search(date_pattern, file_path)
+
+    if match:
+        year, month, day = match.groups()
+        return {
+            'date': f'{year}_{month}_{day}',
+            'formatted': f'{year}-{month}-{day}',
+            'year': year,
+            'month': month,
+            'day': day
+        }
+
+    # Look for date in format YYYYMMDD
+    date_pattern2 = r'(\d{4})(\d{2})(\d{2})'
+    match = re.search(date_pattern2, os.path.basename(file_path))
+
+    if match:
+        year, month, day = match.groups()
+        return {
+            'date': f'{year}_{month}_{day}',
+            'formatted': f'{year}-{month}-{day}',
+            'year': year,
+            'month': month,
+            'day': day
+        }
+
+    return None
+
+def create_json_archive(manifest_files: List[str], output_file: str = 'archive.json'):
+    """Create JSON archive from multiple manifest files."""
+
+    all_entries = []
+
+    for manifest_file in manifest_files:
+        if not os.path.exists(manifest_file):
+            print(f"Warning: Manifest file {manifest_file} not found, skipping...")
+            continue
+
+        print(f"Processing {manifest_file}...")
+        entries = parse_manifest(manifest_file)
+
+        # Add source manifest to each entry
+        for entry in entries:
+            entry['source_manifest'] = manifest_file
+
+        all_entries.extend(entries)
+
+    # Sort entries by date and track name
+    all_entries.sort(key=lambda x: (x.get('date', ''), x.get('track', '')))
+
+    # Group by date for better organization
+    grouped = {}
+    for entry in all_entries:
+        date = entry.get('formatted_date', 'unknown')
+        if date not in grouped:
+            grouped[date] = []
+        grouped[date].append(entry)
+
+    # Create final structure
+    archive = {
+        'total_files': len(all_entries),
+        'dates': list(grouped.keys()),
+        'entries': all_entries,
+        'grouped_by_date': grouped
+    }
+
+    # Write to JSON file
+    with open(output_file, 'w') as f:
+        json.dump(archive, f, indent=2)
+
+    print(f"Created {output_file} with {len(all_entries)} entries")
+    return archive
+
 def main():
-    print(f"\n{'='*60}\nStarting IRONCLAD JSON backup process...\n{'='*60}")
-    os.makedirs(OUTPUT_DIR, exist_ok=True)
+    """Main function to process manifest files."""
 
-    all_links = []
-    for manifest in MANIFEST_FILES:
-        print(f"--> Parsing manifest: {manifest}")
-        links = parse_manifest_for_links(manifest)
-        all_links.extend(links)
-        print(f"    --> Found {len(links)} links.")
+    # Look for all manifest files
+    manifest_files = []
 
-    if not all_links:
-        print("\n[FATAL] No links found in any manifest. Aborting.")
+    # Check for numbered manifests
+    for i in range(1, 10):
+        for ext in ['.md', '.txt', '']:
+            manifest_name = f'MANIFEST{i}{ext}'
+            if os.path.exists(manifest_name):
+                manifest_files.append(manifest_name)
+                break
+
+    # Check for non-numbered manifests
+    for name in ['MANIFEST.md', 'MANIFEST.txt', 'MANIFEST']:
+        if os.path.exists(name) and name not in manifest_files:
+            manifest_files.append(name)
+
+    if not manifest_files:
+        print("No manifest files found!")
         return
 
-    print(f"\nFound a total of {len(all_links)} unique files to process.")
-    processed_count, failed_count = 0, 0
+    print(f"Found manifest files: {manifest_files}")
 
-    for link in set(all_links): # Use set to avoid processing duplicate links
-        local_path = '/'.join(link.split('/main/')[1:])
-        print(f"\nProcessing: {local_path}")
+    # Create main archive
+    archive = create_json_archive(manifest_files, 'archive.json')
 
-        json_data = convert_file_to_json_sandboxed(local_path)
+    # Create a simplified index for web use
+    simple_index = []
+    for entry in archive['entries']:
+        simple_index.append({
+            'track': entry['track'],
+            'date': entry.get('formatted_date', ''),
+            'path': entry['path']
+        })
 
-        if json_data and "error" not in json_data:
-            output_path = os.path.join(OUTPUT_DIR, local_path + '.json')
-            os.makedirs(os.path.dirname(output_path), exist_ok=True)
+    with open('index.json', 'w') as f:
+        json.dump(simple_index, f, indent=2)
 
-            with open(output_path, 'w', encoding='utf-8') as f:
-                json.dump(json_data, f, indent=4)
+    print(f"Created index.json with simplified entries")
 
-            print(f"    [SUCCESS] Saved backup to {output_path}")
-            processed_count += 1
-        else:
-            error_msg = json_data.get("error", "Unknown error") if json_data else "File not found"
-            print(f"    [ERROR] Failed to process {local_path}: {error_msg}")
-            failed_count += 1
-
-    print(f"\n{'='*60}\nBackup process complete.\nSuccessfully processed: {processed_count}/{len(all_links)}\nFailed/Skipped: {failed_count}\n{'='*60}")
-
-    if failed_count > 0:
-        sys.exit(1) # Exit with an error code if any files failed
-
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()
