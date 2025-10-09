@@ -34,3 +34,8 @@
 *   [python_service/adapters/sporting_life_adapter.py](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/adapters/sporting_life_adapter.py)
 *   [python_service/adapters/timeform_adapter.py](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/adapters/timeform_adapter.py)
 *   [python_service/adapters/the_racing_api_adapter.py](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/adapters/the_racing_api_adapter.py)
+*   [web_platform/frontend/next.config.mjs](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/web_platform/frontend/next.config.mjs)
+*   [web_platform/frontend/postcss.config.js](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/web_platform/frontend/postcss.config.js)
+*   [web_platform/frontend/.env.local.example](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/web_platform/frontend/.env.local.example)
+*   [web_platform/frontend/src/components/RaceCard.tsx](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/web_platform/frontend/src/components/RaceCard.tsx)
+*   [web_platform/frontend/src/components/LiveRaceDashboard.tsx](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/web_platform/frontend/src/components/LiveRaceDashboard.tsx)
