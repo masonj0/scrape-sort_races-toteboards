@@ -207,6 +207,12 @@ def test_get_qualified_races_success(mock_fetch, client):
     # ASSERT
     assert response.status_code == 200
     response_data = response.json()
-    assert len(response_data) == 1
-    assert response_data[0]["id"] == "test_race_1"
+
+    assert "criteria" in response_data
+    assert "races" in response_data
+
+    qualified_races = response_data['races']
+    assert len(qualified_races) == 1
+    assert qualified_races[0]["id"] == "test_race_1"
+
     mock_fetch.assert_awaited_once_with(today.strftime('%Y-%m-%d'))
