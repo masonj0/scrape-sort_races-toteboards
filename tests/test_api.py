@@ -48,11 +48,15 @@ def test_get_races_success(mock_fetch, client):
                                 "source": "TestSource",
                                 "last_updated": now.isoformat()
                             }
-                        }
+                        },
+                        "jockey": None,
+                        "trainer": None
                     }
                 ],
                 "source": "TestSource",
-                "qualification_score": None
+                "qualification_score": None,
+                "race_name": None,
+                "distance": None
             }
         ],
         "sources": [
