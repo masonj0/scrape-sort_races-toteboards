@@ -22,6 +22,8 @@ class Runner(BaseModel):
     scratched: bool = False
     selection_id: Optional[int] = None # For Betfair Exchange integration
     odds: Dict[str, OddsData] = Field(default_factory=dict)
+    jockey: Optional[str] = None
+    trainer: Optional[str] = None
 
 class Race(BaseModel):
     id: str
@@ -31,6 +33,8 @@ class Race(BaseModel):
     runners: List[Runner]
     source: str
     qualification_score: Optional[float] = None
+    race_name: Optional[str] = None
+    distance: Optional[str] = None
 
     @field_validator('runners')
     def runner_numbers_must_be_unique(cls, v):
