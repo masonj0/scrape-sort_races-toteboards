@@ -8,7 +8,8 @@ import sys
 
 # --- Configuration ---
 MANIFEST_FILES = ['MANIFEST2.md', 'MANIFEST3.md']
-OUTPUT_FILE = 'FORTUNA_ALL.JSON'
+OUTPUT_FILE_PART1 = 'FORTUNA_ALL_PART1.JSON' # Backend & Tests
+OUTPUT_FILE_PART2 = 'FORTUNA_ALL_PART2.JSON' # Frontend, Docs, & Tooling
 
 # --- ENLIGHTENED PARSING LOGIC (V2) ---
 def extract_and_normalize_path(line: str) -> str | None:
@@ -50,9 +51,8 @@ def extract_and_normalize_path(line: str) -> str | None:
 
     return path.strip()
 
-# --- Main Orchestrator ---
 def main():
-    print(f"\n{'='*60}\nStarting FORTUNA_ALL.JSON creation process... (Enlightened Scribe Edition)\n{'='*60}")
+    print(f"\n{'='*60}\nStarting FORTUNA Dossier creation process... (Two Dossier Edition)\n{'='*60}")
 
     all_links = []
     for manifest in MANIFEST_FILES:
@@ -76,12 +76,12 @@ def main():
         print("\n[FATAL] No valid file paths found in any manifest. Aborting.")
         sys.exit(1)
 
-    fortuna_data = {}
-    processed_count = 0
+    part1_data = {} # Backend & Tests
+    part2_data = {} # Frontend, Docs, & Tooling
     failed_count = 0
     unique_local_paths = sorted(list(set(all_local_paths)))
 
-    print(f"\nFound a total of {len(unique_links)} unique files to process.")
+    print(f"\nFound a total of {len(unique_local_paths)} unique files to categorize and process.")
 
     for link in unique_links:
         try:
@@ -97,23 +97,33 @@ def main():
             with open(local_path, 'r', encoding='utf-8', errors='ignore') as f:
                 content = f.read()
 
-            fortuna_data[local_path] = content
-            processed_count += 1
+            # --- Categorization Logic ---
+            if (local_path.startswith('python_service/') or local_path.startswith('tests/')):
+                part1_data[local_path] = content
+            else:
+                part2_data[local_path] = content
+
         except Exception as e:
             print(f"    [ERROR] Failed to read {link}: {e}")
             failed_count += 1
 
-    print(f"\nWriting {len(fortuna_data)} files to {OUTPUT_FILE}...")
-    with open(OUTPUT_FILE, 'w', encoding='utf-8') as f:
-        json.dump(fortuna_data, f, indent=4)
+    # --- Write Part 1 ---
+    print(f"\nWriting {len(part1_data)} files to {OUTPUT_FILE_PART1}...")
+    with open(OUTPUT_FILE_PART1, 'w', encoding='utf-8') as f:
+        json.dump(part1_data, f, indent=4)
+    print(f"    [SUCCESS] {OUTPUT_FILE_PART1} created.")
 
-    print(f"\n{'='*60}\nPackaging process complete.\nSuccessfully processed: {processed_count}/{len(unique_links)}\nFailed/Skipped: {failed_count}\n{'='*60}")
+    # --- Write Part 2 ---
+    print(f"Writing {len(part2_data)} files to {OUTPUT_FILE_PART2}...")
+    with open(OUTPUT_FILE_PART2, 'w', encoding='utf-8') as f:
+        json.dump(part2_data, f, indent=4)
+    print(f"    [SUCCESS] {OUTPUT_FILE_PART2} created.")
+
+    print(f"\n{'='*60}\nPackaging process complete.\nSuccessfully processed: {len(part1_data) + len(part2_data)}/{len(unique_local_paths)}\nFailed/Skipped: {failed_count}\n{'='*60}")
 
     if failed_count > 0:
         print("\n[WARNING] Some files failed to process. The output may be incomplete.")
         sys.exit(1)
-    else:
-        print(f"\n[SUCCESS] {OUTPUT_FILE} created successfully.")
 
 if __name__ == "__main__":
     main()
