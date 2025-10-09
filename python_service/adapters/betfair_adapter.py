@@ -5,7 +5,6 @@ import structlog
 import re
 from datetime import datetime
 from typing import Dict, Any, List, Optional
-from decimal import Decimal
 
 from .base import BaseAdapter
 from .betfair_auth_mixin import BetfairAuthMixin
