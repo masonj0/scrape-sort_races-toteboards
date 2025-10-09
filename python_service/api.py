@@ -13,7 +13,7 @@ from contextlib import asynccontextmanager
 
 from .config import get_settings
 from .engine import OddsEngine
-from .models import Race, AggregatedResponse
+from .models import Race, AggregatedResponse, QualifiedRacesResponse
 from .security import verify_api_key
 from .logging_config import configure_logging
 from .analyzer import AnalyzerEngine
@@ -74,7 +74,7 @@ async def get_all_adapter_statuses(request: Request, engine: OddsEngine = Depend
         raise HTTPException(status_code=500, detail="Internal Server Error")
 
 
-@app.get("/api/races/qualified/{analyzer_name}", response_model=List[Race])
+@app.get("/api/races/qualified/{analyzer_name}", response_model=QualifiedRacesResponse)
 @limiter.limit("30/minute")
 async def get_qualified_races(
     analyzer_name: str,
@@ -100,8 +100,8 @@ async def get_qualified_races(
         analyzer_engine = request.app.state.analyzer_engine
         # In the future, kwargs could come from the request's query params
         analyzer = analyzer_engine.get_analyzer(analyzer_name)
-        qualified_races = analyzer.qualify_races(races)
-        return qualified_races
+        result = analyzer.qualify_races(races)
+        return QualifiedRacesResponse(**result)
     except ValueError as e:
         # Correctly map a missing analyzer to a 404 Not Found error
         log.warning("Requested analyzer not found", analyzer_name=analyzer_name)

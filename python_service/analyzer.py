@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import List, Dict, Type, Optional
+from typing import List, Dict, Type, Optional, Any
 import structlog
 from decimal import Decimal
 
@@ -26,7 +26,7 @@ class BaseAnalyzer(ABC):
         pass
 
     @abstractmethod
-    def qualify_races(self, races: List[Race]) -> List[Race]:
+    def qualify_races(self, races: List[Race]) -> Dict[str, Any]:
         """The core method every analyzer must implement."""
         pass
 
@@ -37,8 +37,8 @@ class TrifectaAnalyzer(BaseAnalyzer):
         self.min_favorite_odds = Decimal(str(min_favorite_odds))
         self.min_second_favorite_odds = Decimal(str(min_second_favorite_odds))
 
-    def qualify_races(self, races: List[Race]) -> List[Race]:
-        """Filters and scores races, returning a sorted list of qualified opportunities."""
+    def qualify_races(self, races: List[Race]) -> Dict[str, Any]:
+        """Filters and scores races, returning a dictionary with criteria and a sorted list of qualified races."""
         qualified_races = []
         for race in races:
             score = self._evaluate_race(race)
@@ -46,10 +46,16 @@ class TrifectaAnalyzer(BaseAnalyzer):
                 race.qualification_score = score
                 qualified_races.append(race)
 
-        # Sort the qualified races by score, descending
         qualified_races.sort(key=lambda r: r.qualification_score, reverse=True)
-        log.info("Qualification and scoring complete", qualified_count=len(qualified_races))
-        return qualified_races
+
+        criteria = {
+            "max_field_size": self.max_field_size,
+            "min_favorite_odds": float(self.min_favorite_odds),
+            "min_second_favorite_odds": float(self.min_second_favorite_odds)
+        }
+
+        log.info("Qualification and scoring complete", qualified_count=len(qualified_races), criteria=criteria)
+        return {"criteria": criteria, "races": qualified_races}
 
     def _evaluate_race(self, race: Race) -> Optional[float]:
         """Evaluates a single race and returns a qualification score if it passes, else None."""

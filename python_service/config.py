@@ -31,6 +31,9 @@ class Settings(BaseSettings):
     SPORTING_LIFE_KEY: Optional[str] = None
     TIMEFORM_KEY: Optional[str] = None
 
+    # --- Caching Configuration ---
+    REDIS_URL: str = "redis://localhost"
+
     # --- CORS Configuration ---
     ALLOWED_ORIGINS: List[str] = ["http://localhost:3000", "http://localhost:3001"]
 
