@@ -59,7 +59,6 @@
 - `web_platform/frontend/postcss.config.js`
 - `web_platform/frontend/tailwind.config.ts`
 - `web_platform/frontend/tsconfig.json`
-- `web_platform/frontend/src/app/page.tsx`
 - `web_platform/frontend/src/components/RaceCard.tsx`
 
 *   [python_service/adapters/racing_and_sports_greyhound_adapter.py](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/adapters/racing_and_sports_greyhound_adapter.py)
