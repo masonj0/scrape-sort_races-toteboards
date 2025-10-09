@@ -55,7 +55,6 @@
 
 ## 2.0 TypeScript Frontend (`web_platform`)
 
-- `web_platform/frontend/next.config.mjs`
 - `web_platform/frontend/package.json`
 - `web_platform/frontend/postcss.config.js`
 - `web_platform/frontend/tailwind.config.ts`
@@ -65,4 +64,9 @@
 
 *   [python_service/adapters/racing_and_sports_greyhound_adapter.py](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/adapters/racing_and_sports_greyhound_adapter.py)
 *   [python_service/adapters/pointsbet_greyhound_adapter.py](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/adapters/pointsbet_greyhound_adapter.py)
+*   [python_service/adapters/betfair_greyhound_adapter.py](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/adapters/betfair_greyhound_adapter.py)
+*   [python_service/adapters/racing_and_sports_greyhound_adapter.py](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/adapters/racing_and_sports_greyhound_adapter.py)
+*   [python_service/adapters/at_the_races_adapter.py](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/adapters/at_the_races_adapter.py)
+*   [python_service/adapters/sporting_life_adapter.py](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/adapters/sporting_life_adapter.py)
+*   [python_service/adapters/timeform_adapter.py](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/adapters/timeform_adapter.py)
 *   [python_service/adapters/the_racing_api_adapter.py](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/adapters/the_racing_api_adapter.py)

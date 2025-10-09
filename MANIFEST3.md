@@ -28,3 +28,9 @@
 *   `HISTORY.md` - The narrative history of the project.
 *   `WISDOM.md` - The operational protocol for AI agents.
 *   `ROADMAP_APPENDICES.md` - The definitive adapter backlog and intelligence leads.
+*   [python_service/adapters/betfair_greyhound_adapter.py](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/adapters/betfair_greyhound_adapter.py)
+*   [python_service/adapters/racing_and_sports_greyhound_adapter.py](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/adapters/racing_and_sports_greyhound_adapter.py)
+*   [python_service/adapters/at_the_races_adapter.py](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/adapters/at_the_races_adapter.py)
+*   [python_service/adapters/sporting_life_adapter.py](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/adapters/sporting_life_adapter.py)
+*   [python_service/adapters/timeform_adapter.py](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/adapters/timeform_adapter.py)
+*   [python_service/adapters/the_racing_api_adapter.py](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/adapters/the_racing_api_adapter.py)
