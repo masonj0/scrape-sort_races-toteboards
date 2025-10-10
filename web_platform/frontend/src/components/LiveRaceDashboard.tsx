@@ -1,7 +1,8 @@
 // web_platform/frontend/src/components/LiveRaceDashboard.tsx
 'use client';
 
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { RaceCard } from './RaceCard';
 
 // --- Type Definitions ---
@@ -28,51 +29,30 @@ const getNextRaceCountdown = (races: Race[]): string => {
   return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
 };
 
-const getAverageFieldSize = (races: Race[]): string => {
-  if (races.length === 0) return '0';
-  const totalRunners = races.reduce((sum, race) => sum + race.runners.filter(r => !r.scratched).length, 0);
-  return (totalRunners / races.length).toFixed(1);
+const fetchAdapterStatuses = async (): Promise<AdapterStatus[]> => {
+  const apiKey = process.env.NEXT_PUBLIC_API_KEY;
+  if (!apiKey) throw new Error('API key not configured.');
+  const response = await fetch(`/api/adapters/status`, { headers: { 'X-API-Key': apiKey } });
+  if (!response.ok) throw new Error(`Adapter status API request failed: ${response.statusText}`);
+  return response.json();
 };
 
 // --- Main Component ---
 export const LiveRaceDashboard: React.FC = () => {
-  const [allRaces, setAllRaces] = useState<Race[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
-  const [countdown, setCountdown] = useState('--:--');
-
   const [filterConfig, setFilterConfig] = useState({ minScore: 0, maxFieldSize: 999, sortBy: 'score' });
 
-  const fetchQualifiedRaces = useCallback(async (isInitialLoad = false) => {
-    if (isInitialLoad) setLoading(true);
-    setError(null);
-    try {
-      const apiKey = process.env.NEXT_PUBLIC_API_KEY;
-      if (!apiKey) throw new Error('API key not configured.');
-      const response = await fetch(`/api/races/qualified/trifecta`, { headers: { 'X-API-Key': apiKey } });
-      if (!response.ok) throw new Error(`API request failed with status ${response.status}`);
-      const data: QualifiedRacesResponse = await response.json();
-      setAllRaces(data.races || []);
-      setLastUpdate(new Date());
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'An unknown error occurred');
-    } finally {
-      if (isInitialLoad) setLoading(false);
-    }
-  }, []);
+  // --- TanStack Query Hooks ---
+  const { data: qualifiedData, error: racesError, isLoading: racesLoading } = useQuery<QualifiedRacesResponse>({
+    queryKey: ['qualifiedRaces'],
+    queryFn: fetchQualifiedRaces,
+    refetchInterval: 30000 // The Heartbeat
+  });
 
-  useEffect(() => {
-    fetchQualifiedRaces(true);
-    const dataInterval = setInterval(() => fetchQualifiedRaces(false), 30000);
-    const countdownInterval = setInterval(() => {
-      setCountdown(getNextRaceCountdown(allRaces));
-    }, 1000);
-    return () => {
-      clearInterval(dataInterval);
-      clearInterval(countdownInterval);
-    };
-  }, [fetchQualifiedRaces, allRaces]);
+  const { data: statuses, error: statusError } = useQuery<AdapterStatus[]>({
+    queryKey: ['adapterStatuses'],
+    queryFn: fetchAdapterStatuses,
+    refetchInterval: 60000
+  });
 
   const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -80,7 +60,7 @@ export const LiveRaceDashboard: React.FC = () => {
   };
 
   const filteredAndSortedRaces = useMemo(() => {
-    let processedRaces = [...allRaces];
+    let processedRaces = [...(qualifiedData?.races || [])];
     processedRaces = processedRaces.filter(race => (race.qualification_score || 0) >= filterConfig.minScore && race.runners.filter(r => !r.scratched).length <= filterConfig.maxFieldSize);
     processedRaces.sort((a, b) => {
       switch (filterConfig.sortBy) {
@@ -90,30 +70,21 @@ export const LiveRaceDashboard: React.FC = () => {
       }
     });
     return processedRaces;
-  }, [allRaces, filterConfig]);
+  }, [qualifiedData, filterConfig]);
+
+  const error = racesError || statusError;
 
   return (
     <main className="min-h-screen bg-gray-900 text-white p-8">
-      <h1 className="text-4xl font-bold text-center mb-2">Fortuna Faucet Command Deck</h1>
-      <p className="text-center text-gray-400 mb-8">{lastUpdate ? `Last updated: ${lastUpdate.toLocaleTimeString()}` : '...'}</p>
+      <h1 className="text-4xl font-bold text-center mb-8">Fortuna Faucet Command Deck</h1>
 
-      {/* --- Dashboard Statistics Panel --- */}
-      <div className="stats-grid grid grid-cols-4 gap-4 mb-6">
-        <div className="stat-card bg-gradient-to-br from-purple-500/10 to-purple-600/10 border border-purple-500/20 rounded-xl p-4">
-          <div className="flex items-center justify-between mb-2"><span className='text-purple-400'>📊</span><span className="text-2xl font-bold text-white">{filteredAndSortedRaces.length}</span></div>
-          <div className="text-sm text-gray-400">Qualified Races</div>
-        </div>
-        <div className="stat-card bg-gradient-to-br from-emerald-500/10 to-emerald-600/10 border border-emerald-500/20 rounded-xl p-4">
-          <div className="flex items-center justify-between mb-2"><span className='text-emerald-400'>🏆</span><span className="text-2xl font-bold text-white">{filteredAndSortedRaces.filter(r => r.qualification_score && r.qualification_score >= 80).length}</span></div>
-          <div className="text-sm text-gray-400">Premium Targets</div>
-        </div>
-        <div className="stat-card bg-gradient-to-br from-blue-500/10 to-blue-600/10 border border-blue-500/20 rounded-xl p-4">
-          <div className="flex items-center justify-between mb-2"><span className='text-blue-400'>⏱️</span><span className="text-2xl font-bold text-white">{countdown}</span></div>
-          <div className="text-sm text-gray-400">Next Race</div>
-        </div>
-        <div className="stat-card bg-gradient-to-br from-yellow-500/10 to-yellow-600/10 border border-yellow-500/20 rounded-xl p-4">
-          <div className="flex items-center justify-between mb-2"><span className='text-yellow-400'>🎯</span><span className="text-2xl font-bold text-white">{getAverageFieldSize(filteredAndSortedRaces)}</span></div>
-          <div className="text-sm text-gray-400">Avg Field Size</div>
+      {/* --- Visual Health Panel --- */}
+      <div className='mb-8 p-4 bg-gray-800/50 border border-gray-700 rounded-lg'>
+        <h2 className='text-lg font-semibold text-gray-300 mb-3'>Adapter Status</h2>
+        <div className='flex flex-wrap gap-2'>
+          {statuses?.map(s => (
+            <span key={s.adapter_name} className={`px-2 py-1 text-xs font-bold rounded-full ${s.status === 'SUCCESS' || s.status === 'OK' ? 'bg-green-500/20 text-green-300' : 'bg-red-500/20 text-red-300'}`}>\n              {s.adapter_name}\n            </span>
+          )) ?? <span className='text-gray-500 text-sm'>Loading statuses...</span>}
         </div>
       </div>
 
@@ -129,12 +100,12 @@ export const LiveRaceDashboard: React.FC = () => {
         </div>
       </div>
 
-      {loading && <p className="text-center text-xl">Searching for qualified races...</p>}
-      {error && <p className="text-center text-xl text-red-500">Error: {error}</p>}
+      {racesLoading && <p className="text-center text-xl">Searching for qualified races...</p>}
+      {error && <p className="text-center text-xl text-red-500">Error: {error.message}</p>}
 
-      {!loading && !error && (
+      {!racesLoading && !error && (
         <>
-          <div className='text-center mb-4 text-gray-400'>Displaying <span className='font-bold text-white'>{filteredAndSortedRaces.length}</span> of <span className='font-bold text-white'>{allRaces.length}</span> total qualified races.</div>
+          <div className='text-center mb-4 text-gray-400'>Displaying <span className='font-bold text-white'>{filteredAndSortedRaces.length}</span> of <span className='font-bold text-white'>{qualifiedData?.races.length || 0}</span> total qualified races.</div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredAndSortedRaces.map(race => <RaceCard key={race.id} race={race} />)}
           </div>

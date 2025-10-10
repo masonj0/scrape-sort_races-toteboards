@@ -65,3 +65,17 @@ class AggregatedResponse(BaseModel):
 class QualifiedRacesResponse(BaseModel):
     criteria: Dict[str, Any]
     races: List[Race]
+
+class TipsheetRace(BaseModel):
+    """Represents a single race in the daily tipsheet."""
+    race_id: str
+    track_name: str
+    race_number: int
+    post_time: datetime
+    score: float
+    factors: str # Storing as JSON string
+    track_name: str
+    race_number: int
+    post_time: datetime
+    score: float
+    factors: str # Storing as JSON string

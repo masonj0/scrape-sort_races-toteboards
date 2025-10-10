@@ -23,9 +23,10 @@ from .adapters.gbgb_api_adapter import GbgbApiAdapter
 
 log = structlog.get_logger(__name__)
 
-class OddsEngine:
-    def __init__(self, config):
-        self.config = config
+class FortunaEngine:
+    def __init__(self, config=None):
+        from .config import get_settings
+        self.config = config or get_settings()
         self.log = structlog.get_logger(self.__class__.__name__)
         self.adapters: List[BaseAdapter] = [
             BetfairAdapter(config=self.config),
@@ -92,7 +93,7 @@ class OddsEngine:
                         existing_race.runners.append(new_runner)
         return list(race_map.values())
 
-    async def fetch_all_odds(self, date: str, source_filter: str = None) -> Dict[str, Any]:
+    async def get_races(self, date: str, background_tasks: set, source_filter: str = None) -> Dict[str, Any]:
         cache_key = f"fortuna:races:{date}"
         if not source_filter: # Only use cache for 'all sources' requests
             try:
