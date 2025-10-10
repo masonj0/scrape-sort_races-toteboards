@@ -4,9 +4,9 @@
 import React, { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { RaceCard } from './RaceCard';
+import type { Race } from '@/types/racing'; // Correct type import
 
-// --- Type Definitions ---
-interface Race { id: string; venue: string; race_number: number; start_time: string; runners: any[]; source: string; qualification_score?: number; }
+// --- Type Definitions (Now Imported) ---
 interface QualifiedRacesResponse { races: Race[]; }
 interface AdapterStatus { adapter_name: string; status: string; }
 
