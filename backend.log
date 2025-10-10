@@ -1,3 +1,0 @@
-INFO:     Will watch for changes in these directories: ['/app/python_service']
-INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
-INFO:     Started reloader process [3549] using WatchFiles

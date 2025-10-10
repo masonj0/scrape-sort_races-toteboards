@@ -137,13 +137,10 @@ export const LiveRaceDashboard: React.FC = () => {
         </div>
       </div>
 
-      {/* --- Analyst's Playground & Smart Filter --- */}
-      {/* [Existing Playground and Filter UI code remains here] */}
+      {loading && <p className="text-center text-xl">Searching for qualified races...</p>}
+      {error && <p className="text-center text-xl text-red-500">Error: {error}</p>}
 
-      {racesLoading && <p className="text-center text-xl">Searching for qualified races...</p>}
-      {error && <p className="text-center text-xl text-red-500">Error: {error.message}</p>}
-
-      {!racesLoading && !error && (
+      {!loading && !error && (
         <>
           <div className='text-center mb-4 text-gray-400'>Displaying <span className='font-bold text-white'>{filteredAndSortedRaces.length}</span> of <span className='font-bold text-white'>{allRaces.length}</span> total qualified races.</div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
