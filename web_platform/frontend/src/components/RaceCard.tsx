@@ -39,15 +39,18 @@ export const RaceCard: React.FC<RaceCardProps> = ({ race }) => {
   });
 
   const activeRunners = race.runners.filter(r => !r.scratched);
+  // RECOMMENDATION #2: Standardize runner sorting
+  activeRunners.sort((a, b) => a.number - b.number);
 
-  // Get best odds for each runner
+  // RECOMMENDATION #3: Enhance data transparency
   const runnersWithOdds = activeRunners.map(runner => {
-    const odds = Object.values(runner.odds);
-    const bestOdds = odds.length > 0
-      ? Math.min(...odds.map(o => o.win || 999).filter(o => o < 999))
-      : null;
-    return { ...runner, bestOdds };
-  }).filter(r => r.bestOdds !== null);
+    const oddsEntries = Object.values(runner.odds).filter(o => o.win && o.win < 999);
+    if (oddsEntries.length === 0) {
+      return { ...runner, bestOdds: null, bestOddsSource: null };
+    }
+    const bestOddsEntry = oddsEntries.reduce((min, o) => o.win! < min.win! ? o : min);
+    return { ...runner, bestOdds: bestOddsEntry.win, bestOddsSource: bestOddsEntry.source };
+  });
 
   return (
     <div className="border border-gray-700 rounded-lg p-4 bg-gray-800 shadow-lg hover:border-purple-500 transition-all">
@@ -87,8 +90,9 @@ export const RaceCard: React.FC<RaceCardProps> = ({ race }) => {
                 <span className="text-gray-200">{runner.name}</span>
               </div>
               {runner.bestOdds && (
-                <span className="text-emerald-400 font-semibold">
+                <span className="text-emerald-400 font-semibold text-sm">
                   {runner.bestOdds.toFixed(2)}
+                  <span className='text-gray-500 ml-1'>({runner.bestOddsSource})</span>
                 </span>
               )}
             </div>

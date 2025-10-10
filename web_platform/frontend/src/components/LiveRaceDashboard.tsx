@@ -5,12 +5,26 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { RaceCard } from './RaceCard';
 
 // --- Type Definitions ---
+interface OddsData {
+  win: number | null;
+  source: string;
+  last_updated: string;
+}
+
+interface Runner {
+  number: number;
+  name: string;
+  scratched: boolean;
+  selection_id?: number;
+  odds: Record<string, OddsData>;
+}
+
 interface Race {
   id: string;
   venue: string;
   race_number: number;
   start_time: string;
-  runners: any[];
+  runners: Runner[];
   source: string;
   qualification_score?: number;
 }
