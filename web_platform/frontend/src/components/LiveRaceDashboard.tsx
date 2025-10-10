@@ -47,7 +47,7 @@ export const LiveRaceDashboard: React.FC = () => {
     refetchInterval: 60000
   });
 
-  const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleParamChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFilterConfig(prev => ({ ...prev, [name]: name === 'sortBy' ? value : Number(value) }));
   };
