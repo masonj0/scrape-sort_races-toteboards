@@ -49,7 +49,7 @@ export const LiveRaceDashboard: React.FC = () => {
 
   const handleParamChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setParams(prev => ({ ...prev, [name]: parseFloat(value) }));
+    setFilterConfig(prev => ({ ...prev, [name]: name === 'sortBy' ? value : Number(value) }));
   };
 
   const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
