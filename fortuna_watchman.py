@@ -9,7 +9,7 @@
 import asyncio
 import httpx
 import structlog
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import List
 
 from python_service.config import get_settings
@@ -32,7 +32,7 @@ class Watchman:
     async def get_initial_targets(self) -> List[Race]:
         """Uses the OddsEngine and AnalyzerEngine to get the day's ranked targets."""
         log.info("Watchman: Acquiring and ranking initial targets for the day...")
-        today_str = datetime.now().strftime('%Y-%m-%d')
+        today_str = datetime.now(timezone.utc).strftime('%Y-%m-%d')
         try:
             aggregated_data = await self.odds_engine.fetch_all_odds(today_str)
             all_races = aggregated_data.get('races', [])
@@ -63,10 +63,10 @@ class Watchman:
         active_targets = list(targets)
         async with httpx.AsyncClient() as client:
             while active_targets:
-                now = datetime.utcnow().replace(tzinfo=None) # Use UTC naive for comparison
+                now = datetime.now(timezone.utc)
 
                 # Find races that are within the 5-minute monitoring window
-                races_to_monitor = [r for r in active_targets if now < r.start_time.replace(tzinfo=None) < now + timedelta(minutes=5)]
+                races_to_monitor = [r for r in active_targets if r.start_time.replace(tzinfo=timezone.utc) > now and r.start_time.replace(tzinfo=timezone.utc) < now + timedelta(minutes=5)]
 
                 if races_to_monitor:
                     for race in races_to_monitor:
