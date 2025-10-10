@@ -27,3 +27,5 @@ fakeredis==2.20.0 # For testing
 
 # Code Quality & Linting
 ruff
+
+aiosqlite
