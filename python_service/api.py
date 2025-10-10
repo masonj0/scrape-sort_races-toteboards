@@ -10,6 +10,8 @@ from slowapi.middleware import SlowAPIMiddleware
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 from contextlib import asynccontextmanager
+from datetime import date
+from typing import List
 
 from .config import get_settings
 from .engine import OddsEngine
@@ -18,40 +20,48 @@ from .security import verify_api_key
 from .logging_config import configure_logging
 from .analyzer import AnalyzerEngine
 
-log = structlog.get_logger()
+from python_service.models import AggregatedResponse, Race, TipsheetRace
+from python_service.engine import FortunaEngine
 
-# Define the lifespan context manager for robust startup/shutdown
+# --- Configuration & Initialization ---
+DB_PATH = os.getenv("DB_PATH", "fortuna.db")
+
+async def setup_database():
+    """Create and populate a temporary database with known data."""
+    async with aiosqlite.connect(DB_PATH) as db:
+        await db.execute("""
+            CREATE TABLE IF NOT EXISTS tipsheet (
+                race_id TEXT PRIMARY KEY,
+                track_name TEXT,
+                race_number INTEGER,
+                post_time TEXT,
+                score REAL,
+                factors TEXT
+            )
+        """)
+        await db.commit()
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """
-    Manage the application's lifespan. On startup, it initializes the OddsEngine
-    with validated settings and attaches it to the app state. On shutdown, it
-    properly closes the engine's resources.
-    """
-    configure_logging()
-    settings = get_settings()
-    app.state.engine = OddsEngine(config=settings)
-    app.state.analyzer_engine = AnalyzerEngine()
-    log.info("Server startup: Configuration validated and OddsEngine initialized.")
+    # Setup the database on startup
+    await setup_database()
     yield
-    # Clean up the engine resources
-    await app.state.engine.close()
-    log.info("Server shutdown: HTTP client resources closed.")
+    # Clean up resources on shutdown if needed
 
-limiter = Limiter(key_func=get_remote_address)
+app = FastAPI(
+    title="Fortuna Faucet API",
+    description="Provides access to aggregated and analyzed horse racing data.",
+    version="1.0.0",
+    lifespan=lifespan
+)
 
-# Pass the lifespan manager to the FastAPI app
-app = FastAPI(title="Checkmate Ultimate Solo API", version="2.1", lifespan=lifespan)
-app.add_middleware(SlowAPIMiddleware)
-app.state.limiter = limiter
-app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
-
-settings = get_settings()
-
+# Allow all origins for simplicity in this context
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.ALLOWED_ORIGINS,
-    allow_credentials=True, allow_methods=["GET"], allow_headers=["*"]
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 # Dependency function to get the engine instance from the app state
@@ -123,15 +133,18 @@ async def get_qualified_races(
         raise HTTPException(status_code=500, detail="Internal Server Error")
 
 
+# --- API Endpoints ---
 @app.get("/api/races", response_model=AggregatedResponse)
-@limiter.limit("30/minute")
-async def get_races(
-    request: Request,
-    race_date: Optional[date] = None,
-    source: Optional[str] = None,
-    engine: OddsEngine = Depends(get_engine),
-    _=Depends(verify_api_key)
-):
+async def get_races_endpoint(request: Request, current_date: date = Depends(get_current_date)):
+    fortuna_engine = FortunaEngine()
+    background_tasks = request.app.state.background_tasks if hasattr(request.app.state, 'background_tasks') else set()
+    response = await fortuna_engine.get_races(date=current_date.isoformat(), background_tasks=background_tasks)
+    return response
+
+@app.get("/api/tipsheet", response_model=List[TipsheetRace])
+async def get_tipsheet_endpoint(date: date = Depends(get_current_date)):
+    """Fetches the generated tipsheet from the database asynchronously."""
+    results = []
     try:
         if race_date is None:
             race_date = datetime.now().date()

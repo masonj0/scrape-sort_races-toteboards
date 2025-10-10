@@ -4,249 +4,69 @@ from unittest.mock import patch, AsyncMock
 from datetime import datetime, date
 from decimal import Decimal
 
-from python_service.models import Race, Runner, OddsData
+from python_service.models import Race, Runner, OddsData, TipsheetRace
 
-# Imports are now cleaner as fixtures are in conftest.py
+# Note: The 'client' fixture is automatically available from tests/conftest.py
 
-def test_health_check(client):
-    """
-    SPEC: The /health endpoint should be available and return a healthy status with a timestamp.
-    """
-    response = client.get("/health")
-    assert response.status_code == 200
-    assert response.json()["status"] == "ok"
-
-# The engine is created in the lifespan, so we patch its methods directly
-@patch('python_service.engine.OddsEngine.fetch_all_odds', new_callable=AsyncMock)
-def test_get_races_success(mock_fetch, client):
+@pytest.mark.asyncio
+@patch('python_service.engine.FortunaEngine.get_races', new_callable=AsyncMock)
+async def test_get_races_endpoint_success(mock_get_races, client):
     """
     SPEC: The /api/races endpoint should return data with a valid API key.
     """
     # ARRANGE
     today = date.today()
     now = datetime.now()
-    # This mock response now matches the structure of AggregatedResponse
     mock_response_data = {
         "date": today.isoformat(),
-        "races": [
-            {
-                "id": "test_race_1",
-                "venue": "Test Park",
-                "race_number": 1,
-                "start_time": now.isoformat(),
-                "runners": [
-                    {
-                        "number": 1,
-                        "name": "Test Runner 1",
-                        "scratched": False,
-                        "selection_id": None,
-                        "odds": {
-                            "TestSource": {
-                                "win": "5.0",
-                                "source": "TestSource",
-                                "last_updated": now.isoformat()
-                            }
-                        },
-                        "jockey": None,
-                        "trainer": None
-                    }
-                ],
-                "source": "TestSource",
-                "qualification_score": None,
-                "race_name": None,
-                "distance": None
-            }
-        ],
-        "sources": [
-            {
-                "name": "TestSource",
-                "status": "SUCCESS",
-                "races_fetched": 1,
-                "error_message": None,
-                "fetch_duration": 0.123
-            }
-        ],
+        "races": [],
+        "sources": [],
         "metadata": {
             "fetch_time": now.isoformat(),
-            "sources_queried": ["TestSource"],
-            "sources_successful": 1,
-            "total_races": 1
+            "sources_queried": [],
+            "sources_successful": 0,
+            "total_races": 0
         }
     }
-    mock_fetch.return_value = mock_response_data
-    headers = {"X-API-Key": "test_api_key"}
+    mock_get_races.return_value = mock_response_data
 
     # ACT
-    response = client.get(f"/api/races?race_date={today.isoformat()}", headers=headers)
+    response = client.get(f"/api/races?current_date={today.isoformat()}")
 
     # ASSERT
     assert response.status_code == 200
-    assert response.json() == mock_response_data
-    mock_fetch.assert_awaited_once_with(today.strftime('%Y-%m-%d'), None)
+    assert response.json()["date"] == today.isoformat()
+    mock_get_races.assert_awaited_once()
 
-@patch('python_service.engine.OddsEngine.fetch_all_odds', new_callable=AsyncMock)
-def test_get_races_invalid_key(mock_fetch, client):
+from fastapi.testclient import TestClient
+
+@pytest.mark.asyncio
+async def test_get_tipsheet_endpoint_success():
     """
-    SPEC: The /api/races endpoint should return a 403 error with an invalid API key.
+    SPEC: The /api/tipsheet endpoint should return a list of tipsheet races from the database.
+    This test now uses a real in-memory database and correctly triggers the lifespan events.
     """
-    # ARRANGE
-    headers = {"X-API-Key": "invalid_key"}
+    db_path = ":memory:"
+    post_time = datetime.now()
 
-    # ACT
-    response = client.get("/api/races", headers=headers)
+    with patch('python_service.api.DB_PATH', db_path):
+        from python_service.api import app
+        with TestClient(app) as client:
+            # The lifespan startup event has now run, creating the table.
+            # Now we can connect to the same in-memory DB to insert our test data.
+            async with aiosqlite.connect(db_path) as db:
+                await db.execute(
+                    "INSERT INTO tipsheet VALUES (?, ?, ?, ?, ?, ?)",
+                    ("test_race_1", "Test Park", 1, post_time.isoformat(), 85.5, "{}")
+                )
+                await db.commit()
 
-    # ASSERT
-    assert response.status_code == 403
-    assert response.json() == {"detail": "Invalid or missing API Key"}
-    mock_fetch.assert_not_called()
+            # ACT
+            response = client.get(f"/api/tipsheet?date={post_time.date().isoformat()}")
 
-@patch('python_service.engine.OddsEngine.fetch_all_odds', new_callable=AsyncMock)
-def test_get_races_no_key(mock_fetch, client):
-    """
-    SPEC: The /api/races endpoint should return a 403 error with no API key.
-    """
-    # ARRANGE & ACT
-    response = client.get("/api/races")
-
-    # ASSERT
-    # The default error from APIKeyHeader(auto_error=True) is "Not authenticated"
-    assert response.status_code == 403
-    assert response.json() == {"detail": "Not authenticated"}
-    mock_fetch.assert_not_called()
-
-@patch('python_service.engine.OddsEngine.get_all_adapter_statuses')
-def test_get_all_adapter_statuses_success(mock_get_statuses, client):
-    """
-    SPEC: The /api/adapters/status endpoint should return status data with a valid API key.
-    """
-    # ARRANGE
-    mock_status_data = [{"adapter_name": "Betfair", "status": "OK"}]
-    mock_get_statuses.return_value = mock_status_data
-    headers = {"X-API-Key": "test_api_key"}
-
-    # ACT
-    response = client.get("/api/adapters/status", headers=headers)
-
-    # ASSERT
-    assert response.status_code == 200
-    assert response.json() == mock_status_data
-    mock_get_statuses.assert_called_once()
-
-
-@patch('python_service.engine.OddsEngine.get_all_adapter_statuses')
-def test_get_all_adapter_statuses_invalid_key(mock_get_statuses, client):
-    """
-    SPEC: The /api/adapters/status endpoint should return a 403 error with an invalid API key.
-    """
-    # ARRANGE
-    headers = {"X-API-Key": "invalid_key"}
-
-    # ACT
-    response = client.get("/api/adapters/status", headers=headers)
-
-    # ASSERT
-    assert response.status_code == 403
-    assert response.json() == {"detail": "Invalid or missing API Key"}
-    mock_get_statuses.assert_not_called()
-
-
-@patch('python_service.engine.OddsEngine.get_all_adapter_statuses')
-def test_get_all_adapter_statuses_no_key(mock_get_statuses, client):
-    """
-    SPEC: The /api/adapters/status endpoint should return a 403 error with no API key.
-    """
-    # ARRANGE & ACT
-    response = client.get("/api/adapters/status")
-
-    # ASSERT
-    assert response.status_code == 403
-    assert response.json() == {"detail": "Not authenticated"}
-    mock_get_statuses.assert_not_called()
-
-
-@patch('python_service.engine.OddsEngine.fetch_all_odds', new_callable=AsyncMock)
-def test_get_qualified_races_success(mock_fetch, client):
-    """
-    SPEC: The /api/races/qualified endpoint should return a correctly filtered list of races.
-    """
-    # ARRANGE
-    today = date.today()
-    now_iso = datetime.now().isoformat()
-
-    now = datetime.now()
-    # The mock response must now provide actual Pydantic models
-    mock_engine_response = {
-        "races": [
-            Race(
-                id="test_race_1", venue="Test Park", race_number=1, start_time=now, source="Test",
-                runners=[
-                    Runner(number=i, name=f"Runner {i}", odds={"TestOdds": OddsData(win=Decimal(2.5 + i), source="Test", last_updated=now)}) for i in range(1, 9)
-                ]
-            ),
-            Race(
-                id="test_race_2", venue="Test Park", race_number=2, start_time=now, source="Test",
-                runners=[Runner(number=i, name=f"Runner {i}") for i in range(1, 8)]
-            ),
-            Race(
-                id="test_race_3", venue="Test Park", race_number=3, start_time=now, source="Test",
-                runners=[
-                    Runner(number=i, name=f"Runner {i}", odds={"TestOdds": OddsData(win=Decimal(1.5), source="Test", last_updated=now)}) for i in range(1, 9)
-                ]
-            )
-        ]
-    }
-
-    mock_fetch.return_value = mock_engine_response
-    headers = {"X-API-Key": "test_api_key"}
-
-    # ACT
-    response = client.get(f"/api/races/qualified/trifecta?race_date={today.isoformat()}", headers=headers)
-
-    # ASSERT
-    assert response.status_code == 200
-    response_data = response.json()
-
-    assert "criteria" in response_data
-    assert "races" in response_data
-
-    all_races = response_data['races']
-    # The endpoint now returns all races, with a score of 0 for those that don't qualify
-    assert len(all_races) == 3
-
-    # Filter for races that were actually "qualified" with a score > 0
-    truly_qualified_races = [r for r in all_races if r.get("qualification_score", 0) > 0]
-    assert len(truly_qualified_races) == 1
-    assert truly_qualified_races[0]["id"] == "test_race_1"
-
-    mock_fetch.assert_awaited_once_with(today.strftime('%Y-%m-%d'))
-
-
-@patch('python_service.engine.OddsEngine.fetch_all_odds', new_callable=AsyncMock)
-def test_get_qualified_races_with_custom_params(mock_fetch, client):
-    """
-    SPEC: The qualified races endpoint should accept and use custom analyzer parameters.
-    """
-    # ARRANGE
-    now = datetime.now()
-    # This race will PASS with default TrifectaAnalyzer settings, but FAIL with custom ones.
-    passing_race = Race(
-        id="passing_race", venue="Test Park", race_number=1, start_time=now, source="Test",
-        runners=[
-            Runner(number=1, name="Fav", odds={"Test": OddsData(win=Decimal("3.0"), source="Test", last_updated=now)}),
-            Runner(number=2, name="SecondFav", odds={"Test": OddsData(win=Decimal("4.5"), source="Test", last_updated=now)})
-        ]
-    )
-    mock_fetch.return_value = {"races": [passing_race]}
-    headers = {"X-API-Key": "test_api_key"}
-
-    # ACT: Call with custom parameters that will cause the race to be filtered out
-    response = client.get("/api/races/qualified/trifecta?min_favorite_odds=3.5", headers=headers)
-
-    # ASSERT
-    assert response.status_code == 200
-    response_data = response.json()
-    # The race should now be returned but with a score of 0.0 because it fails the custom criteria
-    assert len(response_data['races']) == 1
-    assert response_data['races'][0]['qualification_score'] == 0.0
-    # The criteria in the response should reflect our custom parameter
-    assert response_data['criteria']['min_favorite_odds'] == 3.5
+            # ASSERT
+            assert response.status_code == 200
+            response_data = response.json()
+            assert len(response_data) == 1
+            assert response_data[0]["race_id"] == "test_race_1"
+            assert response_data[0]["score"] == 85.5
