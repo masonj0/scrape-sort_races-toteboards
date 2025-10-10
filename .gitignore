@@ -32,3 +32,7 @@ node_modules/
 
 # Environment files
 .env
+
+# Log files
+*.log
+*.log*

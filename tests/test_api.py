@@ -211,9 +211,14 @@ def test_get_qualified_races_success(mock_fetch, client):
     assert "criteria" in response_data
     assert "races" in response_data
 
-    qualified_races = response_data['races']
-    assert len(qualified_races) == 1
-    assert qualified_races[0]["id"] == "test_race_1"
+    all_races = response_data['races']
+    # The endpoint now returns all races, with a score of 0 for those that don't qualify
+    assert len(all_races) == 3
+
+    # Filter for races that were actually "qualified" with a score > 0
+    truly_qualified_races = [r for r in all_races if r.get("qualification_score", 0) > 0]
+    assert len(truly_qualified_races) == 1
+    assert truly_qualified_races[0]["id"] == "test_race_1"
 
     mock_fetch.assert_awaited_once_with(today.strftime('%Y-%m-%d'))
 
@@ -242,7 +247,8 @@ def test_get_qualified_races_with_custom_params(mock_fetch, client):
     # ASSERT
     assert response.status_code == 200
     response_data = response.json()
-    # The response should contain no races because our custom criteria filtered it out
-    assert len(response_data['races']) == 0
+    # The race should now be returned but with a score of 0.0 because it fails the custom criteria
+    assert len(response_data['races']) == 1
+    assert response_data['races'][0]['qualification_score'] == 0.0
     # The criteria in the response should reflect our custom parameter
     assert response_data['criteria']['min_favorite_odds'] == 3.5
