@@ -82,9 +82,12 @@ def test_trifecta_analyzer_with_legacy_scenarios(mock_fetch, client):
     response_data = response.json()
     qualified_races = response_data['races']
 
-    # The analyzer should correctly filter the 4 mock races down to the 1 that passes.
-    assert len(qualified_races) == 1, "Only one race should have passed the Trifecta criteria"
-    assert qualified_races[0]["id"] == "LEGACY_PASS_1"
+    # All races should be returned, but only one should have a score > 0
+    assert len(qualified_races) == 4, "Expected all 4 mock races to be returned"
+
+    truly_qualified = [r for r in qualified_races if r.get("qualification_score", 0) > 0]
+    assert len(truly_qualified) == 1, "Only one race should have a qualification score > 0"
+    assert truly_qualified[0]["id"] == "LEGACY_PASS_1"
 
     # Verify that the criteria are returned in the response as per the 'Analyst's Verdict' mission
     assert 'criteria' in response_data

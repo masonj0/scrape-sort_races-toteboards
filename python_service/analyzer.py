@@ -38,15 +38,14 @@ class TrifectaAnalyzer(BaseAnalyzer):
         self.min_second_favorite_odds = Decimal(str(min_second_favorite_odds))
 
     def qualify_races(self, races: List[Race]) -> Dict[str, Any]:
-        """Filters and scores races, returning a dictionary with criteria and a sorted list of qualified races."""
-        qualified_races = []
+        """Scores all races and returns a dictionary with criteria and a sorted list."""
+        scored_races = []
         for race in races:
-            score = self._evaluate_race(race)
-            if score is not None:
-                race.qualification_score = score
-                qualified_races.append(race)
+            # The _evaluate_race method now always returns a float score.
+            race.qualification_score = self._evaluate_race(race)
+            scored_races.append(race)
 
-        qualified_races.sort(key=lambda r: r.qualification_score, reverse=True)
+        scored_races.sort(key=lambda r: r.qualification_score, reverse=True)
 
         criteria = {
             "max_field_size": self.max_field_size,
@@ -54,11 +53,11 @@ class TrifectaAnalyzer(BaseAnalyzer):
             "min_second_favorite_odds": float(self.min_second_favorite_odds)
         }
 
-        log.info("Qualification and scoring complete", qualified_count=len(qualified_races), criteria=criteria)
-        return {"criteria": criteria, "races": qualified_races}
+        log.info("Universal scoring complete", total_races_scored=len(scored_races), criteria=criteria)
+        return {"criteria": criteria, "races": scored_races}
 
-    def _evaluate_race(self, race: Race) -> Optional[float]:
-        """Evaluates a single race and returns a qualification score if it passes, else None."""
+    def _evaluate_race(self, race: Race) -> float:
+        """Evaluates a single race and returns a qualification score."""
         # --- Constants for Scoring Logic ---
         FAV_ODDS_NORMALIZATION = 10.0
         SEC_FAV_ODDS_NORMALIZATION = 15.0
@@ -75,16 +74,11 @@ class TrifectaAnalyzer(BaseAnalyzer):
             if best_odds is not None:
                 runners_with_odds.append((runner, best_odds))
 
-        if len(runners_with_odds) < 2: return None
+        if len(runners_with_odds) < 2: return 0.0
 
         runners_with_odds.sort(key=lambda x: x[1])
         favorite_odds = runners_with_odds[0][1]
         second_favorite_odds = runners_with_odds[1][1]
-
-        # --- Apply the Trifecta of Factors as hard filters ---
-        if len(active_runners) > self.max_field_size: return None
-        if favorite_odds < self.min_favorite_odds: return None
-        if second_favorite_odds < self.min_second_favorite_odds: return None
 
         # --- Calculate Qualification Score (as inspired by the TypeScript Genesis) ---
         field_score = (self.max_field_size - len(active_runners)) / self.max_field_size
@@ -96,6 +90,13 @@ class TrifectaAnalyzer(BaseAnalyzer):
         # Weighted average
         odds_score = (fav_odds_score * FAV_ODDS_WEIGHT) + (sec_fav_odds_score * SEC_FAV_ODDS_WEIGHT)
         final_score = (field_score * FIELD_SIZE_SCORE_WEIGHT) + (odds_score * ODDS_SCORE_WEIGHT)
+
+        # --- Apply a penalty if hard filters are not met, instead of returning None ---
+        if (len(active_runners) > self.max_field_size or
+            favorite_odds < self.min_favorite_odds or
+            second_favorite_odds < self.min_second_favorite_odds):
+            # Assign a score of 0 to races that would have been filtered out
+            return 0.0
 
         return round(final_score * 100, 2)
 
