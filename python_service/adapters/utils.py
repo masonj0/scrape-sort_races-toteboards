@@ -37,3 +37,15 @@ def parse_odds(odds: Union[str, int, float]) -> float:
             return 999.0
 
     return 999.0
+
+
+# --- Track Name Normalization (Resurrected from attic/checkmate_app.py) ---
+TRACK_ALIASES = {
+    'Aqueduct': 'AQU', 'Belmont Park': 'BEL', 'Churchill Downs': 'CD', 'Del Mar': 'DMR',
+    'Fair Grounds': 'FG', 'Gulfstream Park': 'GP', 'Keeneland': 'KEE', 'Laurel Park': 'LRL',
+    'Monmouth Park': 'MTH', 'Oaklawn Park': 'OP', 'Pimlico': 'PIM', 'Saratoga': 'SAR',
+    'Santa Anita Park': 'SA', 'Tampa Bay Downs': 'TAM', 'Woodbine': 'WO', 'Turfway Park': 'TP'
+}
+def normalize_track_name(track_name: str) -> str:
+    """Normalizes a track name using a dictionary of known aliases."""
+    return TRACK_ALIASES.get(track_name.strip(), track_name.strip())
