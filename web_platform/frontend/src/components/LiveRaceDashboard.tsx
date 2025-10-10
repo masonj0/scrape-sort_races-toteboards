@@ -46,8 +46,8 @@ export const LiveRaceDashboard: React.FC = () => {
   const [criteria, setCriteria] = useState<AnalyzerCriteria | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
 
-  // State for the interactive controls, initialized from localStorage
   const [params, setParams] = useState(() => {
     if (typeof window === 'undefined') {
       return { max_field_size: 10, min_favorite_odds: 2.5, min_second_favorite_odds: 4.0 };
@@ -60,13 +60,12 @@ export const LiveRaceDashboard: React.FC = () => {
     }
   });
 
-  // Save params to localStorage whenever they change
   useEffect(() => {
     localStorage.setItem('analyzerParams', JSON.stringify(params));
   }, [params]);
 
-  const fetchQualifiedRaces = useCallback(async () => {
-    setLoading(true);
+  const fetchQualifiedRaces = useCallback(async (isInitialLoad = false) => {
+    if (isInitialLoad) setLoading(true);
     setError(null);
     try {
       const apiKey = process.env.NEXT_PUBLIC_API_KEY;
@@ -89,15 +88,18 @@ export const LiveRaceDashboard: React.FC = () => {
       const data: QualifiedRacesResponse = await response.json();
       setRaces(data.races || []);
       setCriteria(data.criteria);
+      setLastUpdate(new Date());
     } catch (e) {
       setError(e instanceof Error ? e.message : 'An unknown error occurred');
     } finally {
-      setLoading(false);
+      if (isInitialLoad) setLoading(false);
     }
   }, [params]);
 
   useEffect(() => {
-    fetchQualifiedRaces();
+    fetchQualifiedRaces(true); // Initial fetch with loading spinner
+    const interval = setInterval(() => fetchQualifiedRaces(false), 30000); // Poll every 30 seconds
+    return () => clearInterval(interval); // Cleanup on unmount
   }, [fetchQualifiedRaces]);
 
   const handleParamChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -107,23 +109,22 @@ export const LiveRaceDashboard: React.FC = () => {
 
   return (
     <main className="min-h-screen bg-gray-900 text-white p-8">
-      <h1 className="text-4xl font-bold text-center mb-8">Fortuna Faucet Command Deck</h1>
+      <h1 className="text-4xl font-bold text-center mb-2">Fortuna Faucet Command Deck</h1>
+      <p className="text-center text-gray-400 mb-8">
+        {lastUpdate ? `Last updated: ${lastUpdate.toLocaleTimeString()}` : '...'}
+      </p>
 
-      {/* --- The Analyst's Playground UI --- */}
       <div className="mb-8 p-6 bg-gray-800/50 border border-gray-700 rounded-lg">
         <h2 className="text-2xl font-semibold mb-4 text-purple-400">Trifecta Analyzer Playground</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {/* Max Field Size */}
           <div>
             <label htmlFor="max_field_size" className="block text-sm font-medium text-gray-300">Max Field Size: <span className='font-bold text-white'>{params.max_field_size}</span></label>
             <input type="range" id="max_field_size" name="max_field_size" min="5" max="15" step="1" value={params.max_field_size} onChange={handleParamChange} className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer" />
           </div>
-          {/* Min Favorite Odds */}
           <div>
             <label htmlFor="min_favorite_odds" className="block text-sm font-medium text-gray-300">Min Favorite Odds: <span className='font-bold text-white'>{params.min_favorite_odds.toFixed(1)}</span></label>
             <input type="range" id="min_favorite_odds" name="min_favorite_odds" min="1.5" max="5.0" step="0.1" value={params.min_favorite_odds} onChange={handleParamChange} className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer" />
           </div>
-          {/* Min Second Favorite Odds */}
           <div>
             <label htmlFor="min_second_favorite_odds" className="block text-sm font-medium text-gray-300">Min 2nd Fav Odds: <span className='font-bold text-white'>{params.min_second_favorite_odds.toFixed(1)}</span></label>
             <input type="range" id="min_second_favorite_odds" name="min_second_favorite_odds" min="2.0" max="8.0" step="0.1" value={params.min_second_favorite_odds} onChange={handleParamChange} className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer" />
