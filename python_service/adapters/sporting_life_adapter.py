@@ -60,6 +60,3 @@ class SportingLifeAdapter(BaseAdapter):
             odds_data = {self.source_name: OddsData(win=win_odds, source=self.source_name, last_updated=datetime.now())} if win_odds and win_odds < 999 else {}
             return Runner(number=number, name=name, odds=odds_data)
         except: return None
-
-    def _format_response(self, races: List[Race], start_time: datetime, is_success: bool, error_message: str = None) -> Dict[str, Any]:
-        return {'races': races, 'source_info': {'name': self.source_name, 'status': 'SUCCESS' if is_success else 'FAILED', 'races_fetched': len(races), 'error_message': error_message, 'fetch_duration': (datetime.now() - start_time).total_seconds()}}
