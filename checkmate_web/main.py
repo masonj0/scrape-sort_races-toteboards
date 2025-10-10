@@ -3,10 +3,8 @@ from fastapi import FastAPI, HTTPException, BackgroundTasks
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse
 import asyncio
-import json
 from datetime import datetime
-from typing import Dict, List
-import logging
+from typing import Dict
 
 from engine import DataSourceOrchestrator, TrifectaAnalyzer, Settings, Race, RaceDataSchema, HorseSchema
 
@@ -26,7 +24,8 @@ def convert_race_to_schema(race: Race) -> RaceDataSchema:
     return RaceDataSchema(id=race.race_id, track=race.track_name, raceNumber=race.race_number, postTime=race.post_time.isoformat() if race.post_time else None, horses=horses)
 
 async def fetch_and_analyze_races():
-    if CACHE["is_fetching"]: return
+    if CACHE["is_fetching"]:
+        return
     CACHE["is_fetching"] = True
     try:
         raw_races, adapter_statuses = orchestrator.get_races()
@@ -56,7 +55,8 @@ async def startup_event():
 
 @app.get("/", response_class=HTMLResponse)
 async def serve_frontend():
-    with open("static/index.html", "r") as f: return HTMLResponse(content=f.read())
+    with open("static/index.html", "r") as f:
+        return HTMLResponse(content=f.read())
 
 @app.get("/api/status")
 async def get_system_status():
@@ -82,7 +82,8 @@ async def get_adapter_status():
 
 @app.post("/api/refresh")
 async def trigger_refresh(background_tasks: BackgroundTasks):
-    if CACHE["is_fetching"]: raise HTTPException(status_code=409, detail="Already fetching data")
+    if CACHE["is_fetching"]:
+        raise HTTPException(status_code=409, detail="Already fetching data")
     background_tasks.add_task(fetch_and_analyze_races)
     return {"status": "refresh_started"}
 

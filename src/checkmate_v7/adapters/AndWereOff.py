@@ -1,7 +1,6 @@
 # src/checkmate_v7/adapters/AndWereOff.py
 
 import logging
-import re
 from datetime import date, datetime, timezone
 from typing import List, Optional, Dict
 from io import StringIO

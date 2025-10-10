@@ -7,7 +7,6 @@
 # ==============================================================================
 
 import re
-from typing import List
 
 class ChartParser:
     """A sophisticated parser for Equibase PDF chart text."""

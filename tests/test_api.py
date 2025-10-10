@@ -1,7 +1,5 @@
 # tests/test_api.py
 
-import pytest
-from fastapi.testclient import TestClient
 from unittest.mock import patch, AsyncMock
 from datetime import datetime, date
 from decimal import Decimal

@@ -6,16 +6,13 @@ This script creates a standalone Windows console executable from the
 """
 
 import os
-import sys
-import shutil
-from pathlib import Path
 
 def create_spec_file():
     """Create a PyInstaller spec file tailored for the headless service."""
 
     # NOTE: data_files might be needed for .env, configs, etc.
     # For now, we assume it's self-contained.
-    spec_content = f"""
+    spec_content = """
 # -*- mode: python ; coding: utf-8 -*-
 block_cipher = None
 

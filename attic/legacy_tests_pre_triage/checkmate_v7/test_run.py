@@ -1,11 +1,10 @@
 import pytest
 import sys
 from unittest.mock import patch, MagicMock
-import json
 import re
 
 from src.checkmate_v7 import run
-from src.checkmate_v7.models import Race, Runner, RaceDataSchema, HorseSchema, TrifectaFactorsSchema
+from src.checkmate_v7.models import Race, Runner
 
 @pytest.fixture
 def mock_services():

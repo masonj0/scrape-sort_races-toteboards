@@ -71,19 +71,32 @@ class OddscheckerAdapter(BaseAdapter):
 
     def _parse_race_page(self, soup: BeautifulSoup, url: str) -> Optional[Race]:
         track_name = soup.select_one('h1.meeting-name').get_text(strip=True) if soup.select_one('h1.meeting-name') else 'Unknown'
-        race_time = soup.select_one('span.race-time').get_text(strip=True) if soup.select_one('span.race-time') else None
+        race_time_str = soup.select_one('span.race-time').get_text(strip=True) if soup.select_one('span.race-time') else None
         race_number = int(url.split('-')[-1]) if 'race-' in url else 0
 
         runners = []
         for row in soup.select("tr.race-card-row"):
             runner = self._parse_runner_row(row)
-            if runner: runners.append(runner)
+            if runner:
+                runners.append(runner)
 
-        if not runners: return None
+        if not runners:
+            return None
+
+        start_time = datetime.now() # Default to now
+        if race_time_str:
+            try:
+                today_str = datetime.now().strftime('%Y-%m-%d')
+                start_time = datetime.strptime(f"{today_str} {race_time_str}", '%Y-%m-%d %H:%M')
+            except ValueError:
+                log.warning("Could not parse race time", time_str=race_time_str)
+
 
         return Race(
-            id=f"oc_{track_name.lower().replace(' ', '')}_{datetime.now().strftime('%Y%m%d')}_r{race_number}",
-            venue=track_name, race_number=race_number, start_time=datetime.now(), # Placeholder time
+            id=f"oc_{track_name.lower().replace(' ', '')}_{start_time.strftime('%Y%m%d')}_r{race_number}",
+            venue=track_name,
+            race_number=race_number,
+            start_time=start_time,
             runners=runners
         )
 
@@ -95,7 +108,8 @@ class OddscheckerAdapter(BaseAdapter):
         number_tag = row.select_one('td.runner-number')
         number = int(number_tag.get_text(strip=True)) if number_tag else 0
 
-        if not name or not odds_str: return None
+        if not name or not odds_str:
+            return None
 
         odds_val = parse_odds(odds_str)
         odds_dict = {}

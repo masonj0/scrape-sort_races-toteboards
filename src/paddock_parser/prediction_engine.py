@@ -1,10 +1,9 @@
 import anyio
 import logging
 from datetime import datetime
-from typing import List, Dict, Optional
+from typing import List, Dict
 
 from .adapters.twinspires_adapter import TwinSpiresAdapter
-from .adapters.racingpost_adapter import RacingPostAdapter
 from .adapters.pointsbet_adapter import PointsBetAdapter
 from .database.manager import DatabaseManager
 from .models import NormalizedRace, Prediction

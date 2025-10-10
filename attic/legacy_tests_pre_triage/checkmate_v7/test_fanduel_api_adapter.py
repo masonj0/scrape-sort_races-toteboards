@@ -1,7 +1,7 @@
 import pytest
 import json
 import os
-from unittest.mock import MagicMock, call
+from unittest.mock import MagicMock
 
 from src.checkmate_v7.adapters.AndWereOff import FanDuelApiAdapter as FanDuelApiAdapterV7
 from src.checkmate_v7.base import DefensiveFetcher

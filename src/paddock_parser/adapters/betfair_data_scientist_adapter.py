@@ -1,8 +1,7 @@
-import asyncio
 import pandas as pd
 from io import StringIO
 from datetime import datetime, UTC
-from typing import List, Optional
+from typing import List
 
 from ..base import BaseAdapterV3, NormalizedRace, NormalizedRunner
 from ..fetcher import get_page_content

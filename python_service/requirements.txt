@@ -24,3 +24,8 @@ tenacity
 # Caching Layer
 redis==5.0.1
 fakeredis==2.20.0 # For testing
+
+# Code Quality & Linting
+ruff
+
+aiosqlite

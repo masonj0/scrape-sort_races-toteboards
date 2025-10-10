@@ -4,7 +4,7 @@ import logging
 from typing import List
 from bs4 import BeautifulSoup
 from ..base import BaseAdapterV7
-from ..models import Race, Runner
+from ..models import Race
 
 class EquibaseAdapter(BaseAdapterV7):
     SOURCE_ID = "equibase_partial"

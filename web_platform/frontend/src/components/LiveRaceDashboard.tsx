@@ -5,15 +5,7 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { RaceCard } from './RaceCard';
 
 // --- Type Definitions ---
-interface Race {
-  id: string;
-  venue: string;
-  race_number: number;
-  start_time: string;
-  runners: { number: number; name: string; scratched: boolean; odds: any }[];
-  source: string;
-  qualification_score?: number;
-}
+import type { Race } from '@/types/racing'; // Correct type import
 
 interface QualifiedRacesResponse {
   races: Race[];

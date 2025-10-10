@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
 # This file was generated from the canonical adapter template.
 from datetime import datetime
-from typing import Dict, Any, List
+from typing import Dict, Any
 import httpx
 import structlog
 from .base import BaseAdapter
-from ..models import Race
 log = structlog.get_logger(__name__)
 class XpressbetAdapter(BaseAdapter):
     """Adapter for xpressbet.com."""
