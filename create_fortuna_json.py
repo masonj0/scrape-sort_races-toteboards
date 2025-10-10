@@ -1,5 +1,5 @@
 # create_fortuna_json.py
-# This script now contains the full, enlightened logic to handle all manifest formats and path styles.
+# This script now dynamically reads the manifests and creates three separate, categorized JSON packages.
 
 import json
 import os
@@ -8,10 +8,11 @@ import sys
 
 # --- Configuration ---
 MANIFEST_FILES = ['MANIFEST2.md', 'MANIFEST3.md']
-OUTPUT_FILE_PART1 = 'FORTUNA_ALL_PART1.JSON' # Backend & Tests
-OUTPUT_FILE_PART2 = 'FORTUNA_ALL_PART2.JSON' # Frontend, Docs, & Tooling
+OUTPUT_FILE_PART1 = 'FORTUNA_ALL_PART1.JSON' # Core Backend
+OUTPUT_FILE_PART2 = 'FORTUNA_ALL_PART2.JSON' # Adapter Fleet
+OUTPUT_FILE_PART3 = 'FORTUNA_ALL_PART3.JSON' # Frontend, Docs, Tests & Tooling
 
-# --- ENLIGHTENED PARSING LOGIC (V2) ---
+# --- ENLIGHTENED PARSING LOGIC ---
 def extract_and_normalize_path(line: str) -> str | None:
     """
     Extracts a file path from a line, handling multiple formats, and normalizes it.
@@ -26,6 +27,9 @@ def extract_and_normalize_path(line: str) -> str | None:
 
     # 1. Check for Markdown link format
     md_match = re.search(r'\[.*\]\((https?://[^\)]+)\)', line)
+    if not md_match:
+        md_match = re.search(r'\[.*\]\(([^)]+)\)', line)
+
     if md_match:
         path = md_match.group(1)
     else:
@@ -39,20 +43,22 @@ def extract_and_normalize_path(line: str) -> str | None:
 
     # --- Path Standardization ---
     if not path or not ('.' in path or '/' in path):
-        return None # Not a valid path
+        if not path.endswith('.md'):
+             return None # Not a valid path
 
     # If it's a full raw GitHub URL, extract the local path
     if path.startswith('https://raw.githubusercontent.com/'):
         path = '/'.join(path.split('/main/')[1:])
 
-    # Final check for valid file extensions or structure
-    if not re.search(r'(\.[a-zA-Z0-9]+$)|(^[\w/]+$)', path):
+    # Final check to avoid capturing descriptions
+    if ' ' in path and not path.startswith('`'):
         return None
 
     return path.strip()
 
+# --- Main Orchestrator ---
 def main():
-    print(f"\n{'='*60}\nStarting FORTUNA Dossier creation process... (Two Dossier Edition)\n{'='*60}")
+    print(f"\n{'='*60}\nStarting FORTUNA Triumvirate Dossier creation...\n{'='*60}")
 
     all_local_paths = []
     for manifest in MANIFEST_FILES:
@@ -76,8 +82,9 @@ def main():
         print("\n[FATAL] No valid file paths found in any manifest. Aborting.")
         sys.exit(1)
 
-    part1_data = {} # Backend & Tests
-    part2_data = {} # Frontend, Docs, & Tooling
+    part1_data = {} # Core Backend
+    part2_data = {} # Adapter Fleet
+    part3_data = {} # Frontend, Docs, Tests, Tooling
     failed_count = 0
     unique_local_paths = sorted(list(set(all_local_paths)))
 
@@ -95,11 +102,13 @@ def main():
             with open(local_path, 'r', encoding='utf-8', errors='ignore') as f:
                 content = f.read()
 
-            # --- Categorization Logic ---
-            if (local_path.startswith('python_service/') or local_path.startswith('tests/')):
+            # --- Categorization Logic (Triumvirate) ---
+            if local_path.startswith('python_service/adapters/'):
+                part2_data[local_path] = content
+            elif local_path.startswith('python_service/'):
                 part1_data[local_path] = content
             else:
-                part2_data[local_path] = content
+                part3_data[local_path] = content
 
         except Exception as e:
             print(f"    [ERROR] Failed to read {local_path}: {e}")
@@ -117,7 +126,14 @@ def main():
         json.dump(part2_data, f, indent=4)
     print(f"    [SUCCESS] {OUTPUT_FILE_PART2} created.")
 
-    print(f"\n{'='*60}\nPackaging process complete.\nSuccessfully processed: {len(part1_data) + len(part2_data)}/{len(unique_local_paths)}\nFailed/Skipped: {failed_count}\n{'='*60}")
+    # --- Write Part 3 ---
+    print(f"Writing {len(part3_data)} files to {OUTPUT_FILE_PART3}...")
+    with open(OUTPUT_FILE_PART3, 'w', encoding='utf-8') as f:
+        json.dump(part3_data, f, indent=4)
+    print(f"    [SUCCESS] {OUTPUT_FILE_PART3} created.")
+
+    total_processed = len(part1_data) + len(part2_data) + len(part3_data)
+    print(f"\n{'='*60}\nPackaging process complete.\nSuccessfully processed: {total_processed}/{len(unique_local_paths)}\nFailed/Skipped: {failed_count}\n{'='*60}")
 
     if failed_count > 0:
         print("\n[WARNING] Some files failed to process. The output may be incomplete.")
