@@ -1,5 +1,6 @@
 # tests/test_api.py
-
+import pytest
+import aiosqlite
 from unittest.mock import patch, AsyncMock
 from datetime import datetime, date
 from decimal import Decimal
@@ -41,25 +42,35 @@ async def test_get_races_endpoint_success(mock_get_races, client):
 from fastapi.testclient import TestClient
 
 @pytest.mark.asyncio
-async def test_get_tipsheet_endpoint_success():
+async def test_get_tipsheet_endpoint_success(tmp_path):
     """
     SPEC: The /api/tipsheet endpoint should return a list of tipsheet races from the database.
     This test now uses a real in-memory database and correctly triggers the lifespan events.
     """
-    db_path = ":memory:"
+    db_path = tmp_path / "test.db"
     post_time = datetime.now()
 
     with patch('python_service.api.DB_PATH', db_path):
         from python_service.api import app
         with TestClient(app) as client:
-            # The lifespan startup event has now run, creating the table.
-            # Now we can connect to the same in-memory DB to insert our test data.
+                # The lifespan startup event no longer creates the table.
+                # The test must be self-contained.
             async with aiosqlite.connect(db_path) as db:
-                await db.execute(
-                    "INSERT INTO tipsheet VALUES (?, ?, ?, ?, ?, ?)",
-                    ("test_race_1", "Test Park", 1, post_time.isoformat(), 85.5, "{}")
-                )
-                await db.commit()
+                    await db.execute("""
+                        CREATE TABLE tipsheet (
+                            race_id TEXT PRIMARY KEY,
+                            track_name TEXT,
+                            race_number INTEGER,
+                            post_time TEXT,
+                            score REAL,
+                            factors TEXT
+                        )
+                    """)
+                    await db.execute(
+                        "INSERT INTO tipsheet VALUES (?, ?, ?, ?, ?, ?)",
+                        ("test_race_1", "Test Park", 1, post_time.isoformat(), 85.5, "{}")
+                    )
+                    await db.commit()
 
             # ACT
             response = client.get(f"/api/tipsheet?date={post_time.date().isoformat()}")
