@@ -73,3 +73,5 @@
 *   [python_service/adapters/gbgb_api_adapter.py](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/adapters/gbgb_api_adapter.py)
 
 *   [python_service/adapters/betfair_auth_mixin.py](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/adapters/betfair_auth_mixin.py)
+
+*   [tests/test_legacy_scenarios.py](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/tests/test_legacy_scenarios.py)
