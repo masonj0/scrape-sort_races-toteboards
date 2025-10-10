@@ -4,19 +4,29 @@
 import React, { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { RaceCard } from './RaceCard';
+
+// --- Type Definitions ---
 import type { Race } from '@/types/racing'; // Correct type import
 
-// --- Type Definitions (Now Imported) ---
-interface QualifiedRacesResponse { races: Race[]; }
-interface AdapterStatus { adapter_name: string; status: string; }
+interface QualifiedRacesResponse {
+  races: Race[];
+}
 
-// --- API Fetching Functions ---
-const fetchQualifiedRaces = async (): Promise<QualifiedRacesResponse> => {
-  const apiKey = process.env.NEXT_PUBLIC_API_KEY;
-  if (!apiKey) throw new Error('API key not configured.');
-  const response = await fetch(`/api/races/qualified/trifecta`, { headers: { 'X-API-Key': apiKey } });
-  if (!response.ok) throw new Error(`Qualified races API request failed: ${response.statusText}`);
-  return response.json();
+// --- Helper Functions from UI Bible ---
+const getNextRaceCountdown = (races: Race[]): string => {
+  const now = new Date().getTime();
+  const upcomingRaces = races
+    .map(race => new Date(race.start_time).getTime())
+    .filter(time => time > now);
+
+  if (upcomingRaces.length === 0) return '--:--';
+
+  const nextRaceTime = Math.min(...upcomingRaces);
+  const diff = nextRaceTime - now;
+  const minutes = Math.floor((diff / 1000) / 60);
+  const seconds = Math.floor((diff / 1000) % 60);
+
+  return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
 };
 
 const fetchAdapterStatuses = async (): Promise<AdapterStatus[]> => {

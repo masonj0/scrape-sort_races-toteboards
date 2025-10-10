@@ -1,9 +1,8 @@
 import pytest
 from pathlib import Path
-from unittest.mock import patch, AsyncMock
+from unittest.mock import patch
 import sys
 from src.paddock_parser.adapters.timeform_adapter import TimeformAdapter
-from src.paddock_parser.base import NormalizedRace, NormalizedRunner
 
 @pytest.fixture
 def mock_html():

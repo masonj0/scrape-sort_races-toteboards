@@ -1,6 +1,5 @@
 # python_service/adapters/racing_and_sports_adapter.py
 
-import os
 import structlog
 from datetime import datetime
 from typing import Dict, Any, List

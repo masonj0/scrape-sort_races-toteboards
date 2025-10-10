@@ -42,7 +42,7 @@ def hunt_for_signal():
             print("...no hot signal found on this poll. Will try again in 1 minute.")
 
         except requests.exceptions.RequestException as e:
-            print(f"  -> API Error: Could not connect to the API server. Is it running?")
+            print("  -> API Error: Could not connect to the API server. Is it running?")
             print(f"     Details: {e}")
 
 

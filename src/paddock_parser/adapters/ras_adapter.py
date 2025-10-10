@@ -1,7 +1,6 @@
 import json
 import logging
 from typing import List, Dict, Any, Optional
-from datetime import datetime
 
 from ..base import BaseAdapterV3, NormalizedRace
 from ..http_client import ForagerClient

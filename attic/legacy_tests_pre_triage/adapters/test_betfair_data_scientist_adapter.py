@@ -1,10 +1,7 @@
 import pytest
 from unittest.mock import patch
-import pandas as pd
-from io import StringIO
 
 from src.paddock_parser.adapters.betfair_data_scientist_adapter import BetfairDataScientistAdapter
-from src.paddock_parser.base import NormalizedRace
 
 @pytest.fixture
 def sample_csv_data():

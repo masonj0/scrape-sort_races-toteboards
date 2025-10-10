@@ -2,7 +2,7 @@
 Checkmate V7: `models.py` - THE BLUEPRINT
 """
 from datetime import datetime
-from typing import List, Optional, Dict
+from typing import List, Optional
 from sqlalchemy import (Column, Integer, String, Float, DateTime, Boolean, JSON,
  ForeignKey)
 from sqlalchemy.orm import declarative_base, relationship

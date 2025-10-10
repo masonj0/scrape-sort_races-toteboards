@@ -97,9 +97,8 @@ def get_active_predictions():
         if session:
             session.close()
 
-from .models import RaceDataSchema, HorseSchema, Race, BaseModel
+from .models import RaceDataSchema, HorseSchema, BaseModel
 from .logic import TrifectaAnalyzer
-import asyncio
 from typing import Optional
 
 # --- Pydantic Schemas for API Responses ---

@@ -2,11 +2,10 @@
 # -*- coding: utf-8 -*-
 # This file was generated from the canonical adapter template.
 from datetime import datetime
-from typing import Dict, Any, List
+from typing import Dict, Any
 import httpx
 import structlog
 from .base import BaseAdapter
-from ..models import Race
 log = structlog.get_logger(__name__)
 class EquibaseAdapter(BaseAdapter):
     """Adapter for scraping data from equibase.com."""

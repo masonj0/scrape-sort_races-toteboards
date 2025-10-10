@@ -22,7 +22,8 @@ def parse_odds(odds: Union[str, int, float]) -> float:
             # Handle fractional odds (e.g., "10/1", "5/2")
             if "/" in odds:
                 numerator, denominator = map(int, odds.split('/'))
-                if denominator == 0: return 999.0
+                if denominator == 0:
+                    return 999.0
                 return 1.0 + (numerator / denominator)
 
             # Handle "evens"

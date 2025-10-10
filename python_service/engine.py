@@ -3,7 +3,6 @@
 import asyncio
 import structlog
 import httpx
-import json
 import redis.asyncio as redis
 from datetime import datetime
 from typing import Dict, Any, List, Tuple
@@ -54,10 +53,26 @@ class FortunaEngine:
         return [adapter.get_status() for adapter in self.adapters]
 
     async def _time_adapter_fetch(self, adapter: BaseAdapter, date: str) -> Tuple[str, Dict[str, Any], float]:
+        """Wraps an adapter's fetch call, catches all exceptions, and returns a consistent payload."""
         start_time = datetime.now()
-        result = await adapter.fetch_races(date, self.http_client)
-        duration = (datetime.now() - start_time).total_seconds()
-        return (adapter.source_name, result, duration)
+        try:
+            result = await adapter.fetch_races(date, self.http_client)
+            duration = (datetime.now() - start_time).total_seconds()
+            return (adapter.source_name, result, duration)
+        except Exception as e:
+            duration = (datetime.now() - start_time).total_seconds()
+            log.error("Adapter raised an unhandled exception", adapter=adapter.source_name, error=str(e), exc_info=True)
+            failed_result = {
+                'races': [],
+                'source_info': {
+                    'name': adapter.source_name,
+                    'status': 'FAILED',
+                    'races_fetched': 0,
+                    'error_message': str(e),
+                    'fetch_duration': duration
+                }
+            }
+            return (adapter.source_name, failed_result, duration)
 
     def _race_key(self, race: Race) -> str:
         return f"{race.venue.lower().strip()}|{race.race_number}|{race.start_time.strftime('%H:%M')}"
@@ -125,7 +140,7 @@ class FortunaEngine:
             }
         )
 
-        if not source_filter: # Only set cache for 'all sources' requests
+        if not source_filter: # Only use cache for 'all sources' requests
             try:
                 # Cache the result for 5 minutes (300 seconds)
                 await self.redis_client.set(cache_key, response_obj.model_dump_json(), ex=300)

@@ -63,7 +63,8 @@ class TVGAdapter(BaseAdapter):
         """Fetches all race details for a single track concurrently."""
         track_races = []
         track_code = track.get('code')
-        if not track_code: return []
+        if not track_code:
+            return []
 
         try:
             races_url = f"tracks/{track_code}/races"
@@ -103,10 +104,12 @@ class TVGAdapter(BaseAdapter):
         return Race(id=race_id, venue=track.get('name', 'Unknown Venue'), race_number=race_data.get('number'), start_time=datetime.fromisoformat(race_data.get('postTime')), runners=runners, source=self.source_name)
 
     def _parse_tvg_odds(self, odds_string: str) -> Optional[Decimal]:
-        if not odds_string or odds_string == "SCR": return None
+        if not odds_string or odds_string == "SCR":
+            return None
         try:
             parsed_float = parse_odds(odds_string)
-            if parsed_float >= 999.0: return None
+            if parsed_float >= 999.0:
+                return None
             return Decimal(str(parsed_float))
         except (ValueError, InvalidOperation):
             log.warning("Could not convert parsed TVG odds to Decimal", odds_str=odds_string)

@@ -1,10 +1,7 @@
-import json
-import unittest
 from unittest.mock import patch, MagicMock, AsyncMock
 from datetime import datetime, timezone
 import pytest
 from src.paddock_parser.adapters.atg_adapter import AtgAdapter
-from src.paddock_parser.base import NormalizedRace, NormalizedRunner
 
 class TestAtgAdapter:
 
