@@ -44,6 +44,21 @@ if %errorlevel% neq 0 (
     cd ../..
     goto :eof
 )
+
+echo [FRONTEND] Checking for frontend environment file...
+if not exist .env.local (
+    echo [FRONTEND] '.env.local' not found. Creating from template...
+    copy .env.local.example .env.local
+    echo.
+    echo    ****************************************************************************
+    echo    *  [ACTION REQUIRED] Please edit 'web_platform/frontend/.env.local'      *
+    echo    *  and add your NEXT_PUBLIC_API_KEY for the frontend to work.            *
+    echo    ****************************************************************************
+    echo.
+) else (
+    echo [FRONTEND] '.env.local' already exists.
+)
+
 cd ../..
 echo [SUCCESS] TypeScript frontend setup complete.
 
