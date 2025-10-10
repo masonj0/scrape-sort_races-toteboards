@@ -1,6 +1,9 @@
-// web_platform/frontend/app/page.tsx
+'use client';
+
 import { LiveRaceDashboard } from '../src/components/LiveRaceDashboard';
 
-export default function HomePage() {
-  return <LiveRaceDashboard />;
+export default function Home() {
+  return (
+      <LiveRaceDashboard />
+  );
 }
