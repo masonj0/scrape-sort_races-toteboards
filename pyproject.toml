@@ -21,3 +21,16 @@ paddock_parser_predict = "paddock_parser.entry_points:run_prediction_engine"
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+# Configuration for the Ruff linter
+[tool.ruff]
+# Enable Pyflakes (F), pycodestyle (E, W), and isort (I) rules.
+select = ["E", "F", "W", "I"]
+ignore = []
+
+# Allow lines to be up to 120 characters long.
+line-length = 120
+
+[tool.ruff.isort]
+# Sort imports within their sections alphabetically.
+force-single-line = true
