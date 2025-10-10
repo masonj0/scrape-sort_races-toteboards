@@ -4,7 +4,6 @@ from typing import List
 from .base import BaseAdapterV7, DefensiveFetcher
 from .models import Race
 from .adapters import PRODUCTION_ADAPTERS, DEVELOPMENT_ADAPTERS
-from .database import get_db_session
 
 class DataSourceOrchestrator:
     def __init__(self, use_all_adapters=False):

@@ -1,7 +1,6 @@
 import pytest
-from unittest.mock import patch, MagicMock, AsyncMock
+from unittest.mock import patch, AsyncMock
 from fastapi.testclient import TestClient
-import asyncio
 
 # Import the app from the correct module
 from src.checkmate_v7.api import app

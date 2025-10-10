@@ -1,8 +1,6 @@
-import json
 import unittest
 from pathlib import Path
 from src.paddock_parser.adapters.ras_adapter import RasAdapter
-from src.paddock_parser.base import NormalizedRace
 
 class TestRasAdapter(unittest.TestCase):
     def setUp(self):

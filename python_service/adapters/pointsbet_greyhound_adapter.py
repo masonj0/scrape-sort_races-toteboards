@@ -4,10 +4,9 @@ import structlog
 from datetime import datetime
 from typing import Dict, Any, List
 import httpx
-from decimal import Decimal
 
 from .base import BaseAdapter
-from ..models import Race, Runner, OddsData
+from ..models import Race
 
 log = structlog.get_logger(__name__)
 

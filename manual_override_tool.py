@@ -1,6 +1,4 @@
 import argparse
-import pandas as pd
-from sqlalchemy import create_engine
 
 def main():
     parser = argparse.ArgumentParser(description="Manual Override Tool for Checkmate Data Warehouse.")

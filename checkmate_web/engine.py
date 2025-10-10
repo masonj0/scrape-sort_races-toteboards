@@ -7,10 +7,9 @@ import subprocess
 import concurrent.futures
 from abc import ABC, abstractmethod
 from typing import List, Union, Optional, Dict
-from datetime import date, datetime, timedelta
+from datetime import date, datetime
 from pydantic_settings import BaseSettings
 from pydantic import BaseModel, Field
-from bs4 import BeautifulSoup
 
 # --- Professional Settings Management ---
 class Settings(BaseSettings):
@@ -108,18 +107,25 @@ class BaseResultsAdapterV1(ABC):
         raise NotImplementedError
 
 def _convert_odds_to_float(odds_str: Optional[Union[str, float]]) -> Optional[float]:
-    if isinstance(odds_str, float): return odds_str
-    if not odds_str or not isinstance(odds_str, str): return None
+    if isinstance(odds_str, float):
+        return odds_str
+    if not odds_str or not isinstance(odds_str, str):
+        return None
     odds_str = odds_str.strip().upper()
-    if odds_str in ['SP', 'SCRATCHED']: return None
-    if odds_str in ['EVS', 'EVENS']: return 2.0
+    if odds_str in ['SP', 'SCRATCHED']:
+        return None
+    if odds_str in ['EVS', 'EVENS']:
+        return 2.0
     if '/' in odds_str:
         try:
             num, den = map(int, odds_str.split('/'))
             return (num / den) + 1.0 if den != 0 else None
-        except (ValueError, ZeroDivisionError): return None
-    try: return float(odds_str)
-    except (ValueError, TypeError): return None
+        except (ValueError, ZeroDivisionError):
+            return None
+    try:
+        return float(odds_str)
+    except (ValueError, TypeError):
+        return None
 
 # # --- Race Data Adapters ---
 class TVGAdapter(BaseAdapterV7):
@@ -127,22 +133,27 @@ class TVGAdapter(BaseAdapterV7):
     BASE_URL = "https://mobile-api.tvg.com/api/mobile/races/today"
     def fetch_races(self) -> List[Race]:
         response_data = self.fetcher.get(self.BASE_URL, response_type='json')
-        if not response_data or 'races' not in response_data: return []
+        if not response_data or 'races' not in response_data:
+            return []
         all_races = []
         for race_info in response_data.get('races', []):
             try:
                 runners = [Runner(name=r.get('horseName', 'N/A'), program_number=r.get('programNumber'), odds=self._parse_odds(r.get('odds'))) for r in race_info.get('runners', []) if not r.get('scratched') and self._parse_odds(r.get('odds')) is not None]
-                if not runners: continue
+                if not runners:
+                    continue
                 all_races.append(Race(race_id=f"tvg_{race_info.get('raceId')}", track_name=race_info.get('trackName', 'N/A'), race_number=race_info.get('raceNumber'), post_time=datetime.fromisoformat(race_info.get('postTime').replace('Z', '+00:00')) if race_info.get('postTime') else None, runners=runners, source=self.SOURCE_ID))
-            except Exception: continue
+            except Exception:
+                continue
         return all_races
 
     def _parse_odds(self, odds_data: Optional[Dict]) -> Optional[float]:
-        if not odds_data or odds_data.get('morningLine') is None: return None
+        if not odds_data or odds_data.get('morningLine') is None:
+            return None
         try:
             num, den = map(int, odds_data['morningLine'].split('/'))
             return (num / den) + 1.0
-        except (ValueError, TypeError, ZeroDivisionError): return None
+        except (ValueError, TypeError, ZeroDivisionError):
+            return None
 
 
 class BetfairExchangeAdapter(BaseAdapterV7):
@@ -159,7 +170,8 @@ class BetfairExchangeAdapter(BaseAdapterV7):
                     races.extend(parsed_races)
         except Exception as e:
             logging.warning(f"Betfair endpoint failed: {e}")
-        for race in races: race.source = self.SOURCE_ID
+        for race in races:
+            race.source = self.SOURCE_ID
         return races
 
     def _parse_betfair_races(self, data: dict) -> List[Race]:
@@ -170,24 +182,30 @@ class BetfairExchangeAdapter(BaseAdapterV7):
                 event = event_node.get('event', {})
                 for market_node in event_node.get('marketNodes', []):
                     market = market_node.get('market', {})
-                    if market.get('marketType', '') != 'WIN': continue
+                    if market.get('marketType', '') != 'WIN':
+                        continue
                     runners = []
                     for runner in market_node.get('runners', []):
-                        if runner.get('state', {}).get('status') != 'ACTIVE': continue
+                        if runner.get('state', {}).get('status') != 'ACTIVE':
+                            continue
                         odds = None
                         if 'exchange' in runner:
                             available_to_back = runner['exchange'].get('availableToBack', [])
-                            if available_to_back: odds = available_to_back[0].get('price')
+                            if available_to_back:
+                                odds = available_to_back[0].get('price')
                         runners.append(Runner(name=runner.get('description', {}).get('runnerName', 'Unknown'), program_number=runner.get('sortPriority'), odds=odds))
                     if len(runners) >= 3:
                         start_time = None
                         time_field = market.get('marketStartTime')
                         if time_field:
-                            try: start_time = datetime.fromisoformat(time_field.replace('Z', '+00:00'))
-                            except: pass
+                            try:
+                                start_time = datetime.fromisoformat(time_field.replace('Z', '+00:00'))
+                            except Exception:
+                                pass
                         race = Race(race_id=f"betfair_{market.get('marketId', 'unknown')}", track_name=event.get('venue', 'Betfair Exchange'), post_time=start_time, race_number=int(event.get('eventName', '0').split('R')[-1]) if 'R' in event.get('eventName', '') else None, runners=runners)
                         races.append(race)
-        except Exception as e: logging.error(f"Error parsing Betfair data structure: {e}")
+        except Exception as e:
+            logging.error(f"Error parsing Betfair data structure: {e}")
         return races
 
 class PointsBetAdapter(BaseAdapterV7):
@@ -248,7 +266,8 @@ class TVGResultsAdapter(BaseResultsAdapterV1):
             try:
                 runner_results = []
                 for runner_data in result_info.get('runners', []):
-                    if not runner_data.get('finishPosition'): continue
+                    if not runner_data.get('finishPosition'):
+                        continue
                     runner_results.append(RunnerResult(
                         name=runner_data.get('horseName', 'Unknown'),
                         finishing_position=runner_data['finishPosition'],
@@ -256,7 +275,8 @@ class TVGResultsAdapter(BaseResultsAdapterV1):
                         odds=_convert_odds_to_float(runner_data.get('winOdds', {}).get('decimal'))
                     ))
 
-                if not runner_results: continue
+                if not runner_results:
+                    continue
 
                 all_results.append(RaceResult(
                     race_id=f"tvg_{result_info.get('raceId')}",
@@ -365,7 +385,8 @@ class ResultsOrchestrator:
             for future in concurrent.futures.as_completed(future_to_adapter):
                 try:
                     results, status = future.result()
-                    if results: all_results.extend(results)
+                    if results:
+                        all_results.extend(results)
                     statuses.append(status)
                 except Exception as e:
                     adapter_id = future_to_adapter[future].__class__.__name__

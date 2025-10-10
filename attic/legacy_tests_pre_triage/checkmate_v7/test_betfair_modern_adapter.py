@@ -1,5 +1,4 @@
 import pytest
-import os
 from unittest.mock import MagicMock
 
 from src.checkmate_v7.adapters.AndWereOff import BetfairDataScientistAdapter as BetfairModernAdapter

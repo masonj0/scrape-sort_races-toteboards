@@ -8,7 +8,7 @@ import structlog
 from datetime import datetime
 from abc import ABC, abstractmethod
 from typing import Dict, Any, List, Optional
-from tenacity import retry, stop_after_attempt, wait_exponential, RetryError, AsyncRetrying
+from tenacity import stop_after_attempt, wait_exponential, RetryError, AsyncRetrying
 
 log = structlog.get_logger(__name__)
 
@@ -37,7 +37,7 @@ class BaseAdapter(ABC):
                 with attempt:
                     try:
                         full_url = url if url.startswith('http') else f"{self.base_url}{url}"
-                        log.info(f"Requesting...", adapter=self.source_name, method=method, url=full_url, attempt=attempt.retry_state.attempt_number)
+                        log.info("Requesting...", adapter=self.source_name, method=method, url=full_url, attempt=attempt.retry_state.attempt_number)
                         response = await http_client.request(method, full_url, timeout=self.timeout, **kwargs)
                         response.raise_for_status()
                         return response.json()

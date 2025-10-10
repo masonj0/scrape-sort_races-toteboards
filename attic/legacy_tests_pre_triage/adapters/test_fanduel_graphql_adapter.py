@@ -1,7 +1,6 @@
 import pytest
 from unittest.mock import patch
 from src.paddock_parser.adapters.fanduel_graphql_adapter import FanDuelGraphQLAdapter
-from src.paddock_parser.base import NormalizedRace, NormalizedRunner
 
 @pytest.fixture
 def mock_graphql_response():

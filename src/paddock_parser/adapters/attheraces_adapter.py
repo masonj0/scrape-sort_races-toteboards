@@ -1,6 +1,6 @@
 import re
 from datetime import datetime
-from typing import Any, List, Dict
+from typing import List, Dict
 
 from bs4 import BeautifulSoup
 

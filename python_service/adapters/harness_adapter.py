@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Any, Dict, List
 import httpx
-from pydantic import ValidationError, Field
+from pydantic import ValidationError
 import structlog
 from decimal import Decimal
 
@@ -65,12 +65,13 @@ class HarnessAdapter(BaseAdapter):
                     if not race_data.get("runners"):
                         continue
 
+                    race_id = race_data.get('raceId')
                     race = Race(
-                        id=f"usta_{race_data['raceId']}", # Correct field: id
+                        id=f"usta_{race_id}",
                         venue=venue,
                         race_number=race_data["raceNumber"],
                         start_time=datetime.fromisoformat(race_data["startTime"].replace("Z", "+00:00")),
-                        runners=self._parse_runners(race_data["runners"]),
+                        runners=self._parse_runners(race_data["runners"], race_id),
                         source=self.source_name
                     )
                     all_races.append(race)
@@ -82,7 +83,7 @@ class HarnessAdapter(BaseAdapter):
                     )
         return all_races
 
-    def _parse_runners(self, runners_data: List[Dict[str, Any]]) -> List[Runner]:
+    def _parse_runners(self, runners_data: List[Dict[str, Any]], race_id: str) -> List[Runner]:
         """Parses a list of runner dictionaries into Runner objects."""
         runners = []
         for runner_data in runners_data:
@@ -97,22 +98,12 @@ class HarnessAdapter(BaseAdapter):
                 win_odds_str = runner_data.get("morningLineOdds")
                 if win_odds_str:
                     try:
-                        # The USTA API provides "5" for 5/1, which the original code handled as `Decimal('5') + 1`.
-                        # The central utility expects fractional format, so we ensure it exists.
-                        if '/' not in win_odds_str:
-                            win_odds_str = f"{win_odds_str}/1"
-
-                        parsed_float = parse_odds(win_odds_str)
-                        if parsed_float < 999.0:
-                            decimal_odds = Decimal(str(parsed_float))
-                            if decimal_odds > 1:
-                                odds_data[self.source_name] = OddsData(
-                                    win=decimal_odds,
-                                    source=self.source_name,
-                                    last_updated=datetime.now()
-                                )
+                        # Use the robust, shared odds parser to handle formats like '9-5' or 'EVEN'
+                        decimal_odds = Decimal(str(parse_odds(win_odds_str)))
+                        if decimal_odds > 1:
+                            odds_data[self.source_name] = OddsData(win=decimal_odds, source=self.source_name, last_updated=datetime.now())
                     except (ValueError, TypeError):
-                         log.warning("Could not parse harness odds", odds_str=win_odds_str)
+                        log.warning("Could not parse harness odds", odds_str=win_odds_str, race_id=race_id)
 
 
                 runner = Runner(

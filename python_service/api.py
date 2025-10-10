@@ -2,7 +2,7 @@
 
 import structlog
 from datetime import datetime, date
-from typing import List, Optional
+from typing import Optional
 from fastapi import FastAPI, HTTPException, Request, Depends, Query
 from fastapi.middleware.cors import CORSMiddleware
 from slowapi import Limiter, _rate_limit_exceeded_handler
@@ -13,7 +13,7 @@ from contextlib import asynccontextmanager
 
 from .config import get_settings
 from .engine import OddsEngine
-from .models import Race, AggregatedResponse, QualifiedRacesResponse
+from .models import AggregatedResponse, QualifiedRacesResponse
 from .security import verify_api_key
 from .logging_config import configure_logging
 from .analyzer import AnalyzerEngine
@@ -69,7 +69,7 @@ async def get_all_adapter_statuses(request: Request, engine: OddsEngine = Depend
     try:
         statuses = engine.get_all_adapter_statuses()
         return statuses
-    except Exception as e:
+    except Exception:
         log.error("Error in /api/adapters/status", exc_info=True)
         raise HTTPException(status_code=500, detail="Internal Server Error")
 
@@ -138,6 +138,6 @@ async def get_races(
         date_str = race_date.strftime('%Y-%m-%d')
         aggregated_data = await engine.fetch_all_odds(date_str, source)
         return aggregated_data
-    except Exception as e:
+    except Exception:
         log.error("Error in /api/races", exc_info=True)
         raise HTTPException(status_code=500, detail="Internal Server Error")

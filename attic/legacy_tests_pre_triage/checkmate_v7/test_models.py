@@ -1,5 +1,4 @@
-import pytest
-from src.checkmate_v7.models import HorseSchema, RaceDataSchema, TrifectaFactorsSchema, PerformanceMetricsSchema
+from src.checkmate_v7.models import HorseSchema, RaceDataSchema, PerformanceMetricsSchema
 
 def test_horse_schema():
     """Tests that the HorseSchema can be instantiated correctly."""

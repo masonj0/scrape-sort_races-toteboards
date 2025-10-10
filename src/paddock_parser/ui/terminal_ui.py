@@ -1,4 +1,3 @@
-from datetime import datetime
 from typing import List, Optional
 
 from rich.console import Console
@@ -8,7 +7,6 @@ from rich.logging import RichHandler
 
 from ..base import NormalizedRace
 from ..pipeline import run_pipeline
-from ..scorer import score_races
 from ..models import Race as ScorerRace, Runner as ScorerRunner
 from ..config import LOG_FILE_PATH
 from ..log_analyzer import analyze_log_file

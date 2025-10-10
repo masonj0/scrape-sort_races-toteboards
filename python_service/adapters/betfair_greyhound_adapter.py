@@ -4,7 +4,7 @@ import httpx
 import structlog
 import re
 from datetime import datetime
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any, Optional
 
 from .base import BaseAdapter
 from .betfair_auth_mixin import BetfairAuthMixin
@@ -37,6 +37,7 @@ class BetfairGreyhoundAdapter(BetfairAuthMixin, BaseAdapter):
         return Race(id=f"bfg_{market['marketId']}", venue=market['event']['venue'], race_number=self._extract_race_number(market.get('marketName')), start_time=datetime.fromisoformat(market['marketStartTime'].replace('Z', '+00:00')), runners=runners, source=self.source_name)
 
     def _extract_race_number(self, name: Optional[str]) -> int:
-        if not name: return 1
+        if not name:
+            return 1
         match = re.search(r'\\bR(\\d{1,2})\\b', name)
         return int(match.group(1)) if match else 1

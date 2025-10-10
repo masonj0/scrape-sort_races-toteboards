@@ -8,8 +8,9 @@ import json
 import os
 import threading
 from datetime import datetime
+import subprocess
 from .engine import SuperchargedOrchestrator, EnhancedTrifectaAnalyzer, Settings, Race
-from typing import List
+from typing import List, Optional
 
 class DatabaseHandler:
     def __init__(self, db_path: str):
@@ -91,23 +92,27 @@ class CheckmateBackgroundService:
         self.settings = Settings()
         self.db_handler = DatabaseHandler(db_path)
         self.orchestrator = SuperchargedOrchestrator(self.settings)
-        self.analyzer = EnhancedTrifectaAnalyzer(self.settings)
+        self.python_analyzer = EnhancedTrifectaAnalyzer(self.settings)
         self.stop_event = threading.Event()
         self.rust_engine_path = os.path.join(os.path.dirname(__file__), '..', 'rust_engine', 'target', 'release', 'checkmate_engine.exe')
 
-    def run_continuously(self, interval_seconds: int = 60):
-        self.logger.info("Supercharged background service starting continuous run.")
-        while not self.stop_event.is_set():
-            self.logger.info("Starting advanced data collection and analysis cycle.")
-            try:
-                races, statuses = self.orchestrator.get_races_parallel()
-                analyzed_races = [self.analyzer.analyze_race_advanced(race) for race in races]
-                self.db_handler.update_races_and_status(analyzed_races, statuses)
-            except Exception as e:
-                self.logger.critical(f"FATAL error in main service loop: {e}", exc_info=True)
+    def _analyze_with_rust(self, races: List[Race]) -> Optional[List[Race]]:
+        self.logger.info("Attempting analysis with external Rust engine.")
+        try:
+            race_data_json = json.dumps([r.model_dump() for r in races])
+            result = subprocess.run(
+                [self.rust_engine_path],
+                input=race_data_json,
+                capture_output=True,
+                text=True,
+                check=True,
+                timeout=30
+            )
+            results_data = json.loads(result.stdout)
+            results_map = {res['race_id']: res for res in results_data}
 
-            self.stop_event.wait(interval_seconds)
-
+            for race in races:
+                if race.race_id in results_map:
                     res = results_map[race.race_id]
                     race.checkmate_score = res.get('checkmate_score')
                     race.is_qualified = res.get('qualified')
@@ -122,7 +127,7 @@ class CheckmateBackgroundService:
 
     def _analyze_with_python(self, races: List[Race]) -> List[Race]:
         self.logger.info("Performing analysis with internal Python engine.")
-        return [self.python_analyzer.analyze_race(race, self.settings) for race in races]
+        return [self.python_analyzer.analyze_race_advanced(race) for race in races]
 
     def run_continuously(self, interval_seconds: int = 60):
         self.logger.info("Background service thread starting continuous run.")
@@ -130,7 +135,7 @@ class CheckmateBackgroundService:
         while not self.stop_event.is_set():
             try:
                 self.logger.info("Starting data collection and analysis cycle.")
-                races, statuses = self.orchestrator.get_races()
+                races, statuses = self.orchestrator.get_races_parallel()
 
                 analyzed_races = None
                 if os.path.exists(self.rust_engine_path):

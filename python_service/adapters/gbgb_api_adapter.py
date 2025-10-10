@@ -2,7 +2,7 @@
 
 import structlog
 from datetime import datetime
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any, List
 import httpx
 from decimal import Decimal
 

@@ -74,7 +74,8 @@ class TrifectaAnalyzer(BaseAnalyzer):
             if best_odds is not None:
                 runners_with_odds.append((runner, best_odds))
 
-        if len(runners_with_odds) < 2: return 0.0
+        if len(runners_with_odds) < 2:
+            return 0.0
 
         runners_with_odds.sort(key=lambda x: x[1])
         favorite_odds = runners_with_odds[0][1]

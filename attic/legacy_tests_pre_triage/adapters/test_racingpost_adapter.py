@@ -1,9 +1,7 @@
 import unittest
-import json
 from pathlib import Path
 from datetime import datetime, timezone, timedelta
 from paddock_parser.adapters.racingpost_adapter import RacingPostAdapter
-from paddock_parser.base import NormalizedRace, NormalizedRunner
 
 class TestRacingPostAdapter(unittest.TestCase):
     def setUp(self):

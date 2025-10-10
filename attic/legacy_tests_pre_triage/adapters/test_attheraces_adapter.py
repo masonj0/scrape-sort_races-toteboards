@@ -1,5 +1,5 @@
 import pytest
-from unittest.mock import patch, AsyncMock
+from unittest.mock import patch
 from src.paddock_parser.adapters.attheraces_adapter import AtTheRacesAdapter
 
 @pytest.fixture

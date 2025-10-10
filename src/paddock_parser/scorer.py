@@ -1,4 +1,3 @@
-import math
 from typing import List, Dict, Optional
 
 from .config import SCORER_WEIGHTS

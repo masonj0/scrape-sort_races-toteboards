@@ -3,12 +3,9 @@
 #  Fortuna Faucet: The Live Odds Monitor (The Third Pillar)
 # ==============================================================================
 
-import asyncio
 import httpx
 import structlog
 from datetime import datetime
-from typing import List
-from decimal import Decimal
 
 from python_service.models import Race, OddsData
 from python_service.adapters.betfair_adapter import BetfairAdapter

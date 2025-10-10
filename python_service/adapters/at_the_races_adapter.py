@@ -1,6 +1,8 @@
 # python_service/adapters/at_the_races_adapter.py
 
-import asyncio, structlog, httpx
+import asyncio
+import structlog
+import httpx
 from datetime import datetime
 from typing import Dict, Any, List, Optional
 from bs4 import BeautifulSoup, Tag
@@ -31,7 +33,8 @@ class AtTheRacesAdapter(BaseAdapter):
 
     async def _get_race_links(self, http_client: httpx.AsyncClient) -> List[str]:
         response_html = await self.make_request(http_client, 'GET', '/racecards')
-        if not response_html: return []
+        if not response_html:
+            return []
         soup = BeautifulSoup(response_html, "html.parser")
         links = {a['href'] for a in soup.select("a.race-time-link[href]")}
         return [f"{self.base_url}{link}" for link in links]
@@ -39,7 +42,8 @@ class AtTheRacesAdapter(BaseAdapter):
     async def _fetch_and_parse_race(self, url: str, http_client: httpx.AsyncClient) -> Optional[Race]:
         try:
             response_html = await self.make_request(http_client, 'GET', url)
-            if not response_html: return None
+            if not response_html:
+                return None
             soup = BeautifulSoup(response_html, "html.parser")
             header = soup.select_one("h1.heading-racecard-title").get_text()
             track_name, race_time = [p.strip() for p in header.split("|")[:2]]
@@ -48,7 +52,9 @@ class AtTheRacesAdapter(BaseAdapter):
             start_time = datetime.strptime(f"{datetime.now().date()} {race_time}", "%Y-%m-%d %H:%M")
             runners = [self._parse_runner(row) for row in soup.select("div.card-horse")]
             return Race(id=f"atr_{track_name.replace(' ', '')}_{start_time.strftime('%Y%m%d')}_R{race_number}", venue=track_name, race_number=race_number, start_time=start_time, runners=[r for r in runners if r], source=self.source_name)
-        except Exception: return None
+        except Exception as e:
+            log.error("Error parsing race from AtTheRaces", url=url, exc_info=e)
+            return None
 
     def _parse_runner(self, row: Tag) -> Optional[Runner]:
         try:
@@ -59,4 +65,6 @@ class AtTheRacesAdapter(BaseAdapter):
             win_odds = Decimal(str(parse_odds(odds_str))) if odds_str else None
             odds_data = {self.source_name: OddsData(win=win_odds, source=self.source_name, last_updated=datetime.now())} if win_odds and win_odds < 999 else {}
             return Runner(number=number, name=name, odds=odds_data)
-        except: return None
+        except Exception as e:
+            log.warning("Failed to parse runner", exc_info=e)
+            return None

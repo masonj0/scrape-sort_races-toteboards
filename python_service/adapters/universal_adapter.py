@@ -2,9 +2,8 @@ import json
 import httpx
 import structlog
 from bs4 import BeautifulSoup
-from typing import Dict, Any, List
+from typing import Dict, Any
 from .base import BaseAdapter
-from ..models import Race, Runner # Assuming models are updated
 
 log = structlog.get_logger(__name__)
 
@@ -27,25 +26,15 @@ class UniversalAdapter(BaseAdapter):
         log.info(f"Executing Universal Adapter for {self.source_name}")
 
         # Step 1: Get Track Links (as defined in equibase_v2.json)
-        start_url = self.definition['steps'][0]['selector']
         response = await self.make_request(http_client, 'GET', self.definition['start_url'])
         soup = BeautifulSoup(response, 'html.parser')
         track_links = [self.base_url + a['href'] for a in soup.select(self.definition['steps'][0]['selector'])]
 
-        all_races = []
         for link in track_links:
             try:
                 track_response = await self.make_request(http_client, 'GET', link.replace(self.base_url, ''))
                 track_soup = BeautifulSoup(track_response, 'html.parser')
-                race_containers = track_soup.select(self.definition['steps'][1]['list_selector'])
-
-                for container in race_containers:
-                    # Simplified parsing logic for this PoC
-                    track_name = container.select_one('div.track-name h1').text.strip()
-                    race_number = int(container.select_one('h3.race-number').text.strip().split()[-1])
-                    # ... further parsing would be implemented here ...
-                    # This PoC demonstrates the principle, not a full implementation.
-                    pass # Placeholder
+                track_soup.select(self.definition['steps'][1]['list_selector'])
 
             except Exception as e:
                 log.error("Failed to process track link", link=link, error=e)
