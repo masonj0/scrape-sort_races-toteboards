@@ -25,7 +25,7 @@ class Watchman:
 
     def __init__(self):
         self.settings = get_settings()
-        self.odds_engine = OddsEngine(config=self.settings)
+        self.odds_engine = FortunaEngine(config=self.settings)
         self.analyzer_engine = AnalyzerEngine()
         self.live_monitor = LiveOddsMonitor(config=self.settings)
 
