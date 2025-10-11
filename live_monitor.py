@@ -12,16 +12,25 @@ from python_service.adapters.betfair_adapter import BetfairAdapter
 
 log = structlog.get_logger(__name__)
 
-class LiveOddsMonitor:
-    """
-    The 'Third Pillar' of the architecture. This engine uses the BetfairAdapter
-    to get a final, live odds snapshot for a race.
-    """
+from typing import Dict
 
-    def __init__(self, config):
-        self.config = config
-        self.adapter = BetfairAdapter(config)
-        log.info("LiveOddsMonitor Initialized (Armed with BetfairAdapter)")
+class LiveOddsMonitor:
+    """Monitors live odds for given race markets and triggers bets."""
+
+    def __init__(self, betfair_adapter: BetfairAdapter):
+        self.betfair_adapter = betfair_adapter
+        self.monitored_markets: Dict[str, Race] = {}
+
+    async def __aenter__(self):
+        """Allows the monitor to be used as an async context manager."""
+        log.info("LiveOddsMonitor entered context.")
+        return self
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        """Ensures resources are cleaned up when the context is exited."""
+        log.info("LiveOddsMonitor exiting context, closing adapter resources...")
+        await self.betfair_adapter.close()
+        log.info("Adapter resources closed.")
 
     async def monitor_race(self, race: Race, http_client: httpx.AsyncClient) -> Race:
         """
@@ -35,7 +44,7 @@ class LiveOddsMonitor:
         market_id = race.id.split('bf_')[1]
 
         try:
-            live_odds = await self.adapter.get_live_odds_for_market(market_id, http_client)
+            live_odds = await self.betfair_adapter.get_live_odds_for_market(market_id, http_client)
             if not live_odds:
                 log.warning("No live odds returned from Betfair", market_id=market_id)
                 return race

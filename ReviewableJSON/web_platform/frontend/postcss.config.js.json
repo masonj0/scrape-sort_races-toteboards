@@ -1,4 +1,4 @@
 {
     "file_path": "web_platform/frontend/postcss.config.js",
-    "content": "module.exports = {\n  plugins: {\n    tailwindcss: {},\n    autoprefixer: {},\n  },\n}"
+    "content": "module.exports = {\n  plugins: {\n    tailwindcss: {},\n    autoprefixer: {},\n  },\n};"
 }
