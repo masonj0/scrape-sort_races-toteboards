@@ -1,6 +1,6 @@
 @echo off
 REM ============================================================================
-REM  FORTUNA FAUCET - Windows Task Scheduler Setup
+REM  FORTUNA FAUCET - Windows Task Scheduler Setup (PowerShell Edition)
 REM ============================================================================
 
 title Fortuna Faucet - Task Scheduler Setup
@@ -22,8 +22,9 @@ if %errorlevel% neq 0 (
 
 set SCRIPT_DIR=%~dp0
 
-echo  [1/2] Creating task to start Fortuna on Windows login...
-schtasks /create /tn "Fortuna Faucet - Startup" /tr "%SCRIPT_DIR%LAUNCH_FORTUNA.bat" /sc onlogon /rl highest /f
+echo  [1/2] Creating task to start Fortuna on Windows login (via PowerShell)...
+REM UPGRADED: This now calls the superior launcher.ps1 script directly.
+schtasks /create /tn "Fortuna Faucet - Startup" /tr "powershell.exe -ExecutionPolicy Bypass -File \"%SCRIPT_DIR%launcher.ps1\"" /sc onlogon /rl highest /f
 
 echo  [2/2] Creating daily maintenance task...
 schtasks /create /tn "Fortuna Faucet - Daily Restart" /tr "%SCRIPT_DIR%RESTART_FORTUNA.bat" /sc daily /st 03:00 /rl highest /f
