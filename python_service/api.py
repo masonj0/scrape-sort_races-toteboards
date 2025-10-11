@@ -9,63 +9,55 @@ from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.middleware import SlowAPIMiddleware
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
-from contextlib import asynccontextmanager
-from datetime import date
+import aiosqlite
 from typing import List
+from contextlib import asynccontextmanager
 
 from .config import get_settings
-from .engine import OddsEngine
-from .models import AggregatedResponse, QualifiedRacesResponse
+from .engine import FortunaEngine
+from .models import AggregatedResponse, QualifiedRacesResponse, TipsheetRace
 from .security import verify_api_key
 from .logging_config import configure_logging
 from .analyzer import AnalyzerEngine
 
-from python_service.models import AggregatedResponse, Race, TipsheetRace
-from python_service.engine import FortunaEngine
+log = structlog.get_logger()
 
-# --- Configuration & Initialization ---
-DB_PATH = os.getenv("DB_PATH", "fortuna.db")
-
-async def setup_database():
-    """Create and populate a temporary database with known data."""
-    async with aiosqlite.connect(DB_PATH) as db:
-        await db.execute("""
-            CREATE TABLE IF NOT EXISTS tipsheet (
-                race_id TEXT PRIMARY KEY,
-                track_name TEXT,
-                race_number INTEGER,
-                post_time TEXT,
-                score REAL,
-                factors TEXT
-            )
-        """)
-        await db.commit()
-
+# Define the lifespan context manager for robust startup/shutdown
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Setup the database on startup
-    await setup_database()
+    """
+    Manage the application's lifespan. On startup, it initializes the OddsEngine
+    with validated settings and attaches it to the app state. On shutdown, it
+    properly closes the engine's resources.
+    """
+    configure_logging()
+    settings = get_settings()
+    app.state.engine = FortunaEngine(config=settings)
+    app.state.analyzer_engine = AnalyzerEngine()
+    log.info("Server startup: Configuration validated and FortunaEngine initialized.")
     yield
-    # Clean up resources on shutdown if needed
+    # Clean up the engine resources
+    await app.state.engine.close()
+    log.info("Server shutdown: HTTP client resources closed.")
 
-app = FastAPI(
-    title="Fortuna Faucet API",
-    description="Provides access to aggregated and analyzed horse racing data.",
-    version="1.0.0",
-    lifespan=lifespan
-)
+limiter = Limiter(key_func=get_remote_address)
 
-# Allow all origins for simplicity in this context
+# Pass the lifespan manager to the FastAPI app
+app = FastAPI(title="Checkmate Ultimate Solo API", version="2.1", lifespan=lifespan)
+app.add_middleware(SlowAPIMiddleware)
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
+settings = get_settings()
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_origins=settings.ALLOWED_ORIGINS,
+    allow_credentials=True, allow_methods=["GET"], allow_headers=["*"]
 )
 
 # Dependency function to get the engine instance from the app state
-def get_engine(request: Request) -> OddsEngine:
+def get_engine(request: Request) -> FortunaEngine:
     return request.app.state.engine
 
 @app.get("/health")
@@ -74,7 +66,7 @@ async def health_check():
 
 @app.get("/api/adapters/status")
 @limiter.limit("60/minute")
-async def get_all_adapter_statuses(request: Request, engine: OddsEngine = Depends(get_engine), _=Depends(verify_api_key)):
+async def get_all_adapter_statuses(request: Request, engine: FortunaEngine = Depends(get_engine), _=Depends(verify_api_key)):
     """Provides a list of health statuses for all adapters, required by the new frontend blueprint."""
     try:
         statuses = engine.get_all_adapter_statuses()
@@ -90,7 +82,7 @@ async def get_qualified_races(
     analyzer_name: str,
     request: Request,
     race_date: Optional[date] = None,
-    engine: OddsEngine = Depends(get_engine),
+    engine: FortunaEngine = Depends(get_engine),
     _=Depends(verify_api_key),
     # --- Dynamic Analyzer Parameters ---
     max_field_size: Optional[int] = Query(None, description="Override the max field size for the analyzer."),
@@ -105,27 +97,23 @@ async def get_qualified_races(
         if race_date is None:
             race_date = datetime.now().date()
         date_str = race_date.strftime('%Y-%m-%d')
-        aggregated_data = await engine.fetch_all_odds(date_str)
+        background_tasks = set() # Dummy background tasks
+        aggregated_data = await engine.get_races(date_str, background_tasks)
 
-        # The engine now correctly returns validated Pydantic models.
-        # No re-validation is necessary.
         races = aggregated_data.get('races', [])
 
         analyzer_engine = request.app.state.analyzer_engine
-        # Collect any provided optional parameters into a dictionary
         analyzer_params = {
             "max_field_size": max_field_size,
             "min_favorite_odds": min_favorite_odds,
             "min_second_favorite_odds": min_second_favorite_odds
         }
-        # Filter out any parameters that were not provided by the user
         custom_params = {k: v for k, v in analyzer_params.items() if v is not None}
 
         analyzer = analyzer_engine.get_analyzer(analyzer_name, **custom_params)
         result = analyzer.qualify_races(races)
         return QualifiedRacesResponse(**result)
     except ValueError as e:
-        # Correctly map a missing analyzer to a 404 Not Found error
         log.warning("Requested analyzer not found", analyzer_name=analyzer_name)
         raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
@@ -133,24 +121,44 @@ async def get_qualified_races(
         raise HTTPException(status_code=500, detail="Internal Server Error")
 
 
-# --- API Endpoints ---
 @app.get("/api/races", response_model=AggregatedResponse)
-async def get_races_endpoint(request: Request, current_date: date = Depends(get_current_date)):
-    fortuna_engine = FortunaEngine()
-    background_tasks = request.app.state.background_tasks if hasattr(request.app.state, 'background_tasks') else set()
-    response = await fortuna_engine.get_races(date=current_date.isoformat(), background_tasks=background_tasks)
-    return response
-
-@app.get("/api/tipsheet", response_model=List[TipsheetRace])
-async def get_tipsheet_endpoint(date: date = Depends(get_current_date)):
-    """Fetches the generated tipsheet from the database asynchronously."""
-    results = []
+@limiter.limit("30/minute")
+async def get_races(
+    request: Request,
+    race_date: Optional[date] = None,
+    source: Optional[str] = None,
+    engine: FortunaEngine = Depends(get_engine),
+    _=Depends(verify_api_key)
+):
     try:
         if race_date is None:
             race_date = datetime.now().date()
         date_str = race_date.strftime('%Y-%m-%d')
-        aggregated_data = await engine.fetch_all_odds(date_str, source)
+        background_tasks = set() # Dummy background tasks
+        aggregated_data = await engine.get_races(date_str, background_tasks, source)
         return aggregated_data
     except Exception:
         log.error("Error in /api/races", exc_info=True)
         raise HTTPException(status_code=500, detail="Internal Server Error")
+
+DB_PATH = 'fortuna.db'
+
+def get_current_date() -> date:
+    return datetime.now().date()
+
+@app.get("/api/tipsheet", response_model=List[TipsheetRace])
+@limiter.limit("30/minute")
+async def get_tipsheet_endpoint(request: Request, date: date = Depends(get_current_date)):
+    """Fetches the generated tipsheet from the database asynchronously."""
+    results = []
+    try:
+        async with aiosqlite.connect(DB_PATH) as db:
+            db.row_factory = aiosqlite.Row
+            query = 'SELECT * FROM tipsheet WHERE date(post_time) = ? ORDER BY post_time ASC'
+            async with db.execute(query, (date.isoformat(),)) as cursor:
+                async for row in cursor:
+                    results.append(dict(row))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+    return results

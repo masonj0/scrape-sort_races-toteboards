@@ -7,7 +7,7 @@ import re
 import sys
 
 # --- Configuration ---
-MANIFEST_FILES = ['MANIFEST2.md', 'MANIFEST3.md']
+MANIFEST_FILES = ['MANIFEST.md', 'MANIFEST2.md', 'MANIFEST3.md']
 OUTPUT_FILE_PART1 = 'FORTUNA_ALL_PART1.JSON' # Core Backend
 OUTPUT_FILE_PART2 = 'FORTUNA_ALL_PART2.JSON' # Adapter Fleet
 OUTPUT_FILE_PART3 = 'FORTUNA_ALL_PART3.JSON' # Frontend, Docs, Tests & Tooling

@@ -1,0 +1,4 @@
+{
+    "file_path": "run_fortuna.bat",
+    "content": "@echo off\nTITLE Fortuna Faucet Launcher\n\nREM This script now delegates to the enhanced PowerShell launcher.\nREM It ensures the correct execution policy is set for the current process.\n\nECHO Launching Fortuna Faucet via enhanced PowerShell launcher...\npowershell -ExecutionPolicy Bypass -File .\\\\launcher.ps1\n\nECHO.\nPAUSE\n"
+}

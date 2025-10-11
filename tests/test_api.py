@@ -1,5 +1,6 @@
 # tests/test_api.py
-
+import pytest
+import aiosqlite
 from unittest.mock import patch, AsyncMock
 from datetime import datetime, date
 from decimal import Decimal
@@ -18,43 +19,43 @@ async def test_get_races_endpoint_success(mock_get_races, client):
     today = date.today()
     now = datetime.now()
     mock_response_data = {
-        "date": today.isoformat(),
         "races": [],
-        "sources": [],
-        "metadata": {
-            "fetch_time": now.isoformat(),
-            "sources_queried": [],
-            "sources_successful": 0,
-            "total_races": 0
-        }
+        "source_info": []
     }
     mock_get_races.return_value = mock_response_data
+    headers = {"X-API-Key": "test_api_key"}
 
     # ACT
-    response = client.get(f"/api/races?current_date={today.isoformat()}")
+    response = client.get(f"/api/races?date={today.isoformat()}", headers=headers)
 
     # ASSERT
     assert response.status_code == 200
-    assert response.json()["date"] == today.isoformat()
     mock_get_races.assert_awaited_once()
 
 from fastapi.testclient import TestClient
 
 @pytest.mark.asyncio
-async def test_get_tipsheet_endpoint_success():
+async def test_get_tipsheet_endpoint_success(tmp_path):
     """
     SPEC: The /api/tipsheet endpoint should return a list of tipsheet races from the database.
-    This test now uses a real in-memory database and correctly triggers the lifespan events.
     """
-    db_path = ":memory:"
+    db_path = tmp_path / "test.db"
     post_time = datetime.now()
 
     with patch('python_service.api.DB_PATH', db_path):
         from python_service.api import app
         with TestClient(app) as client:
-            # The lifespan startup event has now run, creating the table.
-            # Now we can connect to the same in-memory DB to insert our test data.
             async with aiosqlite.connect(db_path) as db:
+                await db.execute("""
+                    CREATE TABLE tipsheet (
+                        race_id TEXT PRIMARY KEY,
+                        track_name TEXT,
+                        race_number INTEGER,
+                        post_time TEXT,
+                        score REAL,
+                        factors TEXT
+                    )
+                """)
                 await db.execute(
                     "INSERT INTO tipsheet VALUES (?, ?, ?, ?, ?, ?)",
                     ("test_race_1", "Test Park", 1, post_time.isoformat(), 85.5, "{}")
@@ -68,5 +69,5 @@ async def test_get_tipsheet_endpoint_success():
             assert response.status_code == 200
             response_data = response.json()
             assert len(response_data) == 1
-            assert response_data[0]["race_id"] == "test_race_1"
+            assert response_data[0]["raceId"] == "test_race_1"
             assert response_data[0]["score"] == 85.5
