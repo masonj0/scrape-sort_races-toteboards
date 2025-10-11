@@ -13,7 +13,8 @@ def _get_best_win_odds(runner: Runner) -> Optional[Decimal]:
         return None
 
     # Filter out invalid or placeholder odds (e.g., > 999)
-    valid_odds = [o.win for o in runner.odds.values() if o.win is not None and o.win < 999]
+    valid_odds = [o.win for o in runner.odds.values()
+                  if o.win is not None and o.win > 0 and o.win < 999]
 
     if not valid_odds:
         return None

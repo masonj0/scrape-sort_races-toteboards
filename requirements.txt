@@ -11,3 +11,5 @@ pydantic-settings==2.1.0
 psycopg2-binary
 pandas
 SQLAlchemy
+# --- Windows Native GUI Monitor Dependency ---
+httpx
