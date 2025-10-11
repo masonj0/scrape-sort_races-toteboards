@@ -148,4 +148,18 @@ class FortunaEngine:
             except Exception as e:
                 self.log.error("Redis SET failed", error=str(e))
 
+        # --- Windows Operator Experience Enhancement ---
+        try:
+            from win10toast import ToastNotifier
+            toaster = ToastNotifier()
+            toaster.show_toast(
+                "Fortuna Faucet",
+                f"Initial data load complete. {len(deduped_races)} races are ready for analysis.",
+                duration=10,
+                threaded=True
+            )
+        except (ImportError, RuntimeError):
+            # Fails gracefully if not on Windows or library is missing
+            pass
+
         return response_obj.model_dump()

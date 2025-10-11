@@ -13,7 +13,7 @@ from datetime import datetime, timedelta, timezone
 from typing import List
 
 from python_service.config import get_settings
-from python_service.engine import OddsEngine
+from python_service.engine import FortunaEngine
 from python_service.analyzer import AnalyzerEngine
 from python_service.models import Race
 from live_monitor import LiveOddsMonitor
@@ -25,16 +25,16 @@ class Watchman:
 
     def __init__(self):
         self.settings = get_settings()
-        self.odds_engine = OddsEngine(config=self.settings)
+        self.odds_engine = FortunaEngine(config=self.settings)
         self.analyzer_engine = AnalyzerEngine()
-        self.live_monitor = LiveOddsMonitor(config=self.settings)
 
     async def get_initial_targets(self) -> List[Race]:
         """Uses the OddsEngine and AnalyzerEngine to get the day's ranked targets."""
         log.info("Watchman: Acquiring and ranking initial targets for the day...")
         today_str = datetime.now(timezone.utc).strftime('%Y-%m-%d')
         try:
-            aggregated_data = await self.odds_engine.fetch_all_odds(today_str)
+            background_tasks = set() # Create a dummy set for background tasks
+            aggregated_data = await self.odds_engine.get_races(today_str, background_tasks)
             all_races = aggregated_data.get('races', [])
             if not all_races:
                 log.warning("Watchman: No races returned from OddsEngine.")
@@ -61,29 +61,32 @@ class Watchman:
         """Uses the LiveOddsMonitor on each target as it approaches post time."""
         log.info("Watchman: Entering tactical monitoring loop.")
         active_targets = list(targets)
-        async with httpx.AsyncClient() as client:
-            while active_targets:
-                now = datetime.now(timezone.utc)
 
-                # Find races that are within the 5-minute monitoring window
-                races_to_monitor = [r for r in active_targets if r.start_time.replace(tzinfo=timezone.utc) > now and r.start_time.replace(tzinfo=timezone.utc) < now + timedelta(minutes=5)]
+        from python_service.adapters.betfair_adapter import BetfairAdapter
+        async with LiveOddsMonitor(betfair_adapter=BetfairAdapter(config=self.settings)) as live_monitor:
+            async with httpx.AsyncClient() as client:
+                while active_targets:
+                    now = datetime.now(timezone.utc)
 
-                if races_to_monitor:
-                    for race in races_to_monitor:
-                        log.info("Watchman: Deploying Live Monitor for approaching target",
-                            race_id=race.id,
-                            venue=race.venue,
-                            score=race.qualification_score
-                        )
-                        updated_race = await self.live_monitor.monitor_race(race, client)
-                        log.info("Watchman: Live monitoring complete for race", race_id=updated_race.id)
-                        # Remove from target list to prevent re-monitoring
-                        active_targets = [t for t in active_targets if t.id != race.id]
+                    # Find races that are within the 5-minute monitoring window
+                    races_to_monitor = [r for r in active_targets if r.start_time.replace(tzinfo=timezone.utc) > now and r.start_time.replace(tzinfo=timezone.utc) < now + timedelta(minutes=5)]
 
-                if not active_targets:
-                    break # Exit loop if all targets are processed
+                    if races_to_monitor:
+                        for race in races_to_monitor:
+                            log.info("Watchman: Deploying Live Monitor for approaching target",
+                                race_id=race.id,
+                                venue=race.venue,
+                                score=race.qualification_score
+                            )
+                            updated_race = await live_monitor.monitor_race(race, client)
+                            log.info("Watchman: Live monitoring complete for race", race_id=updated_race.id)
+                            # Remove from target list to prevent re-monitoring
+                            active_targets = [t for t in active_targets if t.id != race.id]
 
-                await asyncio.sleep(30) # Check for upcoming races every 30 seconds
+                    if not active_targets:
+                        break # Exit loop if all targets are processed
+
+                    await asyncio.sleep(30) # Check for upcoming races every 30 seconds
 
         log.info("Watchman: All targets for the day have been monitored. Mission complete.")
 

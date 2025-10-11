@@ -35,3 +35,11 @@ To use the API directly (e.g., with `curl` or other tools), you must provide the
 # Example: Test the qualified races endpoint
 curl -H "X-API-Key: YOUR_SECRET_API_KEY_HERE" http://localhost:8000/api/races/qualified/trifecta
 ```
+
+---
+
+## 🚀 For Windows Users
+
+This project now includes a complete, one-click installation and management suite for an enhanced Windows experience.
+
+For the best experience and full setup instructions, please see the dedicated guide: **[README_WINDOWS.md](README_WINDOWS.md)**
