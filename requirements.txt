@@ -17,3 +17,6 @@ httpx
 # --- Windows Operator Experience Enhancements ---
 colorama
 win10toast-py3
+
+# --- Windows Advanced GUI Monitor Dependency ---
+matplotlib
