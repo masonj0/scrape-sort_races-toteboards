@@ -43,3 +43,7 @@ class BetfairAdapter(BetfairAuthMixin, BaseAdapter):
         return int(match.group(1)) if match else 1
 
     # The duplicated method has been removed.
+    async def close(self):
+        """Closes the underlying HTTP client to release resources."""
+        if self.http_client:
+            await self.http_client.aclose()

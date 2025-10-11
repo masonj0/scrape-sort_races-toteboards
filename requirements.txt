@@ -13,3 +13,7 @@ pandas
 SQLAlchemy
 # --- Windows Native GUI Monitor Dependency ---
 httpx
+
+# --- Windows Operator Experience Enhancements ---
+colorama
+win10toast-py3
