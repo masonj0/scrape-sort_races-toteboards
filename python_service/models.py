@@ -1,81 +1,64 @@
 # python_service/models.py
 
-from pydantic import BaseModel, Field, field_validator
-from typing import List, Optional, Dict, Any
-from datetime import datetime, date
+from datetime import datetime
 from decimal import Decimal
+from typing import Dict, List, Optional, Any
+from pydantic import BaseModel, Field
 
-class OddsData(BaseModel):
+# --- Configuration for Aliases (BUG #4 Fix) ---
+class FortunaBaseModel(BaseModel):
+    class Config:
+        populate_by_name = True
+        arbitrary_types_allowed = True
+
+# --- Core Data Models ---
+class OddsData(FortunaBaseModel):
     win: Optional[Decimal] = None
+    place: Optional[Decimal] = None
+    show: Optional[Decimal] = None
     source: str
     last_updated: datetime
 
-    @field_validator('win')
-    def win_must_be_positive(cls, v):
-        if v is not None and v <= Decimal("1.0"):
-            raise ValueError('Odds must be greater than 1.0')
-        return v
-
-class Runner(BaseModel):
-    number: int = Field(..., gt=0, lt=100)
-    name: str = Field(..., max_length=100)
+class Runner(FortunaBaseModel):
+    id: Optional[str] = None
+    name: str
+    number: Optional[int] = Field(None, alias='saddleClothNumber')
     scratched: bool = False
-    selection_id: Optional[int] = None # For Betfair Exchange integration
-    odds: Dict[str, OddsData] = Field(default_factory=dict)
+    odds: Dict[str, OddsData] = {}
     jockey: Optional[str] = None
     trainer: Optional[str] = None
 
-class Race(BaseModel):
+class Race(FortunaBaseModel):
     id: str
     venue: str
-    race_number: int = Field(..., gt=0, lt=21)
-    start_time: datetime
+    race_number: int = Field(..., alias='raceNumber')
+    start_time: datetime = Field(..., alias='startTime')
     runners: List[Runner]
     source: str
-    qualification_score: Optional[float] = None
+    qualification_score: Optional[float] = Field(None, alias='qualificationScore')
+    favorite: Optional[Runner] = None
     race_name: Optional[str] = None
     distance: Optional[str] = None
 
-    @field_validator('runners')
-    def runner_numbers_must_be_unique(cls, v):
-        numbers = [r.number for r in v]
-        if len(numbers) != len(set(numbers)):
-            raise ValueError('Runner numbers must be unique within a race')
-        return v
-
-class SourceInfo(BaseModel):
+class SourceInfo(FortunaBaseModel):
     name: str
     status: str
-    races_fetched: int
-    error_message: Optional[str] = None
-    fetch_duration: float
+    races_fetched: int = Field(..., alias='racesFetched')
+    fetch_duration: float = Field(..., alias='fetchDuration')
+    error_message: Optional[str] = Field(None, alias='errorMessage')
 
-class FetchMetadata(BaseModel):
-    fetch_time: datetime
-    sources_queried: List[str]
-    sources_successful: int
-    total_races: int
-
-class AggregatedResponse(BaseModel):
-    date: date
+class AggregatedResponse(FortunaBaseModel):
     races: List[Race]
-    sources: List[SourceInfo]
-    metadata: FetchMetadata
+    source_info: List[SourceInfo] = Field(..., alias='sourceInfo')
 
-class QualifiedRacesResponse(BaseModel):
+class QualifiedRacesResponse(FortunaBaseModel):
     criteria: Dict[str, Any]
     races: List[Race]
 
-class TipsheetRace(BaseModel):
-    """Represents a single race in the daily tipsheet."""
-    race_id: str
-    track_name: str
-    race_number: int
-    post_time: datetime
+class TipsheetRace(FortunaBaseModel):
+    race_id: str = Field(..., alias='raceId')
+    track_name: str = Field(..., alias='trackName')
+    race_number: int = Field(..., alias='raceNumber')
+    post_time: str = Field(..., alias='postTime')
     score: float
-    factors: str # Storing as JSON string
-    track_name: str
-    race_number: int
-    post_time: datetime
-    score: float
-    factors: str # Storing as JSON string
+    factors: Any # JSON string stored as Any

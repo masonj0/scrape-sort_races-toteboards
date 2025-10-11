@@ -9,11 +9,13 @@ from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.middleware import SlowAPIMiddleware
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
+import aiosqlite
+from typing import List
 from contextlib import asynccontextmanager
 
 from .config import get_settings
 from .engine import FortunaEngine
-from .models import AggregatedResponse, QualifiedRacesResponse
+from .models import AggregatedResponse, QualifiedRacesResponse, TipsheetRace
 from .security import verify_api_key
 from .logging_config import configure_logging
 from .analyzer import AnalyzerEngine
@@ -138,3 +140,25 @@ async def get_races(
     except Exception:
         log.error("Error in /api/races", exc_info=True)
         raise HTTPException(status_code=500, detail="Internal Server Error")
+
+DB_PATH = 'fortuna.db'
+
+def get_current_date() -> date:
+    return datetime.now().date()
+
+@app.get("/api/tipsheet", response_model=List[TipsheetRace])
+@limiter.limit("30/minute")
+async def get_tipsheet_endpoint(request: Request, date: date = Depends(get_current_date)):
+    """Fetches the generated tipsheet from the database asynchronously."""
+    results = []
+    try:
+        async with aiosqlite.connect(DB_PATH) as db:
+            db.row_factory = aiosqlite.Row
+            query = 'SELECT * FROM tipsheet WHERE date(post_time) = ? ORDER BY post_time ASC'
+            async with db.execute(query, (date.isoformat(),)) as cursor:
+                async for row in cursor:
+                    results.append(dict(row))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+    return results
