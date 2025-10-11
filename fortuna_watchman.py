@@ -13,7 +13,7 @@ from datetime import datetime, timedelta, timezone
 from typing import List
 
 from python_service.config import get_settings
-from python_service.engine import OddsEngine
+from python_service.engine import FortunaEngine
 from python_service.analyzer import AnalyzerEngine
 from python_service.models import Race
 from live_monitor import LiveOddsMonitor
