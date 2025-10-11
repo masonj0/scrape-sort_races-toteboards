@@ -34,7 +34,8 @@ class Watchman:
         log.info("Watchman: Acquiring and ranking initial targets for the day...")
         today_str = datetime.now(timezone.utc).strftime('%Y-%m-%d')
         try:
-            aggregated_data = await self.odds_engine.fetch_all_odds(today_str)
+            background_tasks = set() # Create a dummy set for background tasks
+            aggregated_data = await self.odds_engine.get_races(today_str, background_tasks)
             all_races = aggregated_data.get('races', [])
             if not all_races:
                 log.warning("Watchman: No races returned from OddsEngine.")
