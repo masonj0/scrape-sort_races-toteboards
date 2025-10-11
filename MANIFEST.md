@@ -19,3 +19,6 @@
 *   [electron/package.json](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/electron/package.json)
 *   [electron/preload.js](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/electron/preload.js)
 *   [setup_wizard.py](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/setup_wizard.py)
+*   [windows_service.py](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/windows_service.py)
+*   [install_service.bat](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/install_service.bat)
+*   [uninstall_service.bat](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/uninstall_service.bat)
