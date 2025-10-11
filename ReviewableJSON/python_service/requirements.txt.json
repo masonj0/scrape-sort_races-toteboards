@@ -1,4 +1,4 @@
 {
-    "original_path": "python_service/requirements.txt",
-    "content": "requests==2.31.0\npython-dotenv==1.0.0\npydantic==2.5.2\nfastapi==0.104.1\nuvicorn[standard]==0.24.0\naiohttp==3.9.0\nhttpx==0.24.1\npytest==8.4.2\n\nstructlog\nrespx\npytest-asyncio\n"
+    "file_path": "python_service/requirements.txt",
+    "content": "requests==2.31.0\npython-dotenv==1.0.0\npydantic==2.5.2\nfastapi==0.104.1\nuvicorn[standard]==0.24.0\naiohttp==3.9.0\nhttpx==0.24.1\npytest==8.4.2\n\nstructlog\nrespx\npytest-asyncio\nstreamlit\npandas\ntabula-py\nlxml\nbeautifulsoup4\npikepdf\npydantic-settings==2.1.0\nslowapi==0.1.8\n\ntenacity\n\n# Caching Layer\nredis==5.0.1\nfakeredis==2.20.0 # For testing\n\n# Code Quality & Linting\nruff\n\naiosqlite"
 }
