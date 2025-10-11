@@ -1,0 +1,4 @@
+{
+    "file_path": "web_platform/frontend/src/app/Providers.tsx",
+    "content": "// web_platform/frontend/src/app/Providers.tsx\n'use client';\n\nimport { QueryClient, QueryClientProvider } from '@tanstack/react-query';\nimport React from 'react';\n\nexport default function Providers({ children }: { children: React.ReactNode }) {\n  const [queryClient] = React.useState(() => new QueryClient());\n\n  return (\n    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>\n  );\n}"
+}

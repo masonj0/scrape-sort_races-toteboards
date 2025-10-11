@@ -1,0 +1,4 @@
+{
+    "file_path": "python_service/adapters/equibase_adapter.py",
+    "content": "#!/usr/bin/env python3\n# -*- coding: utf-8 -*-\n# This file was generated from the canonical adapter template.\nfrom datetime import datetime\nfrom typing import Dict, Any\nimport httpx\nimport structlog\nfrom .base import BaseAdapter\nlog = structlog.get_logger(__name__)\nclass EquibaseAdapter(BaseAdapter):\n    \"\"\"Adapter for scraping data from equibase.com.\"\"\"\n    def __init__(self, config):\n        super().__init__(source_name=\"Equibase\", base_url=\"https://www.equibase.com\")\n    async def fetch_races(self, date: str, http_client: httpx.AsyncClient) -> Dict[str, Any]:\n        start_time = datetime.now()\n        log.warning(\"EquibaseAdapter.fetch_races is a stub.\")\n        return self._format_response([], start_time, is_success=True, error_message=\"Not Implemented\")"
+}
