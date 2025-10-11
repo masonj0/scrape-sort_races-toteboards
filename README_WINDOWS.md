@@ -42,3 +42,13 @@ After installation, you'll have three shortcuts:
 ### Can't Find .env File
 The .env file should be in the same folder as LAUNCH_FORTUNA.bat.
 If missing, copy .env.example to .env
+
+
+## Service Management (Advanced)
+
+The Fortuna Faucet backend runs as a persistent Windows Service, meaning it starts with your computer and runs silently in the background.
+
+- **To Install/Start the Service:** If you ever need to manually install it, right-click `install_service.bat` and choose "Run as Administrator".
+- **To Uninstall the Service:** To completely remove the background service, right-click `uninstall_service.bat` and choose "Run as Administrator".
+
+This allows the Electron application (the user interface) to be opened and closed without interrupting the core data collection engine.

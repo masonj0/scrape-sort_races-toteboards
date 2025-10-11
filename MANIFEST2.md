@@ -15,6 +15,7 @@
 - `python_service/logging_config.py`
 - `python_service/models.py`
 - `python_service/security.py`
+- `python_service/cache_manager.py`
 
 ### Adapters
 - `python_service/adapters/__init__.py`
@@ -76,3 +77,4 @@
 *   [python_service/adapters/betfair_auth_mixin.py](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/adapters/betfair_auth_mixin.py)
 
 *   [tests/test_legacy_scenarios.py](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/tests/test_legacy_scenarios.py)
+*   [python_service/cache_manager.py](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/cache_manager.py)

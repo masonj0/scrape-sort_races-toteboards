@@ -3,11 +3,11 @@
 import asyncio
 import structlog
 import httpx
-import redis.asyncio as redis
 from datetime import datetime
 from typing import Dict, Any, List, Tuple
 
 from .models import Race, AggregatedResponse
+from .cache_manager import cache_async_result
 from .adapters.base import BaseAdapter
 from .adapters.betfair_adapter import BetfairAdapter
 from .adapters.betfair_greyhound_adapter import BetfairGreyhoundAdapter
@@ -42,12 +42,9 @@ class FortunaEngine:
             HarnessAdapter(config=self.config)
         ]
         self.http_client = httpx.AsyncClient()
-        self.redis_client = redis.from_url(self.config.REDIS_URL, decode_responses=True)
-        self.log.info("Redis client initialized", redis_url=self.config.REDIS_URL)
 
     async def close(self):
         await self.http_client.aclose()
-        await self.redis_client.aclose() # Use aclose() for async client
 
     def get_all_adapter_statuses(self) -> List[Dict[str, Any]]:
         return [adapter.get_status() for adapter in self.adapters]
@@ -94,18 +91,20 @@ class FortunaEngine:
         return list(race_map.values())
 
     async def get_races(self, date: str, background_tasks: set, source_filter: str = None) -> Dict[str, Any]:
-        cache_key = f"fortuna:races:{date}"
-        if not source_filter: # Only use cache for 'all sources' requests
-            try:
-                cached_data = await self.redis_client.get(cache_key)
-                if cached_data:
-                    self.log.info("CACHE HIT", key=cache_key)
-                    # Pydantic can validate directly from the JSON string
-                    return AggregatedResponse.model_validate_json(cached_data).model_dump()
-            except Exception as e:
-                self.log.error("Redis GET failed", error=str(e))
+        if source_filter:
+            self.log.info("Bypassing cache for source-specific request", source=source_filter)
+            return await self._fetch_races_from_sources(date, source_filter=source_filter)
 
-        self.log.info("CACHE MISS", key=cache_key)
+        return await self._get_all_races_cached(date, background_tasks=background_tasks)
+
+    @cache_async_result(ttl_seconds=300, key_prefix="fortuna_engine_races")
+    async def _get_all_races_cached(self, date: str, background_tasks: set) -> Dict[str, Any]:
+        """This method fetches races for all sources and its result is cached."""
+        self.log.info("CACHE MISS: Fetching all races from sources.", date=date)
+        return await self._fetch_races_from_sources(date)
+
+    async def _fetch_races_from_sources(self, date: str, source_filter: str = None) -> Dict[str, Any]:
+        """Helper method to contain the logic for fetching and aggregating races."""
         target_adapters = self.adapters
         if source_filter:
             target_adapters = [a for a in self.adapters if a.source_name.lower() == source_filter.lower()]
@@ -139,14 +138,6 @@ class FortunaEngine:
                 'total_races': len(deduped_races)
             }
         )
-
-        if not source_filter: # Only use cache for 'all sources' requests
-            try:
-                # Cache the result for 5 minutes (300 seconds)
-                await self.redis_client.set(cache_key, response_obj.model_dump_json(), ex=300)
-                self.log.info("CACHE SET", key=cache_key, expiry=300)
-            except Exception as e:
-                self.log.error("Redis SET failed", error=str(e))
 
         # --- Windows Operator Experience Enhancement ---
         try:
