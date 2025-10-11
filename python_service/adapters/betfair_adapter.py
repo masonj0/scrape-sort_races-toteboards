@@ -39,7 +39,7 @@ class BetfairAdapter(BetfairAuthMixin, BaseAdapter):
     def _extract_race_number(self, name: Optional[str]) -> int:
         if not name:
             return 1
-        match = re.search(r'\\bR(\\d{1,2})\\b', name)
+        match = re.search(r'\bR(\d{1,2})\b', name)
         return int(match.group(1)) if match else 1
 
     # The duplicated method has been removed.
