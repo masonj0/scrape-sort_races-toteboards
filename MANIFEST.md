@@ -18,3 +18,4 @@
 *   [electron/main.js](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/electron/main.js)
 *   [electron/package.json](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/electron/package.json)
 *   [electron/preload.js](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/electron/preload.js)
+*   [setup_wizard.py](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/setup_wizard.py)
