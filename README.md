@@ -1,5 +1,9 @@
 # Fortuna Faucet
 
+### Activate the Affluence Aqueduct
+### Tap into the Torrent of Treasure
+### Witness the Wellspring of Winnings
+
 This repository contains the Fortuna Faucet project, a global, multi-source horse racing analysis tool. The project is a two-pillar system: a powerful, asynchronous Python backend that performs all data gathering, and a feature-rich TypeScript frontend.
 
 ---
