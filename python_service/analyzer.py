@@ -42,6 +42,7 @@ class TrifectaAnalyzer(BaseAnalyzer):
         self.max_field_size = max_field_size
         self.min_favorite_odds = Decimal(str(min_favorite_odds))
         self.min_second_favorite_odds = Decimal(str(min_second_favorite_odds))
+        self.notifier = RaceNotifier()
 
     def qualify_races(self, races: List[Race]) -> Dict[str, Any]:
         """Scores all races and returns a dictionary with criteria and a sorted list."""
@@ -61,11 +62,9 @@ class TrifectaAnalyzer(BaseAnalyzer):
 
         log.info("Universal scoring complete", total_races_scored=len(scored_races), criteria=criteria)
 
-        # --- Send Notifications for High-Value Races ---
-        notifier = RaceNotifier()
         for race in scored_races:
             if race.qualification_score and race.qualification_score >= 85:
-                notifier.notify_qualified_race(race)
+                self.notifier.notify_qualified_race(race)
 
         return {"criteria": criteria, "races": scored_races}
 
