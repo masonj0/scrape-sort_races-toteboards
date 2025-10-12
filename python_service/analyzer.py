@@ -5,6 +5,12 @@ from decimal import Decimal
 
 from python_service.models import Race, Runner
 
+try:
+    from win10toast_py3 import ToastNotifier
+except (ImportError, RuntimeError):
+    # Fails gracefully on non-Windows systems
+    ToastNotifier = None
+
 log = structlog.get_logger(__name__)
 
 def _get_best_win_odds(runner: Runner) -> Optional[Decimal]:
@@ -122,4 +128,4 @@ class AnalyzerEngine:
         if not analyzer_class:
             log.error("Requested analyzer not found", requested_analyzer=name)
             raise ValueError(f"Analyzer '{name}' not found.")
-        return analyzer_class(**kwargs)
+        return analyzer_class(**kwargs)\n\nclass RaceNotifier:\n    """Handles sending native Windows notifications for high-value races."""\n    def __init__(self):\n        self.toaster = ToastNotifier() if ToastNotifier else None\n        self.notified_races = set()\n\n    def notify_qualified_race(self, race):\n        if not self.toaster or race.id in self.notified_races:\n            return\n\n        title = f"🏇 High-Value Opportunity!"\n        message = f"""{race.venue} - Race {race.race_number}\nScore: {race.qualification_score:.0f}%\nPost Time: {race.start_time.strftime('%I:%M %p')}"""\n        \n        try:\n            # The  argument is crucial to prevent blocking the main application thread.\n            self.toaster.show_toast(title, message, duration=10, threaded=True)\n            self.notified_races.add(race.id)\n            log.info("Notification sent for high-value race", race_id=race.id)\n        except Exception as e:\n            # Catch potential exceptions from the notification library itself\n            log.error("Failed to send notification", error=str(e), exc_info=True)\n
