@@ -117,6 +117,39 @@ class FortunaEngine:
         self.log.info("CACHE MISS: Fetching all races from sources.", date=date)
         return await self._fetch_races_from_sources(date)
 
+    def _convert_v3_race_to_v2(self, v3_race: NormalizedRace) -> Race:
+        """Converts a V3 NormalizedRace object to a V2 Race object."""
+        import re
+        race_number = 0
+        match = re.search(r'\d+', v3_race.race_name)
+        if match:
+            race_number = int(match.group())
+
+        runners = []
+        for v3_runner in v3_race.runners:
+            odds_data = OddsData(
+                win=Decimal(str(v3_runner.odds_decimal)),
+                source=v3_race.source_ids[0],
+                last_updated=datetime.now(timezone.utc)
+            )
+            runner = Runner(
+                id=v3_runner.runner_id,
+                name=v3_runner.name,
+                number=int(v3_runner.saddle_cloth) if v3_runner.saddle_cloth and v3_runner.saddle_cloth.isdigit() else 99,
+                odds={v3_race.source_ids[0]: odds_data}
+            )
+            runners.append(runner)
+
+        return Race(
+            id=v3_race.race_key,
+            venue=v3_race.track_key,
+            race_number=race_number,
+            start_time=datetime.fromisoformat(v3_race.start_time_iso),
+            runners=runners,
+            source=v3_race.source_ids[0],
+            race_name=v3_race.race_name
+        )
+
     async def _fetch_races_from_sources(self, date: str, source_filter: str = None) -> Dict[str, Any]:
         """Helper method to contain the logic for fetching and aggregating races."""
         target_adapters = self.adapters
