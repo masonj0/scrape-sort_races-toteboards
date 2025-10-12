@@ -150,6 +150,7 @@ class FortunaEngine:
             race_name=v3_race.race_name
         )
 
+    @cache_async_result(ttl_seconds=300, key_prefix="odds_engine_fetch")
     async def _fetch_races_from_sources(self, date: str, source_filter: str = None) -> Dict[str, Any]:
         """Helper method to contain the logic for fetching and aggregating races."""
         target_adapters = self.adapters
