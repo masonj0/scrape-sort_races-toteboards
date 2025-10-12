@@ -37,3 +37,4 @@
 *   [windows_service.py](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/windows_service.py)
 *   [fortuna_monitor.py](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/fortuna_monitor.py)
 *   [README_WINDOWS.md](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/README_WINDOWS.md)
+\n*   [fortuna_tray.py](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/fortuna_tray.py)
