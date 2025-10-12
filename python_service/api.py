@@ -16,6 +16,7 @@ from contextlib import asynccontextmanager
 
 from .config import get_settings
 from .engine import FortunaEngine
+from .health import router as health_router
 from .models import AggregatedResponse, QualifiedRacesResponse, TipsheetRace
 from .security import verify_api_key
 from .logging_config import configure_logging
@@ -53,6 +54,8 @@ settings = get_settings()
 
 # Add middlewares (order can be important)
 app.add_middleware(ErrorRecoveryMiddleware)
+app.include_router(health_router)
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.ALLOWED_ORIGINS,

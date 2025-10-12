@@ -145,6 +145,7 @@ class FortunaAdvancedMonitor(tk.Tk):
         tk.Button(control_frame, text="🔄 Refresh Now", command=self.manual_refresh, bg='#e94560', fg='#ffffff', font=('Segoe UI', 10, 'bold'), relief=tk.FLAT, padx=25, pady=10).pack(side=tk.LEFT)
         tk.Button(control_frame, text="🌐 Dashboard", command=lambda: webbrowser.open('http://localhost:3000'), bg='#0f3460', fg='#ffffff', font=('Segoe UI', 10, 'bold'), relief=tk.FLAT, padx=25, pady=10).pack(side=tk.LEFT, padx=5)
         tk.Checkbutton(control_frame, text="Auto-refresh", variable=self.auto_refresh_var, bg='#1a1a2e', fg='#ffffff', selectcolor='#0f3460').pack(side=tk.RIGHT)
+        tk.Button(control_frame, text="⚙️ Startup", command=self.configure_startup, bg='#0f3460', fg='#ffffff', font=('Segoe UI', 10, 'bold'), relief=tk.FLAT, padx=25, pady=10).pack(side=tk.LEFT, padx=5)
 
     def _create_status_bar(self):
         status_frame = tk.Frame(self, bg='#0f3460', height=30)
@@ -223,6 +224,27 @@ class FortunaAdvancedMonitor(tk.Tk):
     def on_closing(self):
         self.is_running = False
         self.destroy()
+
+    def configure_startup(self):
+        """Shows a dialog to enable or disable auto-start."""
+        try:
+            from configure_startup import StartupManager
+            current_status = "Enabled" if StartupManager.is_enabled() else "Disabled"
+
+            choice = messagebox.askyesno(
+                "Configure Windows Startup",
+                f"Current status: {current_status}\n\nEnable Fortuna Faucet to launch automatically when you log in?"
+            )
+
+            if choice:
+                StartupManager.enable()
+                messagebox.showinfo("Success", "Fortuna Faucet will now start automatically with Windows.")
+            else:
+                StartupManager.disable()
+                messagebox.showinfo("Success", "Fortuna Faucet will no longer start automatically.")
+
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to configure startup: {e}")
 
 if __name__ == "__main__":
     if not API_KEY:

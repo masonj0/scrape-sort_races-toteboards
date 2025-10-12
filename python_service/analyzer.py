@@ -5,6 +5,12 @@ from decimal import Decimal
 
 from python_service.models import Race, Runner
 
+try:
+    from win10toast_py3 import ToastNotifier
+except (ImportError, RuntimeError):
+    # Fails gracefully on non-Windows systems
+    ToastNotifier = None
+
 log = structlog.get_logger(__name__)
 
 def _get_best_win_odds(runner: Runner) -> Optional[Decimal]:
