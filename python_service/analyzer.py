@@ -2,8 +2,21 @@ from abc import ABC, abstractmethod
 from typing import List, Dict, Type, Optional, Any
 import structlog
 from decimal import Decimal
+import os
+from pathlib import Path
 
 from python_service.models import Race, Runner
+
+try:
+    # winsound is a built-in Windows library
+    import winsound
+except ImportError:
+    winsound = None
+try:
+    from win10toast_py3 import ToastNotifier
+except (ImportError, RuntimeError):
+    # Fails gracefully on non-Windows systems
+    ToastNotifier = None
 
 log = structlog.get_logger(__name__)
 
@@ -37,6 +50,7 @@ class TrifectaAnalyzer(BaseAnalyzer):
         self.max_field_size = max_field_size
         self.min_favorite_odds = Decimal(str(min_favorite_odds))
         self.min_second_favorite_odds = Decimal(str(min_second_favorite_odds))
+        self.notifier = RaceNotifier()
 
     def qualify_races(self, races: List[Race]) -> Dict[str, Any]:
         """Scores all races and returns a dictionary with criteria and a sorted list."""
@@ -55,6 +69,11 @@ class TrifectaAnalyzer(BaseAnalyzer):
         }
 
         log.info("Universal scoring complete", total_races_scored=len(scored_races), criteria=criteria)
+
+        for race in scored_races:
+            if race.qualification_score and race.qualification_score >= 85:
+                self.notifier.notify_qualified_race(race)
+
         return {"criteria": criteria, "races": scored_races}
 
     def _evaluate_race(self, race: Race) -> float:
@@ -123,3 +142,47 @@ class AnalyzerEngine:
             log.error("Requested analyzer not found", requested_analyzer=name)
             raise ValueError(f"Analyzer '{name}' not found.")
         return analyzer_class(**kwargs)
+
+class AudioAlertSystem:
+    """Plays sound alerts for important events."""
+    def __init__(self):
+        self.sounds = {
+            'high_value': Path(__file__).parent.parent.parent / 'assets' / 'sounds' / 'alert_premium.wav',
+        }
+
+    def play(self, sound_type: str):
+        if not winsound:
+            return
+
+        sound_file = self.sounds.get(sound_type)
+        if sound_file and sound_file.exists():
+            try:
+                winsound.PlaySound(str(sound_file), winsound.SND_FILENAME | winsound.SND_ASYNC)
+            except Exception as e:
+                log.warning("Could not play sound", file=sound_file, error=e)
+
+class RaceNotifier:
+    """Handles sending native Windows notifications and audio alerts for high-value races."""
+    def __init__(self):
+        self.toaster = ToastNotifier() if ToastNotifier else None
+        self.audio_system = AudioAlertSystem()
+        self.notified_races = set()
+
+    def notify_qualified_race(self, race):
+        if not self.toaster or race.id in self.notified_races:
+            return
+
+        title = f"🏇 High-Value Opportunity!"
+        message = f\"\"\"{race.venue} - Race {race.race_number}
+Score: {race.qualification_score:.0f}%
+Post Time: {race.start_time.strftime('%I:%M %p')}\"\"\"
+
+        try:
+            # The `threaded=True` argument is crucial to prevent blocking the main application thread.
+            self.toaster.show_toast(title, message, duration=10, threaded=True)
+            self.notified_races.add(race.id)
+            self.audio_system.play('high_value')
+            log.info("Notification and audio alert sent for high-value race", race_id=race.id)
+        except Exception as e:
+            # Catch potential exceptions from the notification library itself
+            log.error("Failed to send notification", error=str(e), exc_info=True)

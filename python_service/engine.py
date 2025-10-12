@@ -11,6 +11,7 @@ from datetime import timezone
 from .models import Race, Runner, OddsData, AggregatedResponse
 from .models_v3 import NormalizedRace, NormalizedRunner
 from .cache_manager import cache_async_result
+from .health import health_monitor
 from .adapters.base import BaseAdapter
 from .adapters.betfair_adapter import BetfairAdapter
 from .adapters.betfair_greyhound_adapter import BetfairGreyhoundAdapter
@@ -66,10 +67,12 @@ class FortunaEngine:
         try:
             result = await adapter.fetch_races(date, self.http_client)
             duration = (datetime.now() - start_time).total_seconds()
+            health_monitor.record_adapter_response(adapter.source_name, success=True, duration=duration)
             return (adapter.source_name, result, duration)
         except Exception as e:
             duration = (datetime.now() - start_time).total_seconds()
             log.error("Adapter raised an unhandled exception", adapter=adapter.source_name, error=str(e), exc_info=True)
+            health_monitor.record_adapter_response(adapter.source_name, success=False, duration=duration)
             failed_result = {
                 'races': [],
                 'source_info': {
