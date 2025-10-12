@@ -1,6 +1,6 @@
 @echo off
 REM ============================================================================
-REM  FORTUNA FAUCET - Windows Native One-Click Installer (Unified)
+REM  FORTUNA FAUCET - Windows Native One-Click Installer
 REM ============================================================================
 
 title Fortuna Faucet - Installation Wizard
@@ -20,7 +20,7 @@ if %errorlevel% neq 0 (
     exit /b 1
 )
 
-echo  [1/6] Checking Python installation...
+echo  [1/5] Checking Python installation...
 python --version >nul 2>&1
 if %errorlevel% neq 0 (
     echo  [X] Python not found! Installing Python 3.11...
@@ -33,7 +33,7 @@ if %errorlevel% neq 0 (
 )
 
 echo.
-echo  [2/6] Checking Node.js installation...
+echo  [2/5] Checking Node.js installation...
 node --version >nul 2>&1
 if %errorlevel% neq 0 (
     echo  [X] Node.js not found! Installing Node.js LTS...
@@ -46,7 +46,7 @@ if %errorlevel% neq 0 (
 )
 
 echo.
-echo  [3/6] Setting up Python virtual environment...
+echo  [3/5] Setting up Python virtual environment...
 if not exist .venv (
     python -m venv .venv
     echo  [V] Virtual environment created!
@@ -55,28 +55,17 @@ if not exist .venv (
 )
 
 echo.
-echo  [4/6] Installing Python dependencies...
-call .venv\Scripts\activate.bat
+echo  [4/5] Installing Python dependencies...
+call .venv\\Scripts\\activate.bat
 pip install --upgrade pip --quiet
 pip install -r requirements.txt --quiet
 echo  [V] Python packages installed!
 
 echo.
-echo  [5/6] Configuring the application...
-if not exist .env (
-    echo  [!] .env file not found!
-    echo  [*] Launching interactive setup wizard for first-time configuration...
-    python setup_wizard.py
-    echo  [V] Configuration created!
-) else (
-    echo  [V] Existing .env configuration found! Skipping wizard.
-)
-
-echo.
-echo  [6/6] Installing Node.js dependencies...
-cd web_platform\frontend
+echo  [5/5] Installing Node.js dependencies...
+cd web_platform\\frontend
 call npm install --silent
-cd ..\..
+cd ..\\..
 echo  [V] Node.js packages installed!
 
 echo.
@@ -88,7 +77,4 @@ echo  ========================================================================
 echo   INSTALLATION COMPLETE!
 echo  ========================================================================
 echo.
-echo   To start the application, double-click the 'Launch Fortuna'
-_   shortcut on your desktop.
-_echo.
 pause
