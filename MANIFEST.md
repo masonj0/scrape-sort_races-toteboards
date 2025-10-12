@@ -39,3 +39,4 @@
 *   [README_WINDOWS.md](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/README_WINDOWS.md)
 \n*   [fortuna_tray.py](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/fortuna_tray.py)
 \n*   [configure_startup.py](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/configure_startup.py)
+\n*   [assets/sounds/.gitkeep](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/assets/sounds/.gitkeep)

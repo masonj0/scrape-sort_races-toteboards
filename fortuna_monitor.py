@@ -66,6 +66,7 @@ class FortunaAdvancedMonitor(tk.Tk):
 
         self._setup_styles()
         self._create_widgets()
+        self._setup_keyboard_shortcuts()
         self.after(100, self.initial_load)
 
     def initial_load(self):
@@ -144,6 +145,7 @@ class FortunaAdvancedMonitor(tk.Tk):
         control_frame.pack(fill=tk.X, padx=15, pady=10)
         tk.Button(control_frame, text="🔄 Refresh Now", command=self.manual_refresh, bg='#e94560', fg='#ffffff', font=('Segoe UI', 10, 'bold'), relief=tk.FLAT, padx=25, pady=10).pack(side=tk.LEFT)
         tk.Button(control_frame, text="🌐 Dashboard", command=lambda: webbrowser.open('http://localhost:3000'), bg='#0f3460', fg='#ffffff', font=('Segoe UI', 10, 'bold'), relief=tk.FLAT, padx=25, pady=10).pack(side=tk.LEFT, padx=5)
+        tk.Button(control_frame, text="⚙️ Startup", command=self.configure_startup, bg='#0f3460', fg='#ffffff', font=('Segoe UI', 10, 'bold'), relief=tk.FLAT, padx=25, pady=10).pack(side=tk.LEFT, padx=5)
         tk.Checkbutton(control_frame, text="Auto-refresh", variable=self.auto_refresh_var, bg='#1a1a2e', fg='#ffffff', selectcolor='#0f3460').pack(side=tk.RIGHT)
         tk.Button(control_frame, text="⚙️ Startup", command=self.configure_startup, bg='#0f3460', fg='#ffffff', font=('Segoe UI', 10, 'bold'), relief=tk.FLAT, padx=25, pady=10).pack(side=tk.LEFT, padx=5)
 
@@ -253,3 +255,4 @@ if __name__ == "__main__":
         app = FortunaAdvancedMonitor()
         app.protocol("WM_DELETE_WINDOW", app.on_closing)
         app.mainloop()
+\n\n    def _setup_keyboard_shortcuts(self):\n        """Binds standard Windows keyboard shortcuts to core functions."""\n        self.bind('<F5>', lambda e: self.manual_refresh())\n        self.bind('<Control-r>', lambda e: self.manual_refresh())\n        self.bind('<Control-o>', lambda e: webbrowser.open('http://localhost:3000'))\n        self.bind('<Control-q>', lambda e: self.on_closing())\n        self.bind('<Alt-F4>', lambda e: self.on_closing())\n

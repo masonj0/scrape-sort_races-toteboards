@@ -2,9 +2,16 @@ from abc import ABC, abstractmethod
 from typing import List, Dict, Type, Optional, Any
 import structlog
 from decimal import Decimal
+import os
+from pathlib import Path
 
 from python_service.models import Race, Runner
 
+try:
+    # winsound is a built-in Windows library
+    import winsound
+except ImportError:
+    winsound = None
 try:
     from win10toast_py3 import ToastNotifier
 except (ImportError, RuntimeError):
@@ -134,4 +141,48 @@ class AnalyzerEngine:
         if not analyzer_class:
             log.error("Requested analyzer not found", requested_analyzer=name)
             raise ValueError(f"Analyzer '{name}' not found.")
-        return analyzer_class(**kwargs)\ntry:\n    from win10toast_py3 import ToastNotifier\nexcept (ImportError, RuntimeError):\n    ToastNotifier = None\n\nclass RaceNotifier:\n    """Handles sending native Windows notifications for high-value races."""\n    def __init__(self):\n        self.toaster = ToastNotifier() if ToastNotifier else None\n        self.notified_races = set()\n\n    def notify_qualified_race(self, race):\n        if not self.toaster or race.id in self.notified_races:\n            return\n\n        title = f"🏇 High-Value Opportunity!"\n        message = f"""{race.venue} - Race {race.race_number}\nScore: {race.qualification_score:.0f}%\nPost Time: {race.start_time.strftime('%I:%M %p')}"""\n        \n        try:\n            # The  argument is crucial to prevent blocking the main application thread.\n            self.toaster.show_toast(title, message, duration=10, threaded=True)\n            self.notified_races.add(race.id)\n            log.info("Notification sent for high-value race", race_id=race.id)\n        except Exception as e:\n            # Catch potential exceptions from the notification library itself\n            log.error("Failed to send notification", error=str(e), exc_info=True)\n
+        return analyzer_class(**kwargs)
+
+class AudioAlertSystem:
+    """Plays sound alerts for important events."""
+    def __init__(self):
+        self.sounds = {
+            'high_value': Path(__file__).parent.parent.parent / 'assets' / 'sounds' / 'alert_premium.wav',
+        }
+
+    def play(self, sound_type: str):
+        if not winsound:
+            return
+
+        sound_file = self.sounds.get(sound_type)
+        if sound_file and sound_file.exists():
+            try:
+                winsound.PlaySound(str(sound_file), winsound.SND_FILENAME | winsound.SND_ASYNC)
+            except Exception as e:
+                log.warning("Could not play sound", file=sound_file, error=e)
+
+class RaceNotifier:
+    """Handles sending native Windows notifications and audio alerts for high-value races."""
+    def __init__(self):
+        self.toaster = ToastNotifier() if ToastNotifier else None
+        self.audio_system = AudioAlertSystem()
+        self.notified_races = set()
+
+    def notify_qualified_race(self, race):
+        if not self.toaster or race.id in self.notified_races:
+            return
+
+        title = f"🏇 High-Value Opportunity!"
+        message = f\"\"\"{race.venue} - Race {race.race_number}
+Score: {race.qualification_score:.0f}%
+Post Time: {race.start_time.strftime('%I:%M %p')}\"\"\"
+
+        try:
+            # The `threaded=True` argument is crucial to prevent blocking the main application thread.
+            self.toaster.show_toast(title, message, duration=10, threaded=True)
+            self.notified_races.add(race.id)
+            self.audio_system.play('high_value')
+            log.info("Notification and audio alert sent for high-value race", race_id=race.id)
+        except Exception as e:
+            # Catch potential exceptions from the notification library itself
+            log.error("Failed to send notification", error=str(e), exc_info=True)
