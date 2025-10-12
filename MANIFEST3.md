@@ -40,3 +40,10 @@
 *   [web_platform/frontend/src/components/RaceCard.tsx](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/web_platform/frontend/src/components/RaceCard.tsx)
 *   [web_platform/frontend/src/components/LiveRaceDashboard.tsx](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/web_platform/frontend/src/components/LiveRaceDashboard.tsx)
 *   [web_platform/frontend/src/app/Providers.tsx](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/web_platform/frontend/src/app/Providers.tsx)
+
+
+## Electron Desktop Shell
+
+*   [electron/main.js](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/electron/main.js)
+*   [electron/package.json](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/electron/package.json)
+*   [electron/preload.js](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/electron/preload.js)
