@@ -61,6 +61,8 @@ class GreyhoundAdapter(BaseAdapter):
     def _parse_cards(self, cards: List[Dict[str, Any]]) -> List[Race]:
         """Parses a list of cards and their races into Race objects."""
         all_races = []
+        if cards is None:
+            return all_races
         for card in cards:
             venue = card.get("track_name", "Unknown Venue")
             races_data = card.get("races", [])

@@ -3,6 +3,7 @@ from fastapi import Request, status
 from fastapi.responses import JSONResponse
 import structlog
 from datetime import datetime, timedelta
+from typing import Dict, Any
 
 log = structlog.get_logger(__name__)
 
@@ -17,9 +18,9 @@ class ErrorRecoveryMiddleware:
             await self.app(scope, receive, send)
             return
 
-        # Check circuit breaker before proceeding
-        request = Request(scope, receive)
-        adapter_name = self._extract_adapter_from_request(request)
+        # Correctly extract adapter from raw scope without consuming the request body
+        adapter_name = self._extract_adapter_from_scope(scope)
+
         if adapter_name and self._is_circuit_open(adapter_name):
             log.warning("Circuit breaker is open for adapter", adapter=adapter_name)
             response = JSONResponse(
@@ -32,7 +33,10 @@ class ErrorRecoveryMiddleware:
         try:
             await self.app(scope, receive, send)
         except Exception as exc:
-            # Re-create the request object here to handle the error context
+            # The error handler needs a request object, but we must be careful.
+            # We create it here, knowing that for GET requests this is safe.
+            # A more advanced implementation might be needed for POST requests if they
+            # were to trigger adapter-specific errors.
             request_on_error = Request(scope, receive)
             await self._handle_error(request_on_error, exc, send)
 
@@ -54,9 +58,13 @@ class ErrorRecoveryMiddleware:
         # The response must be awaited with the original scope, receive, and send callables
         await response(request.scope, request.receive, send)
 
-    def _extract_adapter_from_request(self, request: Request) -> str | None:
-        """Extracts the adapter name from the 'source' query parameter."""
-        return request.query_params.get("source")
+    def _extract_adapter_from_scope(self, scope: Dict[str, Any]) -> str | None:
+        """Extracts the adapter name from the 'source' query parameter in the raw scope."""
+        query_string = scope.get("query_string", b"").decode()
+        if "source=" in query_string:
+            params = dict(param.split("=") for param in query_string.split("&"))
+            return params.get("source")
+        return None
 
     def _increment_error_count(self, adapter_name: str):
         if adapter_name not in self.error_counts:

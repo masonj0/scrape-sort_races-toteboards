@@ -32,7 +32,9 @@ class BetfairAdapter(BetfairAuthMixin, BaseAdapter):
         except Exception as e:
             return self._format_response([], start_time, is_success=False, error_message=str(e))
 
-    def _parse_race(self, market: Dict[str, Any]) -> Race:
+    def _parse_race(self, market: Dict[str, Any]) -> Race | None:
+        if market is None:
+            return None
         runners = [Runner(number=rd.get('sortPriority', 99), name=rd['runnerName'], selection_id=rd['selectionId']) for rd in market.get('runners', [])]
         return Race(id=f"bf_{market['marketId']}", venue=market['event']['venue'], race_number=self._extract_race_number(market.get('marketName')), start_time=datetime.fromisoformat(market['marketStartTime'].replace('Z', '+00:00')), runners=runners, source=self.source_name)
 
