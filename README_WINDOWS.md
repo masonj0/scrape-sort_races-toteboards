@@ -33,4 +33,13 @@ The application will automatically send you a native Windows notification when i
 ## Service Management (Advanced)
 
 The backend runs as a persistent Windows Service. You can manage it via the `install_service.bat` and `uninstall_service.bat` scripts (run as Administrator) or through the standard Windows Services application (`services.msc`).
-\n\n## Automatic Startup\n\nYou can easily configure Fortuna Faucet to start automatically when you log into Windows.\n\n1.  Open the **Fortuna Monitor** application.\n2.  Click the **"⚙️ Startup"** button.\n3.  A dialog will appear asking if you want to enable startup. Click **"Yes"**.\n\nTo disable automatic startup, simply repeat the process and click **"No"**.\n
+
+## Automatic Startup
+
+You can easily configure Fortuna Faucet to start automatically when you log into Windows.
+
+1.  Open the **Fortuna Monitor** application.
+2.  Click the **"⚙️ Startup"** button.
+3.  A dialog will appear asking if you want to enable startup. Click **"Yes"**.
+
+To disable automatic startup, simply repeat the process and click **"No"**.

@@ -6,7 +6,7 @@ FORTUNA FAUCET - Advanced Windows Monitor with Performance Graphs
 import asyncio
 import httpx
 import tkinter as tk
-from tkinter import ttk, scrolledtext, messagebox
+from tkinter import ttk, messagebox
 from datetime import datetime
 from typing import List, Any
 import os
@@ -14,7 +14,6 @@ from collections import deque
 import threading
 import webbrowser
 
-# Try to import matplotlib for graphs
 try:
     import matplotlib
     matplotlib.use('TkAgg')
@@ -101,7 +100,7 @@ class FortunaAdvancedMonitor(tk.Tk):
         self.notebook.pack(fill=tk.BOTH, expand=True, padx=15, pady=10)
         self.notebook.add(self._create_adapter_tab(), text="🔧 Adapters")
         if GRAPHS_AVAILABLE:
-            self.notebook.add(self._create_graph_tab(), text="📊 Performance")
+            self.notebook.add(self._create_graph_tab(), text="📈 Live Performance")
 
         self._create_control_panel()
         self._create_status_bar()
@@ -202,16 +201,18 @@ class FortunaAdvancedMonitor(tk.Tk):
         self.status_indicator.config(text="● All Systems Operational", fg='#00ff88')
 
     def update_graphs(self):
-        history = self.performance.get_history()
-        if not history['times']: return
+        history = self.performance
+        if not history.timestamps: return
         for ax in [self.ax1, self.ax2, self.ax3, self.ax4]: ax.clear()
-        self.ax1.plot(history['times'], history['races'], color='#00ff88')
+        self.ax1.plot(history.timestamps, history.race_counts, color='#00ff88')
         self.ax1.set_title('Races Fetched', color='white')
-        self.ax2.plot(history['times'], history['durations'], color='#e94560')
+        self.ax2.plot(history.timestamps, history.fetch_durations, color='#e94560')
         self.ax2.set_title('Avg. Fetch Duration (s)', color='white')
-        self.ax3.plot(history['times'], history['success'], color='#ffcc00')
+        self.ax3.plot(history.timestamps, history.success_rates, color='#ffcc00')
         self.ax3.set_title('Success Rate (%)', color='white')
         self.ax3.set_ylim(0, 105)
+        for ax in [self.ax1, self.ax2, self.ax3]:
+            ax.tick_params(axis='x', labelrotation=30, colors='white')
         self.canvas.draw()
 
     def schedule_refresh(self):
