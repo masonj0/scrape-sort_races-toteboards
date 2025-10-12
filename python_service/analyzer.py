@@ -40,10 +40,11 @@ class TrifectaAnalyzer(BaseAnalyzer):
 
     def qualify_races(self, races: List[Race]) -> Dict[str, Any]:
         """Scores all races and returns a dictionary with criteria and a sorted list."""
-        # Create a shallow copy to prevent mutating the original list (side-effect bug)
-        scored_races = [race.copy(deep=True) for race in races]
-        for race in scored_races:
+        scored_races = []
+        for race in races:
+            # The _evaluate_race method now always returns a float score.
             race.qualification_score = self._evaluate_race(race)
+            scored_races.append(race)
 
         scored_races.sort(key=lambda r: r.qualification_score, reverse=True)
 

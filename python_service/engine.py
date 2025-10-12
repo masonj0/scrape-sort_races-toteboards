@@ -96,10 +96,7 @@ class FortunaEngine:
                 runner_map = {r.number: r for r in existing_race.runners}
                 for new_runner in race.runners:
                     if new_runner.number in runner_map:
-                        # Create a copy to prevent mutating the original dict (side-effect bug)
-                        updated_odds = runner_map[new_runner.number].odds.copy()
-                        updated_odds.update(new_runner.odds)
-                        runner_map[new_runner.number].odds = updated_odds
+                        runner_map[new_runner.number].odds.update(new_runner.odds)
                     else:
                         existing_race.runners.append(new_runner)
         return list(race_map.values())
