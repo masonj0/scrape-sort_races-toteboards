@@ -49,3 +49,13 @@ TRACK_ALIASES = {
 def normalize_track_name(track_name: str) -> str:
     """Normalizes a track name using a dictionary of known aliases."""
     return TRACK_ALIASES.get(track_name.strip(), track_name.strip())
+
+
+def normalize_course_name(name: str) -> str:
+    import re
+    if not name:
+        return ""
+    name = name.lower().strip()
+    name = re.sub(r'[^a-z0-9\\s-]', '', name)
+    name = re.sub(r'[\\s-]+', '_', name)
+    return name
