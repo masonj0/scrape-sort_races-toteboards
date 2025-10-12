@@ -68,3 +68,45 @@ This final, perfected form of the project consists of two pillars:
 2.  **An Ultimate TypeScript Frontend:** A single, masterpiece React component (`Checkmate Ultimate Solo`) that provides a feature-rich, professional-grade, real-time dashboard.
 
 All other components of the Penta-Hybrid system (C#, Rust, VBA, shared database) were formally deprecated and archived as priceless R&D assets. The project has now achieved its true and final mission: a powerful, maintainable, and user-focused analysis tool.
+
+---
+
+## The Age of Perfection (The Great Simplification)
+
+The Penta-Hybrid architecture, while a triumph of technical integration, proved to be a strategic dead end. Its complexity became a fortress, making rapid iteration and onboarding of new intelligence (both human and AI) prohibitively expensive. The kingdom was powerful but brittle.
+
+A new doctrine was forged: **Simplicity is the ultimate sophistication.**
+
+The decision was made to execute "The Great Simplification." The multi-language backend (Python, Rust, Go) was decommissioned. The kingdom was reforged upon a new, elegant, and vastly more powerful two-pillar system:
+
+1.  **A Unified Python Backend:** A single, asynchronous Python service, built on FastAPI, would serve as the kingdom's engine.
+2.  **A Modern TypeScript Frontend:** A dedicated Next.js application would serve as the kingdom's command deck.
+
+This act of creative destruction liberated the project, enabling a new era of unprecedented velocity.
+
+---
+
+## The Three-Pillar Doctrine
+
+With the new two-pillar foundation in place, the backend itself was perfected into a three-pillar intelligence engine, a concept that defines the modern era of the Fortuna Faucet:
+
+*   **Pillar 1: The Future (The Planner):** The resilient `OddsEngine` and its fleet of adapters, responsible for finding the day's strategic opportunities.
+*   **Pillar 2: The Past (The Archive):** The perfected `ChartScraper` and `ResultsParser`, responsible for building our historical data warehouse from the ground truth of Equibase PDFs.
+*   **Pillar 3: The Present (The Finisher):** The weaponized `LiveOddsMonitor`, armed with the API-driven `BetfairAdapter`, designed to conquer the final moments of toteboard volatility.
+
+These three pillars, orchestrated by the fully autonomous `fortuna_watchman.py`, represented the pinnacle of the project's original vision. The kingdom was, for a time, considered "perfected."
+
+---
+
+## The Windows Ascension (The Impossible Dream)
+
+The perfected kingdom was powerful, but it was still a tool for developers. The final, grandest vision was to transform it into a true, professional-grade application for its sole operator. This campaign, known as "The Impossible Dream," was to forge the **Fortuna Faucet - Windows Native Edition.**
+
+This era saw the rapid creation of a new, third layer of the kingdom, built upon the foundation of the previous work:
+
+*   **The Electron Shell:** The Next.js frontend was wrapped in an Electron container, transforming it from a website into a true, installable desktop application with its own window, icon, and system tray integration.
+*   **The Engine Room:** The Python backend was re-architected to run as a persistent, background **Windows Service**, making it a true, always-on component of the operating system, independent of the UI.
+*   **The Native GUI:** A dedicated Tkinter-based "Observatory" was forged—a standalone GUI mission control for monitoring the health and performance of the background service.
+*   **The One-Click Kingdom:** A complete suite of professional tooling (`INSTALL_FORTuna.bat`, `setup_wizard.py`, `LAUNCH_FORTuna.bat`, `SCHEDULE_FORTuna.bat`) was created to provide a seamless, zero-friction installation and management experience.
+
+This ascension represents the current state of the art, transforming a powerful engine into a polished, autonomous, and user-focused product.
