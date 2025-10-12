@@ -6,7 +6,7 @@ FORTUNA FAUCET - Advanced Windows Monitor with Performance Graphs
 import asyncio
 import httpx
 import tkinter as tk
-from tkinter import ttk, scrolledtext, messagebox
+from tkinter import ttk, messagebox
 from datetime import datetime
 from typing import List, Any
 import os
@@ -14,7 +14,6 @@ from collections import deque
 import threading
 import webbrowser
 
-# Try to import matplotlib for graphs
 try:
     import matplotlib
     matplotlib.use('TkAgg')
@@ -67,6 +66,7 @@ class FortunaAdvancedMonitor(tk.Tk):
 
         self._setup_styles()
         self._create_widgets()
+        self._setup_keyboard_shortcuts()
         self.after(100, self.initial_load)
 
     def initial_load(self):
@@ -101,7 +101,7 @@ class FortunaAdvancedMonitor(tk.Tk):
         self.notebook.pack(fill=tk.BOTH, expand=True, padx=15, pady=10)
         self.notebook.add(self._create_adapter_tab(), text="🔧 Adapters")
         if GRAPHS_AVAILABLE:
-            self.notebook.add(self._create_graph_tab(), text="📊 Performance")
+            self.notebook.add(self._create_graph_tab(), text="📈 Live Performance")
 
         self._create_control_panel()
         self._create_status_bar()
@@ -145,6 +145,7 @@ class FortunaAdvancedMonitor(tk.Tk):
         control_frame.pack(fill=tk.X, padx=15, pady=10)
         tk.Button(control_frame, text="🔄 Refresh Now", command=self.manual_refresh, bg='#e94560', fg='#ffffff', font=('Segoe UI', 10, 'bold'), relief=tk.FLAT, padx=25, pady=10).pack(side=tk.LEFT)
         tk.Button(control_frame, text="🌐 Dashboard", command=lambda: webbrowser.open('http://localhost:3000'), bg='#0f3460', fg='#ffffff', font=('Segoe UI', 10, 'bold'), relief=tk.FLAT, padx=25, pady=10).pack(side=tk.LEFT, padx=5)
+        tk.Button(control_frame, text="⚙️ Startup", command=self.configure_startup, bg='#0f3460', fg='#ffffff', font=('Segoe UI', 10, 'bold'), relief=tk.FLAT, padx=25, pady=10).pack(side=tk.LEFT, padx=5)
         tk.Checkbutton(control_frame, text="Auto-refresh", variable=self.auto_refresh_var, bg='#1a1a2e', fg='#ffffff', selectcolor='#0f3460').pack(side=tk.RIGHT)
 
     def _create_status_bar(self):
@@ -201,16 +202,18 @@ class FortunaAdvancedMonitor(tk.Tk):
         self.status_indicator.config(text="● All Systems Operational", fg='#00ff88')
 
     def update_graphs(self):
-        history = self.performance.get_history()
-        if not history['times']: return
+        history = self.performance
+        if not history.timestamps: return
         for ax in [self.ax1, self.ax2, self.ax3, self.ax4]: ax.clear()
-        self.ax1.plot(history['times'], history['races'], color='#00ff88')
+        self.ax1.plot(history.timestamps, history.race_counts, color='#00ff88')
         self.ax1.set_title('Races Fetched', color='white')
-        self.ax2.plot(history['times'], history['durations'], color='#e94560')
+        self.ax2.plot(history.timestamps, history.fetch_durations, color='#e94560')
         self.ax2.set_title('Avg. Fetch Duration (s)', color='white')
-        self.ax3.plot(history['times'], history['success'], color='#ffcc00')
+        self.ax3.plot(history.timestamps, history.success_rates, color='#ffcc00')
         self.ax3.set_title('Success Rate (%)', color='white')
         self.ax3.set_ylim(0, 105)
+        for ax in [self.ax1, self.ax2, self.ax3]:
+            ax.tick_params(axis='x', labelrotation=30, colors='white')
         self.canvas.draw()
 
     def schedule_refresh(self):
@@ -223,6 +226,14 @@ class FortunaAdvancedMonitor(tk.Tk):
         self.is_running = False
         self.destroy()
 
+    def _setup_keyboard_shortcuts(self):
+        """Binds standard Windows keyboard shortcuts to core functions."""
+        self.bind('<F5>', lambda e: self.manual_refresh())
+        self.bind('<Control-r>', lambda e: self.manual_refresh())
+        self.bind('<Control-o>', lambda e: webbrowser.open('http://localhost:3000'))
+        self.bind('<Control-q>', lambda e: self.on_closing())
+        self.bind('<Alt-F4>', lambda e: self.on_closing())
+
 if __name__ == "__main__":
     if not API_KEY:
         messagebox.showerror("Config Error", "API_KEY not found in .env file!")
@@ -230,3 +241,4 @@ if __name__ == "__main__":
         app = FortunaAdvancedMonitor()
         app.protocol("WM_DELETE_WINDOW", app.on_closing)
         app.mainloop()
+\n\n    def _setup_keyboard_shortcuts(self):\n        """Binds standard Windows keyboard shortcuts to core functions."""\n        self.bind('<F5>', lambda e: self.manual_refresh())\n        self.bind('<Control-r>', lambda e: self.manual_refresh())\n        self.bind('<Control-o>', lambda e: webbrowser.open('http://localhost:3000'))\n        self.bind('<Control-q>', lambda e: self.on_closing())\n        self.bind('<Alt-F4>', lambda e: self.on_closing())\n
