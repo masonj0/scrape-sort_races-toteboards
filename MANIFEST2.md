@@ -86,3 +86,8 @@
 *   [python_service/models_v3.py](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/models_v3.py)
 *   [python_service/adapters/base_v3.py](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/adapters/base_v3.py)
 *   [python_service/adapters/betfair_datascientist_adapter.py](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/adapters/betfair_datascientist_adapter.py)
+
+### Core
+- `python_service/config.py`
+- `python_service/security.py`
+- `python_service/logging_config.py`
