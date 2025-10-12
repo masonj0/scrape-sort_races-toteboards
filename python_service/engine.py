@@ -9,7 +9,7 @@ from decimal import Decimal
 from datetime import timezone
 
 from .models import Race, Runner, OddsData, AggregatedResponse
-from .models_v3 import NormalizedRace
+from .models_v3 import NormalizedRace, NormalizedRunner
 from .cache_manager import cache_async_result
 from .adapters.base import BaseAdapter
 from .adapters.betfair_adapter import BetfairAdapter
@@ -172,27 +172,26 @@ class FortunaEngine:
                 self.log.error("Adapter fetch failed", error=result, exc_info=False)
                 continue
 
-            # Type check to differentiate V2 and V3 results
-            if isinstance(result, tuple) and len(result) == 3: # V2 Adapter Result
+            # Correctly differentiate between V2 and V3 results
+            if isinstance(result, tuple) and len(result) == 3:  # V2 Adapter Result
                 adapter_name, adapter_result, duration = result
                 source_info = adapter_result.get('source_info', {})
                 source_info['fetch_duration'] = round(duration, 2)
                 source_infos.append(source_info)
                 if source_info.get('status') == 'SUCCESS':
                     all_races.extend(adapter_result.get('races', []))
-            elif isinstance(result, list): # V3 Adapter Result
-                # This assumes the list is not empty and all races are from the same source
+            elif isinstance(result, list) and all(isinstance(r, NormalizedRace) for r in result):  # V3 Adapter Result
                 if result:
                     v3_races = result
                     adapter_name = v3_races[0].source_ids[0]
-                    converted_races = [self._convert_v3_race_to_v2(r) for r in v3_races]
-                    all_races.extend(converted_races)
+                    translated_races = [self._translate_v3_race_to_v2(nr) for nr in result]
+                    all_races.extend(translated_races)
 
                     v3_duration = (datetime.now() - v3_start_time).total_seconds()
                     source_infos.append({
                         'name': adapter_name,
                         'status': 'SUCCESS',
-                        'races_fetched': len(converted_races),
+                        'races_fetched': len(translated_races),
                         'error_message': None,
                         'fetch_duration': round(v3_duration, 2)
                     })
@@ -226,3 +225,39 @@ class FortunaEngine:
             pass
 
         return response_obj.model_dump()
+
+
+    def _translate_v3_race_to_v2(self, norm_race: NormalizedRace) -> Race:
+        """Translates a V3 NormalizedRace into a V2 Race object."""
+        runners = []
+        for norm_runner in norm_race.runners:
+            adapter_name = norm_race.source_ids[0] if norm_race.source_ids else "UnknownV3"
+            odds_data = OddsData(
+                win=Decimal(str(norm_runner.odds_decimal)),
+                source=adapter_name,
+                last_updated=datetime.now(timezone.utc)
+            )
+
+            try:
+                runner_number = int(norm_runner.saddle_cloth)
+            except (ValueError, TypeError):
+                runner_number = None
+
+            runner = Runner(
+                id=norm_runner.runner_id,
+                name=norm_runner.name,
+                number=runner_number,
+                odds={adapter_name: odds_data}
+            )
+            runners.append(runner)
+
+        return Race(
+            id=norm_race.race_key,
+            venue=norm_race.track_key,
+            start_time=datetime.fromisoformat(norm_race.start_time_iso),
+            race_number=0, # V3 model does not have race_number, placeholder
+            runners=runners,
+            source=norm_race.source_ids[0] if norm_race.source_ids else "UnknownV3",
+            # Store extra V3 data in metadata for future use
+            metadata={"v3_race_name": norm_race.race_name}
+        )
