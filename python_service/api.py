@@ -5,6 +5,7 @@ from datetime import datetime, date
 from typing import Optional
 from fastapi import FastAPI, HTTPException, Request, Depends, Query
 from fastapi.middleware.cors import CORSMiddleware
+from python_service.middleware.error_handler import ErrorRecoveryMiddleware
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.middleware import SlowAPIMiddleware
 from slowapi.util import get_remote_address
@@ -50,6 +51,8 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 settings = get_settings()
 
+# Add middlewares (order can be important)
+app.add_middleware(ErrorRecoveryMiddleware)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.ALLOWED_ORIGINS,

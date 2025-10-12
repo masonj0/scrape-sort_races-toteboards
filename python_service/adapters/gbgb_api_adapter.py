@@ -41,6 +41,8 @@ class GbgbApiAdapter(BaseAdapter):
 
     def _parse_meetings(self, meetings_data: List[Dict[str, Any]]) -> List[Race]:
         races = []
+        if meetings_data is None:
+            return races
         for meeting in meetings_data:
             track_name = meeting.get('trackName')
             for race_data in meeting.get('races', []):
