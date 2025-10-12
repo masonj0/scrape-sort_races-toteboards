@@ -36,4 +36,7 @@ requests==2.31.0
 # --- Code Quality & Testing ---
 ruff==0.1.6
 pytest==8.3.2
-\n# --- Windows System Tray --- \npystray\npillow\nwin10toast-py3\n
+
+# --- Windows System Tray ---
+pystray
+pillow
