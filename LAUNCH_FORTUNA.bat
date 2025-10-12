@@ -1,45 +1,26 @@
 @echo off
 REM ============================================================================
-REM  FORTUNA FAUCET - Windows Native Launcher (Ultimate Edition)
+REM  FORTUNA FAUCET - Windows Native Launcher (Tray Edition)
 REM ============================================================================
 
-title Fortuna Faucet - Startup Sequence
+title Fortuna Faucet - Launcher
 color 0B
 
 echo.
 echo  ========================================================================
-echo   FORTUNA FAUCET - System Startup
+echo   FORTUNA FAUCET - System Tray Launcher
 echo  ========================================================================
 echo.
 
-if not exist .env (
-    echo  [!] WARNING: .env file not found!
-    echo  [!] Please copy .env.example to .env and configure your API keys.
-    pause
-    exit /b 1
-)
+echo  [*] Launching Fortuna Faucet in the system tray...
+echo  [*] The backend service will continue running in the background.
 
-echo  [*] Starting Python Backend API...
-start "Fortuna Backend" /MIN cmd /c "call .venv\\Scripts\\activate.bat && uvicorn python_service.api:app --host 0.0.0.0 --port 8000"
-
-timeout /t 3 /nobreak >nul
-
-echo  [*] Starting Next.js Frontend...
-start "Fortuna Frontend" /MIN cmd /c "cd web_platform\\frontend && npm run dev"
-
-timeout /t 5 /nobreak >nul
-
-echo  [*] Starting Status Monitor...
-start "Fortuna Monitor" cmd /c "call .venv\\Scripts\\activate.bat && python fortuna_monitor.py"
-
-timeout /t 3 /nobreak >nul
-
-echo  [*] Opening Dashboard in Browser...
-start "" "http://localhost:3000"
+REM Use pythonw.exe to run the script without a console window
+call .\\.venv\\Scripts\\activate.bat
+start "Fortuna Tray App" /B pythonw.exe fortuna_tray.py
 
 echo.
-echo  ========================================================================
-echo   ALL SYSTEMS OPERATIONAL
-echo  ========================================================================
-echo.
+echo  [V] Fortuna Faucet is now running in your system tray.
+_echo  [V] Right-click the icon for options.
+_echo.
 pause
