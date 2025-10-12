@@ -5,6 +5,7 @@ from datetime import datetime, date
 from typing import Optional
 from fastapi import FastAPI, HTTPException, Request, Depends, Query
 from fastapi.middleware.cors import CORSMiddleware
+from python_service.middleware.error_handler import ErrorRecoveryMiddleware
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.middleware import SlowAPIMiddleware
 from slowapi.util import get_remote_address
@@ -15,6 +16,7 @@ from contextlib import asynccontextmanager
 
 from .config import get_settings
 from .engine import FortunaEngine
+from .health import router as health_router
 from .models import AggregatedResponse, QualifiedRacesResponse, TipsheetRace
 from .security import verify_api_key
 from .logging_config import configure_logging
@@ -49,6 +51,10 @@ app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 settings = get_settings()
+
+# Add middlewares (order can be important)
+app.add_middleware(ErrorRecoveryMiddleware)
+app.include_router(health_router)
 
 app.add_middleware(
     CORSMiddleware,

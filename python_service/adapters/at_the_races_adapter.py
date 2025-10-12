@@ -42,7 +42,7 @@ class AtTheRacesAdapter(BaseAdapter):
     async def _fetch_and_parse_race(self, url: str, http_client: httpx.AsyncClient) -> Optional[Race]:
         try:
             response_html = await self.make_request(http_client, 'GET', url)
-            if not response_html:
+            if response_html is None:
                 return None
             soup = BeautifulSoup(response_html, "html.parser")
             header = soup.select_one("h1.heading-racecard-title").get_text()
@@ -62,7 +62,7 @@ class AtTheRacesAdapter(BaseAdapter):
             num_str = _clean_text(row.select_one("span.horse-number").get_text())
             number = int(''.join(filter(str.isdigit, num_str)))
             odds_str = _clean_text(row.select_one("button.best-odds").get_text())
-            win_odds = Decimal(str(parse_odds(odds_str))) if odds_str else None
+            win_odds = Decimal(str(parse_odds(odds_str))) if odds_str is not None else None
             odds_data = {self.source_name: OddsData(win=win_odds, source=self.source_name, last_updated=datetime.now())} if win_odds and win_odds < 999 else {}
             return Runner(number=number, name=name, odds=odds_data)
         except Exception as e:

@@ -78,3 +78,17 @@
 
 *   [tests/test_legacy_scenarios.py](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/tests/test_legacy_scenarios.py)
 *   [python_service/cache_manager.py](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/cache_manager.py)
+
+*   [python_service/middleware/error_handler.py](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/middleware/error_handler.py)
+
+*   [python_service/adapters/fanduel_adapter.py](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/adapters/fanduel_adapter.py)
+
+*   [python_service/models_v3.py](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/models_v3.py)
+*   [python_service/adapters/base_v3.py](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/adapters/base_v3.py)
+*   [python_service/adapters/betfair_datascientist_adapter.py](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/adapters/betfair_datascientist_adapter.py)
+*   [python_service/health.py](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/health.py)
+
+### Core
+- `python_service/config.py`
+- `python_service/security.py`
+- `python_service/logging_config.py`

@@ -22,3 +22,18 @@
 *   [windows_service.py](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/windows_service.py)
 *   [install_service.bat](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/install_service.bat)
 *   [uninstall_service.bat](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/uninstall_service.bat)
+
+
+## Windows Native Edition Tooling
+
+*   [INSTALL_FORTUNA.bat](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/INSTALL_FORTUNA.bat)
+*   [LAUNCH_FORTUNA.bat](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/LAUNCH_FORTUNA.bat)
+*   [STOP_FORTUNA.bat](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/STOP_FORTUNA.bat)
+*   [CREATE_SHORTCUTS.bat](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/CREATE_SHORTCUTS.bat)
+*   [SCHEDULE_FORTUNA.bat](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/SCHEDULE_FORTUNA.bat)
+*   [RESTART_FORTUNA.bat](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/RESTART_FORTUNA.bat)
+*   [launcher.ps1](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/launcher.ps1)
+*   [setup_wizard.py](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/setup_wizard.py)
+*   [windows_service.py](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/windows_service.py)
+*   [fortuna_monitor.py](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/fortuna_monitor.py)
+*   [README_WINDOWS.md](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/README_WINDOWS.md)

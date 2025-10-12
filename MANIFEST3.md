@@ -40,3 +40,23 @@
 *   [web_platform/frontend/src/components/RaceCard.tsx](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/web_platform/frontend/src/components/RaceCard.tsx)
 *   [web_platform/frontend/src/components/LiveRaceDashboard.tsx](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/web_platform/frontend/src/components/LiveRaceDashboard.tsx)
 *   [web_platform/frontend/src/app/Providers.tsx](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/web_platform/frontend/src/app/Providers.tsx)
+
+
+## Electron Desktop Shell
+
+*   [electron/main.js](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/electron/main.js)
+*   [electron/package.json](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/electron/package.json)
+*   [electron/preload.js](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/electron/preload.js)
+
+## Historical Archives (Attic)
+
+*   [attic/ARCHITECTURAL_MANDATE_V7.2.md](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/attic/ARCHITECTURAL_MANDATE_V7.2.md)
+*   [attic/build_python_service.py](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/attic/build_python_service.py)
+*   [attic/checkmate_app.py](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/attic/checkmate_app.py)
+*   [attic/checkmate_engine.py](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/attic/checkmate_engine.py)
+*   [attic/checkmate_monitor_v1.html](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/attic/checkmate_monitor_v1.html)
+*   [attic/dashboard.py](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/attic/dashboard.py)
+*   [attic/launcher.py](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/attic/launcher.py)
+*   [attic/portable_demo_v2.py](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/attic/portable_demo_v2.py)
+*   [attic/the_one_script.py](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/attic/the_one_script.py)
+*   [attic/tipsheet_generator.py](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/attic/tipsheet_generator.py)

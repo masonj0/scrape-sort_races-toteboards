@@ -5,9 +5,13 @@ import structlog
 import httpx
 from datetime import datetime
 from typing import Dict, Any, List, Tuple
+from decimal import Decimal
+from datetime import timezone
 
-from .models import Race, AggregatedResponse
+from .models import Race, Runner, OddsData, AggregatedResponse
+from .models_v3 import NormalizedRace, NormalizedRunner
 from .cache_manager import cache_async_result
+from .health import health_monitor
 from .adapters.base import BaseAdapter
 from .adapters.betfair_adapter import BetfairAdapter
 from .adapters.betfair_greyhound_adapter import BetfairGreyhoundAdapter
@@ -20,6 +24,7 @@ from .adapters.timeform_adapter import TimeformAdapter
 from .adapters.harness_adapter import HarnessAdapter
 from .adapters.the_racing_api_adapter import TheRacingApiAdapter
 from .adapters.gbgb_api_adapter import GbgbApiAdapter
+from .adapters.betfair_datascientist_adapter import BetfairDataScientistAdapter
 
 log = structlog.get_logger(__name__)
 
@@ -41,6 +46,13 @@ class FortunaEngine:
             GbgbApiAdapter(config=self.config),
             HarnessAdapter(config=self.config)
         ]
+        # V3 ADAPTERS
+        self.v3_adapters = [
+            BetfairDataScientistAdapter(
+                model_name="ThoroughbredModel",
+                url="https://betfair-data-supplier-prod.herokuapp.com/api/widgets/kvs-ratings/datasets?id=thoroughbred-model&date="
+            )
+        ]
         self.http_client = httpx.AsyncClient()
 
     async def close(self):
@@ -55,10 +67,12 @@ class FortunaEngine:
         try:
             result = await adapter.fetch_races(date, self.http_client)
             duration = (datetime.now() - start_time).total_seconds()
+            health_monitor.record_adapter_response(adapter.source_name, success=True, duration=duration)
             return (adapter.source_name, result, duration)
         except Exception as e:
             duration = (datetime.now() - start_time).total_seconds()
             log.error("Adapter raised an unhandled exception", adapter=adapter.source_name, error=str(e), exc_info=True)
+            health_monitor.record_adapter_response(adapter.source_name, success=False, duration=duration)
             failed_result = {
                 'races': [],
                 'source_info': {
@@ -110,20 +124,47 @@ class FortunaEngine:
             target_adapters = [a for a in self.adapters if a.source_name.lower() == source_filter.lower()]
 
         tasks = [self._time_adapter_fetch(adapter, date) for adapter in target_adapters]
-        results = await asyncio.gather(*tasks, return_exceptions=True)
+
+        # Run V3 (synchronous) adapters in a thread pool
+        v3_tasks = [asyncio.to_thread(adapter.fetch_and_normalize) for adapter in self.v3_adapters]
+
+        # Gather results from both V2 (async) and V3 (sync) adapters
+        all_tasks = tasks + v3_tasks
+        results = await asyncio.gather(*all_tasks, return_exceptions=True)
 
         source_infos = []
         all_races = []
+
+        v3_start_time = datetime.now() # Approximate start time for all V3 adapters
+
         for result in results:
             if isinstance(result, Exception):
                 self.log.error("Adapter fetch failed", error=result, exc_info=False)
                 continue
-            adapter_name, adapter_result, duration = result
-            source_info = adapter_result.get('source_info', {})
-            source_info['fetch_duration'] = round(duration, 2)
-            source_infos.append(source_info)
-            if source_info.get('status') == 'SUCCESS':
-                all_races.extend(adapter_result.get('races', []))
+
+            # Correctly differentiate between V2 and V3 results
+            if isinstance(result, tuple) and len(result) == 3:  # V2 Adapter Result
+                adapter_name, adapter_result, duration = result
+                source_info = adapter_result.get('source_info', {})
+                source_info['fetch_duration'] = round(duration, 2)
+                source_infos.append(source_info)
+                if source_info.get('status') == 'SUCCESS':
+                    all_races.extend(adapter_result.get('races', []))
+            elif isinstance(result, list) and all(isinstance(r, NormalizedRace) for r in result):  # V3 Adapter Result
+                if result:
+                    v3_races = result
+                    adapter_name = v3_races[0].source_ids[0]
+                    translated_races = [self._translate_v3_race_to_v2(nr) for nr in result]
+                    all_races.extend(translated_races)
+
+                    v3_duration = (datetime.now() - v3_start_time).total_seconds()
+                    source_infos.append({
+                        'name': adapter_name,
+                        'status': 'SUCCESS',
+                        'races_fetched': len(translated_races),
+                        'error_message': None,
+                        'fetch_duration': round(v3_duration, 2)
+                    })
 
         deduped_races = self._dedupe_races(all_races)
 
@@ -154,3 +195,39 @@ class FortunaEngine:
             pass
 
         return response_obj.model_dump()
+
+
+    def _translate_v3_race_to_v2(self, norm_race: NormalizedRace) -> Race:
+        """Translates a V3 NormalizedRace into a V2 Race object."""
+        runners = []
+        for norm_runner in norm_race.runners:
+            adapter_name = norm_race.source_ids[0] if norm_race.source_ids else "UnknownV3"
+            odds_data = OddsData(
+                win=Decimal(str(norm_runner.odds_decimal)),
+                source=adapter_name,
+                last_updated=datetime.now(timezone.utc)
+            )
+
+            try:
+                runner_number = int(norm_runner.saddle_cloth)
+            except (ValueError, TypeError):
+                runner_number = None
+
+            runner = Runner(
+                id=norm_runner.runner_id,
+                name=norm_runner.name,
+                number=runner_number,
+                odds={adapter_name: odds_data}
+            )
+            runners.append(runner)
+
+        return Race(
+            id=norm_race.race_key,
+            venue=norm_race.track_key,
+            start_time=datetime.fromisoformat(norm_race.start_time_iso),
+            race_number=0, # V3 model does not have race_number, placeholder
+            runners=runners,
+            source=norm_race.source_ids[0] if norm_race.source_ids else "UnknownV3",
+            # Store extra V3 data in metadata for future use
+            metadata={"v3_race_name": norm_race.race_name}
+        )
