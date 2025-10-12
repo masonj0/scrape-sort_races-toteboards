@@ -2,7 +2,7 @@
 # Provides a native Windows System Tray icon and menu for Fortuna Faucet.
 
 import pystray
-from PIL import Image, ImageDraw
+from PIL import Image, ImageDraw, ImageFont
 import webbrowser
 import subprocess
 from pathlib import Path
@@ -18,7 +18,8 @@ class FortunaTrayApp:
         # Using a gold color for the icon background
         image = Image.new('RGB', (width, height), color='#FFD700')
         dc = ImageDraw.Draw(image)
-        # dc.text((12, 15), "FF", fill='black') # Temporarily removed due to font loading issues
+        font = ImageFont.load_default()
+        dc.text((12, 15), "FF", font=font, fill='black')
         return image
 
     def on_quit(self, icon, item):
