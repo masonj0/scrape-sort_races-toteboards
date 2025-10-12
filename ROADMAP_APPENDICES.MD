@@ -49,7 +49,7 @@ This document, synthesized from a comprehensive Claude audit, is the new grand s
 
 ## Appendix A: The Grand Adapter Backlog
 
-*(Preserved for historical and strategic continuity.)*
+*(This section is preserved for historical and strategic continuity.)*
 
 ### Tier 1: Critical (US Racing Coverage)
 
@@ -63,3 +63,26 @@ This document, synthesized from a comprehensive Claude audit, is the new grand s
 *   **FanDuelAdapter / DraftKingsAdapter**
 *   **NYRABetsAdapter**
 *   **HorseRacingNationAdapter**
+
+### Tier 3: Medium Priority (International Expansion)
+
+*   **RacingPostAdapter (UK/IRE)**
+*   **PuntersAdapter (AUS)**
+*   **TabAdapter (AUS)**
+*   **RacingTVAdapter (UK)**
+
+### Tier 4: Exploratory & Niche
+
+*   **PointsBetAdapter**
+*   **CalRacingAdapter**
+*   **OffTrackBettingAdapter (OTB)**
+
+---
+
+## Appendix B: Open Source Intelligence & Technology Watchlist
+
+A curated list of noteworthy technologies and projects for future consideration.
+
+*   **PDF Parsing Technology:** The `pdfplumber` library has been identified as a potentially superior alternative to our current PDF parsing methods. It should be the primary candidate for any future refactoring of the `ResultsParser`.
+*   **`kenthunt/chart-parser`:** [https://github.com/kenthunt/chart-parser](https://github.com/kenthunt/chart-parser) - A highly relevant, offline PDF chart parser that serves as an excellent architectural reference.
+*   **`ccmd00d/handycapper`:** [https://github.com/ccmd00d/handycapper](https://github.com/ccmd00d/handycapper) - Another open-source project in the same domain, valuable for comparative analysis and identifying alternative data sources or techniques.

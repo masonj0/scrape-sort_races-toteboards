@@ -227,26 +227,13 @@ class FortunaAdvancedMonitor(tk.Tk):
         self.is_running = False
         self.destroy()
 
-    def configure_startup(self):
-        """Shows a dialog to enable or disable auto-start."""
-        try:
-            from configure_startup import StartupManager
-            current_status = "Enabled" if StartupManager.is_enabled() else "Disabled"
-
-            choice = messagebox.askyesno(
-                "Configure Windows Startup",
-                f"Current status: {current_status}\n\nEnable Fortuna Faucet to launch automatically when you log in?"
-            )
-
-            if choice:
-                StartupManager.enable()
-                messagebox.showinfo("Success", "Fortuna Faucet will now start automatically with Windows.")
-            else:
-                StartupManager.disable()
-                messagebox.showinfo("Success", "Fortuna Faucet will no longer start automatically.")
-
-        except Exception as e:
-            messagebox.showerror("Error", f"Failed to configure startup: {e}")
+    def _setup_keyboard_shortcuts(self):
+        """Binds standard Windows keyboard shortcuts to core functions."""
+        self.bind('<F5>', lambda e: self.manual_refresh())
+        self.bind('<Control-r>', lambda e: self.manual_refresh())
+        self.bind('<Control-o>', lambda e: webbrowser.open('http://localhost:3000'))
+        self.bind('<Control-q>', lambda e: self.on_closing())
+        self.bind('<Alt-F4>', lambda e: self.on_closing())
 
 if __name__ == "__main__":
     if not API_KEY:
