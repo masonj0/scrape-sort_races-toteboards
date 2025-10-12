@@ -147,6 +147,7 @@ class FortunaAdvancedMonitor(tk.Tk):
         tk.Button(control_frame, text="🌐 Dashboard", command=lambda: webbrowser.open('http://localhost:3000'), bg='#0f3460', fg='#ffffff', font=('Segoe UI', 10, 'bold'), relief=tk.FLAT, padx=25, pady=10).pack(side=tk.LEFT, padx=5)
         tk.Button(control_frame, text="⚙️ Startup", command=self.configure_startup, bg='#0f3460', fg='#ffffff', font=('Segoe UI', 10, 'bold'), relief=tk.FLAT, padx=25, pady=10).pack(side=tk.LEFT, padx=5)
         tk.Checkbutton(control_frame, text="Auto-refresh", variable=self.auto_refresh_var, bg='#1a1a2e', fg='#ffffff', selectcolor='#0f3460').pack(side=tk.RIGHT)
+        tk.Button(control_frame, text="⚙️ Startup", command=self.configure_startup, bg='#0f3460', fg='#ffffff', font=('Segoe UI', 10, 'bold'), relief=tk.FLAT, padx=25, pady=10).pack(side=tk.LEFT, padx=5)
 
     def _create_status_bar(self):
         status_frame = tk.Frame(self, bg='#0f3460', height=30)
