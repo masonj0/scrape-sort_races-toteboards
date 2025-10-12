@@ -37,6 +37,7 @@ class TrifectaAnalyzer(BaseAnalyzer):
         self.max_field_size = max_field_size
         self.min_favorite_odds = Decimal(str(min_favorite_odds))
         self.min_second_favorite_odds = Decimal(str(min_second_favorite_odds))
+        self.notifier = RaceNotifier()
 
     def qualify_races(self, races: List[Race]) -> Dict[str, Any]:
         """Scores all races and returns a dictionary with criteria and a sorted list."""
@@ -55,6 +56,11 @@ class TrifectaAnalyzer(BaseAnalyzer):
         }
 
         log.info("Universal scoring complete", total_races_scored=len(scored_races), criteria=criteria)
+
+        for race in scored_races:
+            if race.qualification_score and race.qualification_score >= 85:
+                self.notifier.notify_qualified_race(race)
+
         return {"criteria": criteria, "races": scored_races}
 
     def _evaluate_race(self, race: Race) -> float:
@@ -122,4 +128,4 @@ class AnalyzerEngine:
         if not analyzer_class:
             log.error("Requested analyzer not found", requested_analyzer=name)
             raise ValueError(f"Analyzer '{name}' not found.")
-        return analyzer_class(**kwargs)
+        return analyzer_class(**kwargs)\ntry:\n    from win10toast_py3 import ToastNotifier\nexcept (ImportError, RuntimeError):\n    ToastNotifier = None\n\nclass RaceNotifier:\n    """Handles sending native Windows notifications for high-value races."""\n    def __init__(self):\n        self.toaster = ToastNotifier() if ToastNotifier else None\n        self.notified_races = set()\n\n    def notify_qualified_race(self, race):\n        if not self.toaster or race.id in self.notified_races:\n            return\n\n        title = f"🏇 High-Value Opportunity!"\n        message = f"""{race.venue} - Race {race.race_number}\nScore: {race.qualification_score:.0f}%\nPost Time: {race.start_time.strftime('%I:%M %p')}"""\n        \n        try:\n            # The  argument is crucial to prevent blocking the main application thread.\n            self.toaster.show_toast(title, message, duration=10, threaded=True)\n            self.notified_races.add(race.id)\n            log.info("Notification sent for high-value race", race_id=race.id)\n        except Exception as e:\n            # Catch potential exceptions from the notification library itself\n            log.error("Failed to send notification", error=str(e), exc_info=True)\n
