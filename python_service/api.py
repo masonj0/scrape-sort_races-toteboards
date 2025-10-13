@@ -80,7 +80,7 @@ async def get_all_adapter_statuses(request: Request, engine: FortunaEngine = Dep
 
 
 @app.get("/api/races/qualified/{analyzer_name}", response_model=QualifiedRacesResponse)
-@limiter.limit("30/minute")
+@limiter.limit("10/minute")
 async def get_qualified_races(
     analyzer_name: str,
     request: Request,
