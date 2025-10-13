@@ -36,7 +36,15 @@ ECHO =================================================
 ECHO  BUILD SUCCESSFUL!
 ECHO =================================================
 ECHO.
-ECHO The MSI installer can be found in the 'electron\dist' directory.
+ECHO [3/3] Moving MSI installer to project root...
+FOR /F "delims=" %%i IN ('dir /b electron\dist\*.msi') DO (
+    MOVE /Y "electron\dist\%%i" . > NUL
+    IF %ERRORLEVEL% NEQ 0 (
+        ECHO [X] FAILED to move the MSI installer. You can find it in the 'electron\dist' directory.
+    ) ELSE (
+        ECHO [V] The installer [%%i] has been moved to the project root directory.
+    )
+)
 ECHO.
 popd
 PAUSE
