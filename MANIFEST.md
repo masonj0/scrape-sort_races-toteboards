@@ -68,3 +68,8 @@ setup_windows.bat
 setup_wizard.py
 uninstall_service.bat
 windows_service.py
+
+# Added by Operation: Polish the Welcome Mat
+BUILD_INSTALLER.bat
+CREATE_SHORTCUTS.bat
+ROADMAP_LEGACY_ARCHIVAL.md
