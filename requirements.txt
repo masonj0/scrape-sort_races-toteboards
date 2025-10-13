@@ -23,6 +23,8 @@ pywin32==306
 colorama==0.4.6
 win10toast-py3==0.9
 matplotlib==3.8.2
+pystray==0.19.5
+pillow==10.1.0
 
 # --- Data Warehouse & ETL (Optional) ---
 SQLAlchemy==2.0.23
@@ -36,4 +38,3 @@ requests==2.31.0
 # --- Code Quality & Testing ---
 ruff==0.1.6
 pytest==8.3.2
-\n# --- Windows System Tray --- \npystray\npillow\nwin10toast-py3\n
