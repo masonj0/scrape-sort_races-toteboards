@@ -8,6 +8,7 @@ from decimal import Decimal
 
 from .base import BaseAdapter
 from ..models import Race, Runner, OddsData
+from ..utils.odds import parse_odds_to_decimal
 
 log = structlog.get_logger(__name__)
 
@@ -71,11 +72,9 @@ class GbgbApiAdapter(BaseAdapter):
                 # The API provides SP as a fraction, e.g., '5/2'
                 odds_data = {}
                 sp = runner_data.get('sp')
-                if sp:
-                    from .utils import parse_odds # Local import to avoid circular dependency issues at module level
-                    win_odds = Decimal(str(parse_odds(sp)))
-                    if win_odds < 999:
-                        odds_data[self.source_name] = OddsData(win=win_odds, source=self.source_name, last_updated=datetime.now())
+                win_odds = parse_odds_to_decimal(sp)
+                if win_odds and win_odds < 999:
+                    odds_data[self.source_name] = OddsData(win=win_odds, source=self.source_name, last_updated=datetime.now())
 
                 runners.append(Runner(
                     number=runner_data['trapNumber'],
