@@ -173,9 +173,9 @@ class RaceNotifier:
             return
 
         title = f"🏇 High-Value Opportunity!"
-        message = f\"\"\"{race.venue} - Race {race.race_number}
+        message = f"""{race.venue} - Race {race.race_number}
 Score: {race.qualification_score:.0f}%
-Post Time: {race.start_time.strftime('%I:%M %p')}\"\"\"
+Post Time: {race.start_time.strftime('%I:%M %p')}"""
 
         try:
             # The `threaded=True` argument is crucial to prevent blocking the main application thread.
