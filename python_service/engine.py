@@ -186,33 +186,36 @@ class FortunaEngine:
         v3_start_time = datetime.now() # Approximate start time for all V3 adapters
 
         for result in results:
-            if isinstance(result, Exception):
-                self.log.error("Adapter fetch failed", error=result, exc_info=False)
-                continue
+            try:
+                if isinstance(result, Exception):
+                    self.log.error("Adapter fetch failed", error=result, exc_info=False)
+                    continue
 
-            # Correctly differentiate between V2 and V3 results
-            if isinstance(result, tuple) and len(result) == 3:  # V2 Adapter Result
-                adapter_name, adapter_result, duration = result
-                source_info = adapter_result.get('source_info', {})
-                source_info['fetch_duration'] = round(duration, 2)
-                source_infos.append(source_info)
-                if source_info.get('status') == 'SUCCESS':
-                    all_races.extend(adapter_result.get('races', []))
-            elif isinstance(result, list) and all(isinstance(r, NormalizedRace) for r in result):  # V3 Adapter Result
-                if result:
-                    v3_races = result
-                    adapter_name = v3_races[0].source_ids[0]
-                    translated_races = [self._translate_v3_race_to_v2(nr) for nr in result]
-                    all_races.extend(translated_races)
+                # Correctly differentiate between V2 and V3 results
+                if isinstance(result, tuple) and len(result) == 3:  # V2 Adapter Result
+                    adapter_name, adapter_result, duration = result
+                    source_info = adapter_result.get('source_info', {})
+                    source_info['fetch_duration'] = round(duration, 2)
+                    source_infos.append(source_info)
+                    if source_info.get('status') == 'SUCCESS':
+                        all_races.extend(adapter_result.get('races', []))
+                elif isinstance(result, list) and all(isinstance(r, NormalizedRace) for r in result):  # V3 Adapter Result
+                    if result:
+                        v3_races = result
+                        adapter_name = v3_races[0].source_ids[0]
+                        translated_races = [self._translate_v3_race_to_v2(nr) for nr in result]
+                        all_races.extend(translated_races)
 
-                    v3_duration = (datetime.now() - v3_start_time).total_seconds()
-                    source_infos.append({
-                        'name': adapter_name,
-                        'status': 'SUCCESS',
-                        'races_fetched': len(translated_races),
-                        'error_message': None,
-                        'fetch_duration': round(v3_duration, 2)
-                    })
+                        v3_duration = (datetime.now() - v3_start_time).total_seconds()
+                        source_infos.append({
+                            'name': adapter_name,
+                            'status': 'SUCCESS',
+                            'races_fetched': len(translated_races),
+                            'error_message': None,
+                            'fetch_duration': round(v3_duration, 2)
+                        })
+            except Exception:
+                self.log.error("Failed to process result from an adapter.", exc_info=True)
 
         deduped_races = self._dedupe_races(all_races)
 
