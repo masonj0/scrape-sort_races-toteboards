@@ -89,19 +89,33 @@ class FortunaEngine:
         return f"{race.venue.lower().strip()}|{race.race_number}|{race.start_time.strftime('%H:%M')}"
 
     def _dedupe_races(self, races: List[Race]) -> List[Race]:
+        """Deduplicates races from multiple sources and reconciles odds."""
         race_map: Dict[str, Race] = {}
         for race in races:
-            key = self._race_key(race)
+            # Use a robust key: venue, date, and race number
+            key = f"{race.venue.upper()}-{race.start_time.strftime('%Y-%m-%d')}-{race.race_number}"
+
             if key not in race_map:
                 race_map[key] = race
             else:
+                # Merge runners and odds into the existing race object
                 existing_race = race_map[key]
                 runner_map = {r.number: r for r in existing_race.runners}
+
                 for new_runner in race.runners:
                     if new_runner.number in runner_map:
-                        runner_map[new_runner.number].odds.update(new_runner.odds)
+                        # Runner exists, reconcile odds
+                        existing_runner = runner_map[new_runner.number]
+                        updated_odds = existing_runner.odds.copy()
+                        updated_odds.update(new_runner.odds)
+                        existing_runner.odds = updated_odds
                     else:
+                        # New runner, add to the existing race
                         existing_race.runners.append(new_runner)
+
+                # Update source count
+                existing_race.source += f", {race.source}"
+
         return list(race_map.values())
 
     async def get_races(self, date: str, background_tasks: set, source_filter: str = None) -> Dict[str, Any]:
