@@ -46,11 +46,24 @@ class BaseAnalyzer(ABC):
 
 class TrifectaAnalyzer(BaseAnalyzer):
     """Analyzes races and assigns a qualification score based on the 'Trifecta of Factors'."""
+
+    @property
+    def name(self) -> str:
+        return "trifecta_analyzer"
+
     def __init__(self, max_field_size: int = 10, min_favorite_odds: float = 2.5, min_second_favorite_odds: float = 4.0):
         self.max_field_size = max_field_size
         self.min_favorite_odds = Decimal(str(min_favorite_odds))
         self.min_second_favorite_odds = Decimal(str(min_second_favorite_odds))
         self.notifier = RaceNotifier()
+
+    def is_race_qualified(self, race: Race) -> bool:
+        """A race is qualified for a trifecta if it has at least 3 non-scratched runners."""
+        if not race or not race.runners:
+            return False
+
+        active_runners = sum(1 for r in race.runners if not r.scratched)
+        return active_runners >= 3
 
     def qualify_races(self, races: List[Race]) -> Dict[str, Any]:
         """Scores all races and returns a dictionary with criteria and a sorted list."""
@@ -173,9 +186,9 @@ class RaceNotifier:
             return
 
         title = f"🏇 High-Value Opportunity!"
-        message = f\"\"\"{race.venue} - Race {race.race_number}
+        message = f"""{race.venue} - Race {race.race_number}
 Score: {race.qualification_score:.0f}%
-Post Time: {race.start_time.strftime('%I:%M %p')}\"\"\"
+Post Time: {race.start_time.strftime('%I:%M %p')}"""
 
         try:
             # The `threaded=True` argument is crucial to prevent blocking the main application thread.
