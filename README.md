@@ -1,49 +1,31 @@
-# Fortuna Faucet
+# Fortuna Ascended
 
-### Activate the Affluence Aqueduct
-### Tap into the Torrent of Treasure
-### Witness the Wellspring of Winnings
-
-This repository contains the Fortuna Faucet project, a global, multi-source horse racing analysis tool. The project is a two-pillar system: a powerful, asynchronous Python backend that performs all data gathering, and a feature-rich TypeScript frontend.
+**An autonomous, professional-grade intelligence engine for horse racing analysis, delivered as a native Windows Desktop Application.**
 
 ---
 
-## 🚀 Quick Start
+## Fortuna: The Windows Native Edition
 
-### 1. Configure Your Environment
+This project has evolved into a true, professional-grade Windows application. The primary user experience is managed through a system tray icon, a native monitoring GUI, and a suite of powerful batch scripts.
 
-Run the setup script to ensure Python and Node.js are correctly configured and all dependencies are installed.
+**For all user-facing documentation, including installation and operation, please see the official operator's manual:**
 
-```batch
-# From the project root:
-setup_windows.bat
-```
-
-### 2. Launch the Application
-
-Run the master launch script. This will start both the Python backend and the TypeScript frontend servers in parallel.
-
-```batch
-# From the project root:
-run_fortuna.bat
-```
-
-The backend API will be available at `http://localhost:8000`.
-The frontend will be available at `http://localhost:3000`.
-
-### 4. Using the API
-
-To use the API directly (e.g., with `curl` or other tools), you must provide the `API_KEY` set in your `.env` file via the `X-API-Key` header. This is required for all endpoints except `/health`.
-
-```bash
-# Example: Test the qualified races endpoint
-curl -H "X-API-Key: YOUR_SECRET_API_KEY_HERE" http://localhost:8000/api/races/qualified/trifecta
-```
+### [>> Go to the Windows Operator's Manual (README_WINDOWS.md)](README_WINDOWS.md)
 
 ---
 
-## 🚀 For Windows Users
+## Project Philosophy & Architecture
 
-This project now includes a complete, one-click installation and management suite for an enhanced Windows experience.
+This project adheres to a strict set of architectural and operational principles. To understand the soul of this machine, consult the following sacred texts:
 
-For the best experience and full setup instructions, please see the dedicated guide: **[README_WINDOWS.md](README_WINDOWS.md)**
+-   **[The Grand Strategy (ROADMAP_APPENDICES.MD)](ROADMAP_APPENDICES.MD):** The "Windows Experience Bible" that dictates our path forward.
+-   **[The Genesis Story (HISTORY.MD)](HISTORY.MD):** The complete history of the project's evolution.
+-   **[The Core Philosophy (WISDOM.MD)](WISDOM.MD):** The guiding principles behind the architecture.
+
+## For Developers
+
+The codebase is a three-layered architecture:
+
+1.  **The Engine Room (The Windows Service):** A persistent Python backend (`python_service/`).
+2.  **The Cockpit (The Electron Shell):** A native desktop application wrapper (`electron/`).
+3.  **The Command Deck (The Next.js UI):** A real-time dashboard (`web_platform/frontend/`).
