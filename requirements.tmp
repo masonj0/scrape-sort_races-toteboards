@@ -1,0 +1,32 @@
+# Fortuna Faucet - Master Dependency List
+
+# --- Core Backend (FastAPI & Async) ---
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+pydantic==2.5.2
+pydantic-settings==2.1.0
+httpx==0.27.0
+slowapi==0.1.9
+structlog==24.1.0
+python-dotenv==1.0.0
+
+# --- Data Processing & Utilities ---
+pandas==2.1.3
+beautifulsoup4==4.12.2
+lxml==5.1.0
+
+# --- Caching Layer ---
+redis==5.0.1
+
+# --- Data Warehouse & ETL (Optional) ---
+SQLAlchemy==2.0.23
+psycopg2-binary==2.9.9
+
+# --- Historical Data Parsing (ChartScraper) ---
+pikepdf==8.13.0
+tabula-py==2.7.0
+requests==2.31.0
+
+# --- Code Quality & Testing ---
+ruff==0.1.6
+pytest==8.3.2
