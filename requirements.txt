@@ -23,6 +23,8 @@ pywin32==306
 colorama==0.4.6
 win10toast-py3==0.9
 matplotlib==3.8.2
+pystray==0.19.5
+pillow==10.1.0
 
 # --- Data Warehouse & ETL (Optional) ---
 SQLAlchemy==2.0.23

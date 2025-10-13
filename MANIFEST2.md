@@ -1,46 +1,93 @@
-# Fortuna Faucet - Backend Manifest (Part 2)
+# Fortuna Faucet: CORE Application Manifest
 
-This manifest lists all core backend services, utilities, and the entire adapter fleet.
+**Purpose:** To provide a complete, verified list of all files constituting the CORE two-pillar application (`python_service` and `web_platform`).
 
-## Core Services
+---
 
-*   [python_service/api.py](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/api.py)
-*   [python_service/engine.py](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/engine.py)
-*   [python_service/analyzer.py](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/analyzer.py)
-*   [python_service/live_monitor.py](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/live_monitor.py)
+## 1.0 Python Backend (`python_service`)
 
-## Data Models & Configuration
+### Core
+- `python_service/__init__.py`
+- `python_service/api.py`
+- `python_service/analyzer.py`
+- `python_service/config.py`
+- `python_service/engine.py`
+- `python_service/logging_config.py`
+- `python_service/models.py`
+- `python_service/security.py`
+- `python_service/cache_manager.py`
 
-*   [python_service/config.py](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/config.py)
-*   [python_service/models.py](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/models.py)
-*   [python_service/models_v3.py](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/models_v3.py)
+### Adapters
+- `python_service/adapters/__init__.py`
+- `python_service/adapters/base.py`
+- `python_service/adapters/utils.py`
+- `python_service/adapters/template_adapter.py`
 
-## Production Hardening & ETL
+#### Production Adapters
+- `python_service/adapters/betfair_adapter.py`
+- `python_service/adapters/betfair_greyhound_adapter.py`
+- `python_service/adapters/greyhound_adapter.py`
+- `python_service/adapters/harness_adapter.py`
+- `python_service/adapters/at_the_races_adapter.py`
+- `python_service/adapters/racing_and_sports_adapter.py`
+- `python_service/adapters/tvg_adapter.py`
+- `python_service/adapters/oddschecker_adapter.py`
+- `python_service/adapters/sporting_life_adapter.py`
+- `python_service/adapters/timeform_adapter.py`
 
-*   [python_service/health.py](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/health.py)
-*   [python_service/cache_manager.py](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/cache_manager.py)
-*   [python_service/middleware/error_handler.py](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/middleware/error_handler.py)
+#### Fleet Expansion Stubs (Wave 1)
+- `python_service/adapters/drf_adapter.py`
+- `python_service/adapters/equibase_adapter.py`
+- `python_service/adapters/racingpost_adapter.py`
+- `python_service/adapters/racingtv_adapter.py`
+- `python_service/adapters/tab_adapter.py`
+
+#### Fleet Expansion Stubs (Wave 2)
+- `python_service/adapters/brisnet_adapter.py`
+- `python_service/adapters/fanduel_adapter.py`
+- `python_service/adapters/horseracingnation_adapter.py`
+- `python_service/adapters/nyrabets_adapter.py`
+- `python_service/adapters/punters_adapter.py`
+- `python_service/adapters/twinspires_adapter.py`
+- `python_service/adapters/xpressbet_adapter.py`
+
+#### Experimental Adapters
+- `python_service/adapters/universal_adapter.py`
+
+## 2.0 TypeScript Frontend (`web_platform`)
+
+- `web_platform/frontend/package.json`
+- `web_platform/frontend/postcss.config.js`
+- `web_platform/frontend/tailwind.config.ts`
+- `web_platform/frontend/tsconfig.json`
+- `web_platform/frontend/src/components/RaceCard.tsx`
+
+*   [python_service/adapters/racing_and_sports_greyhound_adapter.py](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/adapters/racing_and_sports_greyhound_adapter.py)
+*   [python_service/adapters/pointsbet_greyhound_adapter.py](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/adapters/pointsbet_greyhound_adapter.py)
+*   [python_service/adapters/betfair_greyhound_adapter.py](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/adapters/betfair_greyhound_adapter.py)
+*   [python_service/adapters/racing_and_sports_greyhound_adapter.py](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/adapters/racing_and_sports_greyhound_adapter.py)
+*   [python_service/adapters/at_the_races_adapter.py](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/adapters/at_the_races_adapter.py)
+*   [python_service/adapters/sporting_life_adapter.py](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/adapters/sporting_life_adapter.py)
+*   [python_service/adapters/timeform_adapter.py](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/adapters/timeform_adapter.py)
+*   [python_service/adapters/the_racing_api_adapter.py](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/adapters/the_racing_api_adapter.py)
 *   [python_service/etl.py](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/etl.py)
 
-## Adapter Architecture
-
-*   [python_service/adapters/base.py](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/adapters/base.py)
-*   [python_service/adapters/base_v3.py](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/adapters/base_v3.py)
-*   [python_service/adapters/utils.py](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/adapters/utils.py)
-
-## Adapter Fleet
-
-*   [python_service/adapters/at_the_races_adapter.py](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/adapters/at_the_races_adapter.py)
-*   [python_service/adapters/betfair_adapter.py](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/adapters/betfair_adapter.py)
-*   [python_service/adapters/betfair_datascientist_adapter.py](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/adapters/betfair_datascientist_adapter.py)
-*   [python_service/adapters/betfair_greyhound_adapter.py](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/adapters/betfair_greyhound_adapter.py)
-*   [python_service/adapters/fanduel_adapter.py](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/adapters/fanduel_adapter.py)
 *   [python_service/adapters/gbgb_api_adapter.py](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/adapters/gbgb_api_adapter.py)
-*   [python_service/adapters/greyhound_adapter.py](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/adapters/greyhound_adapter.py)
-*   [python_service/adapters/harness_adapter.py](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/adapters/harness_adapter.py)
-*   [python_service/adapters/oddschecker_adapter.py](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/adapters/oddschecker_adapter.py)
-*   [python_service/adapters/racing_and_sports_adapter.py](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/adapters/racing_and_sports_adapter.py)
-*   [python_service/adapters/sporting_life_adapter.py](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/adapters/sporting_life_adapter.py)
-*   [python_service/adapters/the_racing_api_adapter.py](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/adapters/the_racing_api_adapter.py)
-*   [python_service/adapters/timeform_adapter.py](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/adapters/timeform_adapter.py)
-*   [python_service/adapters/tvg_adapter.py](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/adapters/tvg_adapter.py)
+
+*   [python_service/adapters/betfair_auth_mixin.py](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/adapters/betfair_auth_mixin.py)
+
+*   [tests/test_legacy_scenarios.py](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/tests/test_legacy_scenarios.py)
+*   [python_service/cache_manager.py](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/cache_manager.py)
+
+*   [python_service/middleware/error_handler.py](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/middleware/error_handler.py)
+
+*   [python_service/adapters/fanduel_adapter.py](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/adapters/fanduel_adapter.py)
+
+*   [python_service/models_v3.py](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/models_v3.py)
+*   [python_service/adapters/base_v3.py](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/adapters/base_v3.py)
+*   [python_service/adapters/betfair_datascientist_adapter.py](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/adapters/betfair_datascientist_adapter.py)
+
+### Core
+- `python_service/config.py`
+- `python_service/security.py`
+- `python_service/logging_config.py`
