@@ -62,13 +62,16 @@ IF NOT EXIST requirements.txt (
     ECHO [X] CRITICAL: requirements.txt not found!
     exit /b 1
 )
-FOR /F "usebackq delims==" %%p IN ("requirements.txt") DO (
-    ECHO   - Installing %%p...
-    python -m pip install "%%p"
-    IF %ERRORLEVEL% NEQ 0 (
-        ECHO [X] FAILED to install Python package: %%p.
-        exit /b 1
-    )
+ECHO.
+ECHO --- Python Packages to be Installed ---
+TYPE requirements.txt
+ECHO ------------------------------------
+ECHO.
+ECHO Installing all packages now. This may take a few minutes...
+python -m pip install -r requirements.txt
+IF %ERRORLEVEL% NEQ 0 (
+    ECHO [X] FAILED to install Python dependencies. Please check the output above for errors.
+    exit /b 1
 )
 echo  [V] Python packages installed!
 
