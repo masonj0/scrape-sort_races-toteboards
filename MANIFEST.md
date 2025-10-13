@@ -1,42 +1,70 @@
-*   [python_service/api.py](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/api.py)
-*   [python_service/engine.py](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/engine.py)
-*   [python_service/analyzer.py](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/analyzer.py)
-*   [python_service/models.py](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/models.py)
-*   [python_service/adapters/base.py](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/adapters/base.py)
-*   [python_service/adapters/betfair_adapter.py](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/adapters/betfair_adapter.py)
-*   [python_service/adapters/tvg_adapter.py](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/adapters/tvg_adapter.py)
-*   [python_service/adapters/the_racing_api_adapter.py](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/adapters/the_racing_api_adapter.py)
-*   [python_service/adapters/racing_and_sports_adapter.py](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/python_service/adapters/racing_and_sports_adapter.py)
-*   [web_platform/frontend/src/components/LiveRaceDashboard.tsx](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/web_platform/frontend/src/components/LiveRaceDashboard.tsx)
-*   [web_platform/frontend/src/components/RaceCard.tsx](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/web_platform/frontend/src/components/RaceCard.tsx)
-*   [web_platform/frontend/src/app/layout.tsx](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/web_platform/frontend/src/app/layout.tsx)
-*   [web_platform/frontend/src/types/racing.ts](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/web_platform/frontend/src/types/racing.ts)
-*   [launcher.ps1](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/launcher.ps1)
-*   [fortuna_monitor.py](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/fortuna_monitor.py)
-*   [README_WINDOWS.md](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/README_WINDOWS.md)
+# Fortuna Faucet - Root Manifest (Part 1)
 
-*   [electron/main.js](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/electron/main.js)
-*   [electron/package.json](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/electron/package.json)
-*   [electron/preload.js](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/electron/preload.js)
-*   [setup_wizard.py](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/setup_wizard.py)
-*   [windows_service.py](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/windows_service.py)
-*   [install_service.bat](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/install_service.bat)
-*   [uninstall_service.bat](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/uninstall_service.bat)
+This manifest lists all essential files located in the project's root directory.
 
+## Core Documentation
+
+* README.md
+* HISTORY.md
+* WISDOM.md
+* PSEUDOCODE.MD
+* ROADMAP_APPENDICES.MD
+
+## Configuration & Dependencies
+
+* requirements.txt
+* pyproject.toml
+* .env.example
+
+## Operational Tooling
+
+* create_fortuna_json.py
+* fortuna_watchman.py
 
 ## Windows Native Edition Tooling
 
-*   [INSTALL_FORTUNA.bat](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/INSTALL_FORTUNA.bat)
-*   [LAUNCH_FORTUNA.bat](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/LAUNCH_FORTUNA.bat)
-*   [STOP_FORTUNA.bat](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/STOP_FORTUNA.bat)
-*   [CREATE_SHORTCUTS.bat](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/CREATE_SHORTCUTS.bat)
-*   [SCHEDULE_FORTUNA.bat](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/SCHEDULE_FORTUNA.bat)
-*   [RESTART_FORTUNA.bat](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/RESTART_FORTUNA.bat)
-*   [launcher.ps1](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/launcher.ps1)
-*   [setup_wizard.py](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/setup_wizard.py)
-*   [windows_service.py](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/windows_service.py)
-*   [fortuna_monitor.py](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/fortuna_monitor.py)
-*   [README_WINDOWS.md](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/README_WINDOWS.md)
-\n*   [fortuna_tray.py](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/fortuna_tray.py)
-\n*   [configure_startup.py](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/configure_startup.py)
-\n*   [assets/sounds/.gitkeep](https://raw.githubusercontent.com/masonj0/scrape-sort_races-toteboards/refs/heads/main/assets/sounds/.gitkeep)
+* INSTALL_FORTUNA.bat
+* LAUNCH_FORTUNA.bat
+* STOP_FORTUNA.bat
+* CREATE_SHORTCUTS.bat
+* SCHEDULE_FORTUNA.bat
+* RESTART_FORTUNA.bat
+* launcher.ps1
+* setup_wizard.py
+* windows_service.py
+* fortuna_monitor.py
+* fortuna_tray.py
+* configure_startup.py
+* README_WINDOWS.md
+* assets/sounds/.gitkeep
+
+# Added by Operation: Complete the Royal Blueprints
+AGENTS.md
+ARCHITECTURAL_MANDATE.md
+ARCHITECTURAL_MANDATE_V8.1.md
+CREATE_SHORTCUTS.bat
+INSTALL_FORTUNA.bat
+JSON_BACKUP_MANIFEST.md
+LAUNCH_FORTUNA.bat
+PROJECT_MANIFEST.md
+PSEUDOCODE.MD
+REBRANDING_AUDIT.md
+RESTART_FORTUNA.bat
+SCHEDULE_FORTUNA.bat
+STATUS.md
+STOP_FORTUNA.bat
+config.ini
+configure_startup.py
+fortuna_monitor.py
+fortuna_tray.py
+fortuna_watchman.py
+install_service.bat
+launcher.ps1
+manual_override_tool.py
+pyproject.toml
+pytest.ini
+run_backend.bat
+setup_windows.bat
+setup_wizard.py
+uninstall_service.bat
+windows_service.py

@@ -18,25 +18,21 @@ def parse_odds(odds: Union[str, int, float]) -> float:
         return float(odds)
 
     if isinstance(odds, str):
+        odds = odds.strip().upper()
+        if not odds or odds in ['SP', 'REF']:
+            return None
         try:
-            # Handle fractional odds (e.g., "10/1", "5/2")
             if "/" in odds:
                 numerator, denominator = map(int, odds.split('/'))
                 if denominator == 0:
-                    return 999.0
-                return 1.0 + (numerator / denominator)
-
-            # Handle "evens"
-            if odds.lower() in ['evs', 'evens']:
-                return 2.0
-
-            # Handle simple decimal strings
+                    return None
+                return numerator / denominator
+            if odds in ['EVS', 'EVENS']:
+                return 1.0
             return float(odds)
         except (ValueError, TypeError):
-            # Return a high, but valid, number for unparseable odds
-            return 999.0
-
-    return 999.0
+            return None
+    return None
 
 
 # --- Track Name Normalization (Resurrected from attic/checkmate_app.py) ---
