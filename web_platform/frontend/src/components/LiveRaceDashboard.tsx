@@ -4,6 +4,7 @@
 import React, { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { RaceCard } from './RaceCard';
+import { ExportManager } from '@/utils/exportManager';
 
 // --- Type Definitions ---
 import type { Race } from '@/types/racing'; // Correct type import
@@ -91,7 +92,13 @@ export const LiveRaceDashboard: React.FC = () => {
       {/* --- Smart Filtering & Sorting System --- */}
       <div className="filter-panel bg-gray-800/90 backdrop-blur-sm p-4 rounded-xl border border-gray-700 mb-6">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4"><span className="font-semibold">Smart Filters</span></div>
+          <div className="flex items-center gap-4"><span className="font-semibold">Smart Filters</span>
+            <button
+              onClick={() => ExportManager.exportToExcel(filteredAndSortedRaces)}
+              className='px-3 py-1 bg-green-500/20 text-green-300 text-sm font-semibold rounded-md hover:bg-green-500/40 transition-colors'>
+              Export to Excel
+            </button>
+          </div>
           <div className="flex gap-6">
             <div className="flex items-center gap-3"><label className="text-sm text-gray-400">Min Score:</label><input type="range" name="minScore" min="0" max="100" value={filterConfig.minScore} onChange={handleFilterChange} className="w-32" /><span className="text-sm font-semibold w-12">{filterConfig.minScore}%</span></div>
             <div className="flex items-center gap-3"><label className="text-sm text-gray-400">Max Field:</label><select name="maxFieldSize" value={filterConfig.maxFieldSize} onChange={handleFilterChange} className="bg-gray-700 border border-gray-600 rounded px-3 py-1 text-white"><option value="8">8 runners</option><option value="10">10 runners</option><option value="12">12 runners</option><option value="999">Any size</option></select></div>

@@ -2,35 +2,9 @@
 'use client';
 
 import React from 'react';
+import type { Race, Runner } from '@/types/racing';
 
-// Type definitions matching the backend Race model
-interface OddsData {
-  win: number | null;
-  source: string;
-  last_updated: string;
-}
-
-interface Runner {
-  number: number;
-  name: string;
-  scratched: boolean;
-  selection_id?: number;
-  odds: Record<string, OddsData>;
-  jockey?: string;
-  trainer?: string;
-}
-
-interface Race {
-  id: string;
-  venue: string;
-  race_number: number;
-  start_time: string;
-  runners: Runner[];
-  source: string;
-  qualification_score?: number;
-  distance?: string;
-  surface?: string;
-}
+// Local types removed, now importing from '@/types/racing.ts'
 
 interface RaceCardProps {
   race: Race;
