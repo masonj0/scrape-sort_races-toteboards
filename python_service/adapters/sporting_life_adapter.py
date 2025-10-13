@@ -12,7 +12,7 @@ from decimal import Decimal
 
 from .base import BaseAdapter
 from ..models import Race, Runner, OddsData
-from .utils import parse_odds
+from ..utils.odds import parse_odds_to_decimal
 
 log = structlog.get_logger(__name__)
 
@@ -64,7 +64,7 @@ class SportingLifeAdapter(BaseAdapter):
             num_str = _clean_text(row.select_one("span.hr-racing-runner-saddle-cloth-no").get_text())
             number = int(''.join(filter(str.isdigit, num_str)))
             odds_str = _clean_text(row.select_one("span.hr-racing-runner-odds").get_text())
-            win_odds = Decimal(str(parse_odds(odds_str))) if odds_str else None
+            win_odds = parse_odds_to_decimal(odds_str)
             odds_data = {self.source_name: OddsData(win=win_odds, source=self.source_name, last_updated=datetime.now())} if win_odds and win_odds < 999 else {}
             return Runner(number=number, name=name, odds=odds_data)
         except Exception as e:
