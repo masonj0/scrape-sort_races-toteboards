@@ -55,10 +55,21 @@ if not exist .venv (
 )
 
 echo.
-echo  [4/5] Installing Python dependencies...
+echo  [4/5] Installing Python dependencies one by one...
 call .venv\\Scripts\\activate.bat
-pip install --upgrade pip --quiet
-pip install -r requirements.txt --quiet
+python -m pip install --upgrade pip --quiet
+IF NOT EXIST requirements.txt (
+    ECHO [X] CRITICAL: requirements.txt not found!
+    exit /b 1
+)
+FOR /F "usebackq delims==" %%p IN ("requirements.txt") DO (
+    ECHO   - Installing %%p...
+    python -m pip install "%%p"
+    IF %ERRORLEVEL% NEQ 0 (
+        ECHO [X] FAILED to install Python package: %%p.
+        exit /b 1
+    )
+)
 echo  [V] Python packages installed!
 
 echo.
