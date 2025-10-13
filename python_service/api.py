@@ -82,7 +82,38 @@ async def get_all_adapter_statuses(request: Request, engine: FortunaEngine = Dep
         raise HTTPException(status_code=500, detail="Internal Server Error")
 
 
-@app.get("/api/races/qualified/{analyzer_name}", response_model=QualifiedRacesResponse)
+@app.get("/api/races/qualified/{analyzer_name}",
+         response_model=QualifiedRacesResponse,
+         description="Fetch and analyze races from all configured data sources, returning a list of races that meet the specified analyzer's criteria.",
+         responses={
+             200: {
+                 "description": "A list of qualified races with their scores.",
+                 "content": {
+                     "application/json": {
+                         "example": {
+                             "races": [
+                                 {
+                                     "id": "12345_2025-10-14_1",
+                                     "venue": "Santa Anita",
+                                     "race_number": 1,
+                                     "start_time": "2025-10-14T20:30:00Z",
+                                     "runners": [
+                                         {"number": 1, "name": "Speedy Gonzalez", "odds": "5/2"}
+                                     ],
+                                     "source": "TVG",
+                                     "qualification_score": 95.5
+                                 }
+                             ],
+                             "analyzer": "trifecta_analyzer"
+                         }
+                     }
+                 }
+             },
+             404: {
+                 "description": "The specified analyzer was not found."
+             }
+         }
+)
 @limiter.limit("30/minute")
 async def get_qualified_races(
     analyzer_name: str,

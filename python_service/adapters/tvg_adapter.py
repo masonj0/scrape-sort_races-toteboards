@@ -9,7 +9,7 @@ from decimal import Decimal, InvalidOperation
 
 from .base import BaseAdapter
 from ..models import Race, Runner, OddsData
-from .utils import parse_odds
+from ..utils.odds import parse_odds_to_decimal
 
 log = structlog.get_logger(__name__)
 
@@ -95,22 +95,10 @@ class TVGAdapter(BaseAdapter):
         for runner_data in race_data.get('runners', []):
             if not runner_data.get('scratched'):
                 current_odds_str = runner_data.get('odds', {}).get('current') or runner_data.get('odds', {}).get('morningLine')
-                win_odds = self._parse_tvg_odds(current_odds_str)
+                win_odds = parse_odds_to_decimal(current_odds_str)
                 odds_dict = {}
-                if win_odds:
+                if win_odds and win_odds < 999:
                     odds_dict[self.source_name] = OddsData(win=win_odds, source=self.source_name, last_updated=datetime.now())
                 runners.append(Runner(number=_parse_program_number(runner_data.get('programNumber')), name=runner_data.get('horseName', 'Unknown Runner'), scratched=False, odds=odds_dict))
         race_id = f"{track.get('code', 'UNK').lower()}_{race_data['postTime'].split('T')[0]}_R{race_data['number']}"
         return Race(id=race_id, venue=track.get('name', 'Unknown Venue'), race_number=race_data.get('number'), start_time=datetime.fromisoformat(race_data.get('postTime')), runners=runners, source=self.source_name)
-
-    def _parse_tvg_odds(self, odds_string: str) -> Optional[Decimal]:
-        if not odds_string or odds_string == "SCR":
-            return None
-        try:
-            parsed_float = parse_odds(odds_string)
-            if parsed_float >= 999.0:
-                return None
-            return Decimal(str(parsed_float))
-        except (ValueError, InvalidOperation):
-            log.warning("Could not convert parsed TVG odds to Decimal", odds_str=odds_string)
-            return None
