@@ -3,27 +3,26 @@
   "version": "1.0.0",
   "description": "The desktop shell for the Fortuna Faucet application.",
   "main": "main.js",
-  "scripts": {
-    "start": "electron .",
-    "build": "electron-builder",
-    "build:win": "electron-builder --win"
-  },
   "build": {
-    "appId": "com.fortunafaucet.desktop",
-    "productName": "Fortuna Faucet",
-    "directories": {
-      "buildResources": "assets"
-    },
+    "appId": "com.fortuna.ascended",
+    "productName": "Fortuna Ascended",
+    "files": [
+      "main.js",
+      "preload.js",
+      "assets/**/*"
+    ],
     "win": {
-      "target": ["nsis", "portable"],
+      "target": "msi",
       "icon": "assets/icon.ico"
     },
-    "nsis": {
+    "msi": {
       "oneClick": false,
-      "allowToChangeInstallationDirectory": true,
-      "createDesktopShortcut": true,
-      "createStartMenuShortcut": true
+      "allowToChangeInstallationDirectory": true
     }
+  },
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder"
   },
   "devDependencies": {
     "electron": "^28.0.0",
