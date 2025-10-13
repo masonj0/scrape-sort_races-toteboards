@@ -43,3 +43,14 @@ You can easily configure Fortuna Faucet to start automatically when you log into
 3.  A dialog will appear asking if you want to enable startup. Click **"Yes"**.
 
 To disable automatic startup, simply repeat the process and click **"No"**.
+
+
+---
+
+## Building the MSI Installer (For Distribution)
+
+To create a professional, distributable MSI installer for the application, follow these steps:
+
+1.  **Ensure Dependencies are Installed**: You must have already run `INSTALL_FORTUNA.bat` successfully, which installs the necessary Node.js dependencies for the builder.
+2.  **Run the Builder Script**: In the project's root directory, simply run the `BUILD_INSTALLER.bat` script by double-clicking it.
+3.  **Locate the Installer**: The script will run for a few minutes. Upon completion, the MSI installer (e.g., `Fortuna Ascended 1.0.0.msi`) will be located in the `electron\dist` directory.
