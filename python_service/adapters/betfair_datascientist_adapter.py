@@ -7,7 +7,7 @@ from io import StringIO
 
 from ..models_v3 import NormalizedRace, NormalizedRunner
 from .base_v3 import BaseAdapterV3
-from .utils import normalize_course_name
+from ..utils.text import normalize_course_name
 
 class BetfairDataScientistAdapter(BaseAdapterV3):
     ADAPTER_NAME = "BetfairDataScientist"

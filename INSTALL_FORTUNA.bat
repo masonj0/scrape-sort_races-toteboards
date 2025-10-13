@@ -57,8 +57,22 @@ if not exist .venv (
 echo.
 echo  [4/5] Installing Python dependencies...
 call .venv\\Scripts\\activate.bat
-pip install --upgrade pip --quiet
-pip install -r requirements.txt --quiet
+python -m pip install --upgrade pip --quiet
+IF NOT EXIST requirements.txt (
+    ECHO [X] CRITICAL: requirements.txt not found!
+    exit /b 1
+)
+ECHO.
+ECHO --- Python Packages to be Installed ---
+TYPE requirements.txt
+ECHO ------------------------------------
+ECHO.
+ECHO Installing all packages now. This may take a few minutes...
+python -m pip install -r requirements.txt
+IF %ERRORLEVEL% NEQ 0 (
+    ECHO [X] FAILED to install Python dependencies. Please check the output above for errors.
+    exit /b 1
+)
 echo  [V] Python packages installed!
 
 echo.

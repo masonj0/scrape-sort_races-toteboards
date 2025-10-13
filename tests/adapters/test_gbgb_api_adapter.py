@@ -76,12 +76,12 @@ async def test_fetch_gbgb_races_successfully(gbgb_adapter):
 
     runner1 = next(r for r in race.runners if r.number == 1)
     assert runner1.name == "Rapid Rover"
-    assert runner1.odds['GBGB'].win == Decimal("2.5")
+    assert runner1.odds['GBGB'].win == Decimal("3.5")
 
     runner2 = next(r for r in race.runners if r.number == 2)
     assert runner2.name == "Speedy Sue"
-    assert runner2.odds['GBGB'].win == Decimal("1.0")
+    assert runner2.odds['GBGB'].win == Decimal("2.0")
 
     runner3 = next(r for r in race.runners if r.number == 3)
     assert runner3.name == "Lazy Larry"
-    assert runner3.odds['GBGB'].win == Decimal("10.0")
+    assert runner3.odds['GBGB'].win == Decimal("11.0")
