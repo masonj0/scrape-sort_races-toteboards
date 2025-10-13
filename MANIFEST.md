@@ -37,3 +37,34 @@ This manifest lists all essential files located in the project's root directory.
 * configure_startup.py
 * README_WINDOWS.md
 * assets/sounds/.gitkeep
+
+# Added by Operation: Complete the Royal Blueprints
+AGENTS.md
+ARCHITECTURAL_MANDATE.md
+ARCHITECTURAL_MANDATE_V8.1.md
+CREATE_SHORTCUTS.bat
+INSTALL_FORTUNA.bat
+JSON_BACKUP_MANIFEST.md
+LAUNCH_FORTUNA.bat
+PROJECT_MANIFEST.md
+PSEUDOCODE.MD
+REBRANDING_AUDIT.md
+RESTART_FORTUNA.bat
+SCHEDULE_FORTUNA.bat
+STATUS.md
+STOP_FORTUNA.bat
+config.ini
+configure_startup.py
+fortuna_monitor.py
+fortuna_tray.py
+fortuna_watchman.py
+install_service.bat
+launcher.ps1
+manual_override_tool.py
+pyproject.toml
+pytest.ini
+run_backend.bat
+setup_windows.bat
+setup_wizard.py
+uninstall_service.bat
+windows_service.py
