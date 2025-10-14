@@ -2,11 +2,11 @@
 SETLOCAL ENABLEDELAYEDEXPANSION
 
 REM ============================================================================
-REM  FORTUNA FAUCET - Bulletproof Windows Setup (v3.2)
-REM  Includes: Pre-flight checks, dependency installation, parallel package setup, auto-recovery
+REM  FORTUNA FAUCET - Bulletproof Windows Setup (v4.1)
+REM  Includes: Pre-flight checks, dependency installation, parallel package setup, auto-recovery, config wizard
 REM ============================================================================
 
-TITLE Fortuna Faucet - Setup Wizard v3.2
+TITLE Fortuna Faucet - Setup Wizard v4.1
 
 ECHO.
 ECHO  ========================================================================
@@ -17,7 +17,7 @@ ECHO.
 REM --- Main Execution Flow ---
 SET "LAST_STEP="
 CALL :CheckPrerequisites
-IF %ERRORLEVEL% NEQ 0 GOTO :eof
+IF %ERRORLEVEL% NEQ 0 GOTO ErrorHandler
 
 :RunInstallCoreDependencies
 SET "LAST_STEP=InstallCoreDependencies"
@@ -32,6 +32,11 @@ IF %ERRORLEVEL% NEQ 0 GOTO ErrorHandler
 :RunInstallPackagesParallel
 SET "LAST_STEP=InstallPackagesParallel"
 CALL :InstallPackagesParallel
+IF %ERRORLEVEL% NEQ 0 GOTO ErrorHandler
+
+:RunConfigurationWizard
+SET "LAST_STEP=RunConfigurationWizard"
+CALL :RunConfigurationWizard
 IF %ERRORLEVEL% NEQ 0 GOTO ErrorHandler
 
 :RunCreateShortcuts
@@ -53,25 +58,22 @@ REM  SUBROUTINES
 REM ============================================================================
 
 :CheckPrerequisites
-    ECHO [1/5] Running pre-flight system checks...
+    ECHO [1/6] Running pre-flight system checks...
     net session >nul 2>&1
     if %errorlevel% neq 0 (
         echo  [FAIL] This installer requires Administrator privileges.
         echo  [FAIL] Please right-click and select "Run as Administrator"
-        pause
-        exit /b 1
+        EXIT /B 1
     )
     FOR /f "tokens=4-5 delims=. " %%i IN ('ver') DO SET "WIN_VERSION=%%i.%%j"
     IF "!WIN_VERSION!" LSS "10.0" (
         ECHO [FAIL] Windows 10 or later is required. Your version: !WIN_VERSION!
-        PAUSE
         EXIT /B 1
     )
     FOR /f "tokens=3" %%a IN ('dir /-c ^| find "bytes free"') DO SET "FREE_SPACE=%%a"
     SET "FREE_SPACE_NUM=%FREE_SPACE:,=%"
     IF %FREE_SPACE_NUM% LSS 2147483648 (
         ECHO [FAIL] Insufficient disk space. At least 2GB is required.
-        PAUSE
         EXIT /B 1
     )
     ping -n 1 google.com >nul 2>&1
@@ -85,7 +87,7 @@ REM ============================================================================
     EXIT /B 0
 
 :InstallCoreDependencies
-    ECHO [2/5] Checking core dependencies (Python and Node.js)...
+    ECHO [2/6] Checking core dependencies (Python and Node.js)...
     python --version >nul 2>&1
     if %errorlevel% neq 0 (
         echo  [INFO] Python not found! Installing Python 3.11...
@@ -111,7 +113,7 @@ REM ============================================================================
     EXIT /B 0
 
 :SetupVirtualEnv
-    ECHO [3/5] Setting up Python virtual environment...
+    ECHO [3/6] Setting up Python virtual environment...
     IF NOT EXIST .venv (
         ECHO [INFO] Creating new virtual environment...
         python -m venv .venv
@@ -127,7 +129,7 @@ REM ============================================================================
     EXIT /B 0
 
 :InstallPackagesParallel
-    ECHO [4/5] Installing Python ^& Node.js dependencies in parallel...
+    ECHO [4/6] Installing Python ^& Node.js dependencies in parallel...
     ECHO      Output is logged to pip_install.log and npm_install.log.
 
     start "Python Install" /B cmd /c "call .venv\\Scripts\\activate.bat && python -m pip install -r python_service\\requirements.txt > pip_install.log 2>&1"
@@ -167,8 +169,20 @@ REM ============================================================================
     ECHO.
     EXIT /B 0
 
+:RunConfigurationWizard
+    ECHO [5/6] Running initial configuration wizard...
+    call .venv\\Scripts\\activate.bat
+    python setup_wizard.py
+    IF %ERRORLEVEL% NEQ 0 (
+        ECHO [FAIL] Configuration wizard failed. Please check errors above.
+        EXIT /B 1
+    )
+    ECHO [OK] Configuration complete.
+    ECHO.
+    EXIT /B 0
+
 :CreateShortcuts
-    ECHO [5/5] Creating desktop shortcuts...
+    ECHO [6/6] Creating desktop shortcuts...
     call CREATE_SHORTCUTS.bat
     IF %ERRORLEVEL% NEQ 0 (
         ECHO [WARN] Could not create desktop shortcuts. You can run them manually from the project folder.
