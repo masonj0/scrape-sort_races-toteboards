@@ -1,8 +1,8 @@
 @ECHO OFF
-TITLE Fortuna Ascended - MSI Installer Builder
+TITLE Fortuna Faucet - MSI Installer Builder
 ECHO.
 ECHO =================================================
-ECHO  Fortuna Ascended - MSI Installer Builder
+ECHO  Fortuna Faucet - MSI Installer Builder
 ECHO =================================================
 ECHO.
 ECHO This script will build the distributable MSI installer using electron-builder.

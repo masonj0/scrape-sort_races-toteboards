@@ -1,6 +1,6 @@
-# Fortuna Ascended
+# Fortuna Faucet
 
-**An autonomous, professional-grade intelligence engine for horse racing analysis, delivered as a native Windows Desktop Application.**
+**A professional-grade, autonomous intelligence engine for horse racing analysis, delivered as a native Windows Desktop Application.**
 
 ---
 

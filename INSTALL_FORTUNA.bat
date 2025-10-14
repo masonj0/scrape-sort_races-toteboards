@@ -2,15 +2,15 @@
 SETLOCAL ENABLEDELAYEDEXPANSION
 
 REM ============================================================================
-REM  FORTUNA ASCENDED - Bulletproof Windows Setup (v3.2)
+REM  FORTUNA FAUCET - Bulletproof Windows Setup (v3.2)
 REM  Includes: Pre-flight checks, dependency installation, parallel package setup, auto-recovery
 REM ============================================================================
 
-TITLE Fortuna Ascended - Setup Wizard v3.2
+TITLE Fortuna Faucet - Setup Wizard v3.2
 
 ECHO.
 ECHO  ========================================================================
-ECHO   FORTUNA ASCENDED - Bulletproof Installation Wizard
+ECHO   FORTUNA FAUCET - Bulletproof Installation Wizard
 ECHO  ========================================================================
 ECHO.
 
