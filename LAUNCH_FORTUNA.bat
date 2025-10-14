@@ -1,26 +1,59 @@
-@echo off
-REM ============================================================================
-REM  FORTUNA FAUCET - Windows Native Launcher (Tray Edition)
-REM ============================================================================
+@ECHO OFF
+SETLOCAL ENABLEDELAYEDEXPANSION
+TITLE Fortuna Ascended - Launcher v3.0
 
-title Fortuna Faucet - Launcher
-color 0B
+REM --- Phase 0: Setup Logging ---
+IF NOT EXIST logs mkdir logs
+SET "TIMESTAMP=%date:~-4%%date:~4,2%%date:~7,2%_%time:~0,2%%time:~3,2%%time:~6,2%"
+SET "TIMESTAMP=%TIMESTAMP: =0%"
+SET "BACKEND_LOG=logs\backend_%TIMESTAMP%.log"
+SET "FRONTEND_LOG=logs\frontend_%TIMESTAMP%.log"
 
-echo.
-echo  ========================================================================
-echo   FORTUNA FAUCET - System Tray Launcher
-echo  ========================================================================
-echo.
+cls
+ECHO.
+ECHO     ================================================
+ECHO       FORTUNA ASCENDED - INTELLIGENT LAUNCHER v3.0
+ECHO     ================================================
+ECHO.
+ECHO     See %BACKEND_LOG% and %FRONTEND_LOG% for detailed output.
+ECHO.
 
-echo  [*] Launching Fortuna Faucet in the system tray...
-echo  [*] The backend service will continue running in the background.
+REM --- Phase 1: Port Availability Check ---
+ECHO [....] 1/4 Port Availability Check...
+SET "BACKEND_PORT=8000"
+SET "FRONTEND_PORT=3000"
+SET "PORTS_CLEARED=true"
+FOR %%P IN (%BACKEND_PORT% %FRONTEND_PORT%) DO (
+    netstat -ano | findstr ":%%P" | findstr "LISTENING" >nul
+    IF !ERRORLEVEL! EQU 0 (
+        FOR /f "tokens=5" %%a IN ('netstat -ano ^| findstr ":%%P" ^| findstr "LISTENING"') DO ( taskkill /F /PID %%a >nul 2>&1 )
+    )
+)
+ECHO [ OK ] 1/4 Port Availability Check - Complete.
 
-REM Use pythonw.exe to run the script without a console window
-call .\\.venv\\Scripts\\activate.bat
-start "Fortuna Tray App" /B pythonw.exe fortuna_tray.py
+REM --- Phase 2: Launch Backend Service ---
+ECHO [....] 2/4 Launching Backend Service...
+start "Fortuna Backend" /B cmd /c "call .venv\Scripts\activate.bat && uvicorn python_service.api:app --host 127.0.0.1 --port %BACKEND_PORT% --log-level warning > %BACKEND_LOG% 2>&1"
+ECHO [ OK ] 2/4 Launching Backend Service - Process started.
 
-echo.
-echo  [V] Fortuna Faucet is now running in your system tray.
-_echo  [V] Right-click the icon for options.
-_echo.
-pause
+REM --- Phase 3: Wait for Backend Health ---
+ECHO [....] 3/4 Waiting for Backend to become healthy...
+SET /a ATTEMPTS=0
+:BackendHealthCheck
+SET /a ATTEMPTS+=1
+IF %ATTEMPTS% GTR 30 ( ECHO [FAIL] 3/4 Backend failed to start. Check %BACKEND_LOG%. && PAUSE && EXIT /B 1 )
+powershell -Command "(Invoke-WebRequest -Uri http://localhost:%BACKEND_PORT%/health -UseBasicParsing).StatusCode" 2>nul | findstr "200" >nul
+IF !ERRORLEVEL! NEQ 0 ( timeout /t 1 /nobreak >nul && GOTO BackendHealthCheck )
+ECHO [ OK ] 3/4 Waiting for Backend to become healthy - Success!
+
+REM --- Phase 4: Launch Frontend and Browser ---
+ECHO [....] 4/4 Launching Frontend and Browser...
+start "Fortuna Frontend" /B cmd /c "cd web_platform\frontend && npm run dev > %FRONTEND_LOG% 2>&1"
+timeout /t 8 /nobreak >nul
+start http://localhost:%FRONTEND_PORT%
+ECHO [ OK ] 4/4 Launching Frontend and Browser - Complete.
+ECHO.
+ECHO  ================================================
+ECHO   LAUNCH COMPLETE! THE KINGDOM IS ASCENDED.
+ECHO  ================================================
+ECHO.
