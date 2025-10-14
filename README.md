@@ -20,7 +20,7 @@ This project adheres to a strict set of architectural and operational principles
 
 -   **[The Grand Strategy (ROADMAP_APPENDICES.MD)](ROADMAP_APPENDICES.MD):** The "Windows Experience Bible" that dictates our path forward.
 -   **[The Genesis Story (HISTORY.MD)](HISTORY.MD):** The complete history of the project's evolution.
--   **[The Core Philosophy (WISDOM.MD)](WISDOM.MD):** The guiding principles behind the architecture.
+-   **[The Architectural Blueprint (PSEUDOCODE.MD)](PSEUDOCODE.MD):** The comprehensive pseudocode blueprint for the entire system.
 
 ## For Developers
 
