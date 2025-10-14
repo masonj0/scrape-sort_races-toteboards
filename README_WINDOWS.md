@@ -43,3 +43,27 @@ Once the installation is complete, you can run the application using the `LAUNCH
 ### Step 3: (Optional) Create Desktop Shortcuts
 
 For easier access, run the `CREATE_SHORTCUTS.bat` script to place shortcuts for `Launch`, `Stop`, and `Monitor` on your desktop.
+
+---
+
+## Troubleshooting
+
+If you encounter issues during setup or launch, the automated system provides detailed logs to help diagnose the problem.
+
+### Installation Logs
+
+During the developer setup (`INSTALL_FORTUNA.bat`), all output from the Python and Node.js package managers is saved to the following files in the project root:
+
+-   `pip_install.log`: Contains the full output of the `pip install` command.
+-   `npm_install.log`: Contains the full output of the `npm install` command.
+
+Check these files for any error messages if the installation fails.
+
+### Service Logs
+
+When you launch the application (`LAUNCH_FORTUNA.bat`), all output from the backend and frontend services is captured in a new `logs/` directory. Each launch creates two new log files named with a timestamp, for example:
+
+-   `logs/backend_20251015_093000.log`
+-   `logs/frontend_20251015_093000.log`
+
+If the application fails to start, check the latest log files in this directory to find the specific error.
