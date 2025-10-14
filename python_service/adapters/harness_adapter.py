@@ -1,113 +1,74 @@
+# python_service/adapters/harness_adapter.py
 from datetime import datetime
-from typing import Any, Dict, List
-import httpx
-from pydantic import ValidationError
-import structlog
-from decimal import Decimal
+from typing import AsyncGenerator
 
 from ..models import Race, Runner, OddsData
-from .base import BaseAdapter
 from ..utils.odds import parse_odds_to_decimal
-
-log = structlog.get_logger(__name__)
+from .base import BaseAdapter
 
 class HarnessAdapter(BaseAdapter):
-    """Adapter for fetching Harness racing data from USTA."""
+    """Adapter for fetching US harness racing data from data.ustrotting.com."""
 
-    def __init__(self, config):
-        super().__init__(
-            source_name="Harness Racing (USTA)",
-            base_url="https://data.ustrotting.com/"
-        )
-        # No API key required for this public endpoint
+    SOURCE_NAME = "USTrotting"
+    BASE_URL = "https://data.ustrotting.com/api/racenet/racing/"
 
-    async def fetch_races(self, date: str, http_client: httpx.AsyncClient) -> Dict[str, Any]:
-        """Fetches upcoming harness races for the specified date."""
-        start_time = datetime.now()
-        endpoint = f"api/racenet/racing/card/{date}"
-        try:
-            response_json = await self.make_request(http_client, 'GET', endpoint)
-            if not response_json or "meetings" not in response_json:
-                log.warning("HarnessAdapter: No 'meetings' in response or empty response.")
-                return self._format_response([], start_time, is_success=True, error_message="No meetings found for date.")
+    def __init__(self, config=None):
+        super().__init__(self.SOURCE_NAME, self.BASE_URL)
 
-            all_races = self._parse_meetings(response_json["meetings"])
-            return self._format_response(all_races, start_time, is_success=True)
-        except httpx.HTTPError as e:
-            log.error("HarnessAdapter: HTTP request failed after retries", error=str(e), exc_info=True)
-            return self._format_response([], start_time, is_success=False, error_message="API request failed after multiple retries.")
-        except Exception as e:
-            log.error("HarnessAdapter: An unexpected error occurred", error=str(e), exc_info=True)
-            return self._format_response([], start_time, is_success=False, error_message=f"An unexpected error occurred: {str(e)}")
+    async def fetch_races(self, date: str) -> AsyncGenerator[Race, None]:
+        """Fetches all harness races for a given date."""
+        card_data = await self.make_request(method="get", url=f"{self.BASE_URL}card/{date}")
+        if not card_data or not card_data.get('meetings'):
+            return
 
-    def _format_response(self, races: List[Race], start_time: datetime, is_success: bool = True, error_message: str = None) -> Dict[str, Any]:
-        """Formats the adapter's response consistently."""
-        fetch_duration = (datetime.now() - start_time).total_seconds()
-        return {
-            'races': races,
-            'source_info': {
-                'name': self.source_name,
-                'status': 'SUCCESS' if is_success else 'FAILED',
-                'races_fetched': len(races),
-                'error_message': error_message,
-                'fetch_duration': fetch_duration
-            }
-        }
+        for meeting in card_data['meetings']:
+            track_name = meeting.get('track', {}).get('name')
+            for race_data in meeting.get('races', []):
+                yield self._parse_race(race_data, track_name, date)
 
-    def _parse_meetings(self, meetings: List[Dict[str, Any]]) -> List[Race]:
-        """Parses a list of meetings and their races into Race objects."""
-        all_races = []
-        for meeting in meetings:
-            venue = meeting.get("trackName", "Unknown Venue")
-            races_data = meeting.get("races", [])
-            for race_data in races_data:
-                try:
-                    if not race_data.get("runners"):
-                        continue
+    def _parse_race(self, race_data: dict, track_name: str, date: str) -> Race:
+        """Parses a single race from the USTA API into a Race object."""
+        race_number = race_data.get('raceNumber', 0)
+        post_time_str = race_data.get('postTime', '00:00 AM')
+        start_time = self._parse_post_time(date, post_time_str)
 
-                    race_id = race_data.get('raceId')
-                    race = Race(
-                        id=f"usta_{race_id}",
-                        venue=venue,
-                        race_number=race_data["raceNumber"],
-                        start_time=datetime.fromisoformat(race_data["startTime"].replace("Z", "+00:00")),
-                        runners=self._parse_runners(race_data["runners"], race_id),
-                        source=self.source_name
-                    )
-                    all_races.append(race)
-                except (ValidationError, KeyError) as e:
-                    log.error(
-                        f"HarnessAdapter: Error parsing race {race_data.get('raceId', 'N/A')}",
-                        error=str(e),
-                        race_data=race_data
-                    )
-        return all_races
-
-    def _parse_runners(self, runners_data: List[Dict[str, Any]], race_id: str) -> List[Runner]:
-        """Parses a list of runner dictionaries into Runner objects."""
         runners = []
-        for runner_data in runners_data:
-            try:
-                # API provides number as 'postPosition'
-                runner_number = runner_data.get('postPosition')
-                if not runner_number:
-                    continue
+        for runner_data in race_data.get('runners', []):
+            odds_str = runner_data.get('morningLineOdds', '')
+            # Ensure odds are fractional for parsing
+            if '/' not in odds_str and odds_str.isdigit():
+                odds_str = f"{odds_str}/1"
 
-                # Adapt to the Runner model's odds structure
-                odds_data = {}
-                win_odds_str = runner_data.get("morningLineOdds")
-                decimal_odds = parse_odds_to_decimal(win_odds_str)
-                if decimal_odds and decimal_odds > 1:
-                    odds_data[self.source_name] = OddsData(win=decimal_odds, source=self.source_name, last_updated=datetime.now())
+            odds = {}
+            win_odds = parse_odds_to_decimal(odds_str)
+            if win_odds and win_odds < 999:
+                odds = {
+                    self.SOURCE_NAME: OddsData(
+                        win=win_odds,
+                        source=self.SOURCE_NAME,
+                        last_updated=datetime.now()
+                    )
+                }
 
+            runners.append(Runner(
+                number=runner_data.get('postPosition', 0),
+                name=runner_data.get('horse', {}).get('name', 'Unknown Horse'),
+                odds=odds,
+                scratched=runner_data.get('scratched', False)
+            ))
 
-                runner = Runner(
-                    number=runner_number,
-                    name=runner_data["horseName"],
-                    scratched=runner_data.get("scratched", False),
-                    odds=odds_data
-                )
-                runners.append(runner)
-            except (KeyError, ValidationError) as e:
-                log.error("HarnessAdapter: Error parsing runner", error=str(e), runner_data=runner_data)
-        return runners
+        return Race(
+            id=f"ust_{track_name.lower().replace(' ', '')}_{date}_{race_number}",
+            venue=track_name,
+            race_number=race_number,
+            start_time=start_time,
+            runners=runners,
+            source=self.SOURCE_NAME
+        )
+
+    def _parse_post_time(self, date: str, post_time: str) -> datetime:
+        """Parses a time string like '07:00 PM' into a datetime object."""
+        # Assuming Eastern Time (ET) for USTA data, a common standard for US racing
+        # This is a simplification; a production system might need timezone awareness
+        dt_str = f"{date} {post_time}"
+        return datetime.strptime(dt_str, "%Y-%m-%d %I:%M %p")
