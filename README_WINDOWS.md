@@ -1,12 +1,12 @@
-# Fortuna Ascended: Windows Operator's Manual
+# Fortuna Faucet: Windows Operator's Manual
 
-Welcome to the native Windows edition of Fortuna Ascended. This guide provides two installation methods.
+Welcome to the native Windows edition of Fortuna Faucet. This guide provides two installation methods.
 
 ---
 
 ## Method 1: Recommended for Operators (MSI Installer)
 
-This is the simplest and most professional way to install Fortuna Ascended as a complete, standalone application.
+This is the simplest and most professional way to install Fortuna Faucet as a complete, standalone application.
 
 ### Step 1: Build the Installer
 
@@ -14,7 +14,7 @@ First, you must create the MSI installer file.
 
 1.  **Run the Builder Script**: In the project's root directory, double-click the `BUILD_INSTALLER.bat` script.
 2.  **Wait for Completion**: The script will run for a few minutes.
-3.  **Locate the Installer**: Upon completion, the MSI installer (e.g., `Fortuna Ascended 1.0.0.msi`) will be located in the project's root directory.
+3.  **Locate the Installer**: Upon completion, the MSI installer (e.g., `Fortuna Faucet 1.0.0.msi`) will be located in the project's root directory.
 
 ### Step 2: Run the MSI Installer
 
@@ -43,3 +43,27 @@ Once the installation is complete, you can run the application using the `LAUNCH
 ### Step 3: (Optional) Create Desktop Shortcuts
 
 For easier access, run the `CREATE_SHORTCUTS.bat` script to place shortcuts for `Launch`, `Stop`, and `Monitor` on your desktop.
+
+---
+
+## Troubleshooting
+
+If you encounter issues during setup or launch, the automated system provides detailed logs to help diagnose the problem.
+
+### Installation Logs
+
+During the developer setup (`INSTALL_FORTUNA.bat`), all output from the Python and Node.js package managers is saved to the following files in the project root:
+
+-   `pip_install.log`: Contains the full output of the `pip install` command.
+-   `npm_install.log`: Contains the full output of the `npm install` command.
+
+Check these files for any error messages if the installation fails.
+
+### Service Logs
+
+When you launch the application (`LAUNCH_FORTUNA.bat`), all output from the backend and frontend services is captured in a new `logs/` directory. Each launch creates two new log files named with a timestamp, for example:
+
+-   `logs/backend_20251015_093000.log`
+-   `logs/frontend_20251015_093000.log`
+
+If the application fails to start, check the latest log files in this directory to find the specific error.

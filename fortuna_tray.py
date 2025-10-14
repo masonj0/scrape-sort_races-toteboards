@@ -94,7 +94,7 @@ def main():
         # Hide the redundant root tkinter window
         root = tk.Tk()
         root.withdraw()
-        messagebox.showerror("Fortuna Ascended - Configuration Error", str(e))
+        messagebox.showerror("Fortuna Faucet - Configuration Error", str(e))
         sys.exit(1)
 
     # If validation passes, proceed to create and run the tray icon
