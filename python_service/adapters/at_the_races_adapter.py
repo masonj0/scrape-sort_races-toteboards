@@ -11,11 +11,9 @@ from decimal import Decimal
 from .base import BaseAdapter
 from ..models import Race, Runner, OddsData
 from ..utils.odds import parse_odds_to_decimal
+from ..utils.text import normalize_venue_name, clean_text
 
 log = structlog.get_logger(__name__)
-
-def _clean_text(text: Optional[str]) -> Optional[str]:
-    return ' '.join(text.strip().split()) if text else None
 
 class AtTheRacesAdapter(BaseAdapter):
     def __init__(self, config):
@@ -46,7 +44,8 @@ class AtTheRacesAdapter(BaseAdapter):
                 return None
             soup = BeautifulSoup(response_html, "html.parser")
             header = soup.select_one("h1.heading-racecard-title").get_text()
-            track_name, race_time = [p.strip() for p in header.split("|")[:2]]
+            track_name_raw, race_time = [p.strip() for p in header.split("|")[:2]]
+            track_name = normalize_venue_name(track_name_raw)
             active_link = soup.select_one("a.race-time-link.active")
             race_number = active_link.find_parent("div", "races").select("a.race-time-link").index(active_link) + 1
             start_time = datetime.strptime(f"{datetime.now().date()} {race_time}", "%Y-%m-%d %H:%M")
