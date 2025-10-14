@@ -1,0 +1,17 @@
+# Fortuna Faucet - Master Dependency List
+
+# --- Core Backend (FastAPI & Async) ---
+fastapi
+uvicorn[standard]
+python-dotenv
+pydantic-settings
+
+# --- Data & HTTP ---
+requests
+httpx
+SQLAlchemy
+psycopg2-binary
+
+# --- CLI & Monitoring Tools ---
+rich
+matplotlib
