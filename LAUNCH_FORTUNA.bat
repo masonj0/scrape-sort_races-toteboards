@@ -48,7 +48,7 @@ ECHO [ OK ] 3/4 Waiting for Backend to become healthy - Success!
 
 REM --- Phase 4: Launch Frontend and Browser ---
 ECHO [....] 4/4 Launching Frontend and Browser...
-start "Fortuna Frontend" /B cmd /c "cd web_platform\frontend && npm run dev > %FRONTEND_LOG% 2>&1"
+start "Fortuna Frontend" /B cmd /c "cd web_platform\frontend && npm run dev > ..\..\%FRONTEND_LOG% 2>&1"
 timeout /t 8 /nobreak >nul
 start http://localhost:%FRONTEND_PORT%
 ECHO [ OK ] 4/4 Launching Frontend and Browser - Complete.
