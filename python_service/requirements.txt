@@ -1,1 +1,2 @@
 \nmatplotlib
+\n\n# --- CLI & Monitoring Tools ---\nrich
