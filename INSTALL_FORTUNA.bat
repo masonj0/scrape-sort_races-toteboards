@@ -55,7 +55,7 @@ if not exist .venv (
 )
 
 echo.
-echo  [4/5] Installing Python dependencies...
+echo  [4/5] Installing Python dependencies one by one...
 call .venv\\Scripts\\activate.bat
 python -m pip install --upgrade pip --quiet
 IF NOT EXIST requirements.txt (
@@ -77,9 +77,19 @@ echo  [V] Python packages installed!
 
 echo.
 echo  [5/5] Installing Node.js dependencies...
-cd web_platform\\frontend
-call npm install --silent
-cd ..\\..
+pushd web_platform\\frontend
+IF NOT EXIST package.json (
+    ECHO [X] CRITICAL: package.json not found in web_platform\\frontend folder!
+    popd
+    exit /b 1
+)
+npm install
+IF %ERRORLEVEL% NEQ 0 (
+    ECHO [X] FAILED to install Node.js dependencies. Please ensure Node.js is installed and in your system PATH.
+    popd
+    exit /b 1
+)
+popd
 echo  [V] Node.js packages installed!
 
 echo.
