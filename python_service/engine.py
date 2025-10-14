@@ -14,15 +14,15 @@ from .cache_manager import cache_async_result
 from .health import health_monitor
 from .adapters.base import BaseAdapter
 from .adapters.betfair_adapter import BetfairAdapter
-from .adapters.betfair_greyhound_adapter import BetfairGreyhoundAdapter
 from .adapters.racing_and_sports_greyhound_adapter import RacingAndSportsGreyhoundAdapter
 from .adapters.tvg_adapter import TVGAdapter
 from .adapters.racing_and_sports_adapter import RacingAndSportsAdapter
 from .adapters.at_the_races_adapter import AtTheRacesAdapter
 from .adapters.racingpost_adapter import RacingPostAdapter
+from .adapters.betfair_greyhound_adapter import BetfairGreyhoundAdapter
+from .adapters.harness_adapter import HarnessAdapter
 from .adapters.sporting_life_adapter import SportingLifeAdapter
 from .adapters.timeform_adapter import TimeformAdapter
-from .adapters.harness_adapter import HarnessAdapter
 from .adapters.the_racing_api_adapter import TheRacingApiAdapter
 from .adapters.gbgb_api_adapter import GbgbApiAdapter
 from .adapters.betfair_datascientist_adapter import BetfairDataScientistAdapter
@@ -42,11 +42,11 @@ class FortunaEngine:
             RacingAndSportsGreyhoundAdapter(config=self.config),
             AtTheRacesAdapter(config=self.config),
             RacingPostAdapter(config=self.config),
+            HarnessAdapter(config=self.config),
             SportingLifeAdapter(config=self.config),
             TimeformAdapter(config=self.config),
             TheRacingApiAdapter(config=self.config),
-            GbgbApiAdapter(config=self.config),
-            HarnessAdapter(config=self.config)
+            GbgbApiAdapter(config=self.config)
         ]
         # V3 ADAPTERS
         self.v3_adapters = [
