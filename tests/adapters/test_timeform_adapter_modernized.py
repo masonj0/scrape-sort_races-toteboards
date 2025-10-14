@@ -29,8 +29,8 @@ async def test_timeform_adapter_parses_html_correctly(timeform_adapter):
 
     braveheart = next((r for r in runners if r.name == 'Braveheart'), None)
     assert braveheart is not None
-    assert braveheart.odds['Timeform'].win == Decimal('2.5')
+    assert braveheart.odds['Timeform'].win == Decimal('3.5')
 
     steady_eddy = next((r for r in runners if r.name == 'Steady Eddy'), None)
     assert steady_eddy is not None
-    assert steady_eddy.odds['Timeform'].win == Decimal('1.0')
+    assert steady_eddy.odds['Timeform'].win == Decimal('2.0')

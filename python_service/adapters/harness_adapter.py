@@ -7,7 +7,7 @@ from decimal import Decimal
 
 from ..models import Race, Runner, OddsData
 from .base import BaseAdapter
-from .utils import parse_odds
+from ..utils.odds import parse_odds_to_decimal
 
 log = structlog.get_logger(__name__)
 
@@ -96,14 +96,9 @@ class HarnessAdapter(BaseAdapter):
                 # Adapt to the Runner model's odds structure
                 odds_data = {}
                 win_odds_str = runner_data.get("morningLineOdds")
-                if win_odds_str:
-                    try:
-                        # Use the robust, shared odds parser to handle formats like '9-5' or 'EVEN'
-                        decimal_odds = Decimal(str(parse_odds(win_odds_str)))
-                        if decimal_odds > 1:
-                            odds_data[self.source_name] = OddsData(win=decimal_odds, source=self.source_name, last_updated=datetime.now())
-                    except (ValueError, TypeError):
-                        log.warning("Could not parse harness odds", odds_str=win_odds_str, race_id=race_id)
+                decimal_odds = parse_odds_to_decimal(win_odds_str)
+                if decimal_odds and decimal_odds > 1:
+                    odds_data[self.source_name] = OddsData(win=decimal_odds, source=self.source_name, last_updated=datetime.now())
 
 
                 runner = Runner(

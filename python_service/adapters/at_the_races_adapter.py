@@ -10,12 +10,10 @@ from decimal import Decimal
 
 from .base import BaseAdapter
 from ..models import Race, Runner, OddsData
-from .utils import parse_odds
+from ..utils.odds import parse_odds_to_decimal
+from ..utils.text import normalize_venue_name, clean_text
 
 log = structlog.get_logger(__name__)
-
-def _clean_text(text: Optional[str]) -> Optional[str]:
-    return ' '.join(text.strip().split()) if text else None
 
 class AtTheRacesAdapter(BaseAdapter):
     def __init__(self, config):
@@ -46,7 +44,8 @@ class AtTheRacesAdapter(BaseAdapter):
                 return None
             soup = BeautifulSoup(response_html, "html.parser")
             header = soup.select_one("h1.heading-racecard-title").get_text()
-            track_name, race_time = [p.strip() for p in header.split("|")[:2]]
+            track_name_raw, race_time = [p.strip() for p in header.split("|")[:2]]
+            track_name = normalize_venue_name(track_name_raw)
             active_link = soup.select_one("a.race-time-link.active")
             race_number = active_link.find_parent("div", "races").select("a.race-time-link").index(active_link) + 1
             start_time = datetime.strptime(f"{datetime.now().date()} {race_time}", "%Y-%m-%d %H:%M")
@@ -62,7 +61,7 @@ class AtTheRacesAdapter(BaseAdapter):
             num_str = _clean_text(row.select_one("span.horse-number").get_text())
             number = int(''.join(filter(str.isdigit, num_str)))
             odds_str = _clean_text(row.select_one("button.best-odds").get_text())
-            win_odds = Decimal(str(parse_odds(odds_str))) if odds_str is not None else None
+            win_odds = parse_odds_to_decimal(odds_str)
             odds_data = {self.source_name: OddsData(win=win_odds, source=self.source_name, last_updated=datetime.now())} if win_odds and win_odds < 999 else {}
             return Runner(number=number, name=name, odds=odds_data)
         except Exception as e:
