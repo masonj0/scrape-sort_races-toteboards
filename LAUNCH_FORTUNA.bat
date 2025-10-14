@@ -57,3 +57,9 @@ ECHO  ================================================
 ECHO   LAUNCH COMPLETE! THE FAUCET IS FLOWING.
 ECHO  ================================================
 ECHO.
+ECHO   Press any key to launch the continuous status console...
+PAUSE >NUL
+
+REM Activate venv and run the status CLI
+call .venv\Scripts\activate.bat
+python fortuna_status_cli.py
