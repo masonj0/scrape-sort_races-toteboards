@@ -1,25 +1,24 @@
-@echo off
-REM ============================================================================
-REM  FORTUNA FAUCET - Clean Shutdown Script
-REM ============================================================================
+@ECHO OFF
+TITLE Fortuna Faucet - Shutdown Script
+ECHO.
+ECHO  ========================================================================
+ECHO   Fortuna Faucet - Shutdown Script
+ECHO  ========================================================================
+ECHO.
+ECHO [INFO] Attempting to gracefully shut down all Fortuna Faucet services...
 
-title Fortuna Faucet - Shutdown
-color 0C
+REM Find and kill the backend uvicorn process specifically tied to our API
+FOR /F "tokens=2" %%I IN ('wmic process where "commandline like '%%python_service.api:app%%'" get processid /format:list ^| find "="') DO (
+    ECHO [OK] Found and stopping backend service (PID: %%I).
+    taskkill /F /PID %%I >nul
+)
 
-echo.
-echo  ========================================================================
-echo   FORTUNA FAUCET - Shutting Down All Services
-echo  ========================================================================
-echo.
+REM Find and kill the frontend Next.js process
+FOR /F "tokens=2" %%I IN ('wmic process where "commandline like '%%next dev%%' and caption='node.exe'" get processid /format:list ^| find "="') DO (
+    ECHO [OK] Found and stopping frontend service (PID: %%I).
+    taskkill /F /PID %%I >nul
+)
 
-echo  [*] Stopping Python processes...
-taskkill /FI "WindowTitle eq Fortuna Backend*" /T /F >nul 2>&1
-taskkill /FI "WindowTitle eq Fortuna Monitor*" /T /F >nul 2>&1
-
-echo  [*] Stopping Node.js processes...
-taskkill /FI "WindowTitle eq Fortuna Frontend*" /T /F >nul 2>&1
-
-echo.
-echo  [V] All Fortuna services stopped successfully!
-echo.
-pause
+ECHO.
+ECHO [INFO] Shutdown complete.
+PAUSE
