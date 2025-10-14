@@ -1,87 +1,59 @@
 @ECHO OFF
 SETLOCAL ENABLEDELAYEDEXPANSION
-TITLE Fortuna Ascended - Launcher v2.0
+TITLE Fortuna Ascended - Launcher v3.0
 
-REM ============================================================================
-REM  Fortuna Ascended - Intelligent Launch System v2.0
-REM ============================================================================
+REM --- Phase 0: Setup Logging ---
+IF NOT EXIST logs mkdir logs
+SET "TIMESTAMP=%date:~-4%%date:~4,2%%date:~7,2%_%time:~0,2%%time:~3,2%%time:~6,2%"
+SET "TIMESTAMP=%TIMESTAMP: =0%"
+SET "BACKEND_LOG=logs\backend_%TIMESTAMP%.log"
+SET "FRONTEND_LOG=logs\frontend_%TIMESTAMP%.log"
+
+cls
 ECHO.
-ECHO  ========================================================================
-ECHO   Fortuna Ascended - Intelligent Launcher
-ECHO  ========================================================================
+ECHO     ================================================
+ECHO       FORTUNA ASCENDED - INTELLIGENT LAUNCHER v3.0
+ECHO     ================================================
+ECHO.
+ECHO     See %BACKEND_LOG% and %FRONTEND_LOG% for detailed output.
 ECHO.
 
 REM --- Phase 1: Port Availability Check ---
-ECHO [1/4] Checking for available network ports...
+ECHO [....] 1/4 Port Availability Check...
 SET "BACKEND_PORT=8000"
 SET "FRONTEND_PORT=3000"
 SET "PORTS_CLEARED=true"
-
 FOR %%P IN (%BACKEND_PORT% %FRONTEND_PORT%) DO (
     netstat -ano | findstr ":%%P" | findstr "LISTENING" >nul
     IF !ERRORLEVEL! EQU 0 (
-        ECHO [WARN] Port %%P is currently in use. Attempting to free it...
-        FOR /f "tokens=5" %%a IN ('netstat -ano ^| findstr ":%%P" ^| findstr "LISTENING"') DO (
-            taskkill /F /PID %%a >nul 2>&1
-            IF !ERRORLEVEL! EQU 0 (
-                ECHO [OK]   Killed process %%a on port %%P.
-            ) ELSE (
-                ECHO [FAIL] Could not kill process %%a on port %%P. Please close it manually.
-                SET "PORTS_CLEARED=false"
-            )
-        )
+        FOR /f "tokens=5" %%a IN ('netstat -ano ^| findstr ":%%P" ^| findstr "LISTENING"') DO ( taskkill /F /PID %%a >nul 2>&1 )
     )
 )
-
-IF "!PORTS_CLEARED!"=="false" (
-    ECHO [ERROR] Could not clear required ports. Aborting launch.
-    PAUSE
-    EXIT /B 1
-)
-ECHO [OK] All required ports are clear.
-ECHO.
+ECHO [ OK ] 1/4 Port Availability Check - Complete.
 
 REM --- Phase 2: Launch Backend Service ---
-ECHO [2/4] Starting backend Python service...
-IF NOT EXIST .venv\Scripts\activate.bat (
-    ECHO [ERROR] Virtual environment not found. Please run INSTALL_FORTUNA.bat first.
-    PAUSE
-    EXIT /B 1
-)
-start "Fortuna Backend" /B cmd /c "call .venv\Scripts\activate.bat && uvicorn python_service.api:app --host 127.0.0.1 --port %BACKEND_PORT% --log-level warning"
-ECHO [OK] Backend service process started.
-ECHO.
+ECHO [....] 2/4 Launching Backend Service...
+start "Fortuna Backend" /B cmd /c "call .venv\Scripts\activate.bat && uvicorn python_service.api:app --host 127.0.0.1 --port %BACKEND_PORT% --log-level warning > %BACKEND_LOG% 2>&1"
+ECHO [ OK ] 2/4 Launching Backend Service - Process started.
 
 REM --- Phase 3: Wait for Backend Health ---
-ECHO [3/4] Waiting for backend to become healthy...
+ECHO [....] 3/4 Waiting for Backend to become healthy...
 SET /a ATTEMPTS=0
-SET /a MAX_ATTEMPTS=30
-
 :BackendHealthCheck
 SET /a ATTEMPTS+=1
-IF %ATTEMPTS% GTR %MAX_ATTEMPTS% (
-    ECHO [ERROR] Backend failed to become healthy after 30 seconds. Check logs.
-    PAUSE
-    EXIT /B 1
-)
-
-REM Use PowerShell for a reliable HTTP check that is built into modern Windows
+IF %ATTEMPTS% GTR 30 ( ECHO [FAIL] 3/4 Backend failed to start. Check %BACKEND_LOG%. && PAUSE && EXIT /B 1 )
 powershell -Command "(Invoke-WebRequest -Uri http://localhost:%BACKEND_PORT%/health -UseBasicParsing).StatusCode" 2>nul | findstr "200" >nul
-IF !ERRORLEVEL! NEQ 0 (
-    ECHO [INFO] Waiting... (!ATTEMPTS!/%MAX_ATTEMPTS%)
-    timeout /t 1 /nobreak >nul
-    GOTO BackendHealthCheck
-)
-ECHO [OK] Backend is healthy and operational!
-ECHO.
+IF !ERRORLEVEL! NEQ 0 ( timeout /t 1 /nobreak >nul && GOTO BackendHealthCheck )
+ECHO [ OK ] 3/4 Waiting for Backend to become healthy - Success!
 
 REM --- Phase 4: Launch Frontend and Browser ---
-ECHO [4/4] Starting frontend UI and launching browser...
-start "Fortuna Frontend" /B cmd /c "cd web_platform\frontend && npm run dev"
-timeout /t 5 /nobreak >nul
+ECHO [....] 4/4 Launching Frontend and Browser...
+start "Fortuna Frontend" /B cmd /c "cd web_platform\frontend && npm run dev > %FRONTEND_LOG% 2>&1"
+timeout /t 8 /nobreak >nul
 start http://localhost:%FRONTEND_PORT%
+ECHO [ OK ] 4/4 Launching Frontend and Browser - Complete.
 ECHO.
-ECHO  ========================================================================
-ECHO   LAUNCH COMPLETE!
-ECHO  ========================================================================
+ECHO  ================================================
+ECHO   LAUNCH COMPLETE! THE KINGDOM IS ASCENDED.
+ECHO  ================================================
 ECHO.

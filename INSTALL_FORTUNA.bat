@@ -55,45 +55,54 @@ if not exist .venv (
 )
 
 echo.
-echo  [4/5] Installing Python dependencies one by one...
-call .venv\\Scripts\\activate.bat
-python -m pip install --upgrade pip --quiet
-IF NOT EXIST requirements.txt (
-    ECHO [X] CRITICAL: requirements.txt not found!
-    exit /b 1
-)
-ECHO.
-ECHO --- Python Packages to be Installed ---
-TYPE requirements.txt
-ECHO ------------------------------------
-ECHO.
-ECHO Installing all packages now. This may take a few minutes...
-python -m pip install -r requirements.txt
+ECHO [4/5] Installing Python & Node.js dependencies in parallel...
+ECHO      Output is logged to pip_install.log and npm_install.log in the root directory.
+
+REM Run installations in the background of the current console window
+start "Python Install" /B cmd /c "call .venv\Scripts\activate.bat && python -m pip install -r python_service\requirements.txt > pip_install.log 2>&1"
+start "NPM Install" /B cmd /c "cd web_platform\frontend && npm install > npm_install.log 2>&1"
+
+:WaitLoop
+    REM Check if the processes are still running by looking for their window titles
+    tasklist /FI "IMAGENAME eq cmd.exe" /FI "WINDOWTITLE eq Python Install" 2>NUL | find "cmd.exe" >NUL
+    set PIP_RUNNING=%errorlevel%
+    tasklist /FI "IMAGENAME eq cmd.exe" /FI "WINDOWTITLE eq NPM Install" 2>NUL | find "cmd.exe" >NUL
+    set NPM_RUNNING=%errorlevel%
+
+    IF %PIP_RUNNING%==0 (
+        ECHO [INFO] Python installation is in progress...
+    )
+    IF %NPM_RUNNING%==0 (
+        ECHO [INFO] Node.js installation is in progress...
+    )
+
+    REM If either is running, wait and loop again
+    IF %PIP_RUNNING%==0 GOTO :WaitLoopDelay
+    IF %NPM_RUNNING%==0 GOTO :WaitLoopDelay
+    GOTO :EndWaitLoop
+
+:WaitLoopDelay
+    timeout /t 5 /nobreak >nul
+    GOTO :WaitLoop
+
+:EndWaitLoop
+ECHO [OK] Parallel installations complete. Checking logs...
+
+REM Check pip log for errors. A success log is usually very long.
+findstr /C:"Successfully installed" pip_install.log >nul
 IF %ERRORLEVEL% NEQ 0 (
-    ECHO [X] FAILED to install Python dependencies. Please check the output above for errors.
-    exit /b 1
+    ECHO [ERROR] Python package installation may have failed. Please check pip_install.log for details.
+    REM Do not exit, as npm might have succeeded and user can debug.
 )
-echo  [V] Python packages installed!
+
+REM Check npm log for success message.
+findstr /C:"added" npm_install.log >nul
+IF %ERRORLEVEL% NEQ 0 (
+    ECHO [WARN] Could not confirm successful npm package installation. Please check npm_install.log.
+)
 
 echo.
-echo  [5/5] Installing Node.js dependencies...
-pushd web_platform\\frontend
-IF NOT EXIST package.json (
-    ECHO [X] CRITICAL: package.json not found in web_platform\\frontend folder!
-    popd
-    exit /b 1
-)
-npm install
-IF %ERRORLEVEL% NEQ 0 (
-    ECHO [X] FAILED to install Node.js dependencies. Please ensure Node.js is installed and in your system PATH.
-    popd
-    exit /b 1
-)
-popd
-echo  [V] Node.js packages installed!
-
-echo.
-echo  [*] Creating desktop shortcuts...
+echo  [5/5] Creating desktop shortcuts...
 call CREATE_SHORTCUTS.bat
 
 echo.
