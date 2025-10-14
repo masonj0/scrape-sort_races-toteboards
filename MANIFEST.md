@@ -73,3 +73,7 @@ windows_service.py
 BUILD_INSTALLER.bat
 CREATE_SHORTCUTS.bat
 ROADMAP_LEGACY_ARCHIVAL.md
+
+# Added by Operation: Perfect the Archives
+setup_wizard.py
+fortuna_status_cli.py
