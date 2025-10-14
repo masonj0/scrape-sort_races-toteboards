@@ -26,3 +26,4 @@ streamlit
 # --- Data Processing & Auxiliary Tools ---
 pikepdf
 tabula-py
+selectolax
