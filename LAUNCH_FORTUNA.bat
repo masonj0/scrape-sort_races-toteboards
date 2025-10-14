@@ -1,6 +1,6 @@
 @ECHO OFF
 SETLOCAL ENABLEDELAYEDEXPANSION
-TITLE Fortuna Ascended - Launcher v3.0
+TITLE Fortuna Faucet - Launcher v3.0
 
 REM --- Phase 0: Setup Logging ---
 IF NOT EXIST logs mkdir logs
@@ -12,7 +12,7 @@ SET "FRONTEND_LOG=logs\frontend_%TIMESTAMP%.log"
 cls
 ECHO.
 ECHO     ================================================
-ECHO       FORTUNA ASCENDED - INTELLIGENT LAUNCHER v3.0
+ECHO       FORTUNA FAUCET - INTELLIGENT LAUNCHER v3.0
 ECHO     ================================================
 ECHO.
 ECHO     See %BACKEND_LOG% and %FRONTEND_LOG% for detailed output.
@@ -54,6 +54,6 @@ start http://localhost:%FRONTEND_PORT%
 ECHO [ OK ] 4/4 Launching Frontend and Browser - Complete.
 ECHO.
 ECHO  ================================================
-ECHO   LAUNCH COMPLETE! THE KINGDOM IS ASCENDED.
+ECHO   LAUNCH COMPLETE! THE FAUCET IS FLOWING.
 ECHO  ================================================
 ECHO.

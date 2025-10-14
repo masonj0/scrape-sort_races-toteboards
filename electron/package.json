@@ -5,7 +5,7 @@
   "main": "main.js",
   "build": {
     "appId": "com.fortuna.ascended",
-    "productName": "Fortuna Ascended",
+    "productName": "Fortuna Faucet",
     "files": [
       "main.js",
       "preload.js",

@@ -1,12 +1,12 @@
-# Fortuna Ascended: Windows Operator's Manual
+# Fortuna Faucet: Windows Operator's Manual
 
-Welcome to the native Windows edition of Fortuna Ascended. This guide provides two installation methods.
+Welcome to the native Windows edition of Fortuna Faucet. This guide provides two installation methods.
 
 ---
 
 ## Method 1: Recommended for Operators (MSI Installer)
 
-This is the simplest and most professional way to install Fortuna Ascended as a complete, standalone application.
+This is the simplest and most professional way to install Fortuna Faucet as a complete, standalone application.
 
 ### Step 1: Build the Installer
 
@@ -14,7 +14,7 @@ First, you must create the MSI installer file.
 
 1.  **Run the Builder Script**: In the project's root directory, double-click the `BUILD_INSTALLER.bat` script.
 2.  **Wait for Completion**: The script will run for a few minutes.
-3.  **Locate the Installer**: Upon completion, the MSI installer (e.g., `Fortuna Ascended 1.0.0.msi`) will be located in the project's root directory.
+3.  **Locate the Installer**: Upon completion, the MSI installer (e.g., `Fortuna Faucet 1.0.0.msi`) will be located in the project's root directory.
 
 ### Step 2: Run the MSI Installer
 
