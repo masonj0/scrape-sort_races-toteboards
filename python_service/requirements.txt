@@ -28,8 +28,6 @@ psycopg2-binary
 
 # --- Monitoring & GUI (Windows) ---
 psutil==5.9.6
-pywin32==306
-matplotlib==3.8.2
 
 # --- CLI & Auxiliary Tools ---
 rich

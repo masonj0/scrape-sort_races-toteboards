@@ -3,14 +3,23 @@
 #  Fortuna Faucet: Base Adapter (v2 - Hardened with Tenacity)
 # ==============================================================================
 
+from abc import ABC
+from abc import abstractmethod
+from datetime import datetime
+from typing import Any
+from typing import Dict
+from typing import List
+from typing import Optional
+
 import httpx
 import structlog
-from datetime import datetime
-from abc import ABC, abstractmethod
-from typing import Dict, Any, List, Optional
-from tenacity import stop_after_attempt, wait_exponential, RetryError, AsyncRetrying
+from tenacity import AsyncRetrying
+from tenacity import RetryError
+from tenacity import stop_after_attempt
+from tenacity import wait_exponential
 
 log = structlog.get_logger(__name__)
+
 
 class BaseAdapter(ABC):
     """The resilient base class for all data source adapters."""
@@ -20,6 +29,13 @@ class BaseAdapter(ABC):
         self.base_url = base_url
         self.timeout = timeout
         self.max_retries = max_retries
+        self.logger = structlog.get_logger(adapter_name=source_name)
+        # Circuit Breaker State
+        self.circuit_breaker_tripped = False
+        self.circuit_breaker_failure_count = 0
+        self.circuit_breaker_last_failure = 0
+        self.FAILURE_THRESHOLD = 3
+        self.COOLDOWN_PERIOD_SECONDS = 300  # 5 minutes
 
     @abstractmethod
     async def fetch_races(self, date: str, http_client: httpx.AsyncClient) -> Dict[str, Any]:
@@ -28,39 +44,45 @@ class BaseAdapter(ABC):
     async def make_request(self, http_client: httpx.AsyncClient, method: str, url: str, **kwargs) -> Optional[Any]:
         """Makes a resilient HTTP request with automatic retries using Tenacity."""
         retryer = AsyncRetrying(
-            stop=stop_after_attempt(self.max_retries),
-            wait=wait_exponential(multiplier=1, min=2, max=10),
-            reraise=True
+            stop=stop_after_attempt(self.max_retries), wait=wait_exponential(multiplier=1, min=2, max=10), reraise=True
         )
         try:
             async for attempt in retryer:
                 with attempt:
                     try:
-                        full_url = url if url.startswith('http') else f"{self.base_url}{url}"
-                        log.info("Requesting...", adapter=self.source_name, method=method, url=full_url, attempt=attempt.retry_state.attempt_number)
+                        full_url = url if url.startswith("http") else f"{self.base_url}{url}"
+                        log.info(
+                            "Requesting...",
+                            adapter=self.source_name,
+                            method=method,
+                            url=full_url,
+                            attempt=attempt.retry_state.attempt_number,
+                        )
                         response = await http_client.request(method, full_url, timeout=self.timeout, **kwargs)
                         response.raise_for_status()
                         return response.json()
                     except (httpx.RequestError, httpx.HTTPStatusError) as e:
                         log.warning("Request failed, tenacity will retry...", adapter=self.source_name, error=str(e))
-                        raise # Reraise to trigger tenacity's retry mechanism
+                        raise  # Reraise to trigger tenacity's retry mechanism
         except RetryError as e:
             log.error(f"Max retries exceeded for {self.source_name}. Aborting request.", final_error=str(e))
-            return None # Return None on total failure
+            return None  # Return None on total failure
 
     def get_status(self) -> Dict[str, Any]:
         return {"adapter_name": self.source_name, "status": "OK"}
 
-    def _format_response(self, races: List, start_time: datetime, is_success: bool = True, error_message: str = None) -> Dict[str, Any]:
+    def _format_response(
+        self, races: List, start_time: datetime, is_success: bool = True, error_message: str = None
+    ) -> Dict[str, Any]:
         """Formats the adapter's response consistently."""
         fetch_duration = (datetime.now() - start_time).total_seconds()
         return {
-            'races': races,
-            'source_info': {
-                'name': self.source_name,
-                'status': 'SUCCESS' if is_success else 'FAILED',
-                'races_fetched': len(races),
-                'error_message': error_message,
-                'fetch_duration': fetch_duration
-            }
+            "races": races,
+            "source_info": {
+                "name": self.source_name,
+                "status": "SUCCESS" if is_success else "FAILED",
+                "races_fetched": len(races),
+                "error_message": error_message,
+                "fetch_duration": fetch_duration,
+            },
         }
