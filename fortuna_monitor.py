@@ -10,7 +10,8 @@ from tkinter import ttk, messagebox
 from datetime import datetime
 from typing import List, Any, Optional
 import os
-from collections import deque
+import time
+import requests
 import threading
 import webbrowser
 
