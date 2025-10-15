@@ -44,7 +44,7 @@ class ErrorRecoveryMiddleware:
         error_id = f"{type(exc).__name__}_{datetime.now().timestamp()}"
         log.error("Unhandled error", error_id=error_id, path=request.url.path, error_type=type(exc).__name__, exc_info=True)
 
-        adapter_name = self._extract_adapter_from_request(request)
+        adapter_name = self._extract_adapter_from_scope(request.scope)
         if adapter_name:
             self._increment_error_count(adapter_name)
             if self._should_open_circuit(adapter_name):
