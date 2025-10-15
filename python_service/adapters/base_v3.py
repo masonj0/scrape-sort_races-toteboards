@@ -1,13 +1,21 @@
 # python_service/adapters/base_v3.py
-from abc import ABC, abstractmethod
-from typing import AsyncGenerator, Any, List
+# Defines the base class for the V3 adapter architecture.
+
+from abc import ABC
+from abc import abstractmethod
+
+import structlog
 
 from ..models import Race
 from .base import BaseAdapter # Inherit to retain retry logic, logging, etc.
 
-class BaseAdapterV3(BaseAdapter, ABC):
-    """
-    An architecturally superior abstract base class for data adapters.
+
+class BaseAdapterV3(ABC):
+    def __init__(self, name: str, enabled: bool = True, priority: int = 100):
+        self._name = name
+        self._enabled = enabled
+        self._priority = priority
+        self.logger = structlog.get_logger(adapter_name=self.get_name())
 
     This class enforces a rigid, standardized implementation pattern by requiring all
     subclasses to implement their own `_fetch_data` and `_parse_races` methods.

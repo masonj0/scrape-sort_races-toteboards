@@ -1,13 +1,16 @@
 # python_service/adapters/betfair_datascientist_adapter.py
 
-import pandas as pd
-import requests
 from datetime import datetime
 from io import StringIO
 
-from ..models_v3 import NormalizedRace, NormalizedRunner
-from .base_v3 import BaseAdapterV3
+import pandas as pd
+import requests
+
+from ..models_v3 import NormalizedRace
+from ..models_v3 import NormalizedRunner
 from ..utils.text import normalize_course_name
+from .base_v3 import BaseAdapterV3
+
 
 class BetfairDataScientistAdapter(BaseAdapterV3):
     ADAPTER_NAME = "BetfairDataScientist"
@@ -35,32 +38,35 @@ class BetfairDataScientistAdapter(BaseAdapterV3):
             return []
 
     def _normalize_df(self, df: pd.DataFrame) -> list[NormalizedRace]:
-        df = df.rename(columns={
-            "meetings.races.bfExchangeMarketId": "market_id",
-            "meetings.races.runners.bfExchangeSelectionId": "selection_id",
-            "meetings.races.runners.ratedPrice": "rated_price",
-            "meetings.races.raceName": "race_name",
-            "meetings.name": "meeting_name",
-            "meetings.races.raceNumber": "race_number",
-            "meetings.races.runners.runnerName": "runner_name",
-            "meetings.races.runners.clothNumber": "saddle_cloth"
-        })
+        df = df.rename(
+            columns={
+                "meetings.races.bfExchangeMarketId": "market_id",
+                "meetings.races.runners.bfExchangeSelectionId": "selection_id",
+                "meetings.races.runners.ratedPrice": "rated_price",
+                "meetings.races.raceName": "race_name",
+                "meetings.name": "meeting_name",
+                "meetings.races.raceNumber": "race_number",
+                "meetings.races.runners.runnerName": "runner_name",
+                "meetings.races.runners.clothNumber": "saddle_cloth",
+            }
+        )
         normalized_races = []
         for market_id, group in df.groupby("market_id"):
             race_info = group.iloc[0]
             runners = [
                 NormalizedRunner(
-                    runner_id=str(row.get('selection_id')),
-                    name=str(row.get('runner_name')),
-                    saddle_cloth=str(row.get('saddle_cloth', '')),
-                    odds_decimal=float(row.get('rated_price', 0.0))
-                ) for _, row in group.iterrows()
+                    runner_id=str(row.get("selection_id")),
+                    name=str(row.get("runner_name")),
+                    saddle_cloth=str(row.get("saddle_cloth", "")),
+                    odds_decimal=float(row.get("rated_price", 0.0)),
+                )
+                for _, row in group.iterrows()
             ]
             race = NormalizedRace(
                 race_key=str(market_id),
-                track_key=normalize_course_name(str(race_info.get('meeting_name', ''))),
+                track_key=normalize_course_name(str(race_info.get("meeting_name", ""))),
                 start_time_iso=datetime.now().isoformat(),
-                race_name=str(race_info.get('race_name', '')),
+                race_name=str(race_info.get("race_name", "")),
                 runners=runners,
                 source_ids=[self.get_name()],
             )

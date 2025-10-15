@@ -3,11 +3,13 @@
 import re
 from typing import Optional
 
+
 def clean_text(text: Optional[str]) -> Optional[str]:
     """Strips leading/trailing whitespace and collapses internal whitespace."""
     if not text:
         return None
-    return ' '.join(text.strip().split())
+    return " ".join(text.strip().split())
+
 
 def normalize_venue_name(name: Optional[str]) -> Optional[str]:
     """
@@ -21,23 +23,23 @@ def normalize_venue_name(name: Optional[str]) -> Optional[str]:
     cleaned_name_upper = clean_text(name).upper()
 
     VENUE_MAP = {
-        'ASCOT': 'Ascot',
-        'AYR': 'Ayr',
-        'BANGOR-ON-DEE': 'Bangor-on-Dee',
-        'CATTERICK BRIDGE': 'Catterick',
-        'CHELMSFORD CITY': 'Chelmsford',
-        'EPSOM DOWNS': 'Epsom',
-        'FONTWELL': 'Fontwell Park',
-        'HAYDOCK': 'Haydock Park',
-        'KEMPTON': 'Kempton Park',
-        'LINGFIELD': 'Lingfield Park',
-        'NEWMARKET (ROWLEY)': 'Newmarket',
-        'NEWMARKET (JULY)': 'Newmarket',
-        'SANDOWN': 'Sandown Park',
-        'STRATFORD': 'Stratford-on-Avon',
-        'YARMOUTH': 'Great Yarmouth',
-        'CURRAGH': 'Curragh',
-        'DOWN ROYAL': 'Down Royal'
+        "ASCOT": "Ascot",
+        "AYR": "Ayr",
+        "BANGOR-ON-DEE": "Bangor-on-Dee",
+        "CATTERICK BRIDGE": "Catterick",
+        "CHELMSFORD CITY": "Chelmsford",
+        "EPSOM DOWNS": "Epsom",
+        "FONTWELL": "Fontwell Park",
+        "HAYDOCK": "Haydock Park",
+        "KEMPTON": "Kempton Park",
+        "LINGFIELD": "Lingfield Park",
+        "NEWMARKET (ROWLEY)": "Newmarket",
+        "NEWMARKET (JULY)": "Newmarket",
+        "SANDOWN": "Sandown Park",
+        "STRATFORD": "Stratford-on-Avon",
+        "YARMOUTH": "Great Yarmouth",
+        "CURRAGH": "Curragh",
+        "DOWN ROYAL": "Down Royal",
     }
 
     # Check primary map first
@@ -54,10 +56,11 @@ def normalize_venue_name(name: Optional[str]) -> Optional[str]:
     # Return the title-cased cleaned name as a fallback
     return title_cased_name
 
+
 def normalize_course_name(name: str) -> str:
     if not name:
         return ""
     name = name.lower().strip()
-    name = re.sub(r'[^a-z0-9\s-]', '', name)
-    name = re.sub(r'[\s-]+', '_', name)
+    name = re.sub(r"[^a-z0-9\s-]", "", name)
+    name = re.sub(r"[\s-]+", "_", name)
     return name

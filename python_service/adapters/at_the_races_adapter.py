@@ -1,89 +1,88 @@
 # python_service/adapters/at_the_races_adapter.py
+
+import asyncio
 from datetime import datetime
-from typing import Any, List, Optional
+from typing import Any
+from typing import Dict
+from typing import List
+from typing import Optional
 
-from selectolax.parser import HTMLParser, Node
+import httpx
+import structlog
+from bs4 import BeautifulSoup
+from bs4 import Tag
 
-from ..models import Race, Runner
-from ..utils.text import normalize_venue_name, clean_text
-from .base_v3 import BaseAdapterV3 # Inherit from the new base class
+from ..models import OddsData
+from ..models import Race
+from ..models import Runner
+from ..utils.odds import parse_odds_to_decimal
+from ..utils.text import clean_text
+from ..utils.text import normalize_venue_name
+from .base import BaseAdapter
 
-class AtTheRacesAdapter(BaseAdapterV3):
-    """Adapter for scraping attheraces.com, refactored to use BaseAdapterV3."""
+log = structlog.get_logger(__name__)
 
-    SOURCE_NAME = "AtTheRaces"
-    BASE_URL = "https://www.attheraces.com"
 
-    def __init__(self, **kwargs):
-        super().__init__(source_name=self.SOURCE_NAME, base_url=self.BASE_URL)
+class AtTheRacesAdapter(BaseAdapter):
+    def __init__(self, config):
+        super().__init__(source_name="AtTheRaces", base_url="https://www.attheraces.com")
 
-    async def _fetch_data(self, date: str) -> Any:
-        """Fetches the main racecards page HTML for the given date."""
-        url = f"{self.BASE_URL}/racecards/{date}"
-        response = await self.http_client.get(url, headers=self._get_headers())
-        response.raise_for_status()
-        return response.text
+    async def fetch_races(self, date: str, http_client: httpx.AsyncClient) -> Dict[str, Any]:
+        start_time = datetime.now()
+        try:
+            race_links = await self._get_race_links(http_client)
+            tasks = [self._fetch_and_parse_race(link, http_client) for link in race_links]
+            races = [race for race in await asyncio.gather(*tasks) if race]
+            return self._format_response(races, start_time, is_success=True)
+        except Exception as e:
+            return self._format_response([], start_time, is_success=False, error_message=str(e))
 
-    def _parse_races(self, raw_data: Any) -> List[Race]:
-        """Parses the raw HTML to extract a list of Race objects."""
-        parser = HTMLParser(raw_data)
-        races = []
-        race_card_nodes = parser.css('div.racecard')
+    async def _get_race_links(self, http_client: httpx.AsyncClient) -> List[str]:
+        response_html = await self.make_request(http_client, "GET", "/racecards")
+        if not response_html:
+            return []
+        soup = BeautifulSoup(response_html, "html.parser")
+        links = {a["href"] for a in soup.select("a.race-time-link[href]")}
+        return [f"{self.base_url}{link}" for link in links]
 
-        for card_node in race_card_nodes:
-            try:
-                venue_raw = self._get_text(card_node, 'h2.racecard-title__course-name')
-                if not venue_raw:
-                    continue
-                venue = normalize_venue_name(venue_raw)
+    async def _fetch_and_parse_race(self, url: str, http_client: httpx.AsyncClient) -> Optional[Race]:
+        try:
+            response_html = await self.make_request(http_client, "GET", url)
+            if response_html is None:
+                return None
+            soup = BeautifulSoup(response_html, "html.parser")
+            header = soup.select_one("h1.heading-racecard-title").get_text()
+            track_name_raw, race_time = [p.strip() for p in header.split("|")[:2]]
+            track_name = normalize_venue_name(track_name_raw)
+            active_link = soup.select_one("a.race-time-link.active")
+            race_number = active_link.find_parent("div", "races").select("a.race-time-link").index(active_link) + 1
+            start_time = datetime.strptime(f"{datetime.now().date()} {race_time}", "%Y-%m-%d %H:%M")
+            runners = [self._parse_runner(row) for row in soup.select("div.card-horse")]
+            return Race(
+                id=f"atr_{track_name.replace(' ', '')}_{start_time.strftime('%Y%m%d')}_R{race_number}",
+                venue=track_name,
+                race_number=race_number,
+                start_time=start_time,
+                runners=[r for r in runners if r],
+                source=self.source_name,
+            )
+        except Exception as e:
+            log.error("Error parsing race from AtTheRaces", url=url, exc_info=e)
+            return None
 
-                race_time_str = self._get_text(card_node, 'span.racecard-title__time')
-                if not race_time_str:
-                    continue
-
-                start_time = datetime.strptime(f"{datetime.now().date()} {race_time_str}", "%Y-%m-%d %H:%M")
-                race_number = int(self._get_text(card_node, 'span.racecard-title__race-number').replace('Race', '').strip())
-                runners = self._parse_runners(card_node)
-
-                if runners:
-                    race = Race(
-                        id=f"atr_{venue.lower().replace(' ', '')}_{start_time.strftime('%Y%m%d')}_{race_number}",
-                        venue=venue,
-                        race_number=race_number,
-                        start_time=start_time,
-                        runners=runners,
-                        source=self.SOURCE_NAME
-                    )
-                    races.append(race)
-            except Exception:
-                self.logger.warning("Failed to parse a race card on AtTheRaces.", exc_info=True)
-                continue
-        return races
-
-    def _parse_runners(self, card_node: Node) -> List[Runner]:
-        runners = []
-        runner_nodes = card_node.css('div.racecard-runner')
-        for runner_node in runner_nodes:
-            try:
-                number_str = self._get_text(runner_node, 'span.racecard-runner__saddle-cloth-number')
-                number = int(number_str) if number_str and number_str.isdigit() else 0
-
-                name = clean_text(self._get_text(runner_node, 'span.racecard-runner__horse-name'))
-                odds = clean_text(self._get_text(runner_node, 'span.odds-decimal'))
-
-                if not name or not number:
-                    continue
-
-                runners.append(Runner(number=number, name=name, odds=odds, scratched=False if odds else True))
-            except (ValueError, AttributeError):
-                continue
-        return runners
-
-    def _get_text(self, node: Node, selector: str) -> Optional[str]:
-        element = node.css_first(selector)
-        return element.text(strip=True) if element else None
-
-    def _get_headers(self) -> dict:
-        return {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36'
-        }
+    def _parse_runner(self, row: Tag) -> Optional[Runner]:
+        try:
+            name = clean_text(row.select_one("h3.horse-name a").get_text())
+            num_str = clean_text(row.select_one("span.horse-number").get_text())
+            number = int("".join(filter(str.isdigit, num_str)))
+            odds_str = clean_text(row.select_one("button.best-odds").get_text())
+            win_odds = parse_odds_to_decimal(odds_str)
+            odds_data = (
+                {self.source_name: OddsData(win=win_odds, source=self.source_name, last_updated=datetime.now())}
+                if win_odds and win_odds < 999
+                else {}
+            )
+            return Runner(number=number, name=name, odds=odds_data)
+        except Exception as e:
+            log.warning("Failed to parse runner", exc_info=e)
+            return None

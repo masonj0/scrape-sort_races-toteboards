@@ -1,14 +1,17 @@
 # python_service/adapters/racingpost_adapter.py
-import asyncio
 from datetime import datetime
-from typing import AsyncGenerator, Optional
+from typing import AsyncGenerator
 
-from selectolax.parser import HTMLParser, Node
+from selectolax.parser import HTMLParser
 
-from ..models import Race, Runner, OddsData
+from ..models import OddsData
+from ..models import Race
+from ..models import Runner
 from ..utils.odds import parse_odds_to_decimal
-from ..utils.text import clean_text, normalize_venue_name
+from ..utils.text import clean_text
+from ..utils.text import normalize_venue_name
 from .base import BaseAdapter
+
 
 class RacingPostAdapter(BaseAdapter):
     """A production-ready adapter for scraping Racing Post racecards."""
@@ -47,10 +50,10 @@ class RacingPostAdapter(BaseAdapter):
                         race_number=race_number,
                         start_time=start_time,
                         runners=runners,
-                        source=self.SOURCE_NAME
+                        source=self.SOURCE_NAME,
                     )
 
-            except Exception as e:
+            except Exception:
                 # Assuming a logger is available, as per standard practice in the project.
                 # If self.logger is not on BaseAdapter, this would need to be structlog.
                 # self.logger.error(f"Failed to process race card at {url}", exc_info=True)
@@ -71,7 +74,7 @@ class RacingPostAdapter(BaseAdapter):
         for i, link in enumerate(time_links):
             if link.text(strip=True) == time_str_to_find:
                 return i + 1
-        return 1 # Fallback
+        return 1  # Fallback
 
     def _parse_runners(self, parser: HTMLParser) -> list[Runner]:
         """Parses all runners from a single race card page."""
@@ -98,9 +101,7 @@ class RacingPostAdapter(BaseAdapter):
                     if win_odds and win_odds < 999:
                         odds = {
                             self.SOURCE_NAME: OddsData(
-                                win=win_odds,
-                                source=self.SOURCE_NAME,
-                                last_updated=datetime.now()
+                                win=win_odds, source=self.SOURCE_NAME, last_updated=datetime.now()
                             )
                         }
 
@@ -111,5 +112,8 @@ class RacingPostAdapter(BaseAdapter):
 
     def _get_headers(self) -> dict:
         return {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36'
+            "User-Agent": (
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) "
+                "Chrome/107.0.0.0 Safari/537.36"
+            )
         }
