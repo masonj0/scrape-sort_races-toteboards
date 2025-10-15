@@ -1,95 +1,37 @@
-# 🎯 Fortuna Faucet: The Windows Experience Bible
+# Fortuna Faucet - Grand Strategy & Appendices
 
-This document, synthesized from a comprehensive Claude audit, is the new grand strategy for Fortuna Faucet. It outlines the phased implementation of a professional, native, and intuitive Windows desktop experience.
-
----
-
-## 📋 Implementation Priority Matrix
-
-| Feature | Impact | Effort | Priority | Status |
-|---------|--------|--------|----------|----------|
-| ~~System Tray Integration~~ | 🟢 High | 🟡 Medium | **P0** | ✅ **COMPLETE** |
-| ~~Windows Notifications~~ | 🟢 High | 🟢 Low | **P0** | ✅ **COMPLETE** |
-| ~~Startup Manager~~ | 🟢 High | 🟢 Low | **P1** | ✅ **COMPLETE** |
-| ~~Live Charts~~ | 🟡 Medium | 🟢 Low | **P2** | ✅ **COMPLETE** |
-| ~~Keyboard Shortcuts~~ | 🟡 Medium | 🟢 Low | **P1** | ✅ **COMPLETE** |
-| ~~Audio Alerts~~ | 🟡 Medium | 🟢 Low | **P2** | ✅ **COMPLETE** |
-| **Excel Export** | 🟡 Medium | 🟡 Medium | **P1** | **IN PROGRESS** |
-| Inno Installer | 🟡 Medium | 🔴 High | **P2** | Pending |
-| Filter Profiles | 🟢 High | 🟡 Medium | **P2** | Pending |
-| Multi-Monitor | 🔵 Low | 🔴 High | **P3** | Pending |
+This document serves as the "Windows Experience Bible," dictating the path forward for all user-facing components and developer tooling.
 
 ---
 
-## 🚀 Phase 1: Instant Gratification (Quick Wins)
+## CAMPAIGN: The Windows Experience
 
-*   **System Tray Integration:** ✅ COMPLETE
-*   **Native Windows Notifications:** ✅ COMPLETE
-*   **Smart Startup Configuration:** ✅ COMPLETE
+**Objective:** To transform the project from a collection of scripts into a cohesive, professional-grade, and resilient native Windows application with an A+ operator experience.
 
-## 🎨 Phase 2: Professional Polish
+~~### Phase 1: Critical (Self-Healing & Efficiency)~~~
 
-*   **Enhanced Monitor with Live Charts:** ✅ COMPLETE
-*   **Keyboard Shortcuts & Accessibility:** ✅ COMPLETE
-*   **Audio Alerts:** ✅ COMPLETE
-*   **Custom Branded Installer:** Create a single-click Inno Setup installer.
+~~-   **Port Conflict Resolution:** The `LAUNCH_FORTUNA.bat` script should be intelligent enough to detect if ports 8000 or 3000 are already in use. If they are, it should attempt to kill the stale processes to ensure a clean startup.~~
+~~-   **Health Check Loop:** The arbitrary `timeout` delays in the launch script should be replaced with an intelligent loop that actively polls the backend's `/health` endpoint. The frontend and browser should only be launched after the backend is confirmed to be fully operational.~~
+~~-   **Log Aggregation:** All output from the backend (`uvicorn`) and frontend (`npm run dev`) services should be automatically redirected to timestamped log files in a new `logs/` directory. This makes troubleshooting startup failures trivial.~~
 
-## 💎 Primo Code: The Ascended Kingdom Blueprint
+~~### Phase 2: Enhanced UX (Faster & Clearer)~~~
 
-STATUS: The 'Data Quality Layer' is the current top priority and is now in progress.
+~~-   **Parallel Installation:** The `INSTALL_FORTUNA.bat` script should be refactored to install the Python (`pip`) and Node.js (`npm`) packages in parallel, significantly cutting down the initial setup time.~~
+~~-   **Unified Launch Dashboard:** The `LAUNCH_FORTUNA.bat` script should present a clean, unified "dashboard" that updates in real-time as each service starts, providing the operator with a clear, professional status display.~~
+~~-   **Interactive Setup Wizard:** A new `setup_wizard.py` script should be created to guide the operator through creating their `.env` file, eliminating the error-prone process of manual creation and editing.~~
+~~-   **Real-time CLI Monitor:** A new `fortuna_status_cli.py` script should be created using a library like `rich` to provide a continuous, real-time, "power user" view of the system's health and adapter status.~~
 
-## 💎 Phase 3: Elite Features
+~~### Phase 3: Professional (GUI & Power User Tools)~~~
 
-*   **Multi-Monitor Support:** Architect the GUI to support detachable panels.
-*   **Export & Reporting:** Implement one-click export to Excel, PDF, or clipboard.
+~~-   **Advanced GUI Monitor:** The `fortuna_monitor.py` should be completely overhauled into a professional, graphical command deck using Tkinter. It should be a multi-pane application for fetching, filtering, and analyzing race data.~~
+~~-   **Historical Performance Graphs:** The new GUI monitor should include a "Performance" tab with historical graphs (using `matplotlib`) for key metrics like races fetched, success rate, and fetch duration.~~
+~~-   **Data Export:** The GUI monitor should include a feature to export the current view of adapter statuses or performance data to a CSV file.~~
 
-## 🔧 Phase 4: Power User Tools
+### Phase 4: Power User (Data Warehouse & Analysis)
 
-*   **Custom Filters & Saved Searches:** Create a system for saving and loading filter profiles.
-*   **Historical Performance Dashboard:** Build a dedicated analytics dashboard for backtesting.
-*   **Dark/Light Theme Toggle:** Implement a system-aware theme switcher.
-
----
-
-## Appendix A: The Grand Adapter Backlog
-
-*(This section is preserved for historical and strategic continuity.)*
-
-### Tier 1: Critical (US Racing Coverage)
-
-*   **BrisnetAdapter**
-*   **DRFAdapter (Daily Racing Form)**
-*   **EquibaseAdapter (Full Implementation)**
-*   **XpressbetAdapter**
-
-### Tier 2: High Priority (Major International & US Betting)
-
-*   **FanDuelAdapter / DraftKingsAdapter**
-*   **NYRABetsAdapter**
-*   **HorseRacingNationAdapter**
-
-### Tier 3: Medium Priority (International Expansion)
-
-*   **RacingPostAdapter (UK/IRE)**
-*   **PuntersAdapter (AUS)**
-*   **TabAdapter (AUS)**
-*   **RacingTVAdapter (UK)**
-
-### Tier 4: Exploratory & Niche
-
-*   **PointsBetAdapter**
-*   **CalRacingAdapter**
-*   **OffTrackBettingAdapter (OTB)**
-
----
-
-## Appendix B: Open Source Intelligence & Technology Watchlist
-
-A curated list of noteworthy technologies and projects for future consideration.
-
-*   **PDF Parsing Technology:** The `pdfplumber` library has been identified as a potentially superior alternative to our current PDF parsing methods. It should be the primary candidate for any future refactoring of the `ResultsParser`.
-*   **`kenthunt/chart-parser`:** [https://github.com/kenthunt/chart-parser](https://github.com/kenthunt/chart-parser) - A highly relevant, offline PDF chart parser that serves as an excellent architectural reference.
-*   **`ccmd00d/handycapper`:** [https://github.com/ccmd00d/handycapper](https://github.com/ccmd00d/handycapper) - Another open-source project in the same domain, valuable for comparative analysis and identifying alternative data sources or techniques.
+-   **ETL Pipeline:** A new `python_service/etl.py` script should be created to extract data from the API, perform strict validation and transformation, and load it into a PostgreSQL data warehouse.
+-   **Data Warehouse Schema:** The `pg_schemas/` directory should contain the SQL `CREATE TABLE` statements for the `historical_races` and `quarantined_races` tables.
+-   **Automated Daily ETL:** The `fortuna_watchman.py` script should be enhanced to run the ETL process as the final step of its daily protocol.
 
 ---
 
@@ -98,11 +40,3 @@ A curated list of noteworthy technologies and projects for future consideration.
 **Date of Completion:** 2025-10-15
 
 **Summary:** This strategic campaign was a complete success. The operator's toolkit and user experience have been elevated from a collection of simple scripts to a cohesive, intelligent, and resilient A+ grade system. The core objectives have been met and exceeded.
-
-**Key Achievements:**
-
--   **Bulletproof Installer (`INSTALL_FORTUNA.bat`):** The setup process is now fully automated and resilient, featuring pre-flight system checks, parallel dependency installation, and a self-healing 'Full Reset' mode.
--   **Interactive Configuration (`setup_wizard.py`):** Manual `.env` file editing has been eliminated and replaced with a foolproof, interactive configuration wizard.
--   **Intelligent Launcher (`LAUNCH_FORTUNA.bat`):** The launch sequence is now significantly faster and more reliable, with automated port conflict resolution and an active health-check loop.
--   **Professional Monitoring (CLI & GUI):** Operators now have two powerful, real-time monitoring tools: the `fortuna_status_cli.py` for a live terminal dashboard, and the `FortunaAdvancedMonitor` for a full-fledged graphical command deck.
--   **Unified Command Console (`SERVICE_MANAGER.bat`):** All individual scripts have been unified under a single, user-friendly, menu-driven service manager, providing a 'single pane of glass' for all common operations.
