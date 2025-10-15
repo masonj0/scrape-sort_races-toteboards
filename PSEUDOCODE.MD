@@ -1,11 +1,11 @@
-# Fortuna Faucet — Comprehensive Pseudocode Blueprint
+# Fortuna Faucet - Comprehensive Pseudocode Blueprint
 
 ---
 
 ## GLOBAL OVERVIEW
 
 ```
-SYSTEM FortunaFaucet:
+SYSTEM FortuneFaucet:
   PURPOSE:
     - Collect global horse/greyhound/harness racing data.
     - Normalize, analyze, and surface betting opportunities.
@@ -700,7 +700,7 @@ FUNCTION DailyOperation():
 ## SUMMARY
 
 ```
-FortunaFaucet encapsulates:
+FortuneFaucet encapsulates:
   - Hardened async backend with resilient adapters, serializer models, caching, analysis engine, HTTP API, security.
   - Multi-source adapter fleet supporting APIs and HTML scrapes, with placeholders for future expansion.
   - Analyzer framework currently featuring Trifecta strategy with scoring.

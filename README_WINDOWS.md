@@ -4,7 +4,19 @@ Welcome to the native Windows edition of Fortuna Faucet. This guide provides two
 
 ---
 
-## Method 1: Recommended for Operators (MSI Installer)
+## The Service Manager (Recommended)
+
+For most day-to-day operations, the `SERVICE_MANAGER.bat` script is the recommended tool. It provides a simple, menu-driven console to start, stop, restart, and monitor all application services from a single place.
+
+**To use it, simply double-click `SERVICE_MANAGER.bat` in the project's root directory.**
+
+---
+
+## Advanced Usage: Direct Scripts & MSI Installer
+
+### MSI Installer (For Distribution)
+
+This is the simplest and most professional way to install Fortuna Faucet as a complete, standalone application.
 
 This is the simplest and most professional way to install Fortuna Faucet as a complete, standalone application.
 
