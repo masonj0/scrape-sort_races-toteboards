@@ -10,6 +10,7 @@ from collections import deque
 import threading
 import psutil
 import sys
+import time
 
 # Try to import matplotlib for graphs
 try:
@@ -72,14 +73,13 @@ class FortunaAdvancedMonitor(tk.Tk):
         self.geometry("900x650")
         self.api_key = os.getenv("API_KEY")
         self.performance = PerformanceTracker()
-        # ... (rest of the __init__ from previous version)
-
-    # ... (all other methods from previous version)
+        self.running = True
+        self._create_widgets()
+        self.after(100, self.start_fetch_thread)
 
     def _create_widgets(self):
-        # ... (existing widget creation)
         self._create_control_panel()
-        # ...
+        # ... (rest of the widget creation)
 
     def _create_control_panel(self):
         control_frame = tk.Frame(self, bg='#1a1a2e')
@@ -109,10 +109,16 @@ class FortunaAdvancedMonitor(tk.Tk):
             pady=10
         ).pack(side=tk.LEFT, padx=5)
 
+    def start_fetch_thread(self):
+        self.fetch_thread = threading.Thread(target=self._fetch_data_loop, daemon=True)
+        self.fetch_thread.start()
+
     def _fetch_data_loop(self):
         while self.running:
             try:
-                response = requests.get(f"{API_BASE_URL}/api/adapters/status", headers={"X-API-KEY": self.api_key}, timeout=5)
+                # Use httpx for async requests
+                with httpx.Client(headers={"X-API-KEY": self.api_key}, timeout=5) as client:
+                    response = client.get(f"{API_BASE_URL}/api/adapters/status")
                 if response.status_code == 200:
                     data = response.json()
                     # Add performance datapoint
@@ -123,9 +129,14 @@ class FortunaAdvancedMonitor(tk.Tk):
                     self.performance.add_datapoint(total_races, avg_duration, success_rate)
 
                     self.after(0, self.update_ui, data)
-            except requests.exceptions.RequestException:
+            except httpx.RequestError:
                 pass
             time.sleep(10) # Refresh interval
+
+    def update_ui(self, data):
+        # This is where you would update the tkinter UI with the new data
+        # For example, you might update a treeview or a graph
+        pass
 
     def export_data(self):
         filename = filedialog.asksaveasfilename(
@@ -156,6 +167,10 @@ Python Version: {sys.version.split()[0]}
 """
         messagebox.showinfo("System Information", info)
 
+    def on_closing(self):
+        self.running = False
+        self.destroy()
+
 if __name__ == '__main__':
     # Load .env variables
     try:
@@ -164,4 +179,5 @@ if __name__ == '__main__':
     except ImportError:
         print("Warning: dotenv is not installed. Script assumes environment variables are set.")
     app = FortunaAdvancedMonitor()
+    app.protocol("WM_DELETE_WINDOW", app.on_closing)
     app.mainloop()
