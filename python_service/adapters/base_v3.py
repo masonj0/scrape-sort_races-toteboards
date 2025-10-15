@@ -1,10 +1,13 @@
 # python_service/adapters/base_v3.py
 # Defines the base class for the V3 adapter architecture.
 
-from abc import ABC, abstractmethod
+from abc import ABC
+from abc import abstractmethod
+
 import structlog
 
 from ..models_v3 import NormalizedRace
+
 
 class BaseAdapterV3(ABC):
     def __init__(self, name: str, enabled: bool = True, priority: int = 100):

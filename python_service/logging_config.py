@@ -8,7 +8,9 @@
 
 import logging
 import sys
+
 import structlog
+
 
 def configure_logging():
     """Configures structlog for JSON-based structured logging."""

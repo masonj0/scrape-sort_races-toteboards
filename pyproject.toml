@@ -24,13 +24,14 @@ where = ["src"]
 
 # Configuration for the Ruff linter
 [tool.ruff]
+# Allow lines to be up to 120 characters long.
+line-length = 120
+
+[tool.ruff.lint]
 # Enable Pyflakes (F), pycodestyle (E, W), and isort (I) rules.
 select = ["E", "F", "W", "I"]
 ignore = []
 
-# Allow lines to be up to 120 characters long.
-line-length = 120
-
-[tool.ruff.isort]
+[tool.ruff.lint.isort]
 # Sort imports within their sections alphabetically.
 force-single-line = true

@@ -1,8 +1,10 @@
 # python_service/models_v3.py
 # Defines the data structures for the V3 adapter architecture.
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
+from dataclasses import field
 from typing import List
+
 
 @dataclass
 class NormalizedRunner:
@@ -10,6 +12,7 @@ class NormalizedRunner:
     name: str
     saddle_cloth: str
     odds_decimal: float
+
 
 @dataclass
 class NormalizedRace:
