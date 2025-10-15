@@ -1,129 +1,120 @@
-@ECHO OFF
-SETLOCAL ENABLEDELAYEDEXPANSION
+@echo off
+setlocal enabledelayedexpansion
 
 REM ============================================================================
-REM  FORTUNA FAUCET - Bulletproof Windows Setup (v4.1)
-REM  Includes: Pre-flight checks, parallel installation, auto-recovery, config wizard
+REM  Fortuna Faucet: Enhanced Windows Setup Script v2.0
 REM ============================================================================
 
-TITLE Fortuna Faucet - Setup Wizard v4.1
+echo [INFO] Starting enhanced full-stack setup...
 
-ECHO.
-ECHO  ========================================================================
-ECHO   FORTUNA FAUCET - Bulletproof Installation Wizard
-ECHO  ========================================================================
-ECHO.
+REM --- Python Version Check ---
+echo.
+echo [BACKEND] Verifying Python installation and version...
+python --version >nul 2>&1
+if %errorlevel% neq 0 (
+    echo [ERROR] Python is not found. Please install Python 3.8+ from python.org
+    pause
+    goto :eof
+)
 
-REM --- Main Execution Flow ---
-CALL :CheckPrerequisites
-IF %ERRORLEVEL% NEQ 0 GOTO :eof
+REM Extract version number and check minimum requirement
+for /f "tokens=2" %%i in ('python --version 2^>^&1') do set PYTHON_VERSION=%%i
+echo [INFO] Found Python %PYTHON_VERSION%
 
-CALL :SetupVirtualEnv
-IF %ERRORLEVEL% NEQ 0 GOTO ErrorHandler
-
-CALL :InstallPackagesParallel
-IF %ERRORLEVEL% NEQ 0 GOTO ErrorHandler
-
-CALL :RunConfigurationWizard
-IF %ERRORLEVEL% NEQ 0 GOTO ErrorHandler
-
-ECHO.
-ECHO  ========================================================================
-ECHO   SETUP COMPLETE!
-ECHO   Run 'LAUNCH_FORTUNA.bat' to start the application.
-ECHO  ========================================================================
-ECHO.
-PAUSE
-GOTO :eof
-
-REM ============================================================================
-REM  SUBROUTINES
-REM ============================================================================
-
-:CheckPrerequisites
-    ECHO [1/4] Running pre-flight system checks...
-    ping -n 1 google.com >nul 2>&1
-    IF %ERRORLEVEL% NEQ 0 (
-        ECHO [WARN] No internet connectivity detected. Installation may fail.
-        CHOICE /C YN /M "Continue anyway?"
-        IF ERRORLEVEL 2 EXIT /B 1
+REM --- Create Virtual Environment with Error Checking ---
+echo.
+echo [BACKEND] Creating Python virtual environment...
+if exist .venv (
+    echo [INFO] Virtual environment already exists
+) else (
+    python -m venv .venv
+    if %errorlevel% neq 0 (
+        echo [ERROR] Failed to create virtual environment
+        pause
+        goto :eof
     )
-    ECHO [OK] System prerequisites are met.
-    ECHO.
-    EXIT /B 0
+)
 
-:SetupVirtualEnv
-    ECHO [2/4] Setting up Python virtual environment...
-    IF NOT EXIST .venv ( python -m venv .venv )
-    ECHO [OK] Virtual environment is ready.
-    ECHO.
-    EXIT /B 0
+REM --- Test Virtual Environment Activation ---
+echo [BACKEND] Testing virtual environment...
+call .venv\Scripts\activate.bat
+if %errorlevel% neq 0 (
+    echo [ERROR] Virtual environment activation failed
+    pause
+    goto :eof
+)
 
-:InstallPackagesParallel
-    ECHO [3/4] Installing all project dependencies in parallel...
-    ECHO      Output is logged to pip_install.log, npm_install.log, and electron_install.log.
+REM --- Upgrade pip First ---
+echo [BACKEND] Upgrading pip...
+python -m pip install --upgrade pip --quiet
+if %errorlevel% neq 0 (
+    echo [WARNING] pip upgrade had issues, continuing...
+)
 
-    start "Python Install" /B cmd /c "call .venv\Scripts\activate.bat && python -m pip install -r python_service\requirements.txt > pip_install.log 2>&1"
-    start "NPM Install" /B cmd /c "cd web_platform\frontend && npm install > ..\..\npm_install.log 2>&1"
-    start "Electron Install" /B cmd /c "cd electron && npm install > ..\electron_install.log 2>&1"
+REM --- Install Dependencies with Progress ---
+echo [BACKEND] Installing Python dependencies...
+pip install -r python_service/requirements.txt
+if %errorlevel% neq 0 (
+    echo [ERROR] Python dependency installation failed
+    echo [INFO] Check python_service/requirements.txt for issues
+    pause
+    goto :eof
+)
+echo [SUCCESS] Python backend setup complete.
 
-    :WaitLoop
-        tasklist /FI "IMAGENAME eq cmd.exe" /FI "WINDOWTITLE eq Python Install" 2>NUL | find "cmd.exe" >NUL
-        set PIP_RUNNING=%errorlevel%
-        tasklist /FI "IMAGENAME eq cmd.exe" /FI "WINDOWTITLE eq NPM Install" 2>NUL | find "cmd.exe" >NUL
-        set NPM_RUNNING=%errorlevel%
-        tasklist /FI "IMAGENAME eq cmd.exe" /FI "WINDOWTITLE eq Electron Install" 2>NUL | find "cmd.exe" >NUL
-        set ELECTRON_RUNNING=%errorlevel%
-        IF %PIP_RUNNING%==0 GOTO :WaitLoopDelay
-        IF %NPM_RUNNING%==0 GOTO :WaitLoopDelay
-        IF %ELECTRON_RUNNING%==0 GOTO :WaitLoopDelay
-        GOTO :EndWaitLoop
-    :WaitLoopDelay
-        ECHO [INFO] Installation in progress... Please wait.
-        timeout /t 5 /nobreak >nul
-        GOTO :WaitLoop
+REM --- Node.js Setup ---
+echo.
+echo [FRONTEND] Checking for Node.js...
+node --version >nul 2>&1
+if %errorlevel% neq 0 (
+    echo [ERROR] Node.js not found. Install from nodejs.org
+    pause
+    goto :eof
+)
 
-    :EndWaitLoop
-    ECHO [OK] Parallel installations complete. Checking logs...
+for /f "tokens=1" %%i in ('node --version') do set NODE_VERSION=%%i
+echo [INFO] Found Node.js %NODE_VERSION%
 
-    findstr /C:"Successfully installed" pip_install.log >nul
-    IF %ERRORLEVEL% NEQ 0 ( ECHO [FAIL] Python installation failed. Check pip_install.log. && EXIT /B 1 )
-    findstr /C:"added" npm_install.log >nul
-    IF %ERRORLEVEL% NEQ 0 ( ECHO [FAIL] Node.js installation failed. Check npm_install.log. && EXIT /B 1 )
-    findstr /C:"added" electron_install.log >nul
-    IF %ERRORLEVEL% NEQ 0 ( ECHO [FAIL] Electron installation failed. Check electron_install.log. && EXIT /B 1 )
+REM --- Frontend Dependencies ---
+echo [FRONTEND] Installing frontend dependencies...
+cd web_platform\frontend
+call npm install
+if %errorlevel% neq 0 (
+    echo [ERROR] Frontend setup failed
+    cd ..\..
+    pause
+    goto :eof
+)
+cd ..\..
+echo [SUCCESS] Frontend setup complete.
 
-    ECHO [OK] All dependencies installed successfully.
-    ECHO.
-    EXIT /B 0
-
-:RunConfigurationWizard
-    ECHO [4/4] Running initial configuration wizard...
-    call .venv\Scripts\activate.bat
-    python setup_wizard.py
-    IF %ERRORLEVEL% NEQ 0 (
-        ECHO [FAIL] Configuration wizard failed. Please check errors above.
-        EXIT /B 1
+REM --- Configuration File Check ---
+echo.
+echo [CONFIG] Checking configuration files...
+if not exist .env (
+    echo [WARNING] .env file not found
+    if exist .env.example (
+        echo [INFO] Creating .env from .env.example
+        copy .env.example .env >nul
+        echo [ACTION REQUIRED] Please edit .env with your API keys
+    ) else (
+        echo [ERROR] .env.example not found either
     )
-    ECHO [OK] Configuration complete.
-    ECHO.
-    EXIT /B 0
+)
 
-:ErrorHandler
-    ECHO.
-    ECHO  ========================================================================
-    ECHO   [ERROR] SETUP FAILED!
-    ECHO  ========================================================================
-    ECHO.
-    CHOICE /C RF /N /M "Would you like to [R]etry or perform a [F]ull Reset?"
-    IF ERRORLEVEL 2 GOTO :FullReset
-    IF ERRORLEVEL 1 GOTO :eof
+REM --- Final Report ---
+echo.
+echo ============================================================================
+echo   SETUP COMPLETE!
+echo ============================================================================
+echo.
+echo   Next steps:
+echo   1. Edit .env file with your API keys
+echo   2. Run 'LAUNCH_FORTUNA.bat' to launch the application
+echo.
+echo   Optional: Run 'CREATE_SHORTCUTS.bat' to create desktop shortcuts
+echo ============================================================================
+pause
 
-:FullReset
-    ECHO [RESET] Performing a full reset...
-    IF EXIST .venv ( rmdir /s /q .venv 2>nul )
-    IF EXIST web_platform\frontend\node_modules ( rmdir /s /q web_platform\frontend\node_modules 2>nul )
-    IF EXIST electron\node_modules ( rmdir /s /q electron\node_modules 2>nul )
-    ECHO [RESET] Complete. Please re-run this installer.
-    PAUSE
-    EXIT /B 0
+:eof
+endlocal
