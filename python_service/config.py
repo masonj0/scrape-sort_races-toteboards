@@ -11,28 +11,33 @@ from functools import lru_cache
 from typing import List, Optional
 
 class Settings(BaseSettings):
-    # --- Application Security ---
+    # --- Core Settings ---
     API_KEY: str
 
-    # --- Betfair API Credentials ---
-    BETFAIR_APP_KEY: str = ""
-    BETFAIR_USERNAME: str = ""
-    BETFAIR_PASSWORD: str = ""
+    # --- Optional Betfair Credentials ---
+    BETFAIR_APP_KEY: Optional[str] = None
+    BETFAIR_USERNAME: Optional[str] = None
+    BETFAIR_PASSWORD: Optional[str] = None
 
-    # --- Other Adapter Keys ---
-    TVG_API_KEY: str = ""
-    RACING_AND_SPORTS_TOKEN: str = ""
-    POINTSBET_API_KEY: str = ""
+    # --- Caching & Performance ---
+    REDIS_URL: str = "redis://localhost:6379"
+    CACHE_TTL_SECONDS: int = 300
+    MAX_CONCURRENT_REQUESTS: int = 10
+    HTTP_POOL_CONNECTIONS: int = 100
+    HTTP_POOL_MAXSIZE: int = 100
+    HTTP_MAX_KEEPALIVE: int = 50
+    DEFAULT_TIMEOUT: int = 30
+    ADAPTER_TIMEOUT: int = 20
+
+    # --- Logging ---
+    LOG_LEVEL: str = "INFO"
+
+    # --- Optional Adapter Keys ---
+    TVG_API_KEY: Optional[str] = None
+    RACING_AND_SPORTS_TOKEN: Optional[str] = None
+    POINTSBET_API_KEY: Optional[str] = None
     GREYHOUND_API_URL: Optional[str] = None
     THE_RACING_API_KEY: Optional[str] = None
-
-    # --- Placeholder keys for restored scrapers (not currently used but good practice) ---
-    AT_THE_RACES_KEY: Optional[str] = None
-    SPORTING_LIFE_KEY: Optional[str] = None
-    TIMEFORM_KEY: Optional[str] = None
-
-    # --- Caching Configuration ---
-    REDIS_URL: str = "redis://localhost"
 
     # --- CORS Configuration ---
     ALLOWED_ORIGINS: List[str] = ["http://localhost:3000", "http://localhost:3001"]

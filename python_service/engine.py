@@ -57,7 +57,11 @@ class FortunaEngine:
                 url="https://betfair-data-supplier-prod.herokuapp.com/api/widgets/kvs-ratings/datasets?id=thoroughbred-model&date="
             )
         ]
-        self.http_client = httpx.AsyncClient()
+        self.http_limits = httpx.Limits(
+            max_connections=config.HTTP_POOL_CONNECTIONS,
+            max_keepalive_connections=config.HTTP_MAX_KEEPALIVE
+        )
+        self.http_client = httpx.AsyncClient(limits=self.http_limits, http2=True)
 
     async def close(self):
         await self.http_client.aclose()
