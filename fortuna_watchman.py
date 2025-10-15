@@ -14,6 +14,7 @@ from typing import List
 
 from python_service.config import get_settings
 from python_service.engine import FortunaEngine
+from python_service.etl import run_etl_for_yesterday
 from python_service.analyzer import AnalyzerEngine
 from python_service.models import Race
 from live_monitor import LiveOddsMonitor
@@ -93,13 +94,22 @@ class Watchman:
     async def execute_daily_protocol(self):
         """The main, end-to-end orchestration method."""
         log.info("--- Fortuna Watchman Daily Protocol: ACTIVE ---")
-        initial_targets = await self.get_initial_targets()
-        if initial_targets:
-            await self.run_tactical_monitoring(initial_targets)
-        else:
-            log.info("Watchman: No initial targets found. Shutting down for the day.")
+        try:
+            initial_targets = await self.get_initial_targets()
+            if initial_targets:
+                await self.run_tactical_monitoring(initial_targets)
+            else:
+                log.info("Watchman: No initial targets found. Shutting down for the day.")
+        finally:
+            await self.odds_engine.close()
 
-        await self.odds_engine.close()
+        # Run ETL for yesterday's data after all other operations are complete
+        try:
+            log.info("Starting daily ETL process for Scribe's Archives...")
+            run_etl_for_yesterday()
+            log.info("Daily ETL process completed successfully.")
+        except Exception as e:
+            log.error("Daily ETL process failed.", exc_info=True)
         log.info("--- Fortuna Watchman Daily Protocol: COMPLETE ---")
 
 async def main():

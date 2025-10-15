@@ -1,42 +1,116 @@
 # python_service/etl.py
-# This module contains the ETL logic for the PostgreSQL data warehouse.
-# Restored based on the 'Code Archaeology Report'.
+# ETL pipeline for populating the historical data warehouse
 
 import os
-from typing import List
-import pandas as pd
-from sqlalchemy import create_engine
+import requests
+import logging
+from datetime import date
+from sqlalchemy import create_engine, text
+from sqlalchemy.exc import SQLAlchemyError
+import json
 
-from .models import Race
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
-class PostgresETL:
-    """Data Warehouse ETL"""
+class ScribesArchivesETL:
     def __init__(self):
-        db_url = os.getenv("POSTGES_URL", "postgresql://user:password@localhost/fortuna_dw")
-        self.engine = create_engine(db_url)
+        self.postgres_url = os.getenv("POSTGRES_URL")
+        self.api_key = os.getenv("API_KEY")
+        self.api_base_url = "http://localhost:8000"
+        self.engine = self._get_db_engine()
 
-    def process_and_load(self, analyzed_races: List[Race]):
-        valid_for_historical = []
-        quarantined = []
-        for race in analyzed_races:
-            errors = []
-            if not race.venue: errors.append("Missing venue")
-            if race.race_number is None: errors.append("Missing race_number")
-            if not errors:
-                valid_for_historical.append({
-                    "race_id": race.id,
-                    "track_name": race.venue,
-                    "race_number": race.race_number,
-                    "post_time": race.start_time,
-                    "qualification_score": race.qualification_score
-                })
+    def _get_db_engine(self):
+        if not self.postgres_url:
+            logger.warning("POSTGRES_URL not set. ETL will be skipped.")
+            return None
+        try:
+            return create_engine(self.postgres_url)
+        except Exception as e:
+            logger.error(f"Failed to create database engine: {e}", exc_info=True)
+            return None
+
+    def _fetch_race_data(self, target_date: date) -> list:
+        """Fetches aggregated race data from the local API."""
+        if not self.api_key:
+            raise ValueError("API_KEY not found in environment.")
+
+        url = f"{self.api_base_url}/api/races?race_date={target_date.isoformat()}"
+        headers = {"X-API-KEY": self.api_key}
+        response = requests.get(url, headers=headers, timeout=120)
+        response.raise_for_status()
+        return response.json().get("races", [])
+
+    def _validate_and_transform(self, race: dict) -> tuple:
+        """Validates a race dictionary and transforms it for insertion."""
+        if not all(k in race for k in ['id', 'venue', 'race_number', 'start_time', 'runners']):
+            return None, "Missing core fields (id, venue, race_number, start_time, runners)"
+
+        active_runners = [r for r in race.get('runners', []) if not r.get('scratched')]
+
+        transformed = {
+            'race_id': race['id'],
+            'venue': race['venue'],
+            'race_number': race['race_number'],
+            'start_time': race['start_time'],
+            'source': race.get('source'),
+            'qualification_score': race.get('qualification_score'),
+            'field_size': len(active_runners)
+        }
+        return transformed, None
+
+    def run(self, target_date: date):
+        if not self.engine:
+            return
+
+        logger.info(f"Starting ETL process for {target_date.isoformat()}...")
+        try:
+            races = self._fetch_race_data(target_date)
+        except (requests.RequestException, ValueError) as e:
+            logger.error(f"Failed to fetch race data: {e}", exc_info=True)
+            return
+
+        clean_records = []
+        quarantined_records = []
+
+        for race in races:
+            transformed, reason = self._validate_and_transform(race)
+            if transformed:
+                clean_records.append(transformed)
             else:
-                quarantined.append({
-                    "race_id": race.id,
-                    "quarantine_reason": ", ".join(errors),
-                    "raw_data": race.json()
+                quarantined_records.append({
+                    'race_id': race.get('id'),
+                    'source': race.get('source'),
+                    'payload': json.dumps(race),
+                    'reason': reason
                 })
-        if valid_for_historical:
-            pd.DataFrame(valid_for_historical).to_sql('historical_races', self.engine, if_exists='append', index=False)
-        if quarantined:
-            pd.DataFrame(quarantined).to_sql('quarantine_races', self.engine, if_exists='append', index=False)
+
+        with self.engine.connect() as connection:
+            try:
+                with connection.begin(): # Transaction block
+                    if clean_records:
+                        # Using ON CONFLICT to prevent duplicates
+                        stmt = text("""
+                            INSERT INTO historical_races (race_id, venue, race_number, start_time, source, qualification_score, field_size)
+                            VALUES (:race_id, :venue, :race_number, :start_time, :source, :qualification_score, :field_size)
+                            ON CONFLICT (race_id) DO NOTHING;
+                        """)
+                        connection.execute(stmt, clean_records)
+                        logger.info(f"Inserted/updated {len(clean_records)} records into historical_races.")
+
+                    if quarantined_records:
+                        stmt = text("""
+                            INSERT INTO quarantined_races (race_id, source, payload, reason)
+                            VALUES (:race_id, :source, :payload::jsonb, :reason);
+                        """)
+                        connection.execute(stmt, quarantined_records)
+                        logger.warning(f"Moved {len(quarantined_records)} records to quarantine.")
+            except SQLAlchemyError as e:
+                logger.error(f"Database transaction failed: {e}", exc_info=True)
+
+        logger.info("ETL process finished.")
+
+def run_etl_for_yesterday():
+    from datetime import timedelta
+    yesterday = date.today() - timedelta(days=1)
+    etl = ScribesArchivesETL()
+    etl.run(yesterday)
