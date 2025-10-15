@@ -47,7 +47,6 @@ class FortunaEngine:
         self.adapters: List[BaseAdapter] = [
             BetfairAdapter(config=self.config),
             BetfairGreyhoundAdapter(config=self.config),
-            TVGAdapter(config=self.config),
             RacingAndSportsAdapter(config=self.config),
             RacingAndSportsGreyhoundAdapter(config=self.config),
             AtTheRacesAdapter(),
@@ -64,7 +63,8 @@ class FortunaEngine:
             BetfairDataScientistAdapter(
                 model_name="ThoroughbredModel",
                 url="https://betfair-data-supplier-prod.herokuapp.com/api/widgets/kvs-ratings/datasets?id=thoroughbred-model&date=",
-            )
+            ),
+            TVGAdapter(config=self.config),
         ]
         self.http_limits = httpx.Limits(
             max_connections=config.HTTP_POOL_CONNECTIONS, max_keepalive_connections=config.HTTP_MAX_KEEPALIVE
@@ -192,12 +192,18 @@ class FortunaEngine:
 
         tasks = [self._time_adapter_fetch(adapter, date) for adapter in target_adapters]
 
-        # Run V3 (synchronous) adapters in a thread pool
-        v3_tasks = [asyncio.to_thread(adapter.fetch_and_normalize) for adapter in self.v3_adapters]
+        # Run V3 adapters
+        for adapter in self.v3_adapters:
+            if hasattr(adapter, 'fetch_and_normalize'):
+                # Handle synchronous V3 adapters
+                v3_task = asyncio.to_thread(adapter.fetch_and_normalize)
+                tasks.append(v3_task)
+            elif hasattr(adapter, 'get_races'):
+                # Handle asynchronous V3 adapters
+                v3_task = adapter.get_races(date)
+                tasks.append(v3_task)
 
-        # Gather results from both V2 (async) and V3 (sync) adapters
-        all_tasks = tasks + v3_tasks
-        results = await asyncio.gather(*all_tasks, return_exceptions=True)
+        results = await asyncio.gather(*tasks, return_exceptions=True)
 
         source_infos = []
         all_races = []

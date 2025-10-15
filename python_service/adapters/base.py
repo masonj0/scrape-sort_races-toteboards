@@ -29,6 +29,13 @@ class BaseAdapter(ABC):
         self.base_url = base_url
         self.timeout = timeout
         self.max_retries = max_retries
+        self.logger = structlog.get_logger(adapter_name=source_name)
+        # Circuit Breaker State
+        self.circuit_breaker_tripped = False
+        self.circuit_breaker_failure_count = 0
+        self.circuit_breaker_last_failure = 0
+        self.FAILURE_THRESHOLD = 3
+        self.COOLDOWN_PERIOD_SECONDS = 300  # 5 minutes
 
     @abstractmethod
     async def fetch_races(self, date: str, http_client: httpx.AsyncClient) -> Dict[str, Any]:
