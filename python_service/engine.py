@@ -21,6 +21,7 @@ from .adapters.at_the_races_adapter import AtTheRacesAdapter
 from .adapters.racingpost_adapter import RacingPostAdapter
 from .adapters.betfair_greyhound_adapter import BetfairGreyhoundAdapter
 from .adapters.harness_adapter import HarnessAdapter
+from .adapters.equibase_adapter import EquibaseAdapter
 from .adapters.sporting_life_adapter import SportingLifeAdapter
 from .adapters.timeform_adapter import TimeformAdapter
 from .adapters.the_racing_api_adapter import TheRacingApiAdapter
@@ -43,6 +44,7 @@ class FortunaEngine:
             AtTheRacesAdapter(config=self.config),
             RacingPostAdapter(config=self.config),
             HarnessAdapter(config=self.config),
+            EquibaseAdapter(config=self.config),
             SportingLifeAdapter(config=self.config),
             TimeformAdapter(config=self.config),
             TheRacingApiAdapter(config=self.config),
