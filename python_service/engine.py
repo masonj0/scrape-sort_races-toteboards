@@ -50,7 +50,7 @@ class FortunaEngine:
             BetfairGreyhoundAdapter(config=self.config),
             RacingAndSportsAdapter(config=self.config),
             RacingAndSportsGreyhoundAdapter(config=self.config),
-            AtTheRacesAdapter(config=self.config),
+            AtTheRacesAdapter(),
             RacingPostAdapter(config=self.config),
             HarnessAdapter(config=self.config),
             EquibaseAdapter(config=self.config),
