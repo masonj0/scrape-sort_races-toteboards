@@ -1,19 +1,24 @@
 # python_service/cache_manager.py
-from functools import wraps
-import json
 import hashlib
-from datetime import datetime, timedelta
-from typing import Any, Callable
+import json
 import os
+from datetime import datetime
+from datetime import timedelta
+from functools import wraps
+from typing import Any
+from typing import Callable
+
 import structlog
 
 try:
     import redis
+
     REDIS_AVAILABLE = True
 except ImportError:
     REDIS_AVAILABLE = False
 
 log = structlog.get_logger(__name__)
+
 
 class CacheManager:
     def __init__(self, redis_url: str = None):
@@ -52,13 +57,12 @@ class CacheManager:
             except Exception as e:
                 log.warning(f"Redis SET failed: {e}")
 
-        self.memory_cache[key] = {
-            "value": value,
-            "expires_at": datetime.now() + timedelta(seconds=ttl_seconds)
-        }
+        self.memory_cache[key] = {"value": value, "expires_at": datetime.now() + timedelta(seconds=ttl_seconds)}
+
 
 # --- Singleton Instance & Decorator ---
 cache_manager = CacheManager(redis_url=os.getenv("REDIS_URL"))
+
 
 def cache_async_result(ttl_seconds: int = 300, key_prefix: str = "cache"):
     def decorator(func: Callable):
@@ -76,5 +80,7 @@ def cache_async_result(ttl_seconds: int = 300, key_prefix: str = "cache"):
             result = await func(*args, **kwargs)
             cache_manager.set(cache_key, result, ttl_seconds)
             return result
+
         return wrapper
+
     return decorator

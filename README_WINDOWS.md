@@ -1,81 +1,54 @@
 # Fortuna Faucet: Windows Operator's Manual
 
-Welcome to the native Windows edition of Fortuna Faucet. This guide provides two installation methods.
+Welcome to the Fortuna Faucet. This guide will get you up and running.
 
 ---
 
-## The Service Manager (Recommended)
+## The Golden Path (The Only Steps You Need)
 
-For most day-to-day operations, the `SERVICE_MANAGER.bat` script is the recommended tool. It provides a simple, menu-driven console to start, stop, restart, and monitor all application services from a single place.
+This is the simplest and recommended way to use the application.
 
-**To use it, simply double-click `SERVICE_MANAGER.bat` in the project's root directory.**
+### Step 1: Run the Service Manager
 
----
+> Find the `SERVICE_MANAGER.bat` file in the project folder and double-click it.
 
-## Advanced Usage: Direct Scripts & MSI Installer
+That's it. This one script is your single entry point for everything.
 
-### MSI Installer (For Distribution)
+-   **If this is your first time running the application,** a setup wizard will automatically launch. Follow its on-screen instructions. It will install all dependencies and configure the application for you.
+-   **If you have run the setup before,** a menu will appear.
 
-This is the simplest and most professional way to install Fortuna Faucet as a complete, standalone application.
+### Step 2: Start the Services
 
-This is the simplest and most professional way to install Fortuna Faucet as a complete, standalone application.
+> In the Service Manager menu, press `1` on your keyboard and then press `Enter` to select `[1] Start Services`.
 
-### Step 1: Build the Installer
+This will launch all the required backend and frontend processes in the background.
 
-First, you must create the MSI installer file.
+### Step 3: You're Done!
 
-1.  **Run the Builder Script**: In the project's root directory, double-click the `BUILD_INSTALLER.bat` script.
-2.  **Wait for Completion**: The script will run for a few minutes.
-3.  **Locate the Installer**: Upon completion, the MSI installer (e.g., `Fortuna Faucet 1.0.0.msi`) will be located in the project's root directory.
+A web browser will automatically open to the Fortuna Faucet dashboard. A real-time status console will also appear to show you the system's health.
 
-### Step 2: Run the MSI Installer
-
-1.  Double-click the newly created `.msi` file.
-2.  Follow the on-screen instructions in the graphical installer.
-3.  Once finished, the application will be installed on your system, and you can launch it from the Start Menu.
+To stop the application, simply go back to the Service Manager menu and select `[2] Stop Services`.
 
 ---
 
-## Method 2: For Developers (Manual Setup from Source)
+## Advanced Usage & Troubleshooting
 
-This method is for developers who have cloned the source code and want to set up a local development environment.
+Everything you need is in the `SERVICE_MANAGER.bat`. The information below is for developers or for troubleshooting specific issues.
 
-### Step 1: Run the Installer Script
+### Direct Scripts
 
-In the project's root directory, double-click the `INSTALL_FORTUNA.bat` script. This wizard will:
+-   **`INSTALL_FORTUNA.bat`**: The main installer script. The Service Manager runs this for you on first launch.
+-   **`LAUNCH_FORTUNA.bat`**: The main launch script. The Service Manager runs this for you when you select `[1] Start Services`.
+-   **`STOP_FORTUNA.bat`**: Stops all running services.
+-   **`RESTART_FORTUNA.bat`**: Stops, then starts all services.
+-   **`health_check.bat`**: Runs a series of diagnostic checks on your environment.
+-   **`fix_common_issues.bat`**: Provides an interactive menu to solve common problems like corrupted installations.
+-   **`CREATE_SHORTCUTS.bat`**: Creates desktop shortcuts for the main scripts.
+-   **`BUILD_INSTALLER.bat`**: For developers. Builds the distributable `.msi` installer package.
 
-1.  **Check for Python and Node.js**
-2.  **Create a Python Virtual Environment** (`.venv`)
-3.  **Install all Python and Node.js dependencies**
+### Understanding Logs
 
-### Step 2: Launch the Application
+If you encounter an issue, the system generates detailed logs to help you diagnose the problem.
 
-Once the installation is complete, you can run the application using the `LAUNCH_FORTUNA.bat` script.
-
-### Step 3: (Optional) Create Desktop Shortcuts
-
-For easier access, run the `CREATE_SHORTCUTS.bat` script to place shortcuts for `Launch`, `Stop`, and `Monitor` on your desktop.
-
----
-
-## Troubleshooting
-
-If you encounter issues during setup or launch, the automated system provides detailed logs to help diagnose the problem.
-
-### Installation Logs
-
-During the developer setup (`INSTALL_FORTUNA.bat`), all output from the Python and Node.js package managers is saved to the following files in the project root:
-
--   `pip_install.log`: Contains the full output of the `pip install` command.
--   `npm_install.log`: Contains the full output of the `npm install` command.
-
-Check these files for any error messages if the installation fails.
-
-### Service Logs
-
-When you launch the application (`LAUNCH_FORTUNA.bat`), all output from the backend and frontend services is captured in a new `logs/` directory. Each launch creates two new log files named with a timestamp, for example:
-
--   `logs/backend_20251015_093000.log`
--   `logs/frontend_20251015_093000.log`
-
-If the application fails to start, check the latest log files in this directory to find the specific error.
+-   **Installation Logs:** If the setup fails, check `pip_install.log`, `npm_install.log`, and `electron_install.log` in the root directory.
+-   **Service Logs:** When the application is running, all backend and frontend output is saved to timestamped files inside the `logs/` directory.

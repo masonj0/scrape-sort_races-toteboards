@@ -1,16 +1,21 @@
 # python_service/adapters/betfair_adapter.py
 
-import httpx
-import structlog
 import re
 from datetime import datetime
-from typing import Dict, Any, Optional
+from typing import Any
+from typing import Dict
+from typing import Optional
 
+import httpx
+import structlog
+
+from ..models import Race
+from ..models import Runner
 from .base import BaseAdapter
 from .betfair_auth_mixin import BetfairAuthMixin
-from ..models import Race, Runner
 
 log = structlog.get_logger(__name__)
+
 
 class BetfairAdapter(BetfairAuthMixin, BaseAdapter):
     def __init__(self, config):
@@ -22,9 +27,23 @@ class BetfairAdapter(BetfairAuthMixin, BaseAdapter):
         start_time = datetime.now()
         try:
             await self._authenticate(http_client)
-            headers = {"X-Application": self.app_key, "X-Authentication": self.session_token, "Content-Type": "application/json"}
-            market_filter = {"eventTypeIds": ["7"], "marketTypeCodes": ["WIN"], "marketStartTime": {"from": f"{date}T00:00:00Z", "to": f"{date}T23:59:59Z"}}
-            market_catalogue = await self.make_request(http_client, 'POST', 'listMarketCatalogue/', headers=headers, json={"filter": market_filter, "maxResults": 1000, "marketProjection": ["EVENT", "RUNNER_DESCRIPTION"]})
+            headers = {
+                "X-Application": self.app_key,
+                "X-Authentication": self.session_token,
+                "Content-Type": "application/json",
+            }
+            market_filter = {
+                "eventTypeIds": ["7"],
+                "marketTypeCodes": ["WIN"],
+                "marketStartTime": {"from": f"{date}T00:00:00Z", "to": f"{date}T23:59:59Z"},
+            }
+            market_catalogue = await self.make_request(
+                http_client,
+                "POST",
+                "listMarketCatalogue/",
+                headers=headers,
+                json={"filter": market_filter, "maxResults": 1000, "marketProjection": ["EVENT", "RUNNER_DESCRIPTION"]},
+            )
             if not market_catalogue:
                 return self._format_response([], start_time, is_success=True, error_message="No markets found.")
             all_races = [self._parse_race(market) for market in market_catalogue]
@@ -35,13 +54,23 @@ class BetfairAdapter(BetfairAuthMixin, BaseAdapter):
     def _parse_race(self, market: Dict[str, Any]) -> Race | None:
         if market is None:
             return None
-        runners = [Runner(number=rd.get('sortPriority', 99), name=rd['runnerName'], selection_id=rd['selectionId']) for rd in market.get('runners', [])]
-        return Race(id=f"bf_{market['marketId']}", venue=market['event']['venue'], race_number=self._extract_race_number(market.get('marketName')), start_time=datetime.fromisoformat(market['marketStartTime'].replace('Z', '+00:00')), runners=runners, source=self.source_name)
+        runners = [
+            Runner(number=rd.get("sortPriority", 99), name=rd["runnerName"], selection_id=rd["selectionId"])
+            for rd in market.get("runners", [])
+        ]
+        return Race(
+            id=f"bf_{market['marketId']}",
+            venue=market["event"]["venue"],
+            race_number=self._extract_race_number(market.get("marketName")),
+            start_time=datetime.fromisoformat(market["marketStartTime"].replace("Z", "+00:00")),
+            runners=runners,
+            source=self.source_name,
+        )
 
     def _extract_race_number(self, name: Optional[str]) -> int:
         if not name:
             return 1
-        match = re.search(r'\bR(\d{1,2})\b', name)
+        match = re.search(r"\bR(\d{1,2})\b", name)
         return int(match.group(1)) if match else 1
 
     # The duplicated method has been removed.
