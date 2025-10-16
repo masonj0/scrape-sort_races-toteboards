@@ -1,94 +1,102 @@
-@ECHO OFF
-SETLOCAL ENABLEDELAYEDEXPANSION
-TITLE Fortuna Faucet - Launcher v4.0
-
+@echo off
 REM ============================================================================
-REM  FORTUNA FAUCET - Intelligent Launcher v4.0
-REM  Includes: Pre-flight checks for .env, running processes, and ports.
+REM  FORTUNA FAUCET - Launch Script (v3 - Race-Condition Free)
 REM ============================================================================
+setlocal enabledelayedexpansion
 
-cls
-ECHO.
-ECHO     ================================================
-ECHO       FORTUNA FAUCET - INTELLIGENT LAUNCHER v4.0
-ECHO     ================================================
-ECHO.
+set BACKEND_PORT=8000
+set FRONTEND_PORT=3000
+set MAX_WAIT=60
+set HEALTH_INTERVAL=1
 
-REM --- Phase 1: Pre-Flight Validation ---
-ECHO [....] 1/5 Pre-Flight Validation: Checking for .env file...
-IF NOT EXIST .env (
-    ECHO [WARN] CRITICAL: .env file not found!
-    ECHO [INFO] Running setup wizard to create one...
-    ECHO.
-    call .venv\Scripts\activate.bat
-    python setup_wizard.py
-    IF %ERRORLEVEL% NEQ 0 (
-        ECHO [FAIL] Setup wizard failed or was cancelled. Aborting launch.
-        PAUSE
-        EXIT /B 1
-    )
-    ECHO [ OK ] .env file created successfully.
-) ELSE (
-    ECHO [ OK ] .env file found.
+echo.
+echo  [*] Starting Fortuna Faucet services...
+echo.
+
+REM --- Start Backend ---
+echo  [BACKEND] Launching on port %BACKEND_PORT%...
+start "Fortuna Backend" cmd /k ^
+  "call .venv\Scripts\activate.bat && ^
+   cd python_service && ^
+   uvicorn api:app --host 127.0.0.1 --port 8000 >> ..\logs\backend_!date:~-4!-!date:~-10,2!-!date:~-7,2!_!time:~0,2!-!time:~3,2!-!time:~6,2!.log 2>&1"
+
+REM --- Wait for Backend to be ready ---
+set /a WAIT=0
+:wait_backend
+timeout /t %HEALTH_INTERVAL% /nobreak >nul
+powershell -NoProfile -Command "^
+try {^
+    Invoke-WebRequest -Uri 'http://localhost:%BACKEND_PORT%/health' -UseBasicParsing -TimeoutSec 2 -ErrorAction Stop ^| Out-Null;^
+    exit 0^
+} catch {^
+    exit 1^
+}^
+" >nul 2>&1
+
+if %errorlevel% equ 0 (
+    echo  [OK] Backend is ready
+    goto launch_frontend
 )
 
-ECHO [....] 2/5 Pre-Flight Validation: Checking for existing processes...
-tasklist /FI "WINDOWTITLE eq Fortuna Backend*" 2>NUL | find /I /N "cmd.exe">NUL
-IF "%ERRORLEVEL%"=="0" (
-    ECHO [WARN] An existing 'Fortuna Backend' process was found.
-    CHOICE /C YN /N /M "Stop the existing process and restart? (Y/N): "
-    IF ERRORLEVEL 2 GOTO :eof
-    CALL STOP_FORTUNA.bat
-    timeout /t 2 /nobreak >nul
+set /a WAIT+=HEALTH_INTERVAL
+if !WAIT! geq %MAX_WAIT% (
+    echo  [FAIL] Backend failed to start after %MAX_WAIT% seconds
+    echo  Check logs\backend_*.log for details
+    pause
+    exit /b 1
 )
-ECHO [ OK ] No running processes detected.
+goto wait_backend
 
-REM --- Phase 2: Port Availability Check ---
-ECHO [....] 3/5 Port Availability Check...
-SET "BACKEND_PORT=8000"
-SET "FRONTEND_PORT=3000"
-FOR %%P IN (%BACKEND_PORT% %FRONTEND_PORT%) DO (
-    netstat -ano | findstr ":%%P" | findstr "LISTENING" >nul
-    IF !ERRORLEVEL! EQU 0 (
-        FOR /f "tokens=5" %%a IN ('netstat -ano ^| findstr ":%%P" ^| findstr "LISTENING"') DO ( taskkill /F /PID %%a >nul 2>&1 )
-    )
+REM --- Start Frontend ---
+:launch_frontend
+echo.
+echo  [FRONTEND] Launching on port %FRONTEND_PORT%...
+start "Fortuna Frontend" cmd /k ^
+  "cd web_platform\frontend && ^
+   npm run dev >> ..\..\logs\frontend_!date:~-4!-!date:~-10,2!-!date:~-7,2!_!time:~0,2!-!time:~3,2!-!time:~6,2!.log 2>&1"
+
+REM --- Wait for Frontend to be ready ---
+set /a WAIT=0
+:wait_frontend
+timeout /t %HEALTH_INTERVAL% /nobreak >nul
+powershell -NoProfile -Command "^
+try {^
+    Invoke-WebRequest -Uri 'http://localhost:%FRONTEND_PORT%' -UseBasicParsing -TimeoutSec 2 -ErrorAction Stop ^| Out-Null;^
+    exit 0^
+} catch {^
+    exit 1^
+}^
+" >nul 2>&1
+
+if %errorlevel% equ 0 (
+    echo  [OK] Frontend is ready
+    goto open_dashboard
 )
-ECHO [ OK ] 3/5 Port Availability Check - Complete.
 
-REM --- Phase 3: Launch Backend Service ---
-ECHO [....] 4/5 Launching Backend Service (minimized)...
-SET "TIMESTAMP=%date:~-4%%date:~4,2%%date:~7,2%_%time:~0,2%%time:~3,2%%time:~6,2%"
-SET "TIMESTAMP=%TIMESTAMP: =0%"
-IF NOT EXIST logs mkdir logs
-SET "BACKEND_LOG=logs\backend_%TIMESTAMP%.log"
-start "Fortuna Backend" /MIN cmd /c "call .venv\Scripts\activate.bat && uvicorn python_service.api:app --host 127.0.0.1 --port %BACKEND_PORT% --log-level warning > %BACKEND_LOG% 2>&1"
-ECHO [ OK ] 4/5 Launching Backend Service - Process started.
+set /a WAIT+=HEALTH_INTERVAL
+if !WAIT! geq %MAX_WAIT% (
+    echo  [FAIL] Frontend failed to start after %MAX_WAIT% seconds
+    echo  Check logs\frontend_*.log for details
+    pause
+    exit /b 1
+)
+goto wait_frontend
 
-REM --- Phase 4: Wait for Backend Health ---
-ECHO [....] 5/5 Waiting for Backend to become healthy...
-SET /a ATTEMPTS=0
-:BackendHealthCheck
-SET /a ATTEMPTS+=1
-IF %ATTEMPTS% GTR 30 ( ECHO [FAIL] 5/5 Backend failed to start. Check %BACKEND_LOG%. && PAUSE && EXIT /B 1 )
-powershell -Command "(Invoke-WebRequest -Uri http://localhost:%BACKEND_PORT%/health -UseBasicParsing).StatusCode" 2>nul | findstr "200" >nul
-IF !ERRORLEVEL! NEQ 0 ( timeout /t 1 /nobreak >nul && GOTO BackendHealthCheck )
-ECHO [ OK ] 5/5 Waiting for Backend to become healthy - Success!
-
-REM --- Phase 5: Launch Frontend and Browser ---
-ECHO [INFO] Launching Frontend and Browser (minimized)...
-SET "FRONTEND_LOG=logs\frontend_%TIMESTAMP%.log"
-start "Fortuna Frontend" /MIN cmd /c "cd web_platform\frontend && npm run dev > ..\..\%FRONTEND_LOG% 2>&1"
-timeout /t 8 /nobreak >nul
+:open_dashboard
+echo.
+echo  [*] Opening dashboard in browser...
+timeout /t 2 /nobreak >nul
 start http://localhost:%FRONTEND_PORT%
-ECHO [ OK ] Frontend and Browser launched.
-ECHO.
-ECHO  ================================================
-ECHO   LAUNCH COMPLETE! THE FAUCET IS FLOWING.
-ECHO  ================================================
-ECHO.
-ECHO   Press any key to launch the continuous status console...
-PAUSE >NUL
 
-REM Activate venv and run the status CLI
-call .venv\Scripts\activate.bat
-python fortuna_status_cli.py
+echo.
+echo  ========================================================================
+echo   All Services Running!
+echo  ========================================================================
+echo.
+echo   Backend:  http://localhost:%BACKEND_PORT%/docs
+echo   Frontend: http://localhost:%FRONTEND_PORT%
+echo.
+echo   Logs:     logs\backend_*.log and logs\frontend_*.log
+echo.
+echo  To stop services, run SERVICE_MANAGER.bat and select option [2]
+echo.
