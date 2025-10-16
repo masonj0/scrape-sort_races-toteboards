@@ -28,14 +28,14 @@ class GbgbApiAdapter(BaseAdapter):
         try:
             # The endpoint appears to be structured by date for all meetings
             endpoint = f"results/meeting/{date}"
-            response_json = await self.make_request(http_client, "GET", endpoint)
+            response = await self.make_request(http_client, "GET", endpoint)
 
-            if not response_json:
+            if not response:
                 return self._format_response(
                     [], start_time, is_success=True, error_message="No meetings found in API response."
                 )
 
-            all_races = self._parse_meetings(response_json)
+            all_races = self._parse_meetings(response)
             return self._format_response(all_races, start_time, is_success=True)
         except httpx.HTTPError as e:
             log.error(f"{self.source_name}: HTTP request failed after retries", error=str(e), exc_info=True)

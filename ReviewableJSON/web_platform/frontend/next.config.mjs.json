@@ -1,4 +1,4 @@
 {
     "file_path": "web_platform/frontend/next.config.mjs",
-    "content": "/** @type {import('next').NextConfig} */\nconst nextConfig = {\n  reactStrictMode: true,\n  // Allow API calls to localhost during development\n  async rewrites() {\n    return [\n      {\n        source: '/api/:path*',\n        destination: 'http://localhost:8000/api/:path*',\n      },\n    ];\n  },\n};\n\nexport default nextConfig;"
+    "content": "/** @type {import('next').NextConfig} */\n\nconst withPWA = require('next-pwa')({\n  dest: 'public',\n  register: true,\n  skipWaiting: true,\n  disable: process.env.NODE_ENV === 'development'\n});\n\nconst nextConfig = {};\n\nmodule.exports = withPWA(nextConfig);\n"
 }

@@ -9,6 +9,7 @@ from typing import Optional
 
 import aiosqlite
 import structlog
+import os
 from fastapi import Depends
 from fastapi import FastAPI
 from fastapi import HTTPException
@@ -19,9 +20,9 @@ from slowapi import Limiter
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
+from .middleware.error_handler import ErrorHandlingMiddleware
 from slowapi.util import get_remote_address
 
-from python_service.middleware.error_handler import ErrorRecoveryMiddleware
 
 from .analyzer import AnalyzerEngine
 from .config import get_settings
@@ -59,6 +60,9 @@ limiter = Limiter(key_func=get_remote_address)
 
 # Pass the lifespan manager to the FastAPI app
 app = FastAPI(title="Checkmate Ultimate Solo API", version="2.1", lifespan=lifespan)
+
+# Add the new error handling middleware FIRST, to catch exceptions from all other middleware
+app.add_middleware(ErrorHandlingMiddleware)
 app.add_middleware(SlowAPIMiddleware)
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
@@ -66,7 +70,6 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 settings = get_settings()
 
 # Add middlewares (order can be important)
-app.add_middleware(ErrorRecoveryMiddleware)
 app.include_router(health_router)
 
 app.add_middleware(
@@ -222,3 +225,22 @@ async def get_tipsheet_endpoint(request: Request, date: date = Depends(get_curre
         raise HTTPException(status_code=500, detail=str(e))
 
     return results
+
+
+@app.get("/health/legacy", tags=["Health"], summary="Check for Deprecated Legacy Components")
+async def check_legacy_files():
+    """
+    Checks for the presence of known legacy files and returns a warning if they exist.
+    This helps operators identify and clean up obsolete parts of the codebase.
+    """
+    legacy_files = ["checkmate_service.py", "checkmate_web/main.py"]
+    present_files = [f for f in legacy_files if os.path.exists(f)]
+
+    if present_files:
+        return {
+            "status": "WARNING",
+            "message": "Legacy files detected. These are obsolete and should be removed.",
+            "detected_files": present_files
+        }
+
+    return {"status": "CLEAN", "message": "No known legacy files detected."}

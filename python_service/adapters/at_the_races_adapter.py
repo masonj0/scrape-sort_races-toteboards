@@ -35,22 +35,23 @@ class AtTheRacesAdapter(BaseAdapter):
             races = [race for race in await asyncio.gather(*tasks) if race]
             return self._format_response(races, start_time, is_success=True)
         except Exception as e:
+            log.error(f"Error fetching races from AtTheRaces: {e}", exc_info=True)
             return self._format_response([], start_time, is_success=False, error_message=str(e))
 
     async def _get_race_links(self, http_client: httpx.AsyncClient) -> List[str]:
-        response_html = await self.make_request(http_client, "GET", "/racecards")
-        if not response_html:
+        response = await self.make_request(http_client, "GET", "/racecards")
+        if not response:
             return []
-        soup = BeautifulSoup(response_html, "html.parser")
+        soup = BeautifulSoup(response.text, "html.parser")
         links = {a["href"] for a in soup.select("a.race-time-link[href]")}
         return [f"{self.base_url}{link}" for link in links]
 
     async def _fetch_and_parse_race(self, url: str, http_client: httpx.AsyncClient) -> Optional[Race]:
         try:
-            response_html = await self.make_request(http_client, "GET", url)
-            if response_html is None:
+            response = await self.make_request(http_client, "GET", url)
+            if response is None:
                 return None
-            soup = BeautifulSoup(response_html, "html.parser")
+            soup = BeautifulSoup(response.text, "html.parser")
             header = soup.select_one("h1.heading-racecard-title").get_text()
             track_name_raw, race_time = [p.strip() for p in header.split("|")[:2]]
             track_name = normalize_venue_name(track_name_raw)

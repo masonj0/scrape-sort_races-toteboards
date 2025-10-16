@@ -1,0 +1,4 @@
+{
+    "file_path": "web_platform/frontend/src/app/layout.tsx",
+    "content": "// web_platform/frontend/app/layout.tsx\nimport './globals.css';\nimport type { Metadata } from 'next';\nimport { Inter } from 'next/font/google';\nimport Providers from './Providers';\n\nconst inter = Inter({ subsets: ['latin'] });\n\nexport const metadata: Metadata = {\n  title: 'Fortuna Faucet Command Deck',\n  description: 'Real-time racing analysis.',\n};\n\nexport default function RootLayout({\n  children,\n}: {\n  children: React.ReactNode;\n}) {\n  return (\n    <html lang=\"en\">\n      <body className={`${inter.className} bg-white text-gray-900 dark:bg-gray-900 dark:text-gray-100`}>\n        <Providers>{children}</Providers>\n      </body>\n    </html>\n  );\n}"
+}

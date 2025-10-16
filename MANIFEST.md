@@ -15,6 +15,7 @@ This manifest lists all essential files located in the project's root directory.
 * requirements.txt
 * pyproject.toml
 * .env.example
+* VERSION.txt
 
 ## Operational Tooling
 
