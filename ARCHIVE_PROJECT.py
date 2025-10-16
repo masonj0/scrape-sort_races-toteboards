@@ -11,8 +11,9 @@ OUTPUT_FILENAME_TEMPLATE = "FORTUNA_ALL_PART{}.JSON"
 IGNORE_PATTERNS = {
     '.git', '.idea', '.vscode', '__pycache__', '.venv', 'node_modules',
     'build', 'dist', 'logs', '.DS_Store', '.pytest_cache', '.next',
-    'pip_install.log', 'npm_install.log', 'electron_install.log',
+    'pip_install.log', 'npm_install.log', 'electron_install.log', 'ReviewableJSON',
     '*.pyc', '*.egg-info', 'MANIFEST.md', 'MANIFEST2.md', 'MANIFEST3.md',
+    'FORTUNA_ALL_PART*.JSON',
     # Exclude the deprecated and new archive scripts themselves
     'create_fortuna_json.py', 'MANAGE_MANIFESTS.py', 'ARCHIVE_PROJECT.py'
 }

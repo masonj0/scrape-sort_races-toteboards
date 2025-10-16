@@ -1,7 +1,6 @@
 # launcher_gui.py - The single, graphical entry point for Fortuna Faucet.
 import tkinter as tk
-from tkinter import ttk
-from tkinter import messagebox
+from tkinter import ttk, messagebox
 import subprocess
 import threading
 import time
@@ -62,15 +61,12 @@ class FortunaLauncher(tk.Tk):
         self.status_log.config(text="Attempting to launch services...")
         self.is_running = True # Set intent to run
 
-        # Use CREATE_NO_WINDOW to hide console windows on Windows
         creation_flags = subprocess.CREATE_NO_WINDOW if os.name == 'nt' else 0
 
-        # Start Backend
         self.backend_status.config(text="● Backend: STARTING...", foreground="#FFC107")
         backend_command = ["cmd", "/c", "call .venv\\Scripts\\activate.bat && uvicorn python_service.api:app --host 127.0.0.1 --port 8000"]
         self.backend_proc = subprocess.Popen(backend_command, creationflags=creation_flags)
 
-        # Start Frontend
         self.frontend_status.config(text="● Frontend: STARTING...", foreground="#FFC107")
         frontend_command = ["cmd", "/c", "cd web_platform/frontend && npm run dev"]
         self.frontend_proc = subprocess.Popen(frontend_command, creationflags=creation_flags)
@@ -85,13 +81,12 @@ class FortunaLauncher(tk.Tk):
         for proc in [self.backend_proc, self.frontend_proc]:
             if proc and proc.poll() is None:
                 try:
-                    # Kill the entire process tree to shut down children (like node)
                     parent = psutil.Process(proc.pid)
                     for child in parent.children(recursive=True):
                         child.kill()
                     parent.kill()
                 except psutil.NoSuchProcess:
-                    pass # Process already gone
+                    pass
 
         self.backend_proc = None
         self.frontend_proc = None
@@ -101,54 +96,41 @@ class FortunaLauncher(tk.Tk):
         while True:
             backend_ok, frontend_ok = False, False
             try:
-                # Check Backend
-                if self.backend_proc and self.backend_proc.poll() is None:
+                if self.is_running and self.backend_proc and self.backend_proc.poll() is None:
                     try:
                         r = requests.get(f"http://localhost:{BACKEND_PORT}/health", timeout=1)
-                        if r.status_code == 200:
-                            backend_ok = True
+                        backend_ok = r.status_code == 200
                     except requests.RequestException:
                         pass
 
-                # Check Frontend
-                if self.frontend_proc and self.frontend_proc.poll() is None:
+                if self.is_running and self.frontend_proc and self.frontend_proc.poll() is None:
                     try:
                         r = requests.get(f"http://localhost:{FRONTEND_PORT}", timeout=1)
-                        if r.status_code == 200:
-                            frontend_ok = True
+                        frontend_ok = r.status_code == 200
                     except requests.RequestException:
                         pass
 
-                # If we intend to be running but a process has died, set state to not running
-                if self.is_running and (not backend_ok or not frontend_ok):
-                    if (self.backend_proc and self.backend_proc.poll() is not None) or \
-                       (self.frontend_proc and self.frontend_proc.poll() is not None):
-                        self.is_running = False # A service has crashed
-
+                if self.is_running and (self.backend_proc.poll() is not None or self.frontend_proc.poll() is not None):
+                    self.is_running = False # A service has crashed
             finally:
-                # Schedule UI update on the main thread
                 self.after(0, self._update_ui, backend_ok, frontend_ok)
-
-            time.sleep(3) # Check every 3 seconds
+            time.sleep(3)
 
     def _update_ui(self, backend_ok, frontend_ok):
-        # Update Backend Status
         if backend_ok:
             self.backend_status.config(text="● Backend: ONLINE", foreground="#4CAF50")
-        elif self.is_running and self.backend_proc:
+        elif self.is_running:
             self.backend_status.config(text="● Backend: STARTING...", foreground="#FFC107")
         else:
             self.backend_status.config(text="● Backend: OFFLINE", foreground="#F44336")
 
-        # Update Frontend Status
         if frontend_ok:
             self.frontend_status.config(text="● Frontend: ONLINE", foreground="#4CAF50")
-        elif self.is_running and self.frontend_proc:
+        elif self.is_running:
             self.frontend_status.config(text="● Frontend: STARTING...", foreground="#FFC107")
         else:
             self.frontend_status.config(text="● Frontend: OFFLINE", foreground="#F44336")
 
-        # Update Button State
         if self.is_running:
             self.action_button.config(text="■ STOP SERVICES", bg="#F44336")
             if backend_ok and frontend_ok:
@@ -166,10 +148,27 @@ class FortunaLauncher(tk.Tk):
         else:
             self.destroy()
 
+def main():
+    """Main entry point: check for config and run the appropriate GUI."""
+    # Pre-flight check for .env file
+    if not os.path.exists('.env'):
+        # Hide the root window while the wizard is running
+        root = tk.Tk()
+        root.withdraw()
+        # Run the config wizard
+        wizard_proc = subprocess.run(["python", "config_wizard_gui.py"], capture_output=True, text=True)
+        # After wizard closes, check if .env was created
+        if not os.path.exists('.env'):
+            messagebox.showerror("Setup Incomplete", "Configuration was not saved. The application cannot start.")
+            return # Exit if config is still missing
+
+    # If we get here, .env exists, so run the main launcher
+    app = FortunaLauncher()
+    app.mainloop()
+
 if __name__ == "__main__":
     # Pre-flight check for .venv
     if not os.path.exists('.venv'):
         messagebox.showerror("Error", "Python virtual environment not found. Please run INSTALL_FORTUNA.bat first.")
     else:
-        app = FortunaLauncher()
-        app.mainloop()
+        main()

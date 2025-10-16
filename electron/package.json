@@ -1,15 +1,25 @@
 {
-  "name": "fortuna-faucet-desktop",
+  "name": "fortuna-faucet",
   "version": "1.0.0",
-  "description": "The desktop shell for the Fortuna Faucet application.",
+  "description": "Fortuna Faucet Data Management Console",
   "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder"
+  },
+  "author": "Fortuna Development Team",
+  "devDependencies": {
+    "electron": "^28.0.0",
+    "electron-builder": "^24.9.1"
+  },
   "build": {
-    "appId": "com.fortuna.ascended",
+    "appId": "com.fortuna.faucet",
     "productName": "Fortuna Faucet",
     "files": [
       "main.js",
       "preload.js",
-      "assets/**/*"
+      "assets/**/*",
+      "!node_modules/**/*"
     ],
     "win": {
       "target": "msi",
@@ -17,15 +27,18 @@
     },
     "msi": {
       "oneClick": false,
-      "allowToChangeInstallationDirectory": true
+      "allowToChangeInstallationDirectory": true,
+      "perMachine": true,
+      "createDesktopShortcut": true,
+      "installerIcon": "assets/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "perMachine": true,
+      "createDesktopShortcut": true,
+      "installerIcon": "assets/icon.ico",
+      "include": "electron/installer.nsh"
     }
-  },
-  "scripts": {
-    "start": "electron .",
-    "dist": "electron-builder"
-  },
-  "devDependencies": {
-    "electron": "^28.0.0",
-    "electron-builder": "^24.9.1"
   }
 }

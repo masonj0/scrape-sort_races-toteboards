@@ -1,41 +1,33 @@
-# Fortuna Faucet: Windows Operator's Manual (GUI Edition)
+# Fortuna Faucet: Windows Operator's Manual (MSI Edition)
 
 Welcome to the Fortuna Faucet. This guide will get you up and running.
 
 ---
 
-## The Golden Path (The Only Steps You Need)
+## The Golden Path: The One-Click Installer
 
-This is the simplest and only way you need to interact with the application.
+This is the simplest, safest, and only recommended way to install the application.
 
-### Step 1: Run the Installer (First Time Only)
+### Step 1: Find the Installer
 
-> Find the `INSTALL_FORTUNA.bat` file in the project folder and double-click it.
+> Locate the `Fortuna Faucet Setup.msi` file. If you don't have it, a developer must create it for you using the `BUILD_INSTALLER.bat` script.
 
-A setup wizard will run. It will verify your system and install all dependencies. You only need to do this once.
+### Step 2: Run the Installer
 
-### Step 2: Run the Launcher
+> Double-click the `.msi` file.
 
-> Find the `launcher_gui.pyw` file (or `launcher_gui.py`) and double-click it.
+A standard Windows installation wizard will appear. Follow the on-screen instructions. It will install the application, all its dependencies, and create Start Menu and Desktop shortcuts for you automatically.
 
-This is the main control panel for the application. It's the only file you need to run from now on.
+### Step 3: Launch the Application
 
-### Step 3: Start the Services
+> Use the new 'Fortuna Faucet' shortcut on your Desktop or in your Start Menu.
 
-> In the control panel, click the big green `▶ START SERVICES` button.
+The graphical control panel will launch. Click the big green `▶ START SERVICES` button to run the application.
 
-The status indicators will turn yellow as the services start, and then green once they are online. A web browser will automatically open to the dashboard.
-
-### To Stop the Application
-
-> Click the big red `■ STOP SERVICES` button in the control panel, or simply close the control panel window.
+**You are done. There are no other steps.**
 
 ---
 
-## Advanced Usage & Troubleshooting
+## For Developers Only
 
-For most users, the GUI Launcher is all you will ever need. The scripts below are for developers or for manual troubleshooting.
-
--   **`SERVICE_MANAGER.bat`**: The legacy command-line menu for managing services.
--   **`health_check.bat`**: Runs a series of diagnostic checks on your environment.
--   **`fix_common_issues.bat`**: Provides an interactive menu to solve common problems.
+If you are a developer and need to set up a local environment from the source code, please refer to the `ARCHITECTURAL_MANDATE.md` and the scripts in the root directory. The `.msi` installer is the only supported path for end-users.
