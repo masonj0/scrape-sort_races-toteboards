@@ -19,8 +19,7 @@ log = structlog.get_logger(__name__)
 
 class BetfairAdapter(BetfairAuthMixin, BaseAdapter):
     def __init__(self, config):
-        super().__init__(source_name="BetfairExchange", base_url="https://api.betfair.com/exchange/betting/rest/v1.0/")
-        self.config = config
+        super().__init__(source_name="BetfairExchange", base_url="https://api.betfair.com/exchange/betting/rest/v1.0/", config=config)
         self.app_key = self.config.BETFAIR_APP_KEY
 
     async def fetch_races(self, date: str, http_client: httpx.AsyncClient) -> Dict[str, Any]:

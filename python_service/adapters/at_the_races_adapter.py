@@ -25,7 +25,7 @@ log = structlog.get_logger(__name__)
 
 class AtTheRacesAdapter(BaseAdapter):
     def __init__(self, config):
-        super().__init__(source_name="AtTheRaces", base_url="https://www.attheraces.com")
+        super().__init__(source_name="AtTheRaces", base_url="https://www.attheraces.com", config=config)
 
     async def fetch_races(self, date: str, http_client: httpx.AsyncClient) -> Dict[str, Any]:
         start_time = datetime.now()

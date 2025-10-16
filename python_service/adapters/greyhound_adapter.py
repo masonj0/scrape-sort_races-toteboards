@@ -22,7 +22,7 @@ class GreyhoundAdapter(BaseAdapter):
     def __init__(self, config):
         if not config.GREYHOUND_API_URL:
             raise ValueError("GreyhoundAdapter cannot be initialized without GREYHOUND_API_URL.")
-        super().__init__(source_name="Greyhound Racing", base_url=config.GREYHOUND_API_URL)
+        super().__init__(source_name="Greyhound Racing", base_url=config.GREYHOUND_API_URL, config=config)
         # Example for future use: self.api_key = config.GREYHOUND_API_KEY
 
     async def fetch_races(self, date: str, http_client: httpx.AsyncClient) -> Dict[str, Any]:

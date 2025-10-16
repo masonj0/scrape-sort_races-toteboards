@@ -21,7 +21,7 @@ class GbgbApiAdapter(BaseAdapter):
     """Adapter for the undocumented JSON API for the Greyhound Board of Great Britain."""
 
     def __init__(self, config):
-        super().__init__(source_name="GBGB", base_url="https://api.gbgb.org.uk/api/")
+        super().__init__(source_name="GBGB", base_url="https://api.gbgb.org.uk/api/", config=config)
 
     async def fetch_races(self, date: str, http_client: httpx.AsyncClient) -> Dict[str, Any]:
         start_time = datetime.now()

@@ -27,7 +27,7 @@ def _clean_text(text: Optional[str]) -> Optional[str]:
 
 class TimeformAdapter(BaseAdapter):
     def __init__(self, config):
-        super().__init__(source_name="Timeform", base_url="https://www.timeform.com")
+        super().__init__(source_name="Timeform", base_url="https://www.timeform.com", config=config)
 
     async def fetch_races(self, date: str, http_client: httpx.AsyncClient) -> Dict[str, Any]:
         start_time = datetime.now()

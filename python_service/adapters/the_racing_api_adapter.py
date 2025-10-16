@@ -21,7 +21,7 @@ class TheRacingApiAdapter(BaseAdapter):
     """Adapter for the high-value JSON-based The Racing API."""
 
     def __init__(self, config):
-        super().__init__(source_name="TheRacingAPI", base_url="https://api.theracingapi.com/v1/")
+        super().__init__(source_name="TheRacingAPI", base_url="https://api.theracingapi.com/v1/", config=config)
         self.api_key = config.THE_RACING_API_KEY
 
     async def fetch_races(self, date: str, http_client: httpx.AsyncClient) -> Dict[str, Any]:
