@@ -9,6 +9,7 @@ pydantic-settings==2.1.0
 # --- HTTP & Web Scraping ---
 httpx==0.25.1
 tenacity==8.2.3
+requests
 
 # --- HTML & Data Parsing ---
 selectolax
