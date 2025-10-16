@@ -10,6 +10,9 @@ IF NOT EXIST .venv\Scripts\activate.bat (
     IF %ERRORLEVEL% NEQ 0 ( echo [FATAL] Setup failed. & pause & exit /b 1 )
 )
 
+REM --- Create logs directory if missing ---
+if not exist logs mkdir logs
+
 :menu
 cls
 echo.
