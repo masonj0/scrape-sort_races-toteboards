@@ -1,0 +1,4 @@
+{
+    "file_path": "pg_schemas/quarantine_races.sql",
+    "content": "CREATE TABLE IF NOT EXISTS quarantine_races (\n    quarantine_id SERIAL PRIMARY KEY,\n    race_id VARCHAR(100),\n    track_name VARCHAR(100),\n    race_number INT,\n    post_time TIMESTAMP WITH TIME ZONE,\n    source VARCHAR(50),\n    raw_data_json JSONB, -- Store the original raw data for inspection\n    quarantine_reason TEXT, -- Reason for failing validation\n    collection_timestamp TIMESTAMP WITH TIME ZONE DEFAULT NOW()\n);"
+}

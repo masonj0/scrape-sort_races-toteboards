@@ -19,9 +19,9 @@ from slowapi import Limiter
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
+from .middleware.error_handler import ErrorHandlingMiddleware
 from slowapi.util import get_remote_address
 
-from python_service.middleware.error_handler import ErrorRecoveryMiddleware
 
 from .analyzer import AnalyzerEngine
 from .config import get_settings
@@ -59,6 +59,9 @@ limiter = Limiter(key_func=get_remote_address)
 
 # Pass the lifespan manager to the FastAPI app
 app = FastAPI(title="Checkmate Ultimate Solo API", version="2.1", lifespan=lifespan)
+
+# Add the new error handling middleware FIRST, to catch exceptions from all other middleware
+app.add_middleware(ErrorHandlingMiddleware)
 app.add_middleware(SlowAPIMiddleware)
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
@@ -66,7 +69,6 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 settings = get_settings()
 
 # Add middlewares (order can be important)
-app.add_middleware(ErrorRecoveryMiddleware)
 app.include_router(health_router)
 
 app.add_middleware(
