@@ -1,49 +1,41 @@
-# Fortuna Faucet: Windows Operator's Manual (v3.0)
+# Fortuna Faucet: Windows Operator's Manual (GUI Edition)
 
-Welcome to the Fortuna Faucet. This guide will get you up and running with our new, professional-grade command suite.
+Welcome to the Fortuna Faucet. This guide will get you up and running.
 
 ---
 
-## The Golden Path: Your First Launch
+## The Golden Path (The Only Steps You Need)
 
 This is the simplest and only way you need to interact with the application.
 
-### Step 1: Run the Service Manager
+### Step 1: Run the Installer (First Time Only)
 
-> Find the `SERVICE_MANAGER.bat` file in the project folder and double-click it.
+> Find the `INSTALL_FORTUNA.bat` file in the project folder and double-click it.
 
-This one script is your single entry point for everything. It's intelligent and will guide you.
+A setup wizard will run. It will verify your system and install all dependencies. You only need to do this once.
 
--   **If this is your first time,** a setup wizard will automatically launch. It will verify your system and install all dependencies. Just follow the on-screen instructions.
+### Step 2: Run the Launcher
 
-### Step 2: Start the Services
+> Find the `launcher_gui.pyw` file (or `launcher_gui.py`) and double-click it.
 
-> Once the menu appears, press `1` on your keyboard and then press `Enter` to select `[1] Start Services`.
+This is the main control panel for the application. It's the only file you need to run from now on.
 
-This will launch all required processes in the background using a race-condition-free, health-checked sequence.
+### Step 3: Start the Services
 
-### Step 3: You're Done!
+> In the control panel, click the big green `▶ START SERVICES` button.
 
-A web browser will automatically open to the Fortuna Faucet dashboard once all systems are confirmed to be online.
+The status indicators will turn yellow as the services start, and then green once they are online. A web browser will automatically open to the dashboard.
+
+### To Stop the Application
+
+> Click the big red `■ STOP SERVICES` button in the control panel, or simply close the control panel window.
 
 ---
 
-## Day-to-Day Operations
+## Advanced Usage & Troubleshooting
 
-Always use `SERVICE_MANAGER.bat` to manage the application.
+For most users, the GUI Launcher is all you will ever need. The scripts below are for developers or for manual troubleshooting.
 
-### Key Menu Options:
-
--   **`[1] Start Services`**: Launches the application.
--   **`[2] Stop Services`**: Performs a clean, graceful shutdown of all processes.
--   **`[3] Restart Services`**: Performs a graceful stop, then a clean start.
--   **`[4] Check Live Status`**: Instantly checks if the backend and frontend are responsive and which ports they are using.
-
-### Troubleshooting & Diagnostics
-
-The Service Manager provides a suite of powerful, built-in tools to help you solve common problems.
-
--   **`[5] View Latest Logs`**: Automatically finds and opens the most recent backend and frontend log files in Notepad for easy debugging.
--   **`[6] View Performance Stats`**: Shows a quick, real-time snapshot of system memory, CPU usage, and disk space.
--   **`[7] Validate Dependencies`**: Runs a series of checks to ensure that Python, Node.js, Git, and all other required components are correctly installed and accessible.
--   **`[9] Reset to Factory Settings`**: A powerful tool that can safely delete all logs and caches if you need to return the system to a clean state.
+-   **`SERVICE_MANAGER.bat`**: The legacy command-line menu for managing services.
+-   **`health_check.bat`**: Runs a series of diagnostic checks on your environment.
+-   **`fix_common_issues.bat`**: Provides an interactive menu to solve common problems.
