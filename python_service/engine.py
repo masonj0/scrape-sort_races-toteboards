@@ -9,6 +9,7 @@ from typing import Dict
 from typing import List
 from typing import Tuple
 
+import asyncio
 import httpx
 import structlog
 
@@ -43,7 +44,7 @@ class FortunaEngine:
         from .config import get_settings
 
         self.config = config or get_settings()
-        self.log = structlog.get_logger(self.__class__.__name__)
+        self.logger = structlog.get_logger(__name__)
         self.adapters: List[BaseAdapter] = [
             BetfairAdapter(config=self.config),
             BetfairGreyhoundAdapter(config=self.config),

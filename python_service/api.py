@@ -1,6 +1,7 @@
 # python_service/api.py
 
 from contextlib import asynccontextmanager
+from .logging_config import configure_logging
 from datetime import date
 from datetime import datetime
 from typing import List
@@ -38,12 +39,12 @@ log = structlog.get_logger()
 # Define the lifespan context manager for robust startup/shutdown
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    configure_logging()
     """
     Manage the application's lifespan. On startup, it initializes the OddsEngine
     with validated settings and attaches it to the app state. On shutdown, it
     properly closes the engine's resources.
     """
-    configure_logging()
     settings = get_settings()
     app.state.engine = FortunaEngine(config=settings)
     app.state.analyzer_engine = AnalyzerEngine()
