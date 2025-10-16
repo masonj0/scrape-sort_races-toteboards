@@ -1,22 +1,55 @@
 # python_service/adapters/betfair_datascientist_adapter.py
 
-import pandas as pd
-import requests
 from datetime import datetime
 from io import StringIO
 
-from ..models_v3 import NormalizedRace, NormalizedRunner
-from .base_v3 import BaseAdapterV3
+import pandas as pd
+import requests
+
+from typing import Any
+from typing import List
+
+from ..models import Race
+from ..models_v3 import NormalizedRace
+import structlog
+
+from ..models_v3 import NormalizedRunner
 from ..utils.text import normalize_course_name
+from .base_v3 import BaseAdapterV3
+
+
+import structlog
+
+from ..models_v3 import NormalizedRunner
+from ..utils.text import normalize_course_name
+from .base_v3 import BaseAdapterV3
+
 
 class BetfairDataScientistAdapter(BaseAdapterV3):
     ADAPTER_NAME = "BetfairDataScientist"
 
     def __init__(self, model_name: str, url: str, enabled: bool = True, priority: int = 100):
-        super().__init__(f"{self.ADAPTER_NAME}_{model_name}", enabled, priority)
+        source_name = f"{self.ADAPTER_NAME}_{model_name}"
+        super().__init__(source_name=source_name, base_url=url)
         self.model_name = model_name
         self.url = url
-        self.logger.info(f"Initialized BetfairDataScientistAdapter for model: {self.model_name}")
+        self._enabled = enabled
+        self._priority = priority
+
+    def get_name(self) -> str:
+        return self.source_name
+
+    def is_enabled(self) -> bool:
+        return self._enabled
+
+    async def _fetch_data(self, date: str):
+        pass
+
+    def _parse_races(self, raw_data: Any) -> List[Race]:
+        return []
+
+    async def fetch_races(self, date: str, http_client):
+        pass
 
     def fetch_and_normalize(self) -> list[NormalizedRace]:
         if not self.is_enabled():
@@ -35,32 +68,35 @@ class BetfairDataScientistAdapter(BaseAdapterV3):
             return []
 
     def _normalize_df(self, df: pd.DataFrame) -> list[NormalizedRace]:
-        df = df.rename(columns={
-            "meetings.races.bfExchangeMarketId": "market_id",
-            "meetings.races.runners.bfExchangeSelectionId": "selection_id",
-            "meetings.races.runners.ratedPrice": "rated_price",
-            "meetings.races.raceName": "race_name",
-            "meetings.name": "meeting_name",
-            "meetings.races.raceNumber": "race_number",
-            "meetings.races.runners.runnerName": "runner_name",
-            "meetings.races.runners.clothNumber": "saddle_cloth"
-        })
+        df = df.rename(
+            columns={
+                "meetings.races.bfExchangeMarketId": "market_id",
+                "meetings.races.runners.bfExchangeSelectionId": "selection_id",
+                "meetings.races.runners.ratedPrice": "rated_price",
+                "meetings.races.raceName": "race_name",
+                "meetings.name": "meeting_name",
+                "meetings.races.raceNumber": "race_number",
+                "meetings.races.runners.runnerName": "runner_name",
+                "meetings.races.runners.clothNumber": "saddle_cloth",
+            }
+        )
         normalized_races = []
         for market_id, group in df.groupby("market_id"):
             race_info = group.iloc[0]
             runners = [
                 NormalizedRunner(
-                    runner_id=str(row.get('selection_id')),
-                    name=str(row.get('runner_name')),
-                    saddle_cloth=str(row.get('saddle_cloth', '')),
-                    odds_decimal=float(row.get('rated_price', 0.0))
-                ) for _, row in group.iterrows()
+                    runner_id=str(row.get("selection_id")),
+                    name=str(row.get("runner_name")),
+                    saddle_cloth=str(row.get("saddle_cloth", "")),
+                    odds_decimal=float(row.get("rated_price", 0.0)),
+                )
+                for _, row in group.iterrows()
             ]
             race = NormalizedRace(
                 race_key=str(market_id),
-                track_key=normalize_course_name(str(race_info.get('meeting_name', ''))),
+                track_key=normalize_course_name(str(race_info.get("meeting_name", ""))),
                 start_time_iso=datetime.now().isoformat(),
-                race_name=str(race_info.get('race_name', '')),
+                race_name=str(race_info.get("race_name", "")),
                 runners=runners,
                 source_ids=[self.get_name()],
             )

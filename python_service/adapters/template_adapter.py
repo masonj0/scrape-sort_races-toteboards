@@ -8,23 +8,25 @@
 # ==============================================================================
 
 from datetime import datetime
-from typing import Dict, Any, List
+from typing import Any
+from typing import Dict
+from typing import List
+
 import httpx
 import structlog
 
+from ..models import Race  # Assuming standard models
+from ..models import Runner  # Assuming standard models
 from .base import BaseAdapter
-from ..models import Race, Runner # Assuming standard models
 
 log = structlog.get_logger(__name__)
+
 
 class TemplateAdapter(BaseAdapter):
     """[IMPLEMENT ME] A brief description of the data source."""
 
     def __init__(self, config):
-        super().__init__(
-            source_name="[IMPLEMENT ME] Example Source",
-            base_url="https://api.example.com"
-        )
+        super().__init__(source_name="[IMPLEMENT ME] Example Source", base_url="https://api.example.com")
         # self.api_key = config.EXAMPLE_API_KEY # Uncomment if needed
 
     async def fetch_races(self, date: str, http_client: httpx.AsyncClient) -> Dict[str, Any]:
@@ -46,7 +48,6 @@ class TemplateAdapter(BaseAdapter):
 
         log.warning("TemplateAdapter.fetch_races is a stub and is not implemented.")
         return self._format_response(all_races, start_time)
-
 
     def _parse_race(self, race_data: Dict[str, Any]) -> Race:
         """[IMPLEMENT ME] Logic to parse a single race from the source's data structure."""

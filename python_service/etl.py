@@ -1,16 +1,19 @@
 # python_service/etl.py
 # ETL pipeline for populating the historical data warehouse
 
-import os
-import requests
-import logging
-from datetime import date
-from sqlalchemy import create_engine, text
-from sqlalchemy.exc import SQLAlchemyError
 import json
+import logging
+import os
+from datetime import date
+
+import requests
+from sqlalchemy import create_engine
+from sqlalchemy import text
+from sqlalchemy.exc import SQLAlchemyError
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
 
 class ScribesArchivesETL:
     def __init__(self):
@@ -42,19 +45,19 @@ class ScribesArchivesETL:
 
     def _validate_and_transform(self, race: dict) -> tuple:
         """Validates a race dictionary and transforms it for insertion."""
-        if not all(k in race for k in ['id', 'venue', 'race_number', 'start_time', 'runners']):
+        if not all(k in race for k in ["id", "venue", "race_number", "start_time", "runners"]):
             return None, "Missing core fields (id, venue, race_number, start_time, runners)"
 
-        active_runners = [r for r in race.get('runners', []) if not r.get('scratched')]
+        active_runners = [r for r in race.get("runners", []) if not r.get("scratched")]
 
         transformed = {
-            'race_id': race['id'],
-            'venue': race['venue'],
-            'race_number': race['race_number'],
-            'start_time': race['start_time'],
-            'source': race.get('source'),
-            'qualification_score': race.get('qualification_score'),
-            'field_size': len(active_runners)
+            "race_id": race["id"],
+            "venue": race["venue"],
+            "race_number": race["race_number"],
+            "start_time": race["start_time"],
+            "source": race.get("source"),
+            "qualification_score": race.get("qualification_score"),
+            "field_size": len(active_runners),
         }
         return transformed, None
 
@@ -77,23 +80,33 @@ class ScribesArchivesETL:
             if transformed:
                 clean_records.append(transformed)
             else:
-                quarantined_records.append({
-                    'race_id': race.get('id'),
-                    'source': race.get('source'),
-                    'payload': json.dumps(race),
-                    'reason': reason
-                })
+                quarantined_records.append(
+                    {
+                        "race_id": race.get("id"),
+                        "source": race.get("source"),
+                        "payload": json.dumps(race),
+                        "reason": reason,
+                    }
+                )
 
         with self.engine.connect() as connection:
             try:
-                with connection.begin(): # Transaction block
+                with connection.begin():  # Transaction block
                     if clean_records:
                         # Using ON CONFLICT to prevent duplicates
-                        stmt = text("""
-                            INSERT INTO historical_races (race_id, venue, race_number, start_time, source, qualification_score, field_size)
-                            VALUES (:race_id, :venue, :race_number, :start_time, :source, :qualification_score, :field_size)
+                        stmt = text(
+                            """
+                            INSERT INTO historical_races (
+                                race_id, venue, race_number, start_time, source,
+                                qualification_score, field_size
+                            )
+                            VALUES (
+                                :race_id, :venue, :race_number, :start_time, :source,
+                                :qualification_score, :field_size
+                            )
                             ON CONFLICT (race_id) DO NOTHING;
-                        """)
+                        """
+                        )
                         connection.execute(stmt, clean_records)
                         logger.info(f"Inserted/updated {len(clean_records)} records into historical_races.")
 
@@ -109,8 +122,10 @@ class ScribesArchivesETL:
 
         logger.info("ETL process finished.")
 
+
 def run_etl_for_yesterday():
     from datetime import timedelta
+
     yesterday = date.today() - timedelta(days=1)
     etl = ScribesArchivesETL()
     etl.run(yesterday)

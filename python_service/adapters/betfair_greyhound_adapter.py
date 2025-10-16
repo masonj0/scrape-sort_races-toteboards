@@ -1,11 +1,15 @@
 # python_service/adapters/betfair_greyhound_adapter.py
-from datetime import datetime, timedelta
-from typing import AsyncGenerator
+from datetime import datetime
+from datetime import timedelta
 from decimal import Decimal
+from typing import AsyncGenerator
 
-from ..models import Race, Runner, OddsData
+from ..models import OddsData
+from ..models import Race
+from ..models import Runner
 from .base import BaseAdapter
 from .betfair_auth_mixin import BetfairAuthMixin
+
 
 class BetfairGreyhoundAdapter(BetfairAuthMixin, BaseAdapter):
     """Adapter for fetching greyhound racing data from the Betfair Exchange API."""
@@ -38,11 +42,11 @@ class BetfairGreyhoundAdapter(BetfairAuthMixin, BaseAdapter):
                     "eventTypeIds": ["4339"],  # Greyhound Racing
                     "marketCountries": ["GB", "IE"],
                     "marketTypeCodes": ["WIN"],
-                    "marketStartTime": {"from": start_time.isoformat() + "Z", "to": end_time.isoformat() + "Z"}
+                    "marketStartTime": {"from": start_time.isoformat() + "Z", "to": end_time.isoformat() + "Z"},
                 },
                 "maxResults": 1000,
-                "marketProjection": ["EVENT", "RUNNER_DESCRIPTION"]
-            }
+                "marketProjection": ["EVENT", "RUNNER_DESCRIPTION"],
+            },
         )
 
         if not market_catalogue:
@@ -53,30 +57,30 @@ class BetfairGreyhoundAdapter(BetfairAuthMixin, BaseAdapter):
 
     async def _parse_race(self, market: dict, http_client) -> Race:
         """Parses a single market from the Betfair API into a Race object."""
-        market_id = market['marketId']
-        event = market['event']
-        start_time = datetime.fromisoformat(market['marketStartTime'].replace('Z', '+00:00'))
+        market_id = market["marketId"]
+        event = market["event"]
+        start_time = datetime.fromisoformat(market["marketStartTime"].replace("Z", "+00:00"))
 
         odds_data = await self._get_odds_for_market(market_id, http_client)
 
         runners = [
             Runner(
-                number=runner.get('sortPriority', i + 1),
-                name=runner['runnerName'],
-                scratched=runner['status'] != 'ACTIVE',
-                selection_id=runner['selectionId'],
-                odds=odds_data.get(runner['selectionId'], {})
+                number=runner.get("sortPriority", i + 1),
+                name=runner["runnerName"],
+                scratched=runner["status"] != "ACTIVE",
+                selection_id=runner["selectionId"],
+                odds=odds_data.get(runner["selectionId"], {}),
             )
-            for i, runner in enumerate(market.get('runners', []))
+            for i, runner in enumerate(market.get("runners", []))
         ]
 
         return Race(
             id=f"bfg_{market_id}",
-            venue=event.get('venue', 'Unknown Venue'),
-            race_number=self._extract_race_number(market.get('marketName', '')),
+            venue=event.get("venue", "Unknown Venue"),
+            race_number=self._extract_race_number(market.get("marketName", "")),
             start_time=start_time,
             runners=runners,
-            source=self.SOURCE_NAME
+            source=self.SOURCE_NAME,
         )
 
     async def _get_odds_for_market(self, market_id: str, http_client) -> dict:
@@ -85,26 +89,17 @@ class BetfairGreyhoundAdapter(BetfairAuthMixin, BaseAdapter):
             http_client=http_client,
             method="post",
             url=f"{self.BASE_URL}listMarketBook/",
-            json={
-                "marketIds": [market_id],
-                "priceProjection": {
-                    "priceData": ["EX_BEST_OFFERS"]
-                }
-            }
+            json={"marketIds": [market_id], "priceProjection": {"priceData": ["EX_BEST_OFFERS"]}},
         )
 
         odds_data = {}
-        if market_book and market_book[0].get('runners'):
-            for runner in market_book[0]['runners']:
-                selection_id = runner['selectionId']
-                if runner['status'] == 'ACTIVE' and runner['ex']['availableToBack']:
-                    win_odds = Decimal(str(runner['ex']['availableToBack'][0]['price']))
+        if market_book and market_book[0].get("runners"):
+            for runner in market_book[0]["runners"]:
+                selection_id = runner["selectionId"]
+                if runner["status"] == "ACTIVE" and runner["ex"]["availableToBack"]:
+                    win_odds = Decimal(str(runner["ex"]["availableToBack"][0]["price"]))
                     odds_data[selection_id] = {
-                        self.SOURCE_NAME: OddsData(
-                            win=win_odds,
-                            source=self.SOURCE_NAME,
-                            last_updated=datetime.now()
-                        )
+                        self.SOURCE_NAME: OddsData(win=win_odds, source=self.SOURCE_NAME, last_updated=datetime.now())
                     }
         return odds_data
 
@@ -115,5 +110,6 @@ class BetfairGreyhoundAdapter(BetfairAuthMixin, BaseAdapter):
 
     def _extract_race_number(self, market_name: str) -> int:
         import re
+
         match = re.search(r"R(\d+)", market_name)
         return int(match.group(1)) if match else 0
