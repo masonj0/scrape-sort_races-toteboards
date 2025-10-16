@@ -1,19 +1,38 @@
 #!/usr/bin/env python3
 # This file was generated from the canonical adapter template.
 from datetime import datetime
-from typing import Dict, Any, List
+from typing import Any
+from typing import Dict
+from typing import List
+
 import httpx
 import structlog
-from .base import BaseAdapter
+
 from ..models import Race
+from .base import BaseAdapter
+
 log = structlog.get_logger(__name__)
+
+
 class TabAdapter(BaseAdapter):
     """Adapter for tab.com.au."""
+
     def __init__(self, config):
         super().__init__(source_name="TAB", base_url="https://www.tab.com.au")
+
     async def fetch_races(self, date: str, http_client: httpx.AsyncClient) -> Dict[str, Any]:
         start_time = datetime.now()
         log.warning("TabAdapter.fetch_races is a stub.")
         return self._format_response([], start_time)
+
     def _format_response(self, races: List[Race], start_time: datetime, **kwargs) -> Dict[str, Any]:
-        return {'races': [], 'source_info': {'name': self.source_name, 'status': 'SUCCESS', 'races_fetched': 0, 'error_message': 'Not Implemented', 'fetch_duration': (datetime.now() - start_time).total_seconds()}}
+        return {
+            "races": [],
+            "source_info": {
+                "name": self.source_name,
+                "status": "SUCCESS",
+                "races_fetched": 0,
+                "error_message": "Not Implemented",
+                "fetch_duration": (datetime.now() - start_time).total_seconds(),
+            },
+        }

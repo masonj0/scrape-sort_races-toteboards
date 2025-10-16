@@ -1,6 +1,9 @@
 # Centralized odds parsing utility, created by Operation: The A+ Trifecta
-from decimal import Decimal, InvalidOperation
-from typing import Optional, Union
+from decimal import Decimal
+from decimal import InvalidOperation
+from typing import Optional
+from typing import Union
+
 
 def parse_odds_to_decimal(odds: Union[str, int, float, None]) -> Optional[Decimal]:
     """
@@ -17,26 +20,26 @@ def parse_odds_to_decimal(odds: Union[str, int, float, None]) -> Optional[Decima
     odds_str = str(odds).strip().upper()
 
     SPECIAL_CASES = {
-        'EVS': Decimal('2.0'),
-        'EVENS': Decimal('2.0'),
-        'SP': None,
-        'SCRATCHED': None,
-        'SCR': None,
-        '': None
+        "EVS": Decimal("2.0"),
+        "EVENS": Decimal("2.0"),
+        "SP": None,
+        "SCRATCHED": None,
+        "SCR": None,
+        "": None,
     }
 
     if odds_str in SPECIAL_CASES:
         return SPECIAL_CASES[odds_str]
 
-    if '/' in odds_str:
+    if "/" in odds_str:
         try:
-            parts = odds_str.split('/')
+            parts = odds_str.split("/")
             if len(parts) != 2:
                 return None
             num, den = map(Decimal, parts)
             if den <= 0:
                 return None
-            return Decimal('1.0') + (num / den)
+            return Decimal("1.0") + (num / den)
         except (ValueError, InvalidOperation):
             return None
 

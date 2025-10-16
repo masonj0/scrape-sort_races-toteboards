@@ -6,9 +6,12 @@
 # validated source for all application settings using pydantic-settings.
 # ==============================================================================
 
-from pydantic_settings import BaseSettings
 from functools import lru_cache
-from typing import List, Optional
+from typing import List
+from typing import Optional
+
+from pydantic_settings import BaseSettings
+
 
 class Settings(BaseSettings):
     # --- Core Settings ---
@@ -42,10 +45,8 @@ class Settings(BaseSettings):
     # --- CORS Configuration ---
     ALLOWED_ORIGINS: List[str] = ["http://localhost:3000", "http://localhost:3001"]
 
-    model_config = {
-        "env_file": ".env",
-        "case_sensitive": True
-    }
+    model_config = {"env_file": ".env", "case_sensitive": True}
+
 
 @lru_cache()
 def get_settings() -> Settings:

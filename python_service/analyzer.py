@@ -1,11 +1,17 @@
-from abc import ABC, abstractmethod
-from typing import List, Dict, Type, Optional, Any
-import structlog
+from abc import ABC
+from abc import abstractmethod
 from decimal import Decimal
-import os
 from pathlib import Path
+from typing import Any
+from typing import Dict
+from typing import List
+from typing import Optional
+from typing import Type
 
-from python_service.models import Race, Runner
+import structlog
+
+from python_service.models import Race
+from python_service.models import Runner
 
 try:
     # winsound is a built-in Windows library
@@ -20,22 +26,24 @@ except (ImportError, RuntimeError):
 
 log = structlog.get_logger(__name__)
 
+
 def _get_best_win_odds(runner: Runner) -> Optional[Decimal]:
     """Gets the best win odds for a runner, filtering out invalid or placeholder values."""
     if not runner.odds:
         return None
 
     # Filter out invalid or placeholder odds (e.g., > 999)
-    valid_odds = [o.win for o in runner.odds.values()
-                  if o.win is not None and o.win > 0 and o.win < 999]
+    valid_odds = [o.win for o in runner.odds.values() if o.win is not None and o.win > 0 and o.win < 999]
 
     if not valid_odds:
         return None
 
     return min(valid_odds)
 
+
 class BaseAnalyzer(ABC):
     """The abstract interface for all future analyzer plugins."""
+
     def __init__(self, **kwargs):
         pass
 
@@ -43,6 +51,7 @@ class BaseAnalyzer(ABC):
     def qualify_races(self, races: List[Race]) -> Dict[str, Any]:
         """The core method every analyzer must implement."""
         pass
+
 
 class TrifectaAnalyzer(BaseAnalyzer):
     """Analyzes races and assigns a qualification score based on the 'Trifecta of Factors'."""
@@ -78,7 +87,7 @@ class TrifectaAnalyzer(BaseAnalyzer):
         criteria = {
             "max_field_size": self.max_field_size,
             "min_favorite_odds": float(self.min_favorite_odds),
-            "min_second_favorite_odds": float(self.min_second_favorite_odds)
+            "min_second_favorite_odds": float(self.min_second_favorite_odds),
         }
 
         log.info("Universal scoring complete", total_races_scored=len(scored_races), criteria=criteria)
@@ -126,16 +135,20 @@ class TrifectaAnalyzer(BaseAnalyzer):
         final_score = (field_score * FIELD_SIZE_SCORE_WEIGHT) + (odds_score * ODDS_SCORE_WEIGHT)
 
         # --- Apply a penalty if hard filters are not met, instead of returning None ---
-        if (len(active_runners) > self.max_field_size or
-            favorite_odds < self.min_favorite_odds or
-            second_favorite_odds < self.min_second_favorite_odds):
+        if (
+            len(active_runners) > self.max_field_size
+            or favorite_odds < self.min_favorite_odds
+            or second_favorite_odds < self.min_second_favorite_odds
+        ):
             # Assign a score of 0 to races that would have been filtered out
             return 0.0
 
         return round(final_score * 100, 2)
 
+
 class AnalyzerEngine:
     """Discovers and manages all available analyzer plugins."""
+
     def __init__(self):
         self.analyzers: Dict[str, Type[BaseAnalyzer]] = {}
         self._discover_analyzers()
@@ -143,7 +156,7 @@ class AnalyzerEngine:
     def _discover_analyzers(self):
         # In a real plugin system, this would inspect a folder.
         # For now, we register them manually.
-        self.register_analyzer('trifecta', TrifectaAnalyzer)
+        self.register_analyzer("trifecta", TrifectaAnalyzer)
         log.info("AnalyzerEngine discovered plugins", available_analyzers=list(self.analyzers.keys()))
 
     def register_analyzer(self, name: str, analyzer_class: Type[BaseAnalyzer]):
@@ -156,11 +169,13 @@ class AnalyzerEngine:
             raise ValueError(f"Analyzer '{name}' not found.")
         return analyzer_class(**kwargs)
 
+
 class AudioAlertSystem:
     """Plays sound alerts for important events."""
+
     def __init__(self):
         self.sounds = {
-            'high_value': Path(__file__).parent.parent.parent / 'assets' / 'sounds' / 'alert_premium.wav',
+            "high_value": Path(__file__).parent.parent.parent / "assets" / "sounds" / "alert_premium.wav",
         }
 
     def play(self, sound_type: str):
@@ -174,8 +189,10 @@ class AudioAlertSystem:
             except Exception as e:
                 log.warning("Could not play sound", file=sound_file, error=e)
 
+
 class RaceNotifier:
     """Handles sending native Windows notifications and audio alerts for high-value races."""
+
     def __init__(self):
         self.toaster = ToastNotifier() if ToastNotifier else None
         self.audio_system = AudioAlertSystem()
@@ -185,16 +202,16 @@ class RaceNotifier:
         if not self.toaster or race.id in self.notified_races:
             return
 
-        title = f"🏇 High-Value Opportunity!"
+        title = "🏇 High-Value Opportunity!"
         message = f"""{race.venue} - Race {race.race_number}
 Score: {race.qualification_score:.0f}%
-Post Time: {race.start_time.strftime('%I:%M %p')}"""
+Post Time: {race.start_time.strftime("%I:%M %p")}"""
 
         try:
             # The `threaded=True` argument is crucial to prevent blocking the main application thread.
             self.toaster.show_toast(title, message, duration=10, threaded=True)
             self.notified_races.add(race.id)
-            self.audio_system.play('high_value')
+            self.audio_system.play("high_value")
             log.info("Notification and audio alert sent for high-value race", race_id=race.id)
         except Exception as e:
             # Catch potential exceptions from the notification library itself

@@ -1,11 +1,16 @@
 # python_service/middleware/error_handler.py
-from fastapi import Request, status
-from fastapi.responses import JSONResponse
+from datetime import datetime
+from datetime import timedelta
+from typing import Any
+from typing import Dict
+
 import structlog
-from datetime import datetime, timedelta
-from typing import Dict, Any
+from fastapi import Request
+from fastapi import status
+from fastapi.responses import JSONResponse
 
 log = structlog.get_logger(__name__)
+
 
 class ErrorRecoveryMiddleware:
     def __init__(self, app):
@@ -25,7 +30,9 @@ class ErrorRecoveryMiddleware:
             log.warning("Circuit breaker is open for adapter", adapter=adapter_name)
             response = JSONResponse(
                 status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-                content={"error": f"Service temporarily unavailable for adapter '{adapter_name}' due to repeated failures."}
+                content={
+                    "error": f"Service temporarily unavailable for adapter '{adapter_name}' due to repeated failures."
+                },
             )
             await response(scope, receive, send)
             return
@@ -42,7 +49,9 @@ class ErrorRecoveryMiddleware:
 
     async def _handle_error(self, request: Request, exc: Exception, send):
         error_id = f"{type(exc).__name__}_{datetime.now().timestamp()}"
-        log.error("Unhandled error", error_id=error_id, path=request.url.path, error_type=type(exc).__name__, exc_info=True)
+        log.error(
+            "Unhandled error", error_id=error_id, path=request.url.path, error_type=type(exc).__name__, exc_info=True
+        )
 
         adapter_name = self._extract_adapter_from_scope(request.scope)
         if adapter_name:
@@ -53,7 +62,7 @@ class ErrorRecoveryMiddleware:
 
         response = JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            content={"error": "Internal Server Error", "error_id": error_id}
+            content={"error": "Internal Server Error", "error_id": error_id},
         )
         # The response must be awaited with the original scope, receive, and send callables
         await response(request.scope, request.receive, send)
