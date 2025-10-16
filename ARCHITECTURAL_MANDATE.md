@@ -51,3 +51,16 @@ The project's core documentation is not optional. It is the living memory and st
 -   **`HISTORY.MD`:** Significant architectural shifts and completed campaigns must be chronicled.
 -   **`PSEUDOCODE.MD`:** The architectural blueprint must be updated to reflect major changes to the system's design.
 -   **Manifests (`MANIFEST*.md`):** All new files must be added to the appropriate manifest to ensure the integrity of the archival system.
+
+
+---
+
+## The Final Law: The Law of the True Scribe
+
+**Effective Date:** 2025-10-15
+
+**Verdict:** The system of manually maintained manifest files (`MANIFEST.md`, `MANIFEST2.md`, `MANIFEST3.md`) is hereby declared a catastrophic failure and is **permanently deprecated**.
+
+**The New Law:** The one and only method for generating the project's `FORTUNA_ALL` archives is the `ARCHIVE_PROJECT.py` script. This 'True Scribe' is the single, automated source of truth. It programmatically scans and categorizes the entire kingdom, ensuring a perfect, complete, and uncorrupted archive is generated every time.
+
+All previous archival scripts (`create_fortuna_json.py`, `MANAGE_MANIFESTS.py`) are not to be used under any circumstances.
