@@ -261,19 +261,14 @@ class FortunaEngine:
             },
         )
 
-        # --- Windows Operator Experience Enhancement ---
+        # --- Add Success Notification ---
         try:
-            from win10toast import ToastNotifier
-
-            toaster = ToastNotifier()
-            toaster.show_toast(
-                "Fortuna Faucet",
-                f"Initial data load complete. {len(deduped_races)} races are ready for analysis.",
-                duration=10,
-                threaded=True,
-            )
+            from windows_toasts import Toast, WindowsToaster
+            toaster = WindowsToaster("Fortuna Faucet Data Refresh")
+            new_toast = Toast()
+            new_toast.text_fields = [f"Successfully fetched {len(deduped_races)} races from {len(source_infos)} sources."]
+            toaster.show_toast(new_toast)
         except (ImportError, RuntimeError):
-            # Fails gracefully if not on Windows or library is missing
             pass
 
         return response_obj.model_dump()

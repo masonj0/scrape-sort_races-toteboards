@@ -1,43 +1,46 @@
-# Fortuna Faucet - Python Dependencies (Windows Optimized)
-# This is the 'golden' manifest, combining the blueprint's pinned versions with all feature requirements.
+# Fortuna Faucet - Master Dependency List
 
-# --- Core Framework ---
+# --- Core Backend (FastAPI & Async) ---
 fastapi==0.104.1
 uvicorn[standard]==0.24.0
 pydantic==2.5.0
 pydantic-settings==2.1.0
 
-# --- HTTP & Async ---
+# --- HTTP & Web Scraping ---
 httpx==0.25.1
 tenacity==8.2.3
+requests
 
-# --- Web Scraping ---
+# --- HTML & Data Parsing ---
 selectolax
 
 # --- Logging & Configuration ---
 structlog==23.2.0
 python-dotenv==1.0.0
 
-# --- Caching & Rate Limiting ---
+# --- Caching ---
 redis==5.0.1
 slowapi==0.1.9
 
-# --- Data Warehouse ---
+# --- Database & ETL ---
 SQLAlchemy
 psycopg2-binary
 
-# --- Monitoring & GUI (Windows) ---
+# --- System & Monitoring ---
 psutil==5.9.6
 
-# --- CLI & Auxiliary Tools ---
+# --- UI & Visualization (for utility scripts) ---
 rich
 streamlit
 pikepdf
 tabula-py
 
-# --- Testing ---
+# --- Code Quality & Testing ---
 pytest==7.4.3
 pytest-asyncio==0.21.1
 
-# --- Development ---
+# --- Build & Packaging ---
 black==23.11.0
+
+# --- Windows Specific (Notifications) ---
+windows-toasts

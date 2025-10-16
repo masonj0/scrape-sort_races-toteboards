@@ -1,105 +1,107 @@
-# fortuna_tray.py
-# Provides a native Windows System Tray icon and menu for Fortuna Faucet.
+# fortuna_tray.py - Enhanced with Auto-Updates and Full Control
 
 import pystray
-import configparser
-import sys
-import tkinter as tk
-from tkinter import messagebox
-from PIL import Image, ImageDraw, ImageFont
-import webbrowser
+from PIL import Image
 import subprocess
-from pathlib import Path
+import os
+import sys
+import threading
+import webbrowser
+import requests
 
-class FortunaTrayApp:
-    def __init__(self):
-        self.icon = None
-        self.project_root = Path(__file__).parent.resolve()
+# --- Configuration ---
+VERSION_FILE = "VERSION.txt"
+GITHUB_REPO = "masonj0/scrape-sort_races-toteboards"
+CURRENT_VERSION = "0.0.0" # Default if file not found
 
-    def create_icon(self) -> Image.Image:
-        width = 64
-        height = 64
-        # Using a gold color for the icon background
-        image = Image.new('RGB', (width, height), color='#FFD700')
-        dc = ImageDraw.Draw(image)
-        font = ImageFont.load_default()
-        dc.text((12, 15), "FF", font=font, fill='black')
-        return image
+# --- Helper Functions ---
+def get_root_path():
+    """Gets the project's root directory."""
+    return os.path.dirname(sys.executable if getattr(sys, 'frozen', False) else __file__)
 
-    def on_quit(self, icon, item):
-        icon.stop()
-        # Execute the main stop script to ensure all services are terminated
-        subprocess.Popen(str(self.project_root / "STOP_FORTUNA.bat"), shell=True)
+def get_script_path(script_name):
+    """Gets the absolute path to a script in the project root."""
+    return os.path.join(get_root_path(), script_name)
 
-    def on_open_dashboard(self, icon, item):
-        webbrowser.open('http://localhost:3000')
+def run_script(script_name):
+    """Runs a batch script in a new console window."""
+    subprocess.Popen(["cmd", "/c", f'start "{script_name}" "{get_script_path(script_name)}"'], shell=True)
 
-    def on_show_monitor(self, icon, item):
-        # Launch the Tkinter monitor
-        python_exe = self.project_root / ".venv" / "Scripts" / "python.exe"
-        monitor_script = self.project_root / "fortuna_monitor.py"
-        subprocess.Popen([str(python_exe), str(monitor_script)])
-
-    def run(self):
-        menu = pystray.Menu(
-            pystray.MenuItem('Open Dashboard', self.on_open_dashboard, default=True),
-            pystray.MenuItem('Show Monitor', self.on_show_monitor),
-            pystray.Menu.SEPARATOR,
-            pystray.MenuItem('Quit Fortuna', self.on_quit)
-        )
-
-        self.icon = pystray.Icon(
-            "Fortuna Faucet",
-            self.create_icon(),
-            "Fortuna Faucet - Racing Intelligence",
-            menu
-        )
-
-        self.icon.run()
-
-def validate_configuration():
-    """
-    Reads config.ini and ensures all required sections and keys are present.
-    Raises ValueError if a required setting is missing.
-    """
-    config = configparser.ConfigParser()
-    if not config.read('config.ini'):
-        raise ValueError("CRITICAL: config.ini file not found or is empty.")
-
-    # Define all settings required for the application to function
-    required_settings = {
-        'API_KEYS': ['betfair_api_key'],
-        'SETTINGS': ['database_path', 'log_level']
-    }
-
-    missing_items = []
-    for section, keys in required_settings.items():
-        if not config.has_section(section):
-            missing_items.append(f"Missing section: [{section}]")
-            continue
-        for key in keys:
-            if not config.has_option(section, key) or not config.get(section, key):
-                missing_items.append(f"Missing or empty key '{key}' in section [{section}]")
-
-    if missing_items:
-        error_message = "Configuration Error! Please fix the following issues in config.ini before launching:\n\n"
-        error_message += "\n".join(f"- {item}" for item in missing_items)
-        raise ValueError(error_message)
-
-def main():
-    """Main function to validate config and run the application."""
+def get_current_version():
+    """Reads the version from the VERSION.txt file."""
     try:
-        validate_configuration()
-    except (ValueError, configparser.Error) as e:
-        # Hide the redundant root tkinter window
-        root = tk.Tk()
-        root.withdraw()
-        messagebox.showerror("Fortuna Faucet - Configuration Error", str(e))
-        sys.exit(1)
+        with open(get_script_path(VERSION_FILE), 'r') as f:
+            return f.read().strip()
+    except FileNotFoundError:
+        return CURRENT_VERSION
 
-    # If validation passes, proceed to create and run the tray icon
-    app = FortunaTrayApp()
-    app.run()
+def show_toast(title, message, callback=None):
+    """Shows a Windows toast notification in a thread-safe way."""
+    def _show():
+        try:
+            from windows_toasts import Toast, WindowsToaster
+            toaster = WindowsToaster(title)
+            new_toast = Toast()
+            new_toast.text_fields = [message]
+            if callback:
+                new_toast.on_activated = lambda _: callback()
+            toaster.show_toast(new_toast)
+        except (ImportError, RuntimeError):
+            print(f"[TOAST] {title}: {message}") # Fallback for non-Windows or errors
 
+    # Run in a separate thread to avoid blocking the main UI
+    threading.Thread(target=_show, daemon=True).start()
+
+def _do_update_check():
+    """The actual worker function for checking updates."""
+    show_toast("Fortuna Faucet", "Checking for updates...")
+    try:
+        api_url = f"https://api.github.com/repos/{GITHUB_REPO}/releases/latest"
+        response = requests.get(api_url, timeout=15)
+        response.raise_for_status()
+
+        latest_release = response.json()
+        latest_version = latest_release['tag_name'].lstrip('v')
+        current_version = get_current_version()
+
+        # Simple version comparison
+        if latest_version > current_version:
+            download_url = latest_release['html_url']
+            show_toast(
+                "Update Available!",
+                f"Version {latest_version} is available. Click here to download.",
+                callback=lambda: webbrowser.open(download_url)
+            )
+        else:
+            show_toast("Fortuna Faucet", f"You are running the latest version ({current_version}).")
+    except Exception as e:
+        show_toast("Update Check Failed", "Could not connect to GitHub.")
+
+# --- Tray Icon Actions ---
+def check_for_updates(icon, item):
+    """Starts the update check in a separate thread to keep the UI responsive."""
+    threading.Thread(target=_do_update_check, daemon=True).start()
+
+def open_service_manager(icon, item):
+    run_script("SERVICE_MANAGER.bat")
+
+def on_exit(icon, item):
+    icon.stop()
+
+# --- Main Execution ---
 if __name__ == "__main__":
-    main()
+    try:
+        image = Image.open(get_script_path("assets/icon.ico"))
+    except FileNotFoundError:
+        image = Image.new('RGB', (64, 64), color='blue') # Fallback icon
+
+    menu = pystray.Menu(
+        pystray.MenuItem('Open Service Manager', open_service_manager, default=True),
+        pystray.Menu.SEPARATOR,
+        pystray.MenuItem('Check for Updates', check_for_updates),
+        pystray.Menu.SEPARATOR,
+        pystray.MenuItem('Exit', on_exit)
+    )
+
+    icon = pystray.Icon("FortunaFaucet", image, "Fortuna Faucet", menu)
+    icon.run()

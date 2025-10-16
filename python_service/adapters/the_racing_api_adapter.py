@@ -21,7 +21,7 @@ class TheRacingApiAdapter(BaseAdapter):
     """Adapter for the high-value JSON-based The Racing API."""
 
     def __init__(self, config):
-        super().__init__(source_name="TheRacingAPI", base_url="https://api.theracingapi.com/v1/")
+        super().__init__(source_name="TheRacingAPI", base_url="https://api.theracingapi.com/v1/", config=config)
         self.api_key = config.THE_RACING_API_KEY
 
     async def fetch_races(self, date: str, http_client: httpx.AsyncClient) -> Dict[str, Any]:
@@ -34,8 +34,14 @@ class TheRacingApiAdapter(BaseAdapter):
         try:
             endpoint = f"racecards?date={date}&course=all&region=gb,ire"
             headers = {"Authorization": f"Bearer {self.api_key}"}
-            response_json = await self.make_request(http_client, "GET", endpoint, headers=headers)
+            response = await self.make_request(http_client, "GET", endpoint, headers=headers)
 
+            if not response:
+                return self._format_response(
+                    [], start_time, is_success=True, error_message="No response from API."
+                )
+
+            response_json = response.json()
             if not response_json or not response_json.get("racecards"):
                 return self._format_response(
                     [], start_time, is_success=True, error_message="No racecards found in API response."

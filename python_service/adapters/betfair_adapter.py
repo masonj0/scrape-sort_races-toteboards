@@ -19,8 +19,7 @@ log = structlog.get_logger(__name__)
 
 class BetfairAdapter(BetfairAuthMixin, BaseAdapter):
     def __init__(self, config):
-        super().__init__(source_name="BetfairExchange", base_url="https://api.betfair.com/exchange/betting/rest/v1.0/")
-        self.config = config
+        super().__init__(source_name="BetfairExchange", base_url="https://api.betfair.com/exchange/betting/rest/v1.0/", config=config)
         self.app_key = self.config.BETFAIR_APP_KEY
 
     async def fetch_races(self, date: str, http_client: httpx.AsyncClient) -> Dict[str, Any]:
@@ -37,18 +36,20 @@ class BetfairAdapter(BetfairAuthMixin, BaseAdapter):
                 "marketTypeCodes": ["WIN"],
                 "marketStartTime": {"from": f"{date}T00:00:00Z", "to": f"{date}T23:59:59Z"},
             }
-            market_catalogue = await self.make_request(
+            response = await self.make_request(
                 http_client,
                 "POST",
                 "listMarketCatalogue/",
                 headers=headers,
                 json={"filter": market_filter, "maxResults": 1000, "marketProjection": ["EVENT", "RUNNER_DESCRIPTION"]},
             )
-            if not market_catalogue:
+            if not response:
                 return self._format_response([], start_time, is_success=True, error_message="No markets found.")
+            market_catalogue = response.json()
             all_races = [self._parse_race(market) for market in market_catalogue]
             return self._format_response(all_races, start_time, is_success=True)
         except Exception as e:
+            log.error(f"Error fetching races from Betfair: {e}", exc_info=True)
             return self._format_response([], start_time, is_success=False, error_message=str(e))
 
     def _parse_race(self, market: Dict[str, Any]) -> Race | None:

@@ -50,18 +50,27 @@ echo  [OK] Virtual environment ready
 
 REM --- Install Python dependencies ---
 echo.
-echo  [4/5] Installing Python dependencies (this may take 2-3 minutes)...
+echo  [4/6] Installing Python dependencies from requirements.txt...
 pip install -r python_service/requirements.txt --quiet --use-deprecated=legacy-resolver >nul 2>&1
 if %errorlevel% neq 0 (
     echo  [FAIL] Python dependency installation failed
     pause
     exit /b 1
 )
-echo  [OK] Python dependencies installed
+echo  [OK] Python dependencies from file installed
+
+echo.
+echo  [5/6] Installing Windows-specific dependencies...
+pip install windows-toasts --quiet >nul 2>&1
+if %errorlevel% neq 0 (
+    echo  [WARN] Failed to install 'windows-toasts'. Notifications may not work.
+) else (
+    echo  [OK] Windows dependencies installed
+)
 
 REM --- Install Node dependencies ---
 echo.
-echo  [5/5] Installing Node.js dependencies (this may take 1-2 minutes)...
+echo  [6/6] Installing Node.js dependencies (this may take 1-2 minutes)...
 cd web_platform\frontend
 call npm ci --prefer-offline --no-audit --quiet >nul 2>&1
 if %errorlevel% neq 0 (
