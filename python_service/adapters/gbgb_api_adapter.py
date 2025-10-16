@@ -35,8 +35,7 @@ class GbgbApiAdapter(BaseAdapter):
                     [], start_time, is_success=True, error_message="No meetings found in API response."
                 )
 
-            response_json = response.json()
-            all_races = self._parse_meetings(response_json)
+            all_races = self._parse_meetings(response)
             return self._format_response(all_races, start_time, is_success=True)
         except httpx.HTTPError as e:
             log.error(f"{self.source_name}: HTTP request failed after retries", error=str(e), exc_info=True)

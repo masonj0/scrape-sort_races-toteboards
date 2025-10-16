@@ -77,11 +77,10 @@ async def test_get_tipsheet_endpoint_success(tmp_path):
 from fastapi.testclient import TestClient
 from python_service.api import app
 
-client = TestClient(app)
-
 def test_health_check_unauthenticated():
     """Ensures the /health endpoint is accessible without an API key."""
-    response = client.get("/health")
+    with TestClient(app) as client:
+        response = client.get("/health")
     assert response.status_code == 200
     json_response = response.json()
     assert json_response["status"] == "ok"
@@ -89,12 +88,14 @@ def test_health_check_unauthenticated():
 
 def test_api_key_authentication_failure():
     """Ensures that endpoints are protected and fail with an invalid API key."""
-    response = client.get("/api/races/qualified/trifecta", headers={"X-API-KEY": "invalid_key"})
+    with TestClient(app) as client:
+        response = client.get("/api/races/qualified/trifecta", headers={"X-API-KEY": "invalid_key"})
     assert response.status_code == 403
     assert response.json() == {"detail": "Invalid or missing API Key"}
 
 def test_api_key_authentication_missing():
     """Ensures that endpoints are protected and fail with a missing API key."""
-    response = client.get("/api/races/qualified/trifecta")
+    with TestClient(app) as client:
+        response = client.get("/api/races/qualified/trifecta")
     assert response.status_code == 403
     assert response.json() == {"detail": "Not authenticated"}

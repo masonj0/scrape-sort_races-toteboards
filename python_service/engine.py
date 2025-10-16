@@ -1,6 +1,7 @@
 # python_service/engine.py
 
 import asyncio
+import inspect
 from datetime import datetime
 from datetime import timezone
 from decimal import Decimal
@@ -79,28 +80,60 @@ class FortunaEngine:
         return [adapter.get_status() for adapter in self.adapters]
 
     async def _time_adapter_fetch(self, adapter: BaseAdapter, date: str) -> Tuple[str, Dict[str, Any], float]:
-        """Wraps an adapter's fetch call, catches all exceptions, and returns a consistent payload."""
+        """
+        Wraps an adapter's fetch call for safe, non-blocking execution,
+        and returns a consistent payload with timing information.
+        Handles both modern async adapters and legacy sync adapters.
+        """
         start_time = datetime.now()
+        races = []
+        error_message = None
+        is_success = False
+
         try:
-            result = await adapter.fetch_races(date, self.http_client)
-            duration = (datetime.now() - start_time).total_seconds()
-            health_monitor.record_adapter_response(adapter.source_name, success=True, duration=duration)
-            return (adapter.source_name, result, duration)
+            # Check if the adapter's fetch_races method is a modern async function
+            if inspect.iscoroutinefunction(adapter.fetch_races):
+                result = await adapter.fetch_races(date, self.http_client)
+            else:
+                # This is a legacy, synchronous adapter. Run it in a separate thread.
+                self.logger.warning(
+                    "legacy_sync_adapter_detected",
+                    adapter=adapter.source_name,
+                    recommendation="This adapter should be refactored to be fully asynchronous."
+                )
+                result = await asyncio.to_thread(adapter.fetch_races, date, self.http_client)
+
+            # Assuming the result is a dictionary with a 'races' key
+            if result and 'races' in result:
+                races = result.get('races', [])
+                is_success = True
+            else:
+                error_message = "Adapter returned no data or malformed response"
+
         except Exception as e:
-            duration = (datetime.now() - start_time).total_seconds()
-            log.error("Adapter raised an unhandled exception", adapter=adapter.source_name, error=str(e), exc_info=True)
-            health_monitor.record_adapter_response(adapter.source_name, success=False, duration=duration)
-            failed_result = {
-                "races": [],
-                "source_info": {
-                    "name": adapter.source_name,
-                    "status": "FAILED",
-                    "races_fetched": 0,
-                    "error_message": str(e),
-                    "fetch_duration": duration,
-                },
-            }
-            return (adapter.source_name, failed_result, duration)
+            self.logger.error(
+                "Critical failure during fetch from adapter.",
+                adapter=adapter.source_name,
+                error=str(e),
+                exc_info=True
+            )
+            error_message = str(e)
+
+        duration = (datetime.now() - start_time).total_seconds()
+        health_monitor.record_adapter_response(adapter.source_name, success=is_success, duration=duration)
+
+        # Construct a consistent source_info payload regardless of success or failure
+        payload = {
+            "races": races,
+            "source_info": {
+                "name": adapter.source_name,
+                "status": "SUCCESS" if is_success else "FAILED",
+                "races_fetched": len(races),
+                "error_message": error_message,
+                "fetch_duration": duration,
+            },
+        }
+        return (adapter.source_name, payload, duration)
 
     def _race_key(self, race: Race) -> str:
         return f"{race.venue.lower().strip()}|{race.race_number}|{race.start_time.strftime('%H:%M')}"
