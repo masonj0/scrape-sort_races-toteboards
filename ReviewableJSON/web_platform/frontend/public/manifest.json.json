@@ -1,0 +1,4 @@
+{
+    "file_path": "web_platform/frontend/public/manifest.json",
+    "content": "{\n  \"name\": \"Fortuna Faucet Command Deck\",\n  \"short_name\": \"Fortuna\",\n  \"description\": \"Real-time racing analysis.\",\n  \"start_url\": \"/\",\n  \"display\": \"standalone\",\n  \"background_color\": \"#1a202c\",\n  \"theme_color\": \"#1a202c\",\n  \"icons\": [\n    {\n      \"src\": \"/icons/icon-192x192.png\",\n      \"sizes\": \"192x192\",\n      \"type\": \"image/png\"\n    },\n    {\n      \"src\": \"/icons/icon-512x512.png\",\n      \"sizes\": \"512x512\",\n      \"type\": \"image/png\"\n    }\n  ]\n}\n"
+}

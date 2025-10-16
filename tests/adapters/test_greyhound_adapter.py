@@ -1,5 +1,5 @@
 import pytest
-from unittest.mock import AsyncMock, patch
+from unittest.mock import AsyncMock, Mock, patch
 from datetime import date, datetime
 from python_service.adapters.greyhound_adapter import GreyhoundAdapter
 from python_service.config import Settings
@@ -63,7 +63,9 @@ async def test_fetch_races_parses_correctly(mock_make_request, mock_config):
             }
         ]
     }
-    mock_make_request.return_value = mock_api_response
+    mock_response = Mock()
+    mock_response.json.return_value = mock_api_response
+    mock_make_request.return_value = mock_response
 
     # ACT
     result = await adapter.fetch_races(today, AsyncMock())
@@ -95,7 +97,9 @@ async def test_fetch_races_handles_empty_response(mock_make_request, mock_config
     # ARRANGE
     adapter = GreyhoundAdapter(config=mock_config)
     today = date.today().strftime('%Y-%m-%d')
-    mock_make_request.return_value = {"cards": []} # Simulate no races found
+    mock_response = Mock()
+    mock_response.json.return_value = {"cards": []}
+    mock_make_request.return_value = mock_response
 
     # ACT
     result = await adapter.fetch_races(today, AsyncMock())

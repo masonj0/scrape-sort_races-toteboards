@@ -1,24 +1,27 @@
-@ECHO OFF
-TITLE Fortuna Faucet - Shutdown Script
-ECHO.
-ECHO  ========================================================================
-ECHO   Fortuna Faucet - Shutdown Script
-ECHO  ========================================================================
-ECHO.
-ECHO [INFO] Attempting to gracefully shut down all Fortuna Faucet services...
+@echo off
+REM ============================================================================
+REM  FORTUNA FAUCET - Stop Script (Graceful Shutdown)
+REM ============================================================================
 
-REM Find and kill the backend uvicorn process specifically tied to our API
-FOR /F "tokens=2" %%I IN ('wmic process where "commandline like '%%python_service.api:app%%'" get processid /format:list ^| find "="') DO (
-    ECHO [OK] Found and stopping backend service (PID: %%I).
-    taskkill /F /PID %%I >nul
-)
+echo.
+echo  [*] Stopping Fortuna Faucet services...
+echo.
 
-REM Find and kill the frontend Next.js process
-FOR /F "tokens=2" %%I IN ('wmic process where "commandline like '%%next dev%%' and caption='node.exe'" get processid /format:list ^| find "="') DO (
-    ECHO [OK] Found and stopping frontend service (PID: %%I).
-    taskkill /F /PID %%I >nul
-)
+REM --- Stop Backend (Python) ---
+echo  [BACKEND] Terminating Python processes...
+taskkill /F /IM python.exe /FI "WINDOWTITLE eq Fortuna Backend" >nul 2>&1
 
-ECHO.
-ECHO [INFO] Shutdown complete.
-PAUSE
+REM --- Stop Frontend (Node) ---
+echo  [FRONTEND] Terminating Node.js processes...
+taskkill /F /IM node.exe /FI "WINDOWTITLE eq Fortuna Frontend" >nul 2>&1
+
+REM --- Stop Watchman (Optional) ---
+echo  [WATCHMAN] Terminating autonomous agent...
+taskkill /F /IM python.exe /FI "WINDOWTITLE eq Fortuna Watchman" >nul 2>&1
+
+echo.
+echo  [*] Waiting for ports to be released...
+timeout /t 2 /nobreak >nul
+
+echo  [OK] All services stopped
+echo.

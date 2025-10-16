@@ -1,0 +1,4 @@
+{
+    "file_path": "electron/preload.js",
+    "content": "// electron/preload.js\n// This script runs in a privileged environment with access to Node.js APIs.\n// It's used to securely expose specific functionality to the renderer process (the web UI).\n\nconst { contextBridge, ipcRenderer } = require('electron');\n\n// Expose a safe, limited API to the frontend.\ncontextBridge.exposeInMainWorld('electronAPI', {\n  // Example: expose a function to send a message to the main process\n  // send: (channel, data) => ipcRenderer.send(channel, data),\n\n  // Example: expose a function to receive a message from the main process\n  // on: (channel, func) => {\n  //   ipcRenderer.on(channel, (event, ...args) => func(...args));\n  // }\n});\n\nconsole.log('Preload script loaded.');\n"
+}

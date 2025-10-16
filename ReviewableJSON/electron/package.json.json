@@ -1,0 +1,4 @@
+{
+    "file_path": "electron/package.json",
+    "content": "{\n  \"name\": \"fortuna-faucet-desktop\",\n  \"version\": \"1.0.0\",\n  \"description\": \"The desktop shell for the Fortuna Faucet application.\",\n  \"main\": \"main.js\",\n  \"build\": {\n    \"appId\": \"com.fortuna.ascended\",\n    \"productName\": \"Fortuna Faucet\",\n    \"files\": [\n      \"main.js\",\n      \"preload.js\",\n      \"assets/**/*\"\n    ],\n    \"win\": {\n      \"target\": \"msi\",\n      \"icon\": \"assets/icon.ico\"\n    },\n    \"msi\": {\n      \"oneClick\": false,\n      \"allowToChangeInstallationDirectory\": true\n    }\n  },\n  \"scripts\": {\n    \"start\": \"electron .\",\n    \"dist\": \"electron-builder\"\n  },\n  \"devDependencies\": {\n    \"electron\": \"^28.0.0\",\n    \"electron-builder\": \"^24.9.1\"\n  }\n}\n"
+}

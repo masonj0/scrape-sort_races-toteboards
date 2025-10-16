@@ -1,54 +1,49 @@
-# Fortuna Faucet: Windows Operator's Manual
+# Fortuna Faucet: Windows Operator's Manual (v3.0)
 
-Welcome to the Fortuna Faucet. This guide will get you up and running.
+Welcome to the Fortuna Faucet. This guide will get you up and running with our new, professional-grade command suite.
 
 ---
 
-## The Golden Path (The Only Steps You Need)
+## The Golden Path: Your First Launch
 
-This is the simplest and recommended way to use the application.
+This is the simplest and only way you need to interact with the application.
 
 ### Step 1: Run the Service Manager
 
 > Find the `SERVICE_MANAGER.bat` file in the project folder and double-click it.
 
-That's it. This one script is your single entry point for everything.
+This one script is your single entry point for everything. It's intelligent and will guide you.
 
--   **If this is your first time running the application,** a setup wizard will automatically launch. Follow its on-screen instructions. It will install all dependencies and configure the application for you.
--   **If you have run the setup before,** a menu will appear.
+-   **If this is your first time,** a setup wizard will automatically launch. It will verify your system and install all dependencies. Just follow the on-screen instructions.
 
 ### Step 2: Start the Services
 
-> In the Service Manager menu, press `1` on your keyboard and then press `Enter` to select `[1] Start Services`.
+> Once the menu appears, press `1` on your keyboard and then press `Enter` to select `[1] Start Services`.
 
-This will launch all the required backend and frontend processes in the background.
+This will launch all required processes in the background using a race-condition-free, health-checked sequence.
 
 ### Step 3: You're Done!
 
-A web browser will automatically open to the Fortuna Faucet dashboard. A real-time status console will also appear to show you the system's health.
-
-To stop the application, simply go back to the Service Manager menu and select `[2] Stop Services`.
+A web browser will automatically open to the Fortuna Faucet dashboard once all systems are confirmed to be online.
 
 ---
 
-## Advanced Usage & Troubleshooting
+## Day-to-Day Operations
 
-Everything you need is in the `SERVICE_MANAGER.bat`. The information below is for developers or for troubleshooting specific issues.
+Always use `SERVICE_MANAGER.bat` to manage the application.
 
-### Direct Scripts
+### Key Menu Options:
 
--   **`INSTALL_FORTUNA.bat`**: The main installer script. The Service Manager runs this for you on first launch.
--   **`LAUNCH_FORTUNA.bat`**: The main launch script. The Service Manager runs this for you when you select `[1] Start Services`.
--   **`STOP_FORTUNA.bat`**: Stops all running services.
--   **`RESTART_FORTUNA.bat`**: Stops, then starts all services.
--   **`health_check.bat`**: Runs a series of diagnostic checks on your environment.
--   **`fix_common_issues.bat`**: Provides an interactive menu to solve common problems like corrupted installations.
--   **`CREATE_SHORTCUTS.bat`**: Creates desktop shortcuts for the main scripts.
--   **`BUILD_INSTALLER.bat`**: For developers. Builds the distributable `.msi` installer package.
+-   **`[1] Start Services`**: Launches the application.
+-   **`[2] Stop Services`**: Performs a clean, graceful shutdown of all processes.
+-   **`[3] Restart Services`**: Performs a graceful stop, then a clean start.
+-   **`[4] Check Live Status`**: Instantly checks if the backend and frontend are responsive and which ports they are using.
 
-### Understanding Logs
+### Troubleshooting & Diagnostics
 
-If you encounter an issue, the system generates detailed logs to help you diagnose the problem.
+The Service Manager provides a suite of powerful, built-in tools to help you solve common problems.
 
--   **Installation Logs:** If the setup fails, check `pip_install.log`, `npm_install.log`, and `electron_install.log` in the root directory.
--   **Service Logs:** When the application is running, all backend and frontend output is saved to timestamped files inside the `logs/` directory.
+-   **`[5] View Latest Logs`**: Automatically finds and opens the most recent backend and frontend log files in Notepad for easy debugging.
+-   **`[6] View Performance Stats`**: Shows a quick, real-time snapshot of system memory, CPU usage, and disk space.
+-   **`[7] Validate Dependencies`**: Runs a series of checks to ensure that Python, Node.js, Git, and all other required components are correctly installed and accessible.
+-   **`[9] Reset to Factory Settings`**: A powerful tool that can safely delete all logs and caches if you need to return the system to a clean state.
