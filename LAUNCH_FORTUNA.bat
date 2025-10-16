@@ -4,6 +4,7 @@ setlocal enabledelayedexpansion
 REM ============================================================================
 REM  Fortuna Faucet: Enhanced Launcher v2.1 (Hardened)
 REM ============================================================================
+setlocal enabledelayedexpansion
 
 REM --- Pre-Flight Check: Is it already running? ---
 tasklist /FI "WINDOWTITLE eq Fortuna Backend" 2>NUL | find /I /N "cmd.exe">NUL
