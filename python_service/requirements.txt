@@ -1,4 +1,5 @@
-# Fortuna Faucet - Master Dependency List
+# Fortuna Faucet - Python Dependencies (Windows Optimized v2)
+# This is the 'golden' manifest, combining the blueprint's pinned versions with all feature requirements.
 
 # --- Core Backend (FastAPI & Async) ---
 fastapi==0.104.1
@@ -26,8 +27,8 @@ slowapi==0.1.9
 SQLAlchemy
 psycopg2-binary
 
-# --- System & Monitoring ---
-psutil==5.9.6
+# --- Monitoring & GUI ---
+matplotlib==3.8.2
 
 # --- UI & Visualization (for utility scripts) ---
 rich
@@ -35,12 +36,14 @@ streamlit
 pikepdf
 tabula-py
 
-# --- Code Quality & Testing ---
+# --- Windows Specific (DO NOT REMOVE MARKERS) ---
+psutil==5.9.6; sys_platform == 'win32'
+pywin32==306; sys_platform == 'win32'
+win10toast-click==1.0.1; sys_platform == 'win32'
+
+# --- Testing ---
 pytest==7.4.3
 pytest-asyncio==0.21.1
 
-# --- Build & Packaging ---
+# --- Development ---
 black==23.11.0
-
-# --- Windows Specific (Notifications) ---
-windows-toasts
