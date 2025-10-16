@@ -1,0 +1,4 @@
+{
+    "file_path": "web_platform/frontend/src/hooks/useRealTimeRaces.ts",
+    "content": "import { useState, useEffect } from 'react';\nimport { io, Socket } from 'socket.io-client';\nimport { Race } from '../types/racing';\n\nconst API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';\n\nexport function useRealTimeRaces() {\n  const [races, setRaces] = useState<Race[]>([]);\n  const [isConnected, setIsConnected] = useState(false);\n\n  useEffect(() => {\n    const socket: Socket = io(API_URL);\n\n    socket.on('connect', () => setIsConnected(true));\n    socket.on('disconnect', () => setIsConnected(false));\n\n    socket.on('races_update', (data: { races: Race[] }) => {\n      if (data && Array.isArray(data.races)) {\n        setRaces(data.races);\n      }\n    });\n\n    // Cleanup on component unmount\n    return () => {\n      socket.disconnect();\n    };\n  }, []);\n\n  return { races, isConnected };\n}"
+}

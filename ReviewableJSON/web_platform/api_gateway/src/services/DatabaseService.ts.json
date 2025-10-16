@@ -1,0 +1,4 @@
+{
+    "file_path": "web_platform/api_gateway/src/services/DatabaseService.ts",
+    "content": "import sqlite3 from 'sqlite3';\nimport { open, Database } from 'sqlite';\nimport path from 'path';\n\nexport class DatabaseService {\n  private db: Database | null = null;\n\n  private async getDb(): Promise<Database> {\n    if (!this.db) {\n      // This path assumes the service is run from the project root.\n      const dbPath = process.env.CHECKMATE_DB_PATH || path.join(__dirname, '../../../../shared_database/races.db');\n      this.db = await open({\n        filename: dbPath,\n        driver: sqlite3.Database\n      });\n    }\n    return this.db;\n  }\n\n  async getQualifiedRaces(): Promise<any[]> {\n    const db = await this.getDb();\n    return db.all(`SELECT * FROM qualified_races`);\n  }\n}"
+}
