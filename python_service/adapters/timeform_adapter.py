@@ -27,7 +27,7 @@ def _clean_text(text: Optional[str]) -> Optional[str]:
 
 class TimeformAdapter(BaseAdapter):
     def __init__(self, config):
-        super().__init__(source_name="Timeform", base_url="https://www.timeform.com")
+        super().__init__(source_name="Timeform", base_url="https://www.timeform.com", config=config)
 
     async def fetch_races(self, date: str, http_client: httpx.AsyncClient) -> Dict[str, Any]:
         start_time = datetime.now()
@@ -40,19 +40,19 @@ class TimeformAdapter(BaseAdapter):
             return self._format_response([], start_time, is_success=False, error_message=str(e))
 
     async def _get_race_links(self, http_client: httpx.AsyncClient) -> List[str]:
-        response_html = await self.make_request(http_client, "GET", "/horse-racing/racecards")
-        if not response_html:
+        response = await self.make_request(http_client, "GET", "/horse-racing/racecards")
+        if not response:
             return []
-        soup = BeautifulSoup(response_html, "html.parser")
+        soup = BeautifulSoup(response.text, "html.parser")
         links = {a["href"] for a in soup.select("a.rp-racecard-off-link[href]")}
         return [f"{self.base_url}{link}" for link in links]
 
     async def _fetch_and_parse_race(self, url: str, http_client: httpx.AsyncClient) -> Optional[Race]:
         try:
-            response_html = await self.make_request(http_client, "GET", url)
-            if not response_html:
+            response = await self.make_request(http_client, "GET", url)
+            if not response:
                 return None
-            soup = BeautifulSoup(response_html, "html.parser")
+            soup = BeautifulSoup(response.text, "html.parser")
             track_name = _clean_text(soup.select_one("h1.rp-raceTimeCourseName_name").get_text())
             race_time_str = _clean_text(soup.select_one("span.rp-raceTimeCourseName_time").get_text())
             start_time = datetime.strptime(f"{datetime.now().date()} {race_time_str}", "%Y-%m-%d %H:%M")

@@ -1,0 +1,4 @@
+{
+    "file_path": "python_service/models_v3.py",
+    "content": "# python_service/models_v3.py\n# Defines the data structures for the V3 adapter architecture.\n\nfrom dataclasses import dataclass\nfrom dataclasses import field\nfrom typing import List\n\n\n@dataclass\nclass NormalizedRunner:\n    runner_id: str\n    name: str\n    saddle_cloth: str\n    odds_decimal: float\n\n\n@dataclass\nclass NormalizedRace:\n    race_key: str\n    track_key: str\n    start_time_iso: str\n    race_name: str\n    runners: List[NormalizedRunner] = field(default_factory=list)\n    source_ids: List[str] = field(default_factory=list)\n"
+}

@@ -24,7 +24,7 @@ class Settings(BaseSettings):
 
     # --- Caching & Performance ---
     REDIS_URL: str = "redis://localhost:6379"
-    CACHE_TTL_SECONDS: int = 300
+    CACHE_TTL_SECONDS: int = 1800  # 30 minutes
     MAX_CONCURRENT_REQUESTS: int = 10
     HTTP_POOL_CONNECTIONS: int = 100
     HTTP_POOL_MAXSIZE: int = 100

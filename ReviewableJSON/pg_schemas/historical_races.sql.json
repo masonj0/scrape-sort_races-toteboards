@@ -1,0 +1,4 @@
+{
+    "file_path": "pg_schemas/historical_races.sql",
+    "content": "-- Schema for the main historical races data warehouse table\nCREATE TABLE IF NOT EXISTS historical_races (\n    race_id VARCHAR(255) PRIMARY KEY,\n    venue VARCHAR(100) NOT NULL,\n    race_number INTEGER NOT NULL,\n    start_time TIMESTAMP WITH TIME ZONE NOT NULL,\n    source VARCHAR(50),\n    qualification_score NUMERIC(5, 2),\n    field_size INTEGER,\n    extracted_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP\n);\n"
+}

@@ -21,20 +21,21 @@ class GbgbApiAdapter(BaseAdapter):
     """Adapter for the undocumented JSON API for the Greyhound Board of Great Britain."""
 
     def __init__(self, config):
-        super().__init__(source_name="GBGB", base_url="https://api.gbgb.org.uk/api/")
+        super().__init__(source_name="GBGB", base_url="https://api.gbgb.org.uk/api/", config=config)
 
     async def fetch_races(self, date: str, http_client: httpx.AsyncClient) -> Dict[str, Any]:
         start_time = datetime.now()
         try:
             # The endpoint appears to be structured by date for all meetings
             endpoint = f"results/meeting/{date}"
-            response_json = await self.make_request(http_client, "GET", endpoint)
+            response = await self.make_request(http_client, "GET", endpoint)
 
-            if not response_json:
+            if not response:
                 return self._format_response(
                     [], start_time, is_success=True, error_message="No meetings found in API response."
                 )
 
+            response_json = response.json()
             all_races = self._parse_meetings(response_json)
             return self._format_response(all_races, start_time, is_success=True)
         except httpx.HTTPError as e:

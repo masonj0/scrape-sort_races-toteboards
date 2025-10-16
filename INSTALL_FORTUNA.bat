@@ -1,144 +1,103 @@
-@ECHO OFF
-SETLOCAL ENABLEDELAYEDEXPANSION
-
+@echo off
 REM ============================================================================
-REM  FORTUNA FAUCET - Bulletproof Windows Setup (v5.0)
-REM  Includes: Admin Check, Auto-Healing, Correct Paths, Parallel Install
+REM  FORTUNA FAUCET - Installation Wizard (Optimized)
 REM ============================================================================
+setlocal enabledelayedexpansion
 
-TITLE Fortuna Faucet - Setup Wizard v5.0
+cls
+echo.
+echo  ========================================================================
+echo   Fortuna Faucet - First-Time Installation
+echo  ========================================================================
+echo.
 
-REM --- Phase 1: Administrator Check ---
->nul 2>&1 "%SYSTEMROOT%\system32\cacls.exe" "%SYSTEMROOT%\system32\config\system"
-IF '%errorlevel%' NEQ '0' (
-    ECHO.
-    ECHO [ERROR] Administrator privileges are required to run this setup.
-    ECHO         Please right-click this script and select 'Run as administrator'.
-    ECHO.
-    PAUSE
-    EXIT /B 1
+REM --- Check Python ---
+echo  [1/5] Checking Python installation...
+python --version >nul 2>&1
+if %errorlevel% neq 0 (
+    echo  [FAIL] Python 3.8+ is required but not found
+    echo  Download from: https://python.org
+    pause
+    exit /b 1
+)
+for /f "tokens=2" %%i in ('python --version 2^>^&1') do set PYTHON_VER=%%i
+echo  [OK] Python %PYTHON_VER% found
+
+REM --- Check Node.js ---
+echo.
+echo  [2/5] Checking Node.js installation...
+node --version >nul 2>&1
+if %errorlevel% neq 0 (
+    echo  [FAIL] Node.js LTS is required but not found
+    echo  Download from: https://nodejs.org
+    pause
+    exit /b 1
+)
+for /f "tokens=1" %%i in ('node --version 2^>^&1') do set NODE_VER=%%i
+echo  [OK] Node.js %NODE_VER% found
+
+REM --- Create Python venv ---
+echo.
+echo  [3/5] Creating Python virtual environment...
+if not exist .venv (
+    python -m venv .venv --without-pip
+    echo  [*] Installing pip and setuptools...
+    call .venv\Scripts\activate.bat
+    python -m pip install --upgrade pip setuptools wheel --quiet >nul 2>&1
+)
+call .venv\Scripts\activate.bat
+echo  [OK] Virtual environment ready
+
+REM --- Install Python dependencies ---
+echo.
+echo  [4/6] Installing Python dependencies from requirements.txt...
+pip install -r python_service/requirements.txt --quiet --use-deprecated=legacy-resolver >nul 2>&1
+if %errorlevel% neq 0 (
+    echo  [FAIL] Python dependency installation failed
+    pause
+    exit /b 1
+)
+echo  [OK] Python dependencies from file installed
+
+echo.
+echo  [5/6] Installing Windows-specific dependencies...
+pip install windows-toasts --quiet >nul 2>&1
+if %errorlevel% neq 0 (
+    echo  [WARN] Failed to install 'windows-toasts'. Notifications may not work.
+) else (
+    echo  [OK] Windows dependencies installed
 )
 
-ECHO.
-ECHO  ========================================================================
-ECHO   FORTUNA FAUCET - Bulletproof Installation Wizard
-ECHO  ========================================================================
-ECHO.
+REM --- Install Node dependencies ---
+echo.
+echo  [6/6] Installing Node.js dependencies (this may take 1-2 minutes)...
+cd web_platform\frontend
+call npm ci --prefer-offline --no-audit --quiet >nul 2>&1
+if %errorlevel% neq 0 (
+    echo  [FAIL] Node dependency installation failed
+    cd ..\..
+    pause
+    exit /b 1
+)
 
-REM --- Main Execution Flow ---
-CALL :CheckPrerequisites
-IF %ERRORLEVEL% NEQ 0 GOTO :eof
+if not exist .env.local (
+    copy .env.local.example .env.local >nul 2>&1
+)
+cd ..\..
+echo  [OK] Node dependencies installed
 
-CALL :SetupVirtualEnv
-IF %ERRORLEVEL% NEQ 0 GOTO ErrorHandler
+REM --- Create logs directory ---
+if not exist logs mkdir logs
 
-CALL :InstallPackagesParallel
-IF %ERRORLEVEL% NEQ 0 GOTO ErrorHandler
-
-CALL :RunConfigurationWizard
-IF %ERRORLEVEL% NEQ 0 GOTO ErrorHandler
-
-ECHO.
-ECHO  ========================================================================
-ECHO   SETUP COMPLETE!
-ECHO   You can now use 'SERVICE_MANAGER.bat' to run the application.
-ECHO  ========================================================================
-ECHO.
-PAUSE
-GOTO :eof
-
-REM ============================================================================
-REM  SUBROUTINES
-REM ============================================================================
-
-:CheckPrerequisites
-    ECHO [1/4] Running pre-flight system checks...
-    ping -n 1 google.com >nul 2>&1
-    IF %ERRORLEVEL% NEQ 0 ( ECHO [WARN] No internet connectivity detected. Installation may fail. )
-    ECHO [OK] System prerequisites are met.
-    ECHO.
-    EXIT /B 0
-
-:SetupVirtualEnv
-    ECHO [2/4] Setting up Python virtual environment...
-    IF NOT EXIST .venv\Scripts\activate.bat (
-        ECHO [WARN] Python environment is missing or corrupted.
-        CALL :FullReset
-        ECHO [INFO] Creating new virtual environment...
-        python -m venv .venv
-        IF %ERRORLEVEL% NEQ 0 (
-            ECHO [FAIL] Failed to create Python virtual environment.
-            EXIT /B 1
-        )
-    ) ELSE (
-        ECHO [INFO] Existing virtual environment found and appears valid.
-    )
-    ECHO [OK] Virtual environment is ready.
-    ECHO.
-    EXIT /B 0
-
-:InstallPackagesParallel
-    ECHO [3/4] Installing all project dependencies in parallel...
-    ECHO      Output is logged to pip_install.log, npm_install.log, and electron_install.log.
-
-    REM CRITICAL FIX: Use 'python_service', not 'python_scripts'
-    start "Python Install" /B cmd /c "call .venv\Scripts\activate.bat && python -m pip install -r python_service\requirements.txt > pip_install.log 2>&1"
-    start "NPM Install" /B cmd /c "cd web_platform\frontend && npm install > ..\..\npm_install.log 2>&1"
-    start "Electron Install" /B cmd /c "cd electron && npm install > ..\electron_install.log 2>&1"
-
-    :WaitLoop
-        tasklist /FI "IMAGENAME eq cmd.exe" /FI "WINDOWTITLE eq Python Install" 2>NUL | find "cmd.exe" >NUL
-        set PIP_RUNNING=%errorlevel%
-        tasklist /FI "IMAGENAME eq cmd.exe" /FI "WINDOWTITLE eq NPM Install" 2>NUL | find "cmd.exe" >NUL
-        set NPM_RUNNING=%errorlevel%
-        tasklist /FI "IMAGENAME eq cmd.exe" /FI "WINDOWTITLE eq Electron Install" 2>NUL | find "cmd.exe" >NUL
-        set ELECTRON_RUNNING=%errorlevel%
-        IF %PIP_RUNNING%==0 GOTO :WaitLoopDelay
-        IF %NPM_RUNNING%==0 GOTO :WaitLoopDelay
-        IF %ELECTRON_RUNNING%==0 GOTO :WaitLoopDelay
-        GOTO :EndWaitLoop
-    :WaitLoopDelay
-        ECHO [INFO] Installation in progress... Please wait.
-        timeout /t 5 /nobreak >nul
-        GOTO :WaitLoop
-
-    :EndWaitLoop
-    ECHO [OK] Parallel installations complete. Checking logs...
-    findstr /C:"Successfully installed" pip_install.log >nul
-    IF %ERRORLEVEL% NEQ 0 ( ECHO [FAIL] Python installation failed. Check pip_install.log. && EXIT /B 1 )
-    findstr /C:"added" npm_install.log >nul
-    IF %ERRORLEVEL% NEQ 0 ( ECHO [FAIL] Node.js installation failed. Check npm_install.log. && EXIT /B 1 )
-    findstr /C:"added" electron_install.log >nul
-    IF %ERRORLEVEL% NEQ 0 ( ECHO [FAIL] Electron installation failed. Check electron_install.log. && EXIT /B 1 )
-    ECHO [OK] All dependencies installed successfully.
-    ECHO.
-    EXIT /B 0
-
-:RunConfigurationWizard
-    ECHO [4/4] Running initial configuration wizard...
-    call .venv\Scripts\activate.bat
-    python setup_wizard.py
-    IF %ERRORLEVEL% NEQ 0 ( ECHO [FAIL] Configuration wizard failed. && EXIT /B 1 )
-    ECHO [OK] Configuration complete.
-    ECHO.
-    EXIT /B 0
-
-:ErrorHandler
-    ECHO.
-    ECHO  [ERROR] SETUP FAILED!
-    CHOICE /C RF /N /M "Would you like to [R]etry or perform a [F]ull Reset?"
-    IF ERRORLEVEL 2 GOTO :FullResetAndExit
-    IF ERRORLEVEL 1 GOTO :eof
-
-:FullResetAndExit
-    CALL :FullReset
-    ECHO [RESET] Complete. Please re-run this installer.
-    PAUSE
-    EXIT /B 0
-
-:FullReset
-    ECHO [RESET] Performing a full reset of all generated environments...
-    IF EXIST .venv ( ECHO [RESET] Removing Python virtual environment... && rmdir /s /q .venv 2>nul )
-    IF EXIST web_platform\frontend\node_modules ( ECHO [RESET] Removing Node.js modules... && rmdir /s /q web_platform\frontend\node_modules 2>nul )
-    IF EXIST electron\node_modules ( ECHO [RESET] Removing Electron modules... && rmdir /s /q electron\node_modules 2>nul )
-    EXIT /B 0
+echo.
+echo  ========================================================================
+echo   Installation Complete!
+echo  ========================================================================
+echo.
+echo  Next steps:
+echo   1. Edit .env file with your API credentials
+echo   2. Run SERVICE_MANAGER.bat
+echo   3. Select option [1] to start services
+echo.
+pause
+exit /b 0

@@ -27,7 +27,12 @@ This document serves as the "Windows Experience Bible," dictating the path forwa
 ~~-   **Historical Performance Graphs:** The new GUI monitor should include a "Performance" tab with historical graphs (using `matplotlib`) for key metrics like races fetched, success rate, and fetch duration.~~
 ~~-   **Data Export:** The GUI monitor should include a feature to export the current view of adapter statuses or performance data to a CSV file.~~
 
-### Phase 4: Power User (Data Warehouse & Analysis)
+~~### Phase 4: Production-Grade Suite (Final Polish)~~~
+
+~~-   **Architecturally Superior Scripts:** Replace the entire suite of `.bat` files with a new, production-grade set that is resilient, race-condition-free, and provides a superior operator experience with enhanced diagnostics and self-healing capabilities.~~
+~~-   **Unified Command Console (`SERVICE_MANAGER.bat`):** Unify all individual scripts under a single, user-friendly, menu-driven service manager, providing a 'single pane of glass' for all common operations.~~
+
+### Phase 5: Power User (Data Warehouse & Analysis)
 
 -   **ETL Pipeline:** A new `python_service/etl.py` script should be created to extract data from the API, perform strict validation and transformation, and load it into a PostgreSQL data warehouse.
 -   **Data Warehouse Schema:** The `pg_schemas/` directory should contain the SQL `CREATE TABLE` statements for the `historical_races` and `quarantined_races` tables.
@@ -35,7 +40,7 @@ This document serves as the "Windows Experience Bible," dictating the path forwa
 
 ---
 
-## CAMPAIGN COMPLETE: The Windows Experience (Phases 1-3)
+## CAMPAIGN COMPLETE: The Windows Experience (Phases 1-4)
 
 **Date of Completion:** 2025-10-15
 

@@ -22,7 +22,7 @@ class GreyhoundAdapter(BaseAdapter):
     def __init__(self, config):
         if not config.GREYHOUND_API_URL:
             raise ValueError("GreyhoundAdapter cannot be initialized without GREYHOUND_API_URL.")
-        super().__init__(source_name="Greyhound Racing", base_url=config.GREYHOUND_API_URL)
+        super().__init__(source_name="Greyhound Racing", base_url=config.GREYHOUND_API_URL, config=config)
         # Example for future use: self.api_key = config.GREYHOUND_API_KEY
 
     async def fetch_races(self, date: str, http_client: httpx.AsyncClient) -> Dict[str, Any]:
@@ -30,7 +30,14 @@ class GreyhoundAdapter(BaseAdapter):
         start_time = datetime.now()
         endpoint = f"v1/cards/{date}"  # Using date parameter
         try:
-            response_json = await self.make_request(http_client, "GET", endpoint)
+            response = await self.make_request(http_client, "GET", endpoint)
+            if not response:
+                log.warning("GreyhoundAdapter: No response from make_request.")
+                return self._format_response(
+                    [], start_time, is_success=True, error_message="No data received from provider."
+                )
+
+            response_json = response.json()
             if not response_json or not response_json.get("cards"):
                 log.warning("GreyhoundAdapter: No 'cards' in response or empty list.")
                 return self._format_response(
