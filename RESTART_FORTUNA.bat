@@ -1,18 +1,16 @@
-@ECHO OFF
-TITLE Fortuna Faucet - Restart Script
-ECHO.
-ECHO  ========================================================================
-ECHO   Fortuna Faucet - Restart Script
-ECHO  ========================================================================
-ECHO.
-ECHO [INFO] Attempting to restart all Fortuna Faucet services...
-ECHO.
+@echo off
+REM ============================================================================
+REM  FORTUNA FAUCET - Restart Script (Graceful Restart)
+REM ============================================================================
 
-CALL STOP_FORTUNA.bat
+echo.
+echo  [*] Restarting Fortuna Faucet services...
+echo.
 
-ECHO.
-ECHO [INFO] All services stopped. Relaunching in 5 seconds...
-ECHO.
-timeout /t 5
+call "%~dp0STOP_FORTUNA.bat"
 
-CALL LAUNCH_FORTUNA.bat
+echo.
+echo  [*] Waiting before restart...
+timeout /t 3 /nobreak >nul
+
+call "%~dp0LAUNCH_FORTUNA.bat"
