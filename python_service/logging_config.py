@@ -1,6 +1,7 @@
 # python_service/logging_config.py
 import logging
 import sys
+
 import structlog
 
 def configure_logging(log_level: str = "INFO"):
