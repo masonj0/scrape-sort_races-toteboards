@@ -1,81 +1,76 @@
 # python_service/adapters/betfair_adapter.py
-
-import re
 from datetime import datetime
-from typing import Any
-from typing import Dict
-from typing import Optional
+from typing import Any, List
 
-import httpx
-import structlog
-
-from ..models import Race
-from ..models import Runner
-from .base import BaseAdapter
+from ..models import Race, Runner
+from .base_v3 import BaseAdapterV3
 from .betfair_auth_mixin import BetfairAuthMixin
 
-log = structlog.get_logger(__name__)
+class BetfairAdapter(BetfairAuthMixin, BaseAdapterV3):
+    """Adapter for fetching horse racing data from the Betfair Exchange API, using V3 architecture."""
 
+    SOURCE_NAME = "BetfairExchange"
+    BASE_URL = "https://api.betfair.com/exchange/betting/rest/v1.0/"
 
-class BetfairAdapter(BetfairAuthMixin, BaseAdapter):
-    def __init__(self, config):
-        super().__init__(source_name="BetfairExchange", base_url="https://api.betfair.com/exchange/betting/rest/v1.0/", config=config)
-        self.app_key = self.config.BETFAIR_APP_KEY
-
-    async def fetch_races(self, date: str, http_client: httpx.AsyncClient) -> Dict[str, Any]:
-        start_time = datetime.now()
-        try:
-            await self._authenticate(http_client)
-            headers = {
-                "X-Application": self.app_key,
-                "X-Authentication": self.session_token,
-                "Content-Type": "application/json",
-            }
-            market_filter = {
-                "eventTypeIds": ["7"],
-                "marketTypeCodes": ["WIN"],
-                "marketStartTime": {"from": f"{date}T00:00:00Z", "to": f"{date}T23:59:59Z"},
-            }
-            response = await self.make_request(
-                http_client,
-                "POST",
-                "listMarketCatalogue/",
-                headers=headers,
-                json={"filter": market_filter, "maxResults": 1000, "marketProjection": ["EVENT", "RUNNER_DESCRIPTION"]},
-            )
-            if not response:
-                return self._format_response([], start_time, is_success=True, error_message="No markets found.")
-            market_catalogue = response.json()
-            all_races = [self._parse_race(market) for market in market_catalogue]
-            return self._format_response(all_races, start_time, is_success=True)
-        except Exception as e:
-            log.error(f"Error fetching races from Betfair: {e}", exc_info=True)
-            return self._format_response([], start_time, is_success=False, error_message=str(e))
-
-    def _parse_race(self, market: Dict[str, Any]) -> Race | None:
-        if market is None:
+    async def _fetch_data(self, date: str) -> Any:
+        """Fetches the raw market catalogue for a given date."""
+        await self._authenticate()
+        if not self.session_token:
+            self.logger.error("Authentication failed, cannot fetch data.")
             return None
-        runners = [
-            Runner(number=rd.get("sortPriority", 99), name=rd["runnerName"], selection_id=rd["selectionId"])
-            for rd in market.get("runners", [])
-        ]
-        return Race(
-            id=f"bf_{market['marketId']}",
-            venue=market["event"]["venue"],
-            race_number=self._extract_race_number(market.get("marketName")),
-            start_time=datetime.fromisoformat(market["marketStartTime"].replace("Z", "+00:00")),
-            runners=runners,
-            source=self.source_name,
+
+        start_time, end_time = self._get_datetime_range(date)
+
+        return await self.make_request(
+            method="post",
+            url=f"{self.BASE_URL}listMarketCatalogue/",
+            json={
+                "filter": {
+                    "eventTypeIds": ["7"],  # Horse Racing
+                    "marketCountries": ["GB", "IE", "AU", "US", "FR", "ZA"],
+                    "marketTypeCodes": ["WIN"],
+                    "marketStartTime": {"from": start_time.isoformat(), "to": end_time.isoformat()}
+                },
+                "maxResults": 1000,
+                "marketProjection": ["EVENT", "RUNNER_DESCRIPTION"]
+            }
         )
 
-    def _extract_race_number(self, name: Optional[str]) -> int:
-        if not name:
-            return 1
-        match = re.search(r"\bR(\d{1,2})\b", name)
-        return int(match.group(1)) if match else 1
+    def _parse_races(self, raw_data: Any) -> List[Race]:
+        """Parses the raw market catalogue into a list of Race objects."""
+        if not raw_data:
+            return []
 
-    # The duplicated method has been removed.
-    async def close(self):
-        """Closes the underlying HTTP client to release resources."""
-        if self.http_client:
-            await self.http_client.aclose()
+        races = []
+        for market in raw_data:
+            try:
+                races.append(self._parse_race(market))
+            except (KeyError, TypeError):
+                self.logger.warning("Failed to parse a Betfair market.", exc_info=True, market=market)
+                continue
+        return races
+
+    def _parse_race(self, market: dict) -> Race:
+        """Parses a single market from the Betfair API into a Race object."""
+        market_id = market['marketId']
+        event = market['event']
+        start_time = datetime.fromisoformat(market['marketStartTime'].replace('Z', '+00:00'))
+
+        runners = [
+            Runner(
+                number=runner.get('sortPriority', i + 1),
+                name=runner['runnerName'],
+                scratched=runner['status'] != 'ACTIVE',
+                selection_id=runner['selectionId']
+            )
+            for i, runner in enumerate(market.get('runners', []))
+        ]
+
+        return Race(
+            id=f"bf_{market_id}",
+            venue=event.get('venue', 'Unknown Venue'),
+            race_number=self._extract_race_number(market.get('marketName', '')),
+            start_time=start_time,
+            runners=runners,
+            source=self.SOURCE_NAME
+        )
