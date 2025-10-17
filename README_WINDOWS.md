@@ -31,3 +31,22 @@ The graphical control panel will launch. Click the big green `▶ START SERVICES
 ## For Developers Only
 
 If you are a developer and need to set up a local environment from the source code, please refer to the `ARCHITECTURAL_MANDATE.md` and the scripts in the root directory. The `.msi` installer is the only supported path for end-users.
+
+---
+
+## Security: Managing Encrypted Secrets
+
+For enhanced security, all sensitive credentials (like your Betfair password) are automatically encrypted and stored in the `.env` file. The application decrypts them in memory when needed.
+
+If you ever need to manually edit or add a new encrypted secret, you can use the `manage_secrets.py` utility:
+
+1.  **To Encrypt a New Secret:**
+    ```
+    python manage_secrets.py encrypt "your_secret_password"
+    ```
+    This will print an encrypted string. Copy the entire string (including the `encrypted:` prefix) into your `.env` file.
+
+2.  **To Decrypt a Secret (for verification):**
+    ```
+    python manage_secrets.py decrypt "encrypted:...."
+    ```
