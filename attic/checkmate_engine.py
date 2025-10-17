@@ -307,7 +307,7 @@ def convert_race_to_schema(race: Race) -> RaceDataSchema:
 
 def display_results(tipsheet, statuses):
     colorama_init()
-    print("\n--- " + Fore.CYAN + "Adapter Status" + Style.RESET_ALL + " ---")
+    print("\\n--- " + Fore.CYAN + "Adapter Status" + Style.RESET_ALL + " ---")
     status_headers = {"adapter_id": "Adapter", "status": "Status", "races_found": "Races Found", "notes": "Notes"}
     status_data = []
     for s in statuses:
@@ -316,12 +316,12 @@ def display_results(tipsheet, statuses):
     print(tabulate(status_data, headers=status_headers, tablefmt="grid"))
 
     if not tipsheet:
-        print("\n" + Fore.YELLOW + "No qualified races found for the tipsheet." + Style.RESET_ALL)
+        print("\\n" + Fore.YELLOW + "No qualified races found for the tipsheet." + Style.RESET_ALL)
         return
 
-    print("\n--- " + Fore.CYAN + "Checkmate Qualified Races" + Style.RESET_ALL + " ---")
+    print("\\n--- " + Fore.CYAN + "Checkmate Qualified Races" + Style.RESET_ALL + " ---")
     for race in tipsheet:
-        print(f"\n" + Fore.GREEN + f"Track: {race['trackName']} - Race: {race['raceNumber']} - Post Time: {race['postTime']} - Score: {race['checkmateScore']}" + Style.RESET_ALL)
+        print(f"\\n" + Fore.GREEN + f"Track: {race['trackName']} - Race: {race['raceNumber']} - Post Time: {race['postTime']} - Score: {race['checkmateScore']}" + Style.RESET_ALL)
         runner_headers = {"name": "Horse", "odds": "Odds", "program_number": "Program"}
         runner_data = [[r['name'], r['odds'], r.get('number')] for r in race['runners']]
         print(tabulate(runner_data, headers=runner_headers, tablefmt="psql"))
