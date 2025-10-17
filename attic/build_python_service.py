@@ -71,7 +71,7 @@ coll = COLLECT(
 
 def build_executable():
     """Build the executable using PyInstaller and the spec file."""
-    print("\\n🔨 Building executable for Python Service...")
+    print("\\n🪓 Building executable for Python Service...")
 
     # We will use the reliable spec-based build exclusively.
     create_spec_file()
@@ -82,7 +82,7 @@ def build_executable():
 
     if result == 0:
         print("\\n✓ Build successful!")
-        print("\\n📁 Your executable is located at: dist/CheckmatePythonService.exe")
+        print("\\n🗂️ Your executable is located at: dist/CheckmatePythonService.exe")
     else:
         print("\\n❌ Build failed. Check the error messages above.")
 
