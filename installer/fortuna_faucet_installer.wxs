@@ -3,69 +3,48 @@
 
     <Product Id='*' Name='Fortuna Faucet' Language='1033' Version='1.0.0.0' Manufacturer='Fortuna Co.' UpgradeCode='PUT-A-UNIQUE-GUID-HERE'>
         <Package InstallerVersion='200' Compressed='yes' InstallScope='perMachine' />
-
         <MajorUpgrade DowngradeErrorMessage='A newer version of Fortuna Faucet is already installed.' />
         <MediaTemplate EmbedCab='yes' />
 
-        <Feature Id='ProductFeature' Title='Fortuna Faucet' Level='1'>
+        <Feature Id='ProductFeature' Title='Fortuna Faucet Complete' Level='1'>
             <ComponentGroupRef Id='AppComponents' />
+            <ComponentGroupRef Id='PythonRuntimeComponents' />
+            <ComponentGroupRef Id='FrontendComponents' />
             <ComponentRef Id='ApplicationShortcut' />
         </Feature>
 
-        <!-- Step 1: Define the directory structure -->
         <Directory Id='TARGETDIR' Name='SourceDir'>
             <Directory Id='ProgramFilesFolder'>
                 <Directory Id='INSTALLFOLDER' Name='Fortuna Faucet'>
-                    <!-- Bundled Python and Node will go here -->
                     <Directory Id='PYTHONDIR' Name='python' />
-                    <Directory Id='NODEDIR' Name='nodejs' />
+                    <Directory Id='FRONTENDDIR' Name='frontend' />
                 </Directory>
             </Directory>
-            <Directory Id="ProgramMenuFolder">
-                <Directory Id="ApplicationProgramsFolder" Name="Fortuna Faucet"/>
+            <Directory Id='ProgramMenuFolder'>
+                <Directory Id='ApplicationProgramsFolder' Name='Fortuna Faucet' />
             </Directory>
         </Directory>
 
-        <!-- Step 2: Define the components (files) to be installed -->
         <ComponentGroup Id='AppComponents' Directory='INSTALLFOLDER'>
-            <!-- Main application executable, created from PyInstaller -->
             <Component Id='FortunaExecutable' Guid='*'>
-                <File Source='..\\dist\\Fortuna.exe' />
+                <File Source='..\\dist\\Fortuna.exe' KeyPath='yes' />
             </Component>
-
-            <!-- TODO: Add Component elements for all other required files (e.g., icons, config templates) -->
-
-            <!-- Bundled portable Python runtime -->
-            <Component Id='PythonRuntime' Guid='*'>
-                <!-- Files would be listed here, assuming a 'portable_python' build folder exists -->
-                <File Source='..\\build\\portable_python\\python.exe' />
-            </Component>
-
-            <!-- Bundled portable Node runtime -->
-            <Component Id='NodeRuntime' Guid='*'>
-                <!-- Files would be listed here, assuming a 'portable_node' build folder exists -->
-                 <File Source='..\\build\\portable_node\\node.exe' />
+             <Component Id='FortunaIcon' Guid='*'>
+                <File Source='..\\fortuna.ico' />
             </Component>
         </ComponentGroup>
 
-        <!-- Step 3: Create the Start Menu Shortcut -->
-        <DirectoryRef Id="ApplicationProgramsFolder">
-            <Component Id="ApplicationShortcut" Guid="*">
-                <Shortcut Id="ApplicationStartMenuShortcut" Name="Fortuna Faucet" Description="Launch Fortuna Faucet" Target="[#FortunaExecutable]" WorkingDirectory="INSTALLFOLDER"/>
-                <RemoveFolder Id="ApplicationProgramsFolder" On="uninstall"/>
-                <RegistryValue Root="HKCU" Key="Software\\Fortuna\\FortunaFaucet" Name="installed" Type="integer" Value="1" KeyPath="yes"/>
+        <DirectoryRef Id='ApplicationProgramsFolder'>
+            <Component Id='ApplicationShortcut' Guid='*'>
+                <Shortcut Id='ApplicationStartMenuShortcut' Name='Fortuna Faucet' Description='Launch Fortuna Faucet' Target='[#FortunaExecutable]' WorkingDirectory='INSTALLFOLDER' />
+                <RemoveFolder Id='ApplicationProgramsFolder' On='uninstall' />
+                <RegistryValue Root='HKCU' Key='Software\\Fortuna\\FortunaFaucet' Name='installed' Type='integer' Value='1' KeyPath='yes' />
             </Component>
         </DirectoryRef>
 
-        <!-- Step 4: Define Custom Actions for silent dependency installation -->
-        <CustomAction Id='InstallPipDeps' Directory='PYTHONDIR' ExeCommand='[PYTHONDIR]python.exe -m pip install -r [INSTALLFOLDER]requirements.txt' Execute='deferred' Return='check' Impersonate='no' />
-        <CustomAction Id='InstallNpmDeps' Directory='INSTALLFOLDER' ExeCommand='[NODEDIR]npm.cmd install --prefix [INSTALLFOLDER]frontend' Execute='deferred' Return='check' Impersonate='no' />
-
-        <!-- Step 5: Schedule the Custom Actions to run after files are installed -->
-        <InstallExecuteSequence>
-            <Custom Action='InstallPipDeps' After='InstallFiles'>NOT Installed</Custom>
-            <Custom Action='InstallNpmDeps' After='InstallPipDeps'>NOT Installed</Custom>
-        </InstallExecuteSequence>
+        <!-- Heat will automatically harvest the files for the Python and Frontend runtimes -->
+        <ComponentGroup Id='PythonRuntimeComponents' Directory='PYTHONDIR' />
+        <ComponentGroup Id='FrontendComponents' Directory='FRONTENDDIR' />
 
     </Product>
 </Wix>
