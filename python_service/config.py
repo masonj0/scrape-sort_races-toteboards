@@ -6,6 +6,8 @@
 # validated source for all application settings using pydantic-settings.
 # ==============================================================================
 
+import os
+import structlog
 from functools import lru_cache
 from typing import List
 from typing import Optional
@@ -50,5 +52,18 @@ class Settings(BaseSettings):
 
 @lru_cache()
 def get_settings() -> Settings:
-    """Returns a cached instance of the application settings."""
-    return Settings()
+    """Loads settings and performs a proactive check for legacy paths."""
+    log = structlog.get_logger(__name__)
+    settings = Settings()
+
+    # --- Legacy Path Detection ---
+    legacy_paths = ["attic/", "checkmate_web/", "vba_source/"]
+    for path in legacy_paths:
+        if os.path.exists(path):
+            log.warning(
+                "legacy_path_detected",
+                path=path,
+                recommendation="This directory is obsolete and should be removed for optimal performance and security."
+            )
+
+    return settings

@@ -9,6 +9,7 @@ from typing import Optional
 
 import aiosqlite
 import structlog
+import os
 from fastapi import Depends
 from fastapi import FastAPI
 from fastapi import HTTPException
@@ -224,3 +225,22 @@ async def get_tipsheet_endpoint(request: Request, date: date = Depends(get_curre
         raise HTTPException(status_code=500, detail=str(e))
 
     return results
+
+
+@app.get("/health/legacy", tags=["Health"], summary="Check for Deprecated Legacy Components")
+async def check_legacy_files():
+    """
+    Checks for the presence of known legacy files and returns a warning if they exist.
+    This helps operators identify and clean up obsolete parts of the codebase.
+    """
+    legacy_files = ["checkmate_service.py", "checkmate_web/main.py"]
+    present_files = [f for f in legacy_files if os.path.exists(f)]
+
+    if present_files:
+        return {
+            "status": "WARNING",
+            "message": "Legacy files detected. These are obsolete and should be removed.",
+            "detected_files": present_files
+        }
+
+    return {"status": "CLEAN", "message": "No known legacy files detected."}
