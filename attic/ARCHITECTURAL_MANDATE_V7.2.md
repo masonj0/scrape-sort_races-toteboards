@@ -1,4 +1,5 @@
 ### **ARCHITECTURAL MANDATE V7.2**
+
 **Project:** Checkmate V3: The Asynchronous Web Application
 **Status:** LOCKED & FINAL (Revised)
 **Date:** 2025-09-15
@@ -316,7 +317,7 @@ def update_dashboard():
         if ci and ci[0] is not None:
              display_string = f"ROI: {metrics['roi_percentage']:.2f}% (95% CI: [{ci[0]:.2f}%, {ci[1]:.2f}%], n={metrics['sample_size_n']}, p={metrics['p_value']:.3f})"
         else:
-            display_string = f"ROI: {metrics['roi_percentage']:.2f}% (n={metrics['sample_size_n']}, insufficient data for CI)"
+             display_string = f"ROI: {metrics['roi_percentage']:.2f}% (n={metrics['sample_size_n']}, insufficient data for CI)"
         perf_container.text(display_string)
 
     # Update System Health from the API

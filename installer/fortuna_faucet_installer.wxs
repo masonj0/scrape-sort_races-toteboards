@@ -1,0 +1,50 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<Wix xmlns='http://schemas.microsoft.com/wix/2006/wi'>
+
+    <Product Id='*' Name='Fortuna Faucet' Language='1033' Version='1.0.0.0' Manufacturer='Fortuna Co.' UpgradeCode='PUT-A-UNIQUE-GUID-HERE'>
+        <Package InstallerVersion='200' Compressed='yes' InstallScope='perMachine' />
+        <MajorUpgrade DowngradeErrorMessage='A newer version of Fortuna Faucet is already installed.' />
+        <MediaTemplate EmbedCab='yes' />
+
+        <Feature Id='ProductFeature' Title='Fortuna Faucet Complete' Level='1'>
+            <ComponentGroupRef Id='AppComponents' />
+            <ComponentGroupRef Id='PythonRuntimeComponents' />
+            <ComponentGroupRef Id='FrontendComponents' />
+            <ComponentRef Id='ApplicationShortcut' />
+        </Feature>
+
+        <Directory Id='TARGETDIR' Name='SourceDir'>
+            <Directory Id='ProgramFilesFolder'>
+                <Directory Id='INSTALLFOLDER' Name='Fortuna Faucet'>
+                    <Directory Id='PYTHONDIR' Name='python' />
+                    <Directory Id='FRONTENDDIR' Name='frontend' />
+                </Directory>
+            </Directory>
+            <Directory Id='ProgramMenuFolder'>
+                <Directory Id='ApplicationProgramsFolder' Name='Fortuna Faucet' />
+            </Directory>
+        </Directory>
+
+        <ComponentGroup Id='AppComponents' Directory='INSTALLFOLDER'>
+            <Component Id='FortunaExecutable' Guid='*'>
+                <File Source='..\\dist\\Fortuna.exe' KeyPath='yes' />
+            </Component>
+             <Component Id='FortunaIcon' Guid='*'>
+                <File Source='..\\fortuna.ico' />
+            </Component>
+        </ComponentGroup>
+
+        <DirectoryRef Id='ApplicationProgramsFolder'>
+            <Component Id='ApplicationShortcut' Guid='*'>
+                <Shortcut Id='ApplicationStartMenuShortcut' Name='Fortuna Faucet' Description='Launch Fortuna Faucet' Target='[#FortunaExecutable]' WorkingDirectory='INSTALLFOLDER' />
+                <RemoveFolder Id='ApplicationProgramsFolder' On='uninstall' />
+                <RegistryValue Root='HKCU' Key='Software\\Fortuna\\FortunaFaucet' Name='installed' Type='integer' Value='1' KeyPath='yes' />
+            </Component>
+        </DirectoryRef>
+
+        <!-- Heat will automatically harvest the files for the Python and Frontend runtimes -->
+        <ComponentGroup Id='PythonRuntimeComponents' Directory='PYTHONDIR' />
+        <ComponentGroup Id='FrontendComponents' Directory='FRONTENDDIR' />
+
+    </Product>
+</Wix>
