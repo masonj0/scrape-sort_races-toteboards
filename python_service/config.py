@@ -30,9 +30,16 @@ def decrypt_value(value: Optional[str]) -> Optional[str]:
             return value
     return value
 
+from .credentials_manager import SecureCredentialsManager
+
 class Settings(BaseSettings):
-    # --- Core Settings ---
-    API_KEY: str
+    API_KEY: str = ""
+
+    def __init__(self, **data):
+        super().__init__(**data)
+        # If .env doesn't have API_KEY, try to load from credential manager
+        if not self.API_KEY:
+            self.API_KEY = SecureCredentialsManager.get_api_key() or "MISSING"
 
     # --- Optional Betfair Credentials ---
     BETFAIR_APP_KEY: Optional[str] = None

@@ -1,174 +1,200 @@
-# launcher_gui.py - The single, graphical entry point for Fortuna Faucet.
 import tkinter as tk
-from tkinter import ttk, messagebox
+from tkinter import ttk
 import subprocess
 import threading
 import time
 import requests
-import os
 import psutil
-
-# --- Configuration ---
-BACKEND_PORT = 8000
-FRONTEND_PORT = 3000
+from pathlib import Path
 
 class FortunaLauncher(tk.Tk):
     def __init__(self):
         super().__init__()
         self.title("🐴 Fortuna Faucet - System Control")
-        self.geometry("450x350")
+        self.geometry("600x400")
         self.configure(bg='#1a1a2e')
-        self.resizable(False, False)
+        # self.iconbitmap(default='fortuna.ico') # Icon file needs to be created
 
         self.backend_proc = None
         self.frontend_proc = None
-        self.is_running = False
 
-        self._create_widgets()
+        self._create_ui()
+        self._check_services()
 
-        self.protocol("WM_DELETE_WINDOW", self._on_closing)
-        self.monitor_thread = threading.Thread(target=self._monitor_services_loop, daemon=True)
+    def _create_ui(self):
+        """Create launcher UI"""
+        # Title
+        title = tk.Label(
+            self,
+            text="🐴 Fortuna Faucet",
+            font=("Segoe UI", 20, "bold"),
+            bg='#1a1a2e',
+            fg='#00ff88'
+        )
+        title.pack(pady=20)
+
+        # Status Indicators
+        status_frame = tk.Frame(self, bg='#1a1a2e')
+        status_frame.pack(fill=tk.X, padx=20, pady=10)
+
+        # Backend Status
+        tk.Label(status_frame, text="Backend:", bg='#1a1a2e', fg='#ffffff').pack(anchor="w")
+        self.backend_status = tk.Canvas(status_frame, width=300, height=40, bg='#0f3460', highlightthickness=0)
+        self.backend_status.pack(fill=tk.X, pady=(0, 10))
+        self.backend_indicator = self.backend_status.create_oval(10, 5, 30, 25, fill='#ff4444')
+        self.backend_text = self.backend_status.create_text(50, 15, text="Starting...", fill='#ffffff', anchor="w")
+
+        # Frontend Status
+        tk.Label(status_frame, text="Frontend:", bg='#1a1a2e', fg='#ffffff').pack(anchor="w")
+        self.frontend_status = tk.Canvas(status_frame, width=300, height=40, bg='#0f3460', highlightthickness=0)
+        self.frontend_status.pack(fill=tk.X)
+        self.frontend_indicator = self.frontend_status.create_oval(10, 5, 30, 25, fill='#ff4444')
+        self.frontend_text = self.frontend_status.create_text(50, 15, text="Starting...", fill='#ffffff', anchor="w")
+
+        # Control Buttons
+        button_frame = tk.Frame(self, bg='#1a1a2e')
+        button_frame.pack(fill=tk.X, padx=20, pady=20)
+
+        self.launch_btn = tk.Button(
+            button_frame,
+            text="▶ START FORTUNA",
+            font=("Segoe UI", 14, "bold"),
+            bg='#00ff88',
+            fg='#000000',
+            command=self.launch_services,
+            height=2
+        )
+        self.launch_btn.pack(fill=tk.X, pady=(0, 10))
+
+        self.stop_btn = tk.Button(
+            button_frame,
+            text="⏹ STOP SERVICES",
+            font=("Segoe UI", 12),
+            bg='#ff4444',
+            fg='#ffffff',
+            command=self.stop_services,
+            state=tk.DISABLED,
+            height=1
+        )
+        self.stop_btn.pack(fill=tk.X, pady=(0, 10))
+
+        # Quick Links
+        link_frame = tk.Frame(self, bg='#1a1a2e')
+        link_frame.pack(fill=tk.X, padx=20, pady=10)
+
+        tk.Button(
+            link_frame,
+            text="📊 Open Dashboard",
+            bg='#0f6cbd',
+            fg='#ffffff',
+            command=self.open_dashboard
+        ).pack(side=tk.LEFT, padx=5)
+
+        tk.Button(
+            link_frame,
+            text="⚙️ Settings",
+            bg='#404060',
+            fg='#ffffff',
+            command=self.open_settings
+        ).pack(side=tk.LEFT, padx=5)
+
+        # Start monitoring thread
+        self.monitor_thread = threading.Thread(target=self.monitor_services, daemon=True)
         self.monitor_thread.start()
 
-    def _create_widgets(self):
-        style = ttk.Style(self)
-        style.configure('TLabel', background='#1a1a2e', foreground='white', font=('Segoe UI', 12))
+    def launch_services(self):
+        """Launch backend and frontend"""
+        self.launch_btn.config(state=tk.DISABLED)
 
-        ttk.Label(self, text="Fortuna Faucet Control Panel", font=('Segoe UI', 16, 'bold')).pack(pady=20)
+        # Launch backend
+        try:
+            venv_python = Path(".venv/Scripts/python.exe")
+            self.backend_proc = subprocess.Popen(
+                [str(venv_python), "-m", "uvicorn", "python_service.api:app", "--host", "127.0.0.1", "--port", "8000"],
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                cwd=Path(__file__).parent
+            )
+        except Exception as e:
+            self.update_status("backend", False, f"Error: {str(e)[:30]}")
+            return
 
-        self.backend_status = ttk.Label(self, text="● Backend: OFFLINE", foreground="#F44336")
-        self.backend_status.pack(pady=5)
+        # Launch frontend
+        try:
+            self.frontend_proc = subprocess.Popen(
+                ["npm", "run", "dev"],
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                cwd="web_platform/frontend"
+            )
+        except Exception as e:
+            self.update_status("frontend", False, f"Error: {str(e)[:30]}")
+            return
 
-        self.frontend_status = ttk.Label(self, text="● Frontend: OFFLINE", foreground="#F44336")
-        self.frontend_status.pack(pady=5)
+        self.stop_btn.config(state=tk.NORMAL)
 
-        self.action_button = tk.Button(
-            self, text="▶ START SERVICES", font=("Segoe UI", 14, "bold"),
-            bg="#4CAF50", fg="white", relief=tk.FLAT, width=25, command=self.toggle_services)
-        self.action_button.pack(pady=30)
+    def stop_services(self):
+        """Stop all services"""
+        if self.backend_proc:
+            self.backend_proc.terminate()
+            self.backend_proc = None
+        if self.frontend_proc:
+            self.frontend_proc.terminate()
+            self.frontend_proc = None
 
-        self.status_log = tk.Label(self, text="Ready to start.", bg='#1a1a2e', fg='#B0B0B0', font=('Segoe UI', 9))
-        self.status_log.pack(side=tk.BOTTOM, pady=10)
+        self.launch_btn.config(state=tk.NORMAL)
+        self.stop_btn.config(state=tk.DISABLED)
 
-    def toggle_services(self):
-        if self.is_running:
-            self._stop_services()
-        else:
-            self._start_services()
-
-    def _start_services(self):
-        self.action_button.config(state=tk.DISABLED, text="STARTING...")
-        self.status_log.config(text="Attempting to launch services...")
-        self.is_running = True # Set intent to run
-
-        creation_flags = subprocess.CREATE_NO_WINDOW if os.name == 'nt' else 0
-
-        self.backend_status.config(text="● Backend: STARTING...", foreground="#FFC107")
-        backend_command = ["cmd", "/c", "call .venv\\Scripts\\activate.bat && uvicorn python_service.api:app --host 127.0.0.1 --port 8000"]
-        self.backend_proc = subprocess.Popen(backend_command, creationflags=creation_flags)
-
-        self.frontend_status.config(text="● Frontend: STARTING...", foreground="#FFC107")
-        frontend_command = ["cmd", "/c", "cd web_platform/frontend && npm run dev"]
-        self.frontend_proc = subprocess.Popen(frontend_command, creationflags=creation_flags)
-
-        self.status_log.config(text="Services launched. Waiting for health checks...")
-
-    def _stop_services(self):
-        self.action_button.config(state=tk.DISABLED, text="STOPPING...")
-        self.status_log.config(text="Attempting to stop all services...")
-        self.is_running = False # Set intent to stop
-
-        for proc in [self.backend_proc, self.frontend_proc]:
-            if proc and proc.poll() is None:
-                try:
-                    parent = psutil.Process(proc.pid)
-                    for child in parent.children(recursive=True):
-                        child.kill()
-                    parent.kill()
-                except psutil.NoSuchProcess:
-                    pass
-
-        self.backend_proc = None
-        self.frontend_proc = None
-        self.status_log.config(text="Services stopped.")
-
-    def _monitor_services_loop(self):
+    def monitor_services(self):
+        """Monitor service health in background"""
         while True:
-            backend_ok, frontend_ok = False, False
+            # Check backend on port 8000
             try:
-                if self.is_running and self.backend_proc and self.backend_proc.poll() is None:
-                    try:
-                        r = requests.get(f"http://localhost:{BACKEND_PORT}/health", timeout=1)
-                        backend_ok = r.status_code == 200
-                    except requests.RequestException:
-                        pass
+                requests.get("http://localhost:8000/health", timeout=1)
+                self.update_status("backend", True, "Running on port 8000")
+            except:
+                self.update_status("backend", False, "Not responding")
 
-                if self.is_running and self.frontend_proc and self.frontend_proc.poll() is None:
-                    try:
-                        r = requests.get(f"http://localhost:{FRONTEND_PORT}", timeout=1)
-                        frontend_ok = r.status_code == 200
-                    except requests.RequestException:
-                        pass
+            # Check frontend on port 3000
+            try:
+                requests.get("http://localhost:3000", timeout=1)
+                self.update_status("frontend", True, "Running on port 3000")
+            except:
+                self.update_status("frontend", False, "Not responding")
 
-                if self.is_running and (self.backend_proc.poll() is not None or self.frontend_proc.poll() is not None):
-                    self.is_running = False # A service has crashed
-            finally:
-                self.after(0, self._update_ui, backend_ok, frontend_ok)
-            time.sleep(3)
+            time.sleep(2)
 
-    def _update_ui(self, backend_ok, frontend_ok):
-        if backend_ok:
-            self.backend_status.config(text="● Backend: ONLINE", foreground="#4CAF50")
-        elif self.is_running:
-            self.backend_status.config(text="● Backend: STARTING...", foreground="#FFC107")
+    def update_status(self, service: str, is_running: bool, message: str):
+        """Update service status indicator"""
+        color = "#00ff88" if is_running else "#ff4444"
+
+        if service == "backend":
+            self.backend_status.itemconfig(self.backend_indicator, fill=color)
+            self.backend_status.itemconfig(self.backend_text, text=message)
         else:
-            self.backend_status.config(text="● Backend: OFFLINE", foreground="#F44336")
+            self.frontend_status.itemconfig(self.frontend_indicator, fill=color)
+            self.frontend_status.itemconfig(self.frontend_text, text=message)
 
-        if frontend_ok:
-            self.frontend_status.config(text="● Frontend: ONLINE", foreground="#4CAF50")
-        elif self.is_running:
-            self.frontend_status.config(text="● Frontend: STARTING...", foreground="#FFC107")
-        else:
-            self.frontend_status.config(text="● Frontend: OFFLINE", foreground="#F44336")
+    def open_dashboard(self):
+        """Open frontend in browser"""
+        import webbrowser
+        webbrowser.open("http://localhost:3000")
 
-        if self.is_running:
-            self.action_button.config(text="■ STOP SERVICES", bg="#F44336")
-            if backend_ok and frontend_ok:
-                self.action_button.config(state=tk.NORMAL)
-                self.status_log.config(text="All services are online and healthy.")
-        else:
-            self.action_button.config(text="▶ START SERVICES", bg="#4CAF50", state=tk.NORMAL)
-            self.status_log.config(text="Ready to start.")
+    def open_settings(self):
+        """Open settings window"""
+        # Placeholder
+        pass
 
-    def _on_closing(self):
-        if self.is_running:
-            if messagebox.askokcancel("Quit", "Services are running. Do you want to stop them and exit?"):
-                self._stop_services()
-                self.destroy()
-        else:
-            self.destroy()
+    def _check_services(self):
+        """Check if services are already running"""
+        # Implementation
+        pass
 
-def main():
-    """Main entry point: check for config and run the appropriate GUI."""
-    # Pre-flight check for .env file
-    if not os.path.exists('.env'):
-        # Hide the root window while the wizard is running
-        root = tk.Tk()
-        root.withdraw()
-        # Run the config wizard
-        wizard_proc = subprocess.run(["python", "config_wizard_gui.py"], capture_output=True, text=True)
-        # After wizard closes, check if .env was created
-        if not os.path.exists('.env'):
-            messagebox.showerror("Setup Incomplete", "Configuration was not saved. The application cannot start.")
-            return # Exit if config is still missing
-
-    # If we get here, .env exists, so run the main launcher
-    app = FortunaLauncher()
-    app.mainloop()
+    def on_closing(self):
+        self.stop_services()
+        self.destroy()
 
 if __name__ == "__main__":
-    # Pre-flight check for .venv
-    if not os.path.exists('.venv'):
-        messagebox.showerror("Error", "Python virtual environment not found. Please run INSTALL_FORTUNA.bat first.")
-    else:
-        main()
+    app = FortunaLauncher()
+    app.protocol("WM_DELETE_WINDOW", app.on_closing)
+    app.mainloop()
