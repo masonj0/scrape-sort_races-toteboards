@@ -46,8 +46,8 @@ class FortunaEngine:
         self.config = config or get_settings()
         self.logger = structlog.get_logger(__name__)
         self.adapters: List[BaseAdapter] = [
-            BetfairAdapter(config=self.config),
-            BetfairGreyhoundAdapter(config=self.config),
+            BetfairAdapter(source_name=BetfairAdapter.SOURCE_NAME, base_url=BetfairAdapter.BASE_URL),
+            BetfairGreyhoundAdapter(source_name=BetfairGreyhoundAdapter.SOURCE_NAME, base_url=BetfairGreyhoundAdapter.BASE_URL),
             RacingAndSportsAdapter(config=self.config),
             RacingAndSportsGreyhoundAdapter(config=self.config),
             AtTheRacesAdapter(config=self.config),

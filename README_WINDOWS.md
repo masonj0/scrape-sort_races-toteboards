@@ -1,49 +1,33 @@
-# Fortuna Faucet: Windows Operator's Manual (v3.0)
+# Fortuna Faucet: Windows Operator's Manual (MSI Edition)
 
-Welcome to the Fortuna Faucet. This guide will get you up and running with our new, professional-grade command suite.
-
----
-
-## The Golden Path: Your First Launch
-
-This is the simplest and only way you need to interact with the application.
-
-### Step 1: Run the Service Manager
-
-> Find the `SERVICE_MANAGER.bat` file in the project folder and double-click it.
-
-This one script is your single entry point for everything. It's intelligent and will guide you.
-
--   **If this is your first time,** a setup wizard will automatically launch. It will verify your system and install all dependencies. Just follow the on-screen instructions.
-
-### Step 2: Start the Services
-
-> Once the menu appears, press `1` on your keyboard and then press `Enter` to select `[1] Start Services`.
-
-This will launch all required processes in the background using a race-condition-free, health-checked sequence.
-
-### Step 3: You're Done!
-
-A web browser will automatically open to the Fortuna Faucet dashboard once all systems are confirmed to be online.
+Welcome to the Fortuna Faucet. This guide will get you up and running.
 
 ---
 
-## Day-to-Day Operations
+## The Golden Path: The One-Click Installer
 
-Always use `SERVICE_MANAGER.bat` to manage the application.
+This is the simplest, safest, and only recommended way to install the application.
 
-### Key Menu Options:
+### Step 1: Find the Installer
 
--   **`[1] Start Services`**: Launches the application.
--   **`[2] Stop Services`**: Performs a clean, graceful shutdown of all processes.
--   **`[3] Restart Services`**: Performs a graceful stop, then a clean start.
--   **`[4] Check Live Status`**: Instantly checks if the backend and frontend are responsive and which ports they are using.
+> Locate the `Fortuna Faucet Setup.msi` file. If you don't have it, a developer must create it for you using the `BUILD_INSTALLER.bat` script.
 
-### Troubleshooting & Diagnostics
+### Step 2: Run the Installer
 
-The Service Manager provides a suite of powerful, built-in tools to help you solve common problems.
+> Double-click the `.msi` file.
 
--   **`[5] View Latest Logs`**: Automatically finds and opens the most recent backend and frontend log files in Notepad for easy debugging.
--   **`[6] View Performance Stats`**: Shows a quick, real-time snapshot of system memory, CPU usage, and disk space.
--   **`[7] Validate Dependencies`**: Runs a series of checks to ensure that Python, Node.js, Git, and all other required components are correctly installed and accessible.
--   **`[9] Reset to Factory Settings`**: A powerful tool that can safely delete all logs and caches if you need to return the system to a clean state.
+A standard Windows installation wizard will appear. Follow the on-screen instructions. It will install the application, all its dependencies, and create Start Menu and Desktop shortcuts for you automatically.
+
+### Step 3: Launch the Application
+
+> Use the new 'Fortuna Faucet' shortcut on your Desktop or in your Start Menu.
+
+The graphical control panel will launch. Click the big green `▶ START SERVICES` button to run the application.
+
+**You are done. There are no other steps.**
+
+---
+
+## For Developers Only
+
+If you are a developer and need to set up a local environment from the source code, please refer to the `ARCHITECTURAL_MANDATE.md` and the scripts in the root directory. The `.msi` installer is the only supported path for end-users.
