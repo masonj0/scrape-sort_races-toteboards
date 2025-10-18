@@ -13,7 +13,7 @@ IGNORE_PATTERNS = {
     'build', 'dist', 'logs', '.DS_Store', '.pytest_cache', '.next',
     'pip_install.log', 'npm_install.log', 'electron_install.log', 'ReviewableJSON',
     '*.pyc', '*.egg-info', 'MANIFEST.md', 'MANIFEST2.md', 'MANIFEST3.md',
-    'FORTUNA_ALL_PART*.JSON',
+    'FORTUNA_ALL_PART*.JSON', 'PREV_*',
     # Exclude the deprecated and new archive scripts themselves
     'create_fortuna_json.py', 'MANAGE_MANIFESTS.py', 'ARCHIVE_PROJECT.py'
 }
