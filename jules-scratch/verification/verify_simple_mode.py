@@ -1,18 +1,21 @@
-from playwright.sync_api import sync_playwright, expect
+from playwright.sync_api import sync_playwright
 
 def run(playwright):
-    browser = playwright.chromium.launch()
-    page = browser.new_page()
+    browser = playwright.chromium.launch(headless=True)
+    context = browser.new_context()
+    page = context.new_page()
 
-    # Navigate to the running application
+    # Navigate to the home page
     page.goto("http://localhost:3000")
 
-    # Wait for the main heading to be visible to ensure the page has loaded
-    heading = page.get_by_role("heading", name="Today's Top Race Opportunities")
-    expect(heading).to_be_visible()
+    # Take a screenshot of the default 'Simple Mode'
+    page.screenshot(path="jules-scratch/verification/simple_mode.png")
 
-    # Take a screenshot of the simple mode dashboard
-    page.screenshot(path="jules-scratch/verification/simple_mode_dashboard.png")
+    # Click the button to switch to 'Advanced Mode'
+    page.get_by_role("button", name="Switch to Advanced Mode").click()
+
+    # Take a screenshot of the 'Advanced Mode'
+    page.screenshot(path="jules-scratch/verification/advanced_mode.png")
 
     browser.close()
 
