@@ -1,0 +1,5 @@
+[
+    "scripts/audit_rebranding.py",
+    "scripts/convert_to_json.py",
+    "scripts/create_shortcuts.py"
+]
