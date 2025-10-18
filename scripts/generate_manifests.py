@@ -17,10 +17,15 @@ EXCLUDE_DIRS = {
     'attic',
     'installer',
     'ReviewableJSON',
-    'PREV_src'
+    'PREV_src',
+    '.pytest_cache'
 }
 
 EXCLUDE_FILES = {
+    'MANIFEST_ROOT.json',
+    'MANIFEST_BACKEND.json',
+    'MANIFEST_FRONTEND.json',
+    'MANIFEST_SCRIPTS.json',
     'FORTUNA_ALL_PART1.JSON',
     'FORTUNA_ALL_PART2.JSON',
     'FORTUNA_ALL_PART3.JSON',
