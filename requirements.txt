@@ -1,6 +1,7 @@
 # Fortuna Faucet - Master Dependency List
 
 # --- Core Backend (FastAPI & Async) ---
+tenacity==9.1.2
 fastapi==0.104.1
 uvicorn[standard]==0.24.0
 pydantic==2.5.2
@@ -19,12 +20,12 @@ lxml==5.1.0
 redis==5.0.1
 
 # --- Windows Native Edition ---
-pywin32==306
-colorama==0.4.6
-win10toast-py3==0.9
-matplotlib==3.8.2
-pystray==0.19.5
-pillow==10.1.0
+pywin32==306; sys_platform == 'win32'
+colorama==0.4.6; sys_platform == 'win32'
+win10toast-py3==0.9; sys_platform == 'win32'
+matplotlib==3.8.2; sys_platform == 'win32'
+pystray==0.19.5; sys_platform == 'win32'
+pillow==10.1.0; sys_platform == 'win32'
 
 # --- Data Warehouse & ETL (Optional) ---
 SQLAlchemy==2.0.23
